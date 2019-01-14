@@ -1,1 +1,7 @@
+# operating system
 .DS_Store
+
+# GitHub Pages
+Gemfile
+Gemfile.lock
+_site/
