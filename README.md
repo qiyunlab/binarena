@@ -10,4 +10,4 @@ Last updated: Jan 7, 2019
 
 ---
 
-This branch is for code review. Please feel free to add comments to anywhere of the entire codebase.
+Here is a [live demo](index.html).
