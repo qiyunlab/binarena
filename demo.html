@@ -1,0 +1,40 @@
+<!doctype html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>BinaRena live demo</title>
+
+  <script>
+    // var xhr = new XMLHttpRequest();
+    // xhr.open("GET", "examples/input.tsv", false);
+    // xhr.send();
+    // if (xhr.status == 200) {
+    //   dataText = xhr.responseText;
+    //   xhr.open("GET", "BinaRena.html", false);
+    //   xhr.send();
+    //   if (xhr.status == 200) {
+    //     document.write(xhr.responseText);
+    //   }
+    // }
+
+    var dataPath = 'examples/input.tsv';
+    var xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = function() {
+      if (this.readyState == 4 && this.status == 200) {
+        document.write(this.responseText);
+      }
+    }
+    xhr.open('GET', 'BinaRena.html', true);
+    xhr.send();
+    // if (xhr.status == 200) {
+    //   document.write(xhr.responseText);
+    // }
+
+  </script>
+</head>
+
+<body>
+</body>
+
+</html>

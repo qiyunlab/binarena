@@ -106,14 +106,10 @@ window.addEventListener('load', function () {
    */
   var bins = {};
 
-  // load default data from "data.js", if available
-  if (typeof datajson !== 'undefined') {
-    data = JSON.parse(datajson);
+  // load demo data, if available
+  if (typeof dataPath !== 'undefined') {
+    updateDataFromRemote(dataPath);
   }
-  // var script = document.createElement('script');
-  // script.type = 'text/javascript';
-  // script.src = 'static/js/data.js';
-  // document.body.appendChild(script);
 
   // the two main canvases that render the graphs
   var arena = document.getElementById('arena-canvas');
@@ -849,6 +845,24 @@ window.addEventListener('load', function () {
     reader.readAsText(file);
   }
 
+  /**
+   * Import data from a remote location
+   * @function updateDataFromRemote
+   * It uses XMLHttpRequest, which has to be run on a server.
+   */
+  function updateDataFromRemote(path) {
+    var xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = function() {
+      if (this.readyState == 4) {
+        if (this.status == 200) {
+          var cache = updateDataFromText(this.responseText, data);
+          updateViewByData(cache);
+        }
+      }
+    }
+    xhr.open('GET', path, true);
+    xhr.send();
+  }
 
   /**
    * Initiate display items based on updated data.

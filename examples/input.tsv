@@ -1,0 +1,1001 @@
+id	x	y	length	gc	coverage	orfs	ssus	mapped	taxon|d	phylum	class	order	family	genus	virulence	resistance	plasmid	virus
+18	6.259677	5.702276	153774	41.43	856.977	196	0	0.07	Bacteria									YP_006560672,YP_398573
+45	21.600085	-14.832082	98533	57.07	29.005	117	0	86.04	Bifidobacterium longum	Actinobacteria	Actinobacteria	Bifidobacteriales	Bifidobacteriaceae	Bifidobacterium			146937,146934	YP_004306251,YP_004957628
+69	25.478767	-26.985218	81114	59.12	150.640	69	0	90.58	Collinsella	Actinobacteria	Coriobacteriia	Coriobacteriales	Coriobacteriaceae	Collinsella				
+83	-8.631061	20.878683	71697	39.13	87.254	101	0	98.74	Bacteroides	Bacteroidetes	Bacteroidia	Bacteroidales	Bacteroidaceae	Bacteroides				YP_008241225,YP_112541
+97	-32.802353	-12.373096	67824	45.20	36.736	76	0	99.36	Roseburia sp. CAG:471	Firmicutes	Clostridia	Clostridiales	Lachnospiraceae	Roseburia		RF0148		YP_008060662
+98	-8.969817	22.807419	68726	36.17	48.544	53	0	31.40	Eubacterium								122799	
+189	-25.602258	-5.475409	49493	45.52	41.928	35	0	99.56	Blautia sp. KLE 1732	Firmicutes	Clostridia	Clostridiales	Lachnospiraceae	Blautia			124192	
+191	-7.263027	-35.372300	49403	52.32	47.328	46	0	99.93	Escherichia coli	Proteobacteria	Gammaproteobacteria	Enterobacteriales	Enterobacteriaceae	Escherichia		RF0007,RF0017,RF0164	120670,15925,21833,26567,25605	
+208	4.419285	-30.023037	47392	58.01	34.136	41	0	19.50	Subdoligranulum									
+220	-25.739350	-5.074038	45843	44.58	26.160	42	0	99.82	Blautia sp. KLE 1732	Firmicutes	Clostridia	Clostridiales	Lachnospiraceae	Blautia			128524	YP_398605,YP_398606
+224	-5.082727	24.164556	45339	33.81	38.547	37	0	18.19	Eubacterium						VFG000963,VFG002225,VFG002364			NP_048965,YP_007674419,YP_007674420,YP_009216894
+239	31.137627	-13.798488	43698	65.14	32.879	45	0	84.02	Actinomyces	Actinobacteria							120647	
+294	-11.083829	22.053697	38639	39.01	82.789	32	0	98.99	Eubacterium	Firmicutes	Clostridia	Clostridiales	Eubacteriaceae	Eubacterium		RF0148	142485,115548	
+334	16.748254	20.176887	35213	33.77	35.387	37	0	3.13	Turicibacter									
+369	-25.482878	-5.364959	32820	45.60	42.855	31	1	98.61	Clostridiales	Firmicutes	Clostridia	Clostridiales				RF0142		YP_004306889,YP_004306890
+380	-23.960811	1.989051	32139	43.00	24.660	33	0	26.80	Clostridiales									
+391	32.578671	-12.217472	31593	67.45	24.582	30	0	56.49	Actinomyces								145094	
+399	-26.368546	11.769434	31035	39.13	78.259	18	0	39.03	Clostridiales						VFG042870			
+401	-7.793000	-34.202928	31004	51.54	36.829	33	0	99.97	Escherichia coli	Proteobacteria	Gammaproteobacteria	Enterobacteriales	Enterobacteriaceae	Escherichia			131779	NP_042036,NP_042037,NP_042038,NP_042039,NP_042040,NP_042041,NP_042042,NP_042043
+410	4.817067	-33.681487	39535	61.05	25.179	33	0	11.45	Ruminococcaceae							RF0142	22676	
+414	4.613641	-33.587128	30333	61.09	20.347	34	0	4.11	Ruminococcaceae									
+423	35.092597	-25.214031	29314	64.86	17.726	24	0	97.78	Adlercreutzia equolifaciens	Actinobacteria	Coriobacteriia	Eggerthellales	Eggerthellaceae	Adlercreutzia				
+433	-11.279628	22.836326	28868	38.61	123.138	24	0	99.99	Eubacterium	Firmicutes	Clostridia	Clostridiales	Eubacteriaceae	Eubacterium			146204	
+451	-27.265049	6.708741	42972	42.78	20.024	35	0	9.17	Firmicutes							RF0142:2		
+458	-30.888850	1.414269	28056	42.17	58.729	28	0	99.96	Blautia wexlerae	Firmicutes	Clostridia	Clostridiales	Lachnospiraceae	Blautia				
+494	-6.335441	24.123552	26005	35.27	31.870	34	0	2.45	Ruminococcus									
+500	16.011168	20.258380	25922	32.62	86.140	32	0	0.21	Firmicutes									YP_008873459
+521	-28.813876	12.072359	25216	39.61	138.501	22	0	86.91	Blautia wexlerae	Firmicutes	Clostridia	Clostridiales						
+532	-23.608151	12.376162	24870	38.44	64.356	24	0	99.98	Blautia wexlerae	Firmicutes	Clostridia	Clostridiales	Lachnospiraceae	Blautia				
+574	-6.611158	-34.978393	23396	51.33	58.988	26	0	99.98	Escherichia coli	Proteobacteria	Gammaproteobacteria	Enterobacteriales	Enterobacteriaceae	Escherichia			146204,126811	NP_312885,NP_312886
+603	14.962594	-29.260820	22814	57.59	18.597	20	0	97.40	Rothia mucilaginosa	Actinobacteria	Actinobacteria	Micrococcales	Micrococcaceae	Rothia	VFG041304			
+633	-25.190112	14.977074	21902	40.77	148.436	23	0	96.59	Clostridiales	Firmicutes	Clostridia	Clostridiales				RF0142		
+663	3.264617	-28.209598	21156	56.34	25.191	23	0	13.86	Faecalibacterium prausnitzii									NP_417179
+671	-36.072391	-5.808523	20957	43.46	18.118	21	0	1.86	Firmicutes									
+702	-5.876845	-35.119989	19986	51.92	53.499	16	0	99.95	Escherichia coli	Proteobacteria	Gammaproteobacteria	Enterobacteriales	Enterobacteriaceae	Escherichia				NP_312144
+719	25.614434	-27.287685	19810	62.83	187.918	20	0	96.10	Collinsella	Actinobacteria	Coriobacteriia	Coriobacteriales	Coriobacteriaceae	Collinsella				YP_007676312
+731	-8.260982	-34.459540	19667	52.74	25.768	24	0	100.00	Escherichia coli	Proteobacteria	Gammaproteobacteria	Enterobacteriales	Enterobacteriaceae	Escherichia			115878	NP_807091,NP_807092,NP_807093,NP_807094,NP_807095,NP_807096,NP_807100,NP_807101,NP_807102,NP_807105,YP_001718718,YP_001718720,YP_009211932
+741	32.575151	-12.416856	19479	67.73	30.852	20	0	63.48	Actinomyces									
+757	-27.986746	6.891427	22178	43.17	17.695	22	0	1.09	Clostridiales									
+790	-31.204053	2.397278	18538	40.99	169.466	14	0	74.37	Clostridiales									
+816	-32.708074	-11.971531	18187	43.19	42.239	17	0	92.40	Lachnospiraceae	Firmicutes	Clostridia	Clostridiales	Lachnospiraceae			RF0142		
+839	-7.725716	-34.361232	17743	51.67	36.319	18	0	100.00	Escherichia coli	Proteobacteria	Gammaproteobacteria	Enterobacteriales	Enterobacteriaceae	Escherichia				YP_009015586
+848	4.692194	-33.846001	20255	61.69	23.338	16	0	13.08	Subdoligranulum variabile								110567	
+909	4.920216	-29.444648	16510	58.68	29.248	16	0	24.43	Subdoligranulum variabile							RF0144		
+982	-5.575087	21.521910	15583	35.38	46.946	14	0	25.73	Clostridiales									YP_238737
+991	33.952703	-25.180216	15467	63.65	16.551	13	0	48.62	Eggerthellaceae						VFG000079			
+1006	-28.610993	11.992553	15273	40.07	112.455	19	0	5.96	Clostridiales									
+1020	-19.278259	10.506131	15156	40.86	18.764	26	0	0										
+1029	-6.783309	20.022839	15058	36.67	28.996	17	0	13.52	Ruminococcus									
+1069	-5.306773	34.015920	14609	31.97	25.545	23	0	0.04	Clostridiales bacterium VE202-18									NP_695057,NP_695059,NP_795513,NP_795527,NP_862888,NP_996708
+1085	13.493361	41.170853	14489	29.64	24.998	14	0	30.24	Clostridiales									
+1094	-31.666361	1.391478	14389	42.05	371.277	10	0	100.00	Clostridiales	Firmicutes	Clostridia	Clostridiales						
+1100	7.232588	-7.053454	17410	41.55	16.824	14	0	98.53	Prevotella sp. CAG:891	Bacteroidetes	Bacteroidia	Bacteroidales	Prevotellaceae	Prevotella				
+1143	-36.202857	-5.930919	18509	43.96	15.242	18	0	1.85	Lachnospiraceae						VFG001967	RF0148:2		YP_238737
+1153	-8.325790	-35.199758	13814	52.07	42.792	12	0	100.00	Escherichia coli	Proteobacteria	Gammaproteobacteria	Enterobacteriales	Enterobacteriaceae	Escherichia		RF0017	154067,154068	
+1155	-17.876856	26.291700	15596	36.25	14.849	14	0	99.20	Firmicutes bacterium CAG:41	Firmicutes								
+1178	-36.565438	-4.490731	13520	42.49	13.339	11	0	1.61	Lachnospiraceae								128524	
+1204	-6.331188	22.323908	13301	35.88	97.940	19	0	45.92	Clostridiales								123884	
+1248	-8.078451	-36.038651	12945	53.09	42.404	14	0	99.95	Escherichia coli	Proteobacteria	Gammaproteobacteria	Enterobacteriales	Enterobacteriaceae	Escherichia		RF0038		
+1275	7.074894	-6.200771	12681	39.70	24.048	10	0	98.72	Prevotella sp. CAG:891	Bacteroidetes	Bacteroidia	Bacteroidales	Prevotellaceae	Prevotella			22676	
+1297	-24.212498	31.587668	16921	39.39	13.189	16	0	99.42	Firmicutes bacterium CAG:41	Firmicutes								
+1308	4.156250	-32.391111	12422	61.06	26.786	10	0	29.40	Subdoligranulum variabile									
+1338	-26.732540	16.501209	12137	40.55	25.232	3	0	94.41	[Eubacterium] hallii	Firmicutes	Clostridia	Clostridiales	Eubacteriaceae	Eubacterium				
+1343	-8.430666	-36.393773	12113	54.42	41.393	13	0	99.89	Escherichia coli	Proteobacteria	Gammaproteobacteria	Enterobacteriales	Enterobacteriaceae	Escherichia			25878	
+1418	-2.712620	-30.079303	11545	44.00	21.164	13	0	100.00	Escherichia coli	Proteobacteria	Gammaproteobacteria	Enterobacteriales	Enterobacteriaceae	Escherichia				
+1421	-4.970108	36.243384	18663	29.30	15.792	21	0	99.71	bacterium LF-3								132147	
+1435	13.828515	41.420865	11422	26.98	15.593	11	0	32.14	Clostridiales						VFG006717			
+1445	-36.587920	-6.158213	11378	44.17	11.458	10	0	14.63	Clostridiales									
+1458	-11.725519	23.093974	11224	39.52	83.885	8	0	100.00	Eubacterium	Firmicutes	Clostridia	Clostridiales	Eubacteriaceae	Eubacterium				
+1533	-8.504781	-36.653719	10774	54.65	46.804	12	0	99.94	Escherichia coli	Proteobacteria	Gammaproteobacteria	Enterobacteriales	Enterobacteriaceae	Escherichia				
+1536	-5.001178	36.647433	14395	28.03	14.054	17	0	100.00	bacterium LF-3									
+1538	-6.850200	23.672848	10755	34.84	275.589	11	0	99.53	Clostridiales	Firmicutes	Clostridia	Clostridiales						
+1539	-7.153645	-34.426273	10754	51.71	50.797	6	0	99.95	Escherichia coli	Proteobacteria	Gammaproteobacteria	Enterobacteriales	Enterobacteriaceae	Escherichia				
+1544	-18.660595	26.781985	10724	33.70	13.648	9	0	32.66	Firmicutes bacterium CAG:41									
+1563	6.893348	-4.816698	10647	39.41	15.331	7	0	29.23	Prevotella sp. P5-125									
+1566	-36.469205	-3.127589	10613	42.72	15.203	10	0	0.91	Firmicutes									
+1576	-29.485935	-2.278019	10554	41.60	12.160	11	0	99.78	Clostridiales	Firmicutes	Clostridia	Clostridiales						
+1587	-25.681167	-3.409359	10487	43.20	20.385	9	0	99.93	Clostridiales	Firmicutes	Clostridia	Clostridiales						
+1622	4.844955	-31.139629	10257	59.38	35.811	7	0	20.57	Ruminococcaceae									
+1632	-25.105983	5.744715	10182	40.92	12.901	9	0	21.26	Firmicutes									
+1635	-31.717080	0.706822	10180	42.70	373.487	7	0	99.97	Clostridiales	Firmicutes	Clostridia	Clostridiales						
+1665	-5.233609	-32.489575	10059	48.87	37.579	10	0	100.00	Escherichia coli	Proteobacteria	Gammaproteobacteria	Enterobacteriales	Enterobacteriaceae	Escherichia				
+1722	2.466404	-29.599006	9813	59.52	31.783	9	0	97.72	Clostridiales	Firmicutes	Clostridia	Clostridiales						YP_358798
+1725	13.107949	41.149250	9807	28.14	14.441	9	0	22.75	Clostridiales									
+1766	-23.434016	7.584367	11095	40.79	13.022	10	0	100.00	Dorea	Firmicutes	Clostridia	Clostridiales	Lachnospiraceae	Dorea				
+1775	-4.500744	36.341779	9547	28.01	17.226	8	0	99.82	bacterium LF-3									YP_293777
+1784	-26.347387	7.017279	9504	40.70	16.184	7	0	42.23	Firmicutes									
+1786	-26.889169	1.802069	9497	41.77	15.593	8	0	100.00	Clostridiales	Firmicutes	Clostridia	Clostridiales						
+1795	-6.178935	-34.396476	9486	51.73	48.665	8	0	99.94	Escherichia coli	Proteobacteria	Gammaproteobacteria	Enterobacteriales	Enterobacteriaceae	Escherichia				
+1805	12.088349	40.257132	9439	29.28	12.687	5	0	5.48	Clostridiales									
+1825	7.044101	-5.562906	9375	37.83	22.013	6	0	99.93	Prevotella sp. CAG:891	Bacteroidetes	Bacteroidia	Bacteroidales	Prevotellaceae	Prevotella				
+1833	11.187839	41.771353	9315	28.97	12.458	8	0	1.00	Terrisporobacter othiniensis									
+1894	-6.529181	22.036047	14593	36.50	22.274	20	0	45.33	Clostridiales									
+1931	-23.507353	29.411568	8926	38.60	15.960	9	0	78.32	Firmicutes bacterium CAG:41	Firmicutes								
+1941	16.788320	-20.678834	8902	55.01	33.483	9	0	25.24	Actinomyces									
+1956	-27.692732	-4.559224	8825	44.19	295.225	6	0	100.00	Clostridiales	Firmicutes	Clostridia	Clostridiales					19088	
+1969	2.885450	-16.299584	8767	50.19	44.529	11	0	94.05	Clostridiales	Firmicutes	Clostridia	Clostridiales						
+1982	1.062200	-16.340230	8693	46.92	65.708	13	0	84.30	Clostridiales	Firmicutes	Clostridia	Clostridiales						
+2035	2.238232	-17.285165	8474	49.88	27.024	12	0	99.63	Ruminococcaceae	Firmicutes	Clostridia	Clostridiales	Ruminococcaceae					
+2081	19.181683	-28.344521	8308	57.17	18.014	6	0	99.81	Rothia mucilaginosa	Actinobacteria	Actinobacteria	Micrococcales	Micrococcaceae	Rothia				
+2106	3.754236	-32.177905	8196	61.47	31.566	7	0	6.16	Subdoligranulum variabile									
+2117	-25.868330	-1.864674	8127	41.15	156.198	9	0	80.31	Blautia sp. KLE 1732	Firmicutes	Clostridia	Clostridiales						
+2136	-36.578315	-5.835561	8783	44.04	14.342	9	0	1.38	Clostridiales									
+2176	-22.429025	3.974732	13587	41.88	15.842	15	0	100.00	Dorea formicigenerans	Firmicutes	Clostridia	Clostridiales	Lachnospiraceae	Dorea	VFG013286	RF0142		
+2181	11.998958	41.206708	7912	28.20	14.977	6	0	0.61	Terrisporobacter									
+2185	-7.137550	-36.078383	7904	52.71	50.146	7	0	100.00	Escherichia coli	Proteobacteria	Gammaproteobacteria	Enterobacteriales	Enterobacteriaceae	Escherichia				
+2200	-35.603584	-6.655604	7864	44.09	12.735	6	0	0										
+2214	4.796433	-30.680495	9479	61.02	22.630	10	0	13.19	Subdoligranulum variabile									
+2257	-21.936753	-1.175566	7667	44.39	20.410	8	0	99.82	Lachnospiraceae	Firmicutes	Clostridia	Clostridiales	Lachnospiraceae					
+2265	-11.135625	21.927358	7646	38.65	40.911	6	0	98.95	Eubacterium hallii CAG:12	Firmicutes	Clostridia	Clostridiales	Eubacteriaceae	Eubacterium				
+2270	-31.074283	1.764824	7614	41.45	388.127	7	0	100.00	Clostridiales	Firmicutes	Clostridia	Clostridiales						
+2314	-22.076712	30.648930	7444	40.78	16.897	7	0	99.54	Firmicutes bacterium CAG:41	Firmicutes								
+2323	11.081383	41.653667	7419	28.04	12.787	7	0	13.68	Terrisporobacter									
+2334	-6.111506	22.945506	7375	36.01	37.925	13	0	67.34	Clostridiales									
+2363	-28.501400	-0.906563	7285	42.35	103.884	6	0	13.49	Ruminococcus									
+2428	-6.411157	-34.984014	7048	51.79	51.638	8	0	100.00	Escherichia coli	Proteobacteria	Gammaproteobacteria	Enterobacteriales	Enterobacteriaceae	Escherichia				NP_417467
+2453	-5.283751	33.617865	8182	31.04	15.584	15	0	20.90	bacterium LF-3									
+2455	7.098128	-6.304608	7549	39.95	19.417	5	0	93.29	Prevotella sp. CAG:891	Bacteroidetes	Bacteroidia	Bacteroidales	Prevotellaceae	Prevotella		RF0024		
+2462	-28.977215	-7.791882	6986	43.29	11.142	4	0	64.13	Blautia									
+2520	-27.975286	-5.690774	6812	46.12	19.819	8	0	98.63	Clostridiales	Firmicutes	Clostridia	Clostridiales						
+2543	32.811965	-13.070667	6760	67.68	35.811	5	0	84.23	Actinobacteria	Actinobacteria								
+2600	-32.157154	4.112590	6628	41.23	334.092	10	0	100.00	Clostridiales	Firmicutes	Clostridia	Clostridiales						
+2611	-24.509431	31.050928	11477	39.00	14.255	9	0	99.82	Firmicutes bacterium CAG:41	Firmicutes					VFG001312		21524	
+2612	32.034388	-12.711312	6600	66.70	27.948	6	0	67.98	Actinomyces									
+2624	9.795249	36.696939	6584	29.04	12.537	6	0	3.66	Terrisporobacter othiniensis									
+2690	-6.331984	-36.475552	6403	52.71	41.699	3	0	100.00	Escherichia coli	Proteobacteria	Gammaproteobacteria	Enterobacteriales	Enterobacteriaceae	Escherichia				
+2724	-22.006741	12.608019	6312	40.91	15.317	10	0	90.55	Lachnospiraceae	Firmicutes	Clostridia	Clostridiales	Lachnospiraceae					
+2742	-34.784391	-7.185974	6277	44.08	11.105	5	0	0										
+2776	-4.534056	35.625511	6224	29.19	25.153	5	0	91.51	bacterium LF-3									
+2806	-36.066773	-6.081804	6146	43.36	12.462	7	0	2.80	Lachnospiraceae									
+2831	-10.888511	23.386474	8112	38.62	64.289	7	0	96.46	Eubacterium	Firmicutes	Clostridia	Clostridiales	Eubacteriaceae	Eubacterium				
+2845	24.888785	-6.740508	6077	49.76	10.664	8	0	0.44	Mycobacterium tuberculosis									
+2851	-7.569995	21.599510	6062	37.17	15.858	6	0	100.00	Clostridiales	Firmicutes	Clostridia	Clostridiales						
+2884	-24.469068	-0.498096	5994	41.34	12.038	7	0	88.26	Clostridiales	Firmicutes	Clostridia	Clostridiales						
+2897	-30.691727	3.310956	5975	39.80	263.849	7	0	98.60	Ruminococcus	Firmicutes	Clostridia	Clostridiales						
+2919	34.802841	-25.177822	8415	64.47	13.680	8	0	92.81	Adlercreutzia equolifaciens	Actinobacteria	Coriobacteriia	Eggerthellales	Eggerthellaceae	Adlercreutzia				
+2927	-22.637638	6.774260	5912	41.39	11.973	4	0	100.00	Dorea	Firmicutes	Clostridia	Clostridiales	Lachnospiraceae	Dorea				
+2939	-13.388374	5.459163	5875	42.66	17.650	2	0	100.00	Dorea	Firmicutes	Clostridia	Clostridiales	Lachnospiraceae	Dorea				NP_932363
+2943	17.338708	20.120752	5872	33.72	44.889	3	0	21.74	Turicibacter									
+2950	10.355913	41.390587	5853	26.62	12.681	8	0	0.58	Terrisporobacter glycolicus									
+2951	10.695031	40.883090	5850	28.07	15.378	4	0	50.48	Peptostreptococcaceae									
+2994	-25.344589	14.899833	5765	41.39	312.340	6	0	99.94	Clostridiales	Firmicutes	Clostridia	Clostridiales				RF0142		
+2997	-32.617607	2.689587	5750	42.40	340.262	9	0	99.99	Clostridiales	Firmicutes	Clostridia	Clostridiales						
+3018	11.187408	37.424789	5729	28.80	13.851	5	0	0										
+3029	-17.771699	2.786420	5711	39.73	19.740	5	0	49.75	Clostridium									
+3043	-23.229969	29.454049	5689	37.51	9.785	5	0	98.17	Firmicutes bacterium CAG:41	Firmicutes							130634	
+3055	-11.264245	23.506753	5671	38.46	40.538	2	0	19.77	Eubacterium									
+3106	-2.549007	-29.795731	5593	43.97	44.816	6	0	99.60	Escherichia coli	Proteobacteria	Gammaproteobacteria	Enterobacteriales	Enterobacteriaceae	Escherichia				YP_794050
+3110	-30.153284	-4.580202	5587	43.78	10.338	5	0	96.53	Clostridiales	Firmicutes	Clostridia	Clostridiales						
+3114	10.943371	39.335920	5584	27.79	10.895	5	0	0										
+3138	15.696156	-28.358639	9723	56.96	13.466	9	0	96.06	Rothia mucilaginosa	Actinobacteria	Actinobacteria	Micrococcales	Micrococcaceae	Rothia				
+3139	-2.996528	33.802282	5521	28.94	17.176	3	0	0.44	Clostridium sp. CAG:122									
+3142	-19.770809	7.043374	5518	42.39	11.217	4	0	0										
+3144	10.715322	38.586541	5513	27.61	12.648	10	0	2.90	Terrisporobacter									
+3150	36.522902	-24.669233	8919	66.17	13.035	9	0	99.27	Adlercreutzia equolifaciens	Actinobacteria	Coriobacteriia	Eggerthellales	Eggerthellaceae	Adlercreutzia				
+3160	-25.241385	13.482947	5482	36.48	26.099	6	0	97.09	Blautia sp. KLE 1732	Firmicutes	Clostridia	Clostridiales	Lachnospiraceae	Blautia			122799	
+3166	17.712996	-31.595340	5475	60.62	11.007	4	0	96.42	Rothia mucilaginosa	Actinobacteria	Actinobacteria	Micrococcales	Micrococcaceae	Rothia				
+3173	-5.661692	-33.294744	5469	49.28	37.693	7	0	100.00	Escherichia coli	Proteobacteria	Gammaproteobacteria	Enterobacteriales	Enterobacteriaceae	Escherichia			135536	
+3194	-36.978179	0.695653	5430	41.10	12.187	7	0	100.00	Dorea	Firmicutes	Clostridia	Clostridiales	Lachnospiraceae	Dorea				
+3206	-5.440975	-28.832575	5416	50.46	23.112	6	0	100.00	Escherichia coli	Proteobacteria	Gammaproteobacteria	Enterobacteriales	Enterobacteriaceae	Escherichia				YP_001700621,YP_009226850,YP_009226861
+3248	-8.372805	-25.743495	5347	57.64	39.932	8	0	100.00	Escherichia coli	Proteobacteria	Gammaproteobacteria	Enterobacteriales	Enterobacteriaceae	Escherichia			25622,117382,117775	
+3259	11.865800	-10.093439	5320	44.79	13.863	2	0	83.61	Bacteroidales	Bacteroidetes	Bacteroidia	Bacteroidales						
+3273	29.532512	-15.115734	5302	64.71	23.391	4	0	14.33	Actinomyces									
+3288	15.259762	16.297563	6475	35.38	12.594	8	0	93.95	Streptococcus	Firmicutes	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus				
+3296	-7.238459	20.669793	5262	35.94	42.429	8	0	99.74	[Eubacterium] hallii	Firmicutes	Clostridia	Clostridiales	Eubacteriaceae	Eubacterium				
+3327	-28.954217	-4.214681	5207	43.83	14.078	4	0	97.70	Clostridiales	Firmicutes	Clostridia	Clostridiales				RF0007		
+3346	-25.536387	-5.609798	5168	45.14	21.406	4	0	99.87	Clostridiales	Firmicutes	Clostridia	Clostridiales						
+3374	-22.836730	30.071005	5134	39.54	14.174	4	0	100.00	Firmicutes bacterium CAG:41	Firmicutes								
+3403	-22.855534	31.022910	5093	39.76	14.235	4	0	98.79	Firmicutes bacterium CAG:41	Firmicutes								
+3410	-3.527401	23.827360	5084	33.04	29.446	5	0	0										
+3427	-30.119998	2.616561	5058	41.14	195.749	6	0	99.97	Clostridiales	Firmicutes	Clostridia	Clostridiales						
+3437	-5.533978	19.545589	5043	35.59	56.890	5	0	11.15	Blautia wexlerae									
+3440	-26.062365	7.745523	5042	38.91	13.723	7	0	0										
+3450	10.276953	37.680947	5025	28.62	13.155	5	0	11.85	Clostridiales									
+3481	19.219582	12.152206	4977	41.33	12.440	6	0	100.00	Streptococcus	Firmicutes	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus				
+3497	2.689565	-15.974097	4958	48.51	104.335	7	0	100.00	Clostridiales	Firmicutes	Clostridia	Clostridiales						
+3543	17.577469	-33.103555	6788	62.64	9.141	8	0	95.79	Rothia mucilaginosa	Actinobacteria	Actinobacteria	Micrococcales	Micrococcaceae	Rothia				
+3610	30.748239	2.661525	4802	45.27	24.260	7	0	100.00	Streptococcus parasanguinis	Firmicutes	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus				
+3625	2.458217	31.997365	4794	30.27	11.645	4	0	100.00	Streptococcus	Firmicutes	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus				
+3627	-7.322212	-37.089858	4793	55.41	40.982	5	0	99.71	Escherichia coli	Proteobacteria	Gammaproteobacteria	Enterobacteriales	Enterobacteriaceae	Escherichia	VFG010882		149577	
+3633	-28.458395	-4.428753	4790	43.05	224.369	3	0	100.00	Clostridiales	Firmicutes	Clostridia	Clostridiales						
+3639	35.771900	-24.297040	4780	69.23	9.314	4	0	49.53	Adlercreutzia equolifaciens									
+3658	10.308070	39.531244	4761	27.43	9.794	6	0	9.17	Clostridium dakarense									
+3664	33.775408	-24.289056	4755	66.06	11.034	3	0	35.03	Adlercreutzia equolifaciens									
+3676	-22.527413	3.714646	4746	42.18	10.947	3	0	100.00	Dorea	Firmicutes	Clostridia	Clostridiales	Lachnospiraceae	Dorea				
+3680	17.938321	-20.956000	4743	56.78	34.525	4	0	25.40	Actinobacteria									
+3720	-3.212696	33.709342	5232	28.10	17.784	6	0	67.65	bacterium LF-3									
+3728	-9.719479	21.948608	4673	36.74	31.370	4	0	15.19	Eubacterium hallii CAG:12									
+3732	11.505142	0.681307	5318	45.22	10.187	6	0	0										
+3745	28.088220	8.790707	4657	42.56	20.932	7	0	100.00	Streptococcus parasanguinis	Firmicutes	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus				
+3769	-23.439691	32.438100	4631	40.88	12.906	5	0	97.62	Firmicutes bacterium CAG:41	Firmicutes								
+3770	10.996897	0.916020	4631	44.27	8.916	5	0	0										
+3771	-16.487854	2.680891	4630	41.77	15.573	4	0	78.38	Roseburia sp. CAG:197	Firmicutes	Clostridia	Clostridiales	Lachnospiraceae					
+3788	4.185935	-34.283399	8924	63.02	23.544	8	0	11.29	Subdoligranulum variabile									
+3796	9.980428	39.126612	6192	27.15	12.675	8	0	15.51	Peptoclostridium									
+3799	-8.881739	22.176909	4603	36.22	121.561	6	0	59.16	Clostridiales									
+3801	-4.061227	33.854591	4599	29.22	15.623	3	0	100.00	bacterium LF-3									
+3831	-25.372673	6.692518	4560	39.98	11.658	3	0	99.47	Dorea	Firmicutes	Clostridia	Clostridiales	Lachnospiraceae	Dorea				
+3835	-30.395758	-6.975786	7338	41.29	12.820	5	0	6.77	Clostridiales									
+3839	-24.831424	-2.403321	4549	42.78	12.387	4	0	79.24	Blautia obeum	Firmicutes	Clostridia	Clostridiales						
+3854	-24.970544	-9.749147	4535	43.46	14.366	5	0	94.13	Clostridiales	Firmicutes	Clostridia	Clostridiales						
+3861	1.607697	-22.564342	4526	51.68	54.523	4	0	0										
+3865	-35.853953	-6.292540	7759	43.88	11.045	6	0	1.33	Lachnospiraceae									
+3894	-4.475965	21.349128	4483	34.22	10.567	6	0	100.00	Dorea formicigenerans	Firmicutes	Clostridia	Clostridiales	Lachnospiraceae	Dorea				
+3914	30.022114	-25.914559	4459	61.00	13.402	6	0	63.18	Adlercreutzia equolifaciens									
+3957	-0.887934	-15.991989	4418	44.84	24.285	9	0	35.21	Clostridiales									
+3963	12.452074	38.378882	4410	32.40	14.897	2	0	87.89	Clostridium sp. JCC	Firmicutes	Clostridia	Clostridiales	Clostridiaceae	Clostridium				
+4026	-3.310125	34.298928	4356	28.44	19.183	7	0	98.61	bacterium LF-3									
+4027	19.348552	-28.559425	4356	58.56	14.136	3	0	99.54	Rothia mucilaginosa	Actinobacteria	Actinobacteria	Micrococcales	Micrococcaceae	Rothia				
+4037	-28.054770	1.583904	4349	42.45	340.995	2	0	100.00	Ruminococcus	Firmicutes	Clostridia	Clostridiales	Ruminococcaceae	Ruminococcus				
+4052	11.185570	35.809082	4340	28.48	12.546	5	0	9.04	Clostridiales									
+4069	11.170206	39.211434	4952	28.15	12.676	5	0	0.44	[Clostridium] sordellii						VFG001259,VFG000514			
+4071	25.729268	-6.545301	4323	50.89	11.098	3	0	0										
+4150	22.427931	14.973706	4234	40.55	10.201	3	0	98.70	Streptococcus	Firmicutes	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus				
+4172	-26.285980	-0.031042	4216	41.25	9.741	3	0	100.00	Clostridiales	Firmicutes	Clostridia	Clostridiales						
+4174	-25.856664	0.578366	4213	40.04	9.861	2	0	1.05	Blautia sp. CAG:237									
+4191	20.051842	-5.874717	4193	45.43	9.352	6	0	43.38	Candidatus Saccharibacteria oral taxon TM7x									
+4209	23.251954	15.246097	4176	39.25	24.659	2	0	100.00	Streptococcus parasanguinis	Firmicutes	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus			146304	
+4252	-24.236898	11.845775	4142	39.62	169.506	5	0	99.71	Clostridiales	Firmicutes	Clostridia	Clostridiales						
+4269	-5.287128	-33.879366	4126	51.58	37.849	3	0	100.00	Escherichia coli	Proteobacteria	Gammaproteobacteria	Enterobacteriales	Enterobacteriaceae	Escherichia			17578	
+4274	32.483970	4.899532	4119	45.18	19.325	4	0	100.00	Streptococcus parasanguinis	Firmicutes	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus				
+4277	6.133123	37.329695	4115	24.93	10.022	4	0	0										
+4281	-27.478942	0.273260	4820	42.20	255.009	5	0	99.96	Clostridiales	Firmicutes	Clostridia	Clostridiales						
+4288	7.134054	-11.015485	4105	47.53	12.222	6	0	100.00	Prevotella sp. CAG:891	Bacteroidetes	Bacteroidia	Bacteroidales	Prevotellaceae	Prevotella				
+4306	23.774622	-5.589207	4083	48.71	13.752	4	0	0										
+4313	32.149920	-24.385583	4077	61.15	14.767	5	0	97.20	Adlercreutzia equolifaciens	Actinobacteria	Coriobacteriia	Eggerthellales	Eggerthellaceae	Adlercreutzia				
+4364	-21.298253	4.791270	4019	39.86	10.701	4	0	100.00	Dorea	Firmicutes	Clostridia	Clostridiales	Lachnospiraceae	Dorea				
+4398	-12.009070	16.183016	3994	38.51	13.394	3	0	100.00	Clostridiales	Firmicutes	Clostridia	Clostridiales						
+4430	-12.016651	15.930877	3969	39.13	11.819	3	0	100.00	Lachnospiraceae	Firmicutes	Clostridia	Clostridiales	Lachnospiraceae					
+4475	-4.812807	-34.462233	3934	50.71	40.302	3	0	100.00	Escherichia coli	Proteobacteria	Gammaproteobacteria	Enterobacteriales	Enterobacteriaceae	Escherichia				
+4489	-15.734905	16.386901	3922	36.77	10.413	4	0	100.00	Lachnospiraceae	Firmicutes	Clostridia	Clostridiales	Lachnospiraceae					
+4496	-6.984345	-37.341427	3917	54.23	35.362	4	0	100.00	Escherichia coli	Proteobacteria	Gammaproteobacteria	Enterobacteriales	Enterobacteriaceae	Escherichia				
+4498	-18.320641	11.620633	3916	40.37	155.658	5	0	100.00	Clostridiales	Firmicutes	Clostridia	Clostridiales						
+4499	-22.850164	12.900304	3916	38.05	8.726	5	0	59.34	Clostridiales									
+4521	-24.985321	1.173648	3898	40.64	9.530	3	0	95.75	Clostridiales	Firmicutes	Clostridia	Clostridiales				RF0148		
+4524	17.927953	-31.804318	3895	59.77	10.433	4	0	100.00	Rothia mucilaginosa	Actinobacteria	Actinobacteria	Micrococcales	Micrococcaceae	Rothia				
+4545	8.202915	39.390629	3884	25.93	8.829	4	0	0										
+4607	-6.062761	19.801581	3833	36.00	9.873	6	0	13.81	Clostridiales									
+4614	-29.732158	-6.499876	3827	41.65	14.880	3	0	8.63	Blautia									
+4617	-31.148602	-9.454447	3826	43.26	7.781	3	0	0										
+4626	3.969478	-34.233399	3818	62.68	49.988	3	0	6.27	Faecalibacterium prausnitzii									
+4636	-16.229484	15.722876	3806	37.86	11.063	4	0	100.00	Clostridiales	Firmicutes	Clostridia	Clostridiales				RF0148		
+4666	-4.978764	-33.167908	3785	50.36	32.969	5	0	99.77	Escherichia coli	Proteobacteria	Gammaproteobacteria	Enterobacteriales	Enterobacteriaceae	Escherichia				
+4669	-19.406396	10.264762	6466	40.67	13.166	4	0	21.66	Bacteria									
+4670	-32.068810	1.918610	5239	41.88	427.529	2	0	99.91	Clostridiales	Firmicutes	Clostridia	Clostridiales						
+4674	-4.843887	-33.944133	3777	49.99	26.734	4	0	99.72	Escherichia coli	Proteobacteria	Gammaproteobacteria	Enterobacteriales	Enterobacteriaceae	Escherichia				
+4686	-2.702995	20.067920	3768	34.79	17.419	6	0	0										
+4692	32.928601	6.401093	3765	43.05	6.984	4	0	91.62	Streptococcus australis	Firmicutes	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus				
+4694	6.994009	21.838756	3765	38.19	26.777	1	0	62.79	Clostridiales									
+4719	-31.384228	-0.028960	3744	42.36	287.193	4	0	100.00	Ruminococcus	Firmicutes	Clostridia	Clostridiales	Ruminococcaceae	Ruminococcus	VFG000079			
+4778	-2.420605	-21.234211	3702	49.14	10.355	6	0	100.00	Clostridiales	Firmicutes	Clostridia	Clostridiales						
+4796	6.696042	37.740850	3684	26.09	10.781	3	0	6.25	Peptostreptococcaceae bacterium VA2									
+4818	20.677070	-20.775742	3666	58.59	34.209	4	0	94.42	Atopobium sp. ICM58	Actinobacteria	Coriobacteriia	Coriobacteriales	Atopobiaceae	Atopobium				
+4825	-24.472683	3.196190	3661	43.29	9.938	3	0	100.00	Clostridiales	Firmicutes	Clostridia	Clostridiales				RF0024		
+4836	2.893744	-27.283418	3656	57.00	21.070	2	0	1.84	Faecalibacterium prausnitzii									
+4866	-8.535244	-37.066733	3632	58.04	32.624	3	0	100.00	Escherichia coli	Proteobacteria	Gammaproteobacteria	Enterobacteriales	Enterobacteriaceae	Escherichia				
+4869	-7.193597	-36.740969	3631	54.39	19.229	6	0	100.00	Escherichia coli	Proteobacteria	Gammaproteobacteria	Enterobacteriales	Enterobacteriaceae	Escherichia				
+4871	11.484284	34.263270	3630	29.59	12.081	3	0	2.61	Clostridium dakarense									
+4899	-4.215963	24.785961	3605	28.99	16.864	4	0	100.00	[Eubacterium] hallii	Firmicutes	Clostridia	Clostridiales	Eubacteriaceae	Eubacterium				
+4941	7.073760	-7.954028	3573	43.66	10.559	3	0	100.00	Prevotella sp. CAG:891	Bacteroidetes	Bacteroidia	Bacteroidales	Prevotellaceae	Prevotella				
+4945	-22.882189	-2.288372	3572	43.76	13.232	5	0	84.91	Clostridiales	Firmicutes	Clostridia	Clostridiales						
+4950	11.340018	36.116363	3570	27.93	15.414	2	0	0										
+4974	8.965658	37.140543	3554	27.01	11.059	3	0	1.06	Terrisporobacter othiniensis									
+4978	6.749938	30.580750	3551	29.65	24.194	3	0	0										
+4984	-21.241932	30.452624	3545	36.78	13.192	3	0	77.84	Firmicutes bacterium CAG:41	Firmicutes								
+4992	-25.290562	0.273213	3538	39.91	11.763	4	0	100.00	Clostridiales	Firmicutes	Clostridia	Clostridiales						
+4997	-9.272427	21.823382	3536	35.89	61.071	4	0	99.74	Eubacterium	Firmicutes	Clostridia	Clostridiales	Eubacteriaceae	Eubacterium				
+5001	-2.625791	33.265657	3534	28.21	17.258	2	0	100.00	bacterium LF-3									
+5023	13.101915	-27.234139	3520	54.74	15.332	4	0	97.33	Rothia mucilaginosa	Actinobacteria	Actinobacteria	Micrococcales	Micrococcaceae	Rothia				
+5035	-3.653867	32.364555	3510	30.40	19.829	2	0	99.58	bacterium LF-3									
+5054	33.952504	-24.530161	3496	65.62	17.311	3	0	76.60	Adlercreutzia equolifaciens	Actinobacteria	Coriobacteriia	Eggerthellales	Eggerthellaceae	Adlercreutzia				
+5061	10.981111	36.582725	3490	26.39	11.260	3	0	17.92	Clostridium									
+5062	-24.914616	3.980899	3490	40.83	137.744	3	0	92.50	Clostridiales	Firmicutes	Clostridia	Clostridiales						
+5068	-23.595958	-9.199429	3486	42.91	202.760	3	0	100.00	Clostridiales	Firmicutes	Clostridia	Clostridiales						
+5111	-21.859920	31.831489	3452	41.31	17.521	4	0	3.34	Firmicutes bacterium CAG:41									
+5118	19.680924	13.823961	5579	39.95	8.811	7	0	100.00	Streptococcus salivarius	Firmicutes	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus				
+5134	-23.781880	6.078528	3439	39.72	17.580	3	0	100.00	Dorea formicigenerans	Firmicutes	Clostridia	Clostridiales	Lachnospiraceae	Dorea				
+5136	-16.006657	16.984033	3437	36.19	9.184	4	0	100.00	Clostridiales	Firmicutes	Clostridia	Clostridiales						
+5146	26.035645	7.633259	3433	40.29	17.947	5	0	100.00	Streptococcus parasanguinis	Firmicutes	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus				
+5158	-13.098604	-25.264368	3424	51.55	7.794	1	0	95.29	Blautia sp. CAG:37	Firmicutes	Clostridia	Clostridiales	Lachnospiraceae	Blautia				
+5176	-22.473424	6.919350	3413	38.50	13.728	2	0	100.00	Dorea	Firmicutes	Clostridia	Clostridiales	Lachnospiraceae	Dorea				
+5192	-29.072933	-3.653960	3402	42.62	10.490	2	0	100.00	Clostridiales	Firmicutes	Clostridia	Clostridiales						
+5194	36.045787	1.037778	3401	47.54	25.898	5	0	100.00	Streptococcus parasanguinis	Firmicutes	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus				
+5200	-25.066145	1.195950	3397	42.57	13.493	4	0	97.59	Blautia obeum	Firmicutes	Clostridia	Clostridiales	Lachnospiraceae	Blautia				
+5229	12.263209	32.829497	3376	31.25	16.140	4	0	0.53	Terrisporobacter othiniensis									
+5252	8.736198	32.444583	3359	29.21	17.050	2	0	2.66	Peptostreptococcaceae									
+5286	8.959627	36.539819	3337	27.36	11.816	3	0	0										
+5302	6.899353	-9.778995	3327	46.05	7.416	1	0	100.00	Prevotella sp. CAG:891	Bacteroidetes	Bacteroidia	Bacteroidales	Prevotellaceae	Prevotella				
+5317	-22.934385	28.327575	8399	37.28	10.860	9	0	74.21	Firmicutes bacterium CAG:41									
+5325	28.756617	9.426216	3307	43.03	19.842	2	0	100.00	Streptococcus	Firmicutes	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus			21690	
+5350	-25.184114	-1.421355	3288	41.36	9.369	2	0	100.00	Clostridiales	Firmicutes	Clostridia	Clostridiales						
+5366	15.444025	-27.307200	3279	57.06	10.117	4	0	0										
+5381	29.839333	6.174583	3268	42.78	19.728	4	0	100.00	Streptococcus parasanguinis	Firmicutes	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus				
+5407	-25.737325	12.927179	3250	36.43	124.902	4	0	99.61	Ruminococcus sp. 5_1_39BFAA	Firmicutes	Clostridia	Clostridiales	Ruminococcaceae	Ruminococcus				
+5413	27.186975	6.552026	3247	42.72	16.773	4	0	97.16	Streptococcus parasanguinis	Firmicutes	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus				
+5420	-14.106963	17.235246	4799	38.88	10.408	5	0	100.00	Clostridiales	Firmicutes	Clostridia	Clostridiales						
+5449	7.852944	35.613832	3230	27.00	11.286	3	0	14.00	Terrisporobacter									
+5465	-15.777449	-6.671130	3223	44.59	297.793	4	0	99.98	Clostridiales	Firmicutes	Clostridia	Clostridiales						
+5514	13.977969	26.161393	3190	35.99	13.471	7	0	0										
+5547	19.397258	9.335371	3176	41.69	14.144	3	0	100.00	Streptococcus salivarius	Firmicutes	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus				
+5552	-5.678792	-36.621244	3171	52.51	23.251	2	0	100.00	Escherichia coli	Proteobacteria	Gammaproteobacteria	Enterobacteriales	Enterobacteriaceae	Escherichia				
+5579	-16.952494	14.753741	3158	34.80	11.260	2	0	95.64	Lachnospiraceae	Firmicutes	Clostridia	Clostridiales	Lachnospiraceae					
+5605	7.014855	-6.934106	4618	41.79	15.243	6	0	98.19	Prevotella sp. CAG:891	Bacteroidetes	Bacteroidia	Bacteroidales	Prevotellaceae	Prevotella				
+5628	-21.980100	11.791298	3135	37.51	126.002	4	0	100.00	Ruminococcus	Firmicutes	Clostridia	Clostridiales	Ruminococcaceae	Ruminococcus				
+5664	-31.232589	-10.672949	3119	44.53	9.204	4	0	87.80	Blautia obeum	Firmicutes	Clostridia	Clostridiales						
+5689	15.706721	17.221392	3107	33.60	10.403	1	0	100.00	Streptococcus	Firmicutes	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus				
+5699	2.345902	11.717245	3103	39.64	57.222	6	0	100.00	Firmicutes	Firmicutes							133223	
+5700	-23.939045	13.155406	3103	40.93	19.995	3	0	85.78	Clostridiales	Firmicutes	Clostridia	Clostridiales						
+5748	-1.710206	31.133992	3079	28.00	9.693	5	0	100.00	Streptococcus	Firmicutes	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus				
+5777	19.578191	-32.239771	3065	62.77	8.164	2	0	97.85	Rothia mucilaginosa	Actinobacteria	Actinobacteria	Micrococcales	Micrococcaceae	Rothia				
+5791	17.758463	-29.397512	3057	60.09	6.362	2	0	100.00	Rothia mucilaginosa	Actinobacteria	Actinobacteria	Micrococcales	Micrococcaceae	Rothia				
+5805	-4.116023	23.233370	3053	35.08	9.500	3	0	0.99	Firmicutes bacterium CAG:194									
+5840	20.951888	11.850898	3027	41.53	11.634	2	0	100.00	Streptococcus	Firmicutes	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus				
+5859	2.675794	-18.708963	3018	48.77	17.475	3	0	99.18	Clostridiales	Firmicutes	Clostridia	Clostridiales						
+5887	-22.505996	-11.724270	3004	45.77	185.067	1	0	99.74	Clostridiales	Firmicutes	Clostridia	Clostridiales					146308	
+5895	-6.931315	16.870077	3001	37.82	11.098	2	0	0										
+5900	27.770145	7.445296	2997	41.41	19.278	5	0	100.00	Streptococcus parasanguinis	Firmicutes	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus				
+5925	-20.427515	5.027746	2986	38.78	9.542	3	0	0.98	Ruminococcus obeum CAG:39									
+5967	-23.027082	-8.894759	2961	45.73	6.635	3	0	13.67	Ruminococcus									
+5972	-19.014940	28.244890	2958	35.02	12.077	2	0	85.60	Firmicutes bacterium CAG:41	Firmicutes								
+5979	23.045090	15.364997	2954	40.66	16.003	2	0	100.00	Streptococcus	Firmicutes	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus				
+6007	-19.257568	6.234192	2941	40.67	104.421	3	0	99.77	Clostridiales	Firmicutes	Clostridia	Clostridiales						
+6011	-19.951427	5.656809	2940	41.50	11.683	2	0	66.80	Blautia obeum									
+6037	-1.624990	33.284057	2930	25.67	10.467	3	0	100.00	bacterium LF-3									
+6046	-7.302371	20.602344	2927	37.41	20.640	4	0	100.00	Eubacterium hallii CAG:12	Firmicutes	Clostridia	Clostridiales	Eubacteriaceae	Eubacterium				
+6051	17.852662	-20.286736	2926	54.20	6.798	4	0	97.16	Actinomyces sp. S6-Spd3	Actinobacteria	Actinobacteria	Actinomycetales	Actinomycetaceae	Actinomyces				
+6095	-13.174791	6.069440	2904	42.39	11.241	3	0	0										
+6146	14.747398	-30.287270	2872	58.84	11.194	2	0	100.00	Rothia mucilaginosa	Actinobacteria	Actinobacteria	Micrococcales	Micrococcaceae	Rothia				
+6156	-25.111821	-0.164611	2869	41.83	12.837	3	0	100.00	Ruminococcus obeum CAG:39	Firmicutes	Clostridia	Clostridiales	Ruminococcaceae	Ruminococcus				
+6175	-22.401675	29.233858	2861	38.52	10.684	1	0	100.00	Firmicutes bacterium CAG:41	Firmicutes								
+6185	-5.579689	22.989437	2858	34.57	30.716	2	0	79.42	[Eubacterium] hallii	Firmicutes	Clostridia	Clostridiales	Eubacteriaceae	Eubacterium				
+6206	-14.694697	13.931503	2850	36.98	9.798	2	0	90.31	Firmicutes	Firmicutes								
+6212	-1.720553	31.655945	2847	27.92	14.196	2	0	100.00	bacterium LF-3							RF0142		
+6229	17.074150	-30.659289	2839	60.48	15.549	4	0	97.79	Rothia mucilaginosa	Actinobacteria	Actinobacteria	Micrococcales	Micrococcaceae	Rothia				
+6281	13.837932	-12.371427	2816	51.67	11.318	3	0	97.49	Veillonella	Firmicutes	Negativicutes	Selenomonadales	Veillonellaceae	Veillonella				
+6295	-27.648582	-1.438919	2808	42.45	11.826	1	0	100.00	Clostridiales	Firmicutes	Clostridia	Clostridiales						
+6316	-4.847099	11.508308	2800	36.32	32.976	6	0	100.00	Blautia	Firmicutes	Clostridia	Clostridiales	Lachnospiraceae	Blautia				
+6318	-15.404204	16.649140	2798	35.99	11.333	3	0	100.00	Clostridiales	Firmicutes	Clostridia	Clostridiales						
+6323	8.106295	33.599589	2795	28.44	9.786	1	0	24.15	Clostridiales									
+6329	13.742816	-14.295518	2793	53.99	37.699	2	1	99.87	Actinomyces	Actinobacteria	Actinobacteria	Actinomycetales	Actinomycetaceae	Actinomyces				
+6345	-6.575497	2.885032	2787	39.54	14.072	3	0	66.78	Escherichia coli									YP_007112561
+6354	13.089965	-26.303171	2783	55.44	9.983	2	0	100.00	Rothia mucilaginosa	Actinobacteria	Actinobacteria	Micrococcales	Micrococcaceae	Rothia				
+6373	6.779020	36.429472	2773	24.20	9.247	3	0	0										
+6409	16.837631	-15.414947	3247	53.50	12.622	3	0	0										
+6422	-14.617437	15.694335	2756	36.61	11.789	3	0	100.00	Lachnospiraceae	Firmicutes	Clostridia	Clostridiales	Lachnospiraceae					
+6430	-21.500141	28.995674	2753	40.76	14.547	1	0	100.00	Firmicutes bacterium CAG:41	Firmicutes								
+6452	17.675529	-28.925416	2746	59.69	10.597	3	0	48.04	Rothia mucilaginosa									
+6459	-6.777079	3.217684	2741	40.06	13.946	4	0	80.51	Clostridiales	Firmicutes	Clostridia	Clostridiales						
+6472	1.163233	13.146649	2737	36.24	120.935	3	0	98.32	Clostridiales	Firmicutes	Clostridia	Clostridiales						
+6477	25.229263	-6.180342	2736	48.28	10.387	1	0	0										
+6486	3.631210	18.250805	2731	33.54	8.038	2	0	100.00	Streptococcus	Firmicutes	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus				
+6501	26.539310	9.705063	2724	41.15	14.604	2	0	100.00	Streptococcus parasanguinis	Firmicutes	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus			139411	
+6588	-22.812069	1.060876	2691	42.18	109.271	3	0	99.61	Ruminococcus	Firmicutes	Clostridia	Clostridiales	Ruminococcaceae	Ruminococcus				
+6605	-1.738243	22.146913	2681	30.96	13.728	3	0	100.00	Clostridiales	Firmicutes	Clostridia	Clostridiales				RF0142		
+6620	12.006047	33.359082	2674	30.14	15.654	1	0	39.59	Terrisporobacter glycolicus									
+6630	-6.310546	-38.493275	2668	54.27	27.716	2	0	100.00	Escherichia coli	Proteobacteria	Gammaproteobacteria	Enterobacteriales	Enterobacteriaceae	Escherichia				
+6654	-13.530075	12.813480	2659	39.56	10.702	4	0	100.00	Clostridiales	Firmicutes	Clostridia	Clostridiales						
+6666	-23.409651	28.588692	3907	36.81	8.709	2	0	100.00	Firmicutes bacterium CAG:41	Firmicutes								
+6685	-29.692327	-11.510737	3515	45.15	8.713	6	0	0										
+6706	-22.798707	13.271538	2636	36.95	20.769	4	0	100.00	Clostridiales	Firmicutes	Clostridia	Clostridiales						
+6709	8.030882	35.457833	2635	26.76	8.648	3	0	6.41	[Clostridium] sordellii									
+6710	33.371282	3.757401	2635	45.81	11.401	2	0	99.04	Streptococcus	Firmicutes	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus				
+6741	-18.723252	-1.276593	2622	42.26	7.659	5	0	4.08	Clostridiales									
+6788	-22.165039	29.073906	2606	38.33	12.010	1	0	92.45	Firmicutes bacterium CAG:41	Firmicutes								
+6807	-9.961764	1.606456	2600	41.12	107.336	2	0	38.00	Clostridiales									
+6837	7.005404	-8.903623	2589	42.41	6.598	2	0	100.00	Prevotella sp. CAG:891	Bacteroidetes	Bacteroidia	Bacteroidales	Prevotellaceae	Prevotella				
+6849	-21.410153	32.086820	2584	40.63	12.806	4	0	100.00	Firmicutes bacterium CAG:41	Firmicutes								
+6885	11.382561	26.608982	2568	31.70	8.590	3	0	100.00	Clostridium sp. CAG:221	Firmicutes	Clostridia	Clostridiales	Clostridiaceae	Clostridium				
+6941	25.327223	-6.793009	2549	49.94	13.464	3	0	0										
+6953	6.509842	-6.205696	3845	42.05	63.558	4	0	66.28	Bacteroides pyogenes									
+6966	-14.799104	14.336017	2540	39.17	12.121	2	0	100.00	Lachnospiraceae	Firmicutes	Clostridia	Clostridiales	Lachnospiraceae					
+6995	-22.956018	5.754182	2530	41.54	14.411	3	0	100.00	Dorea formicigenerans	Firmicutes	Clostridia	Clostridiales	Lachnospiraceae	Dorea				
+7062	32.094835	3.707209	2505	44.87	10.564	2	0	60.64	Streptococcus									
+7071	35.240007	1.902417	2502	47.40	24.964	3	0	100.00	Streptococcus parasanguinis	Firmicutes	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus		RF0038		
+7082	19.150383	15.732007	2498	36.19	19.822	5	0	100.00	Streptococcus	Firmicutes	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus				
+7088	26.274240	6.734817	2497	40.57	9.857	1	0	100.00	Streptococcus parasanguinis	Firmicutes	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus				
+7105	28.856183	4.523107	2491	44.40	19.022	1	0	100.00	Streptococcus parasanguinis	Firmicutes	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus				
+7142	-28.666327	-8.505474	2477	44.29	7.827	2	0	23.91	Clostridiales									
+7161	11.854659	1.765756	2474	44.99	10.699	1	0	0										
+7189	-10.836500	2.234208	2612	39.89	99.118	2	0	100.00	Ruminococcus sp. CAG:9	Firmicutes	Clostridia	Clostridiales	Ruminococcaceae	Ruminococcus				
+7226	25.151762	14.834739	2453	41.91	11.815	1	0	99.04	Streptococcus	Firmicutes	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus	VFG006717			
+7230	26.449789	6.740436	2450	40.41	17.543	3	0	100.00	Streptococcus parasanguinis	Firmicutes	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus				
+7271	-14.484161	5.117942	2434	39.89	120.268	1	0	98.45	Clostridiales	Firmicutes	Clostridia	Clostridiales						
+7293	15.364348	14.474316	2427	35.93	9.787	3	0	100.00	Streptococcus	Firmicutes	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus				
+7303	27.227554	10.261110	2423	42.34	21.910	2	0	100.00	Streptococcus parasanguinis	Firmicutes	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus				
+7324	-24.463022	-12.811466	2417	44.27	12.089	4	0	0.97	Blautia sp. CAG:37									
+7335	10.722566	1.306628	2415	43.27	7.810	3	0	5.34	Mogibacterium						VFG000037			
+7353	-3.466392	21.787180	2411	30.19	26.437	3	0	100.00	Blautia wexlerae	Firmicutes	Clostridia	Clostridiales	Lachnospiraceae	Blautia				
+7367	-5.401830	-35.459092	2404	53.70	40.113	2	0	100.00	Escherichia coli	Proteobacteria	Gammaproteobacteria	Enterobacteriales	Enterobacteriaceae	Escherichia				
+7369	-18.776000	6.041861	2402	39.59	45.190	2	0	98.40	Ruminococcus	Firmicutes	Clostridia	Clostridiales	Ruminococcaceae	Ruminococcus				
+7426	-17.853016	3.423638	2387	41.43	333.498	2	0	100.00	Clostridiales	Firmicutes	Clostridia	Clostridiales						
+7436	31.945020	2.971015	2385	46.62	31.303	1	0	100.00	Streptococcus parasanguinis	Firmicutes	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus				
+7468	6.736969	32.102875	2374	29.36	13.076	2	0	4.67	Clostridium botulinum									
+7494	-5.807276	-28.046789	2368	51.01	42.269	2	0	100.00	Escherichia coli	Proteobacteria	Gammaproteobacteria	Enterobacteriales	Enterobacteriaceae	Escherichia				YP_002274238
+7495	27.952942	4.890460	2368	43.50	15.927	3	0	100.00	Streptococcus parasanguinis	Firmicutes	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus				
+7509	-4.669286	-37.132704	2363	53.96	21.654	3	0	100.00	Escherichia coli	Proteobacteria	Gammaproteobacteria	Enterobacteriales	Enterobacteriaceae	Escherichia				
+7510	18.151746	13.399983	3585	38.98	6.946	4	0	100.00	Streptococcus	Firmicutes	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus				
+7512	-15.126112	15.654494	3300	35.70	9.673	3	0	100.00	Clostridiales	Firmicutes	Clostridia	Clostridiales						
+7557	5.706460	31.909210	2350	26.09	6.131	3	0	0										
+7690	-7.835605	-6.922554	2305	42.86	6.586	1	0	27.35	Blautia sp. CAG:52									
+7710	18.034186	-6.800041	2298	43.08	8.642	3	0	0										
+7713	-24.463837	-8.328374	2297	40.31	187.438	3	0	99.66	Ruminococcus	Firmicutes	Clostridia	Clostridiales	Ruminococcaceae	Ruminococcus				
+7721	2.235109	11.353936	2295	42.22	20.140	2	0	100.00	Lachnospiraceae	Firmicutes	Clostridia	Clostridiales	Lachnospiraceae					
+7723	-15.427248	-0.661078	3241	42.02	13.857	8	0	23.66	Bacteroides									
+7724	-3.174371	15.120510	2295	35.99	9.421	5	0	84.62	Clostridiales	Firmicutes								
+7746	25.504907	7.479402	2288	39.82	17.918	2	0	99.32	Streptococcus parasanguinis	Firmicutes	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus				
+7769	5.662542	33.031271	2283	24.84	9.047	2	0	0										
+7786	9.283060	2.981985	2276	40.33	12.680	4	0	0										
+7788	22.666173	14.906726	2275	39.16	9.107	1	0	100.00	Streptococcus	Firmicutes	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus			134296	YP_001504318
+7798	25.820542	6.556026	2273	42.15	6.720	1	0	80.77	Streptococcus	Firmicutes	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus				
+7802	-6.294229	-7.173206	2271	41.96	407.563	2	0	99.75	Clostridiales	Firmicutes	Clostridia	Clostridiales						
+7820	28.005733	7.757418	2265	42.08	20.370	3	0	99.42	Streptococcus	Firmicutes	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus			126324	YP_007348470
+7823	27.789142	6.537635	2265	42.91	27.752	2	0	100.00	Streptococcus parasanguinis	Firmicutes	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus				
+7830	-13.990227	1.828773	2264	41.61	103.715	1	0	100.00	Ruminococcus	Firmicutes	Clostridia	Clostridiales	Ruminococcaceae	Ruminococcus				
+7839	17.230921	-3.393303	2262	41.34	11.454	2	0	3.28	Candidatus Saccharibacteria oral taxon TM7x									
+7846	-10.692032	20.974605	2259	35.99	6.452	1	0	100.00	Clostridium sp. CAG:221	Firmicutes	Clostridia	Clostridiales	Clostridiaceae	Clostridium				
+7894	-28.487357	-11.843589	2243	45.12	13.029	3	0	100.00	Clostridiales	Firmicutes	Clostridia	Clostridiales						
+7904	14.558961	-29.647709	2237	60.62	6.714	4	0	100.00	Rothia mucilaginosa	Actinobacteria	Actinobacteria	Micrococcales	Micrococcaceae	Rothia				
+7928	-30.437460	-15.819062	2231	46.57	9.489	1	0	0										
+7961	2.151388	-3.913567	2223	43.41	21.601	1	0	100.00	Escherichia coli	Proteobacteria	Gammaproteobacteria	Enterobacteriales	Enterobacteriaceae	Escherichia			123309	
+7990	7.897687	34.034871	2216	26.90	8.662	2	0	52.86	Peptostreptococcaceae									
+8006	-24.177473	-2.523735	2209	42.28	8.530	2	0	9.56	Blautia obeum									
+8026	-26.625087	-12.929043	2205	45.17	9.349	2	0	14.97	Dorea									
+8029	-21.657799	32.198032	2205	38.64	11.397	4	0	100.00	Firmicutes bacterium CAG:41	Firmicutes								
+8071	-13.638421	-20.281217	2194	48.45	9.320	2	0	100.00	Ruminococcus obeum CAG:39	Firmicutes	Clostridia	Clostridiales	Ruminococcaceae	Ruminococcus				
+8087	-20.270725	32.798281	2189	40.75	11.402	1	0	98.26	Firmicutes bacterium CAG:41	Firmicutes								
+8088	-3.144816	35.641692	5409	26.70	12.769	9	0	98.45	bacterium LF-3									
+8115	-13.329461	-5.638489	2184	42.54	83.310	1	0	98.50	Clostridiales	Firmicutes	Clostridia	Clostridiales						
+8126	18.808376	-21.587456	2800	57.27	9.805	2	0	89.55	Actinomyces sp. S6-Spd3	Actinobacteria	Actinobacteria	Actinomycetales	Actinomycetaceae	Actinomyces				
+8187	-11.049675	-4.382379	2163	42.16	8.963	2	0	42.14	Clostridiales									
+8206	32.006313	1.406366	2159	46.23	9.203	1	0	100.00	Streptococcus australis	Firmicutes	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus				
+8221	-18.363512	28.061898	3562	31.98	7.963	3	0	0										
+8244	-13.049618	12.612202	2149	39.46	11.225	1	0	100.00	Clostridiales	Firmicutes	Clostridia	Clostridiales						
+8261	34.006485	4.929827	2144	44.64	10.246	1	0	100.00	Streptococcus australis	Firmicutes	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus				
+8269	4.294427	34.272739	2141	21.58	7.280	1	0	0										
+8323	-3.149258	-29.742714	2130	46.57	16.492	4	0	100.00	Escherichia coli	Proteobacteria	Gammaproteobacteria	Enterobacteriales	Enterobacteriaceae	Escherichia				
+8408	13.799982	19.049354	2105	35.06	6.778	1	0	100.00	Streptococcus parasanguinis	Firmicutes	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus				
+8409	31.494223	6.521349	2105	42.85	7.304	2	0	98.11	Streptococcus australis	Firmicutes	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus				
+8412	-5.396560	-27.395308	2104	50.00	13.738	5	0	100.00	Escherichia coli	Proteobacteria	Gammaproteobacteria	Enterobacteriales	Enterobacteriaceae	Escherichia			121432,158907	
+8421	-14.691974	17.847445	3071	37.22	10.751	3	0	100.00	Clostridiales	Firmicutes	Clostridia	Clostridiales					139293	
+8449	-11.874824	-22.903304	2097	51.07	9.509	3	0	100.00	Clostridiales	Firmicutes	Clostridia	Clostridiales						
+8450	-29.831416	-8.578494	2096	44.18	9.795	2	0	70.32	Clostridiales									
+8456	-11.143460	13.213946	2095	37.14	10.208	4	0	91.19	Clostridiales	Firmicutes	Clostridia	Clostridiales						
+8470	-18.059537	1.882334	2092	39.96	69.633	2	0	99.51	Ruminococcus sp. 5_1_39BFAA	Firmicutes	Clostridia	Clostridiales	Ruminococcaceae	Ruminococcus				
+8503	-25.105842	2.285698	2084	41.41	19.663	2	0	99.32	Clostridiales	Firmicutes	Clostridia	Clostridiales						
+8536	3.258927	-16.847185	2076	52.41	121.361	3	0	100.00	Clostridiales	Firmicutes	Clostridia	Clostridiales						
+8546	11.908174	29.835400	2074	30.62	6.021	4	0	100.00	Clostridium sp. CAG:221	Firmicutes	Clostridia	Clostridiales	Clostridiaceae	Clostridium				
+8558	-1.879382	30.777324	2072	27.17	11.543	2	0	0										
+8602	15.796052	16.058033	2754	34.46	8.713	5	0	100.00	Streptococcus	Firmicutes	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus				
+8611	6.222072	33.025767	2060	26.31	9.626	3	0	0										
+8615	-23.259106	-0.112081	2059	41.43	9.209	1	0	9.92	Blautia obeum									
+8636	-24.775275	-13.562619	2054	44.64	7.883	2	0	0										
+8645	25.073943	13.565229	2052	39.81	11.488	2	0	49.43	Streptococcus									
+8655	8.533260	14.250642	2050	35.76	10.158	0	0	0										
+8684	8.608661	30.315985	2042	31.24	9.530	1	0	37.41	Peptostreptococcaceae									
+8710	-6.466396	12.430276	2035	36.36	19.430	2	0	93.77	Dorea longicatena	Firmicutes	Clostridia	Clostridiales	Lachnospiraceae	Dorea				
+8726	-2.944288	8.625763	2033	37.78	10.248	2	0	99.32	Dorea	Firmicutes	Clostridia	Clostridiales	Lachnospiraceae	Dorea				
+8728	-23.833465	-0.093889	2032	41.78	9.444	2	0	1.47	Blautia sp. CAG:237									
+8741	17.869516	-30.540811	2030	59.56	8.266	1	0	100.00	Rothia mucilaginosa	Actinobacteria	Actinobacteria	Micrococcales	Micrococcaceae	Rothia				
+8773	6.399623	30.369896	2023	28.92	20.749	2	0	100.00	Clostridium	Firmicutes	Clostridia	Clostridiales	Clostridiaceae	Clostridium				NP_757024
+8808	-10.062629	-1.813366	2015	40.10	9.600	1	0	94.33	Clostridiales	Firmicutes	Clostridia	Clostridiales						
+8809	19.981095	12.672434	2015	39.85	10.775	2	0	100.00	Streptococcus salivarius	Firmicutes	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus				
+8810	-14.288197	13.686905	2987	38.97	9.035	4	0	98.95	Clostridiales	Firmicutes	Clostridia	Clostridiales						
+8812	-16.469501	-0.378720	2014	40.42	7.892	2	0	100.00	Clostridiales	Firmicutes	Clostridia	Clostridiales						NP_312084
+8815	5.183305	29.933969	2013	28.22	14.916	1	0	28.10	Terrisporobacter									
+8826	-18.946228	-3.005518	2010	41.89	121.817	2	0	99.76	Ruminococcus	Firmicutes	Clostridia	Clostridiales	Ruminococcaceae	Ruminococcus				
+8832	15.095477	11.649692	2010	37.21	6.255	3	0	100.00	Streptococcus australis	Firmicutes	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus				
+8841	16.197710	-20.424184	2008	52.99	5.120	3	0	37.50	Actinomyces sp. oral taxon 172									
+8870	-21.203733	-6.246643	2002	43.56	175.453	4	0	100.00	Clostridiales	Firmicutes	Clostridia	Clostridiales						
+8871	5.700926	32.661312	2002	25.47	11.859	3	0	0										
+8872	-8.457935	2.338862	2002	39.81	12.148	3	0	99.40	Clostridiales	Firmicutes	Clostridia	Clostridiales						
+8879	9.314660	25.991391	2001	29.64	22.565	2	0	92.45	Clostridium	Firmicutes	Clostridia	Clostridiales	Clostridiaceae	Clostridium				
+8908	17.472437	-33.398364	1993	65.33	8.498	1	0	95.20	Rothia mucilaginosa	Actinobacteria	Actinobacteria	Micrococcales	Micrococcaceae	Rothia				
+8913	-5.903721	-37.748857	1991	56.00	25.822	2	0	100.00	Escherichia coli	Proteobacteria	Gammaproteobacteria	Enterobacteriales	Enterobacteriaceae	Escherichia				
+8939	-15.701917	-6.663014	1985	43.93	135.245	2	0	100.00	Clostridiales	Firmicutes	Clostridia	Clostridiales						
+9012	-14.403968	15.630346	1974	37.23	11.701	2	0	0.62	Lachnospiraceae bacterium 5_1_63FAA									
+9033	-2.258913	17.874649	1971	38.91	61.912	1	0	95.89	Firmicutes	Firmicutes								
+9087	-11.318574	12.657839	1958	38.87	7.819	0	0	100.00	Anaerostipes hadrus	Firmicutes	Clostridia	Clostridiales	Lachnospiraceae	Anaerostipes				
+9142	-17.632835	-5.745963	1948	43.22	8.246	2	0	0										
+9145	19.039978	-6.168997	1948	45.59	7.488	2	0	15.24	Candidatus Saccharibacteria oral taxon TM7x									
+9149	31.894254	-23.167929	1947	67.33	10.447	2	0	93.88	Adlercreutzia equolifaciens	Actinobacteria	Coriobacteriia	Eggerthellales	Eggerthellaceae	Adlercreutzia				
+9172	-21.080695	-4.071970	1942	43.25	178.195	2	0	100.00	Ruminococcus sp. 5_1_39BFAA	Firmicutes	Clostridia	Clostridiales	Ruminococcaceae	Ruminococcus				
+9203	11.452103	26.323982	1936	31.66	7.827	1	0	84.48	Clostridium sp. JCC	Firmicutes	Clostridia	Clostridiales	Clostridiaceae	Clostridium				
+9260	-15.159185	-22.270911	1925	48.16	6.732	3	0	86.81	Blautia sp. CAG:37	Firmicutes	Clostridia	Clostridiales	Lachnospiraceae	Blautia				
+9272	-25.707850	-14.324160	1923	44.98	9.556	2	0	2.34	Clostridiales									
+9287	-19.919319	4.864842	1920	40.21	12.012	3	0	98.90	Dorea formicigenerans	Firmicutes	Clostridia	Clostridiales	Lachnospiraceae	Dorea				
+9325	-5.130592	-35.049537	1913	51.39	6.629	1	0	100.00	Escherichia coli	Proteobacteria	Gammaproteobacteria	Enterobacteriales	Enterobacteriaceae	Escherichia	VFG001448			
+9328	18.652638	-30.008941	1912	60.72	9.858	1	0	100.00	Rothia mucilaginosa	Actinobacteria	Actinobacteria	Micrococcales	Micrococcaceae	Rothia				
+9341	-7.677657	-8.943621	2572	43.20	10.398	3	0	8.37	Blautia sp. CAG:237									
+9357	-25.494390	-8.630256	1906	44.91	12.971	2	0	27.17	Blautia									
+9368	-8.411743	-26.405110	1903	57.59	26.378	3	0	100.00	Escherichia coli	Proteobacteria	Gammaproteobacteria	Enterobacteriales	Enterobacteriaceae	Escherichia				NP_310976,YP_007112555,YP_007112556
+9403	-17.071122	-1.490436	1897	42.70	7.791	1	0	98.21	Clostridiales	Firmicutes	Clostridia	Clostridiales						
+9437	10.153035	3.584563	1891	39.50	6.687	2	0	0										
+9440	-30.259300	-15.426831	1890	45.82	11.867	1	0	0										
+9455	8.339396	28.947030	1887	28.67	5.648	1	0	100.00	Clostridium sp. JCC	Firmicutes	Clostridia	Clostridiales	Clostridiaceae	Clostridium				
+9484	-22.004009	4.567180	1881	40.46	9.417	1	0	100.00	Dorea	Firmicutes	Clostridia	Clostridiales	Lachnospiraceae	Dorea				
+9485	35.326522	1.763528	1881	49.44	7.817	3	0	100.00	Streptococcus australis	Firmicutes	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus				
+9491	28.829667	3.461656	1879	43.32	20.986	1	0	100.00	Streptococcus	Firmicutes	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus				
+9492	32.471759	4.192887	1879	45.88	18.873	2	0	100.00	Streptococcus parasanguinis	Firmicutes	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus				
+9515	16.421028	-25.483145	1875	58.72	9.704	3	0	100.00	Rothia mucilaginosa	Actinobacteria	Actinobacteria	Micrococcales	Micrococcaceae	Rothia				
+9539	17.442453	7.203568	1869	39.17	11.831	1	0	91.14	Streptococcus parasanguinis	Firmicutes	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus				
+9547	-16.340547	-7.299293	1867	44.13	169.798	2	0	100.00	Clostridiales	Firmicutes	Clostridia	Clostridiales						
+9562	-8.348510	-4.064667	1865	42.25	19.302	2	0	7.09	Blautia sp. CAG:237									
+9576	-11.650682	2.026639	1862	40.66	10.076	1	0	100.00	Clostridiales	Firmicutes	Clostridia	Clostridiales						
+9615	-22.238871	2.254743	1856	43.27	8.008	1	0	100.00	Dorea formicigenerans	Firmicutes	Clostridia	Clostridiales	Lachnospiraceae	Dorea				
+9654	7.341037	28.254268	1849	29.20	9.835	1	0	7.20	Peptostreptococcaceae bacterium VA2									
+9678	-21.381929	-10.904896	1844	45.55	7.209	3	0	22.34	Ruminococcus sp. CAG:17									
+9710	-13.693121	-25.731240	1837	55.96	6.965	2	0	75.56	Blautia sp. CAG:37	Firmicutes	Clostridia	Clostridiales	Lachnospiraceae	Blautia				
+9727	-17.888405	-5.020407	1833	43.81	6.941	1	0	0										
+9734	25.751449	-24.526125	1832	61.19	5.238	2	0	100.00	Eggerthella	Actinobacteria	Coriobacteriia	Eggerthellales	Eggerthellaceae	Eggerthella				
+9781	21.237143	10.890531	1825	41.32	8.694	1	0	100.00	Streptococcus salivarius	Firmicutes	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus				
+9783	11.213619	-4.126358	1825	46.52	5.127	1	0	46.75	Bifidobacterium adolescentis									
+9804	11.444173	22.954413	1821	36.57	10.220	1	0	82.31	Clostridium	Firmicutes	Clostridia	Clostridiales					13688	
+9834	-8.145145	-10.121288	1815	46.34	116.846	2	0	100.00	Clostridiales	Firmicutes	Clostridia	Clostridiales						
+9868	9.087481	4.818828	1808	39.77	7.415	1	0	0										
+9884	1.921274	-3.986644	1805	43.32	11.475	2	0	100.00	Escherichia coli	Proteobacteria	Gammaproteobacteria	Enterobacteriales	Enterobacteriaceae	Escherichia			16136	
+9940	-16.363639	-0.079291	1795	41.06	22.128	2	0	99.28	Clostridiales	Firmicutes	Clostridia	Clostridiales						
+9949	23.813322	13.338711	1794	43.14	14.831	1	0	100.00	Streptococcus salivarius	Firmicutes	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus				
+10046	-23.189204	-10.806454	1777	43.78	8.521	3	0	100.00	Clostridiales	Firmicutes	Clostridia	Clostridiales						
+10052	-5.274786	4.077604	1776	39.30	6.910	2	0	97.75	Eubacterium sp. CAG:146	Firmicutes	Clostridia	Clostridiales	Eubacteriaceae	Eubacterium				
+10066	-17.297461	-1.752023	1774	43.57	8.624	2	0	63.96	Blautia obeum									
+10091	-16.565556	-2.988077	1770	41.07	89.882	1	0	99.36	Clostridiales	Firmicutes	Clostridia	Clostridiales						
+10098	-13.754263	2.120740	1770	39.04	8.059	2	0	100.00	Clostridiales	Firmicutes	Clostridia	Clostridiales						
+10105	-20.600182	-12.306145	1769	43.30	7.522	1	0	0										
+10127	30.606006	6.425629	1766	43.60	17.683	1	0	99.53	Streptococcus parasanguinis	Firmicutes	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus				
+10146	-6.973695	7.930762	1764	37.98	16.154	2	0	32.18	Dorea									
+10147	-14.277193	2.811414	1763	40.78	178.566	3	0	96.23	Clostridiales	Firmicutes	Clostridia	Clostridiales						
+10238	7.457785	2.384927	1746	40.15	5.614	1	0	0										
+10256	-1.496765	29.890517	1743	27.60	8.978	1	0	67.92	bacterium LF-3									
+10269	13.912259	-16.853979	1742	49.20	8.043	2	0	0										
+10288	-22.075374	-14.235530	1738	45.91	12.907	2	0	97.50	Clostridiales	Firmicutes	Clostridia	Clostridiales						
+10290	2.192485	-7.328685	1738	43.44	24.663	1	0	100.00	Clostridiales	Firmicutes	Clostridia	Clostridiales						
+10314	-4.300642	-32.207537	1732	46.88	29.933	1	0	100.00	Escherichia coli	Proteobacteria	Gammaproteobacteria	Enterobacteriales	Enterobacteriaceae	Escherichia				
+10346	-12.787032	17.332424	1727	37.93	11.646	1	0	100.00	Clostridiales	Firmicutes	Clostridia	Clostridiales						
+10352	17.551471	9.355672	1726	39.22	10.192	1	0	100.00	Streptococcus	Firmicutes	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus				
+10389	10.438369	21.057642	1721	30.56	11.436	1	0	24.46	Terrisporobacter									
+10401	33.431192	4.241614	1717	44.44	6.954	1	0	84.88	Streptococcus	Firmicutes	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus				
+10410	30.103579	-19.541165	1716	66.90	15.811	1	0	14.08	Collinsella stercoris									
+10426	-20.484098	31.531886	1714	37.40	9.467	1	0	100.00	Firmicutes bacterium CAG:41	Firmicutes								
+10429	-12.055063	16.151488	1713	37.83	34.501	1	0	100.00	[Eubacterium] hallii	Firmicutes	Clostridia	Clostridiales	Eubacteriaceae	Eubacterium			139274	
+10434	-22.956611	-10.421305	1713	43.61	174.537	1	0	98.35	Clostridiales	Firmicutes	Clostridia	Clostridiales						
+10439	12.491553	-2.621864	1713	49.50	6.093	1	0	100.00	Actinomyces sp. oral taxon 172	Actinobacteria	Actinobacteria	Actinomycetales	Actinomycetaceae	Actinomyces				
+10447	-20.709561	7.171877	1711	41.20	11.955	2	0	18.31	Dorea									
+10458	-18.289783	-16.205359	1709	46.64	9.935	2	0	36.07	Clostridiales									
+10515	-4.951556	18.160454	1701	33.63	56.795	2	0	79.46	Clostridiales	Firmicutes	Clostridia	Clostridiales						
+10534	-2.650614	6.478216	1698	38.34	7.739	3	0	0										
+10537	-7.132207	-26.812271	1698	54.18	51.398	2	0	100.00	Escherichia coli	Proteobacteria	Gammaproteobacteria	Enterobacteriales	Enterobacteriaceae	Escherichia				YP_001272532
+10543	-27.267527	-8.248780	1697	42.19	13.738	2	0	98.82	Clostridiales	Firmicutes	Clostridia	Clostridiales						
+10548	-14.704169	-25.253595	1696	50.65	10.677	2	0	100.00	Blautia sp. CAG:37	Firmicutes	Clostridia	Clostridiales	Lachnospiraceae	Blautia				
+10611	-19.770901	4.241715	1687	38.35	9.066	2	0	100.00	Blautia obeum	Firmicutes	Clostridia	Clostridiales	Lachnospiraceae	Blautia				
+10652	-16.968514	28.333353	1680	33.10	7.556	1	0	64.95	Firmicutes bacterium CAG:41									
+10660	10.143294	2.091879	1679	41.27	8.088	1	0	0										
+10685	18.451004	-6.729483	1675	42.27	8.067	3	0	11.11	Bacteria									
+10706	4.491048	32.610097	1672	25.00	5.967	2	0	0										
+10712	0.196098	-16.047089	1671	45.72	23.328	1	0	100.00	Clostridiales	Firmicutes	Clostridia	Clostridiales						
+10727	9.688426	27.595075	1669	28.82	15.569	2	0	63.54	Clostridiales									
+10729	19.769495	-29.986657	1669	60.99	9.270	1	0	100.00	Rothia mucilaginosa	Actinobacteria	Actinobacteria	Micrococcales	Micrococcaceae	Rothia				
+10730	-0.887160	-2.589971	1669	43.68	11.674	1	0	42.75	Lachnospiraceae									
+10734	16.084406	-30.022658	1668	60.67	11.354	2	0	98.53	Rothia mucilaginosa	Actinobacteria	Actinobacteria	Micrococcales	Micrococcaceae	Rothia				
+10757	30.047913	11.260205	1665	46.37	7.972	1	0	100.00	Streptococcus australis	Firmicutes	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus	VFG001855			
+10768	5.263246	28.643164	1664	26.74	11.023	1	0	0										
+10776	-8.597344	13.425646	1663	35.96	9.381	2	0	100.00	Lachnospiraceae	Firmicutes	Clostridia	Clostridiales	Lachnospiraceae					
+10779	-4.435983	-26.616088	1663	48.65	17.016	3	0	100.00	Escherichia coli	Proteobacteria	Gammaproteobacteria	Enterobacteriales	Enterobacteriaceae	Escherichia				YP_002274237
+10803	-0.760480	29.414883	1659	26.52	12.729	1	0	86.67	bacterium LF-3									
+10825	14.372394	-30.828736	1656	60.81	7.996	1	0	100.00	Rothia mucilaginosa	Actinobacteria	Actinobacteria	Micrococcales	Micrococcaceae	Rothia				
+10861	20.582844	-19.749827	1650	57.33	9.342	2	0	100.00	Atopobium sp. ICM58	Actinobacteria	Coriobacteriia	Coriobacteriales	Atopobiaceae	Atopobium				
+10886	-3.205322	-5.082762	1647	45.54	150.422	2	0	99.14	Clostridiales	Firmicutes	Clostridia	Clostridiales						
+10887	-19.423532	-14.869271	1647	45.36	216.930	2	0	100.00	Blautia wexlerae	Firmicutes	Clostridia	Clostridiales	Lachnospiraceae	Blautia				
+10891	19.334345	-30.125167	1646	61.79	9.143	2	0	93.33	Rothia mucilaginosa	Actinobacteria	Actinobacteria	Micrococcales	Micrococcaceae	Rothia			151587	
+10902	-18.597476	29.591056	1645	33.98	5.769	2	0	94.12	Firmicutes bacterium CAG:41	Firmicutes								
+10923	11.543228	24.161073	1642	35.63	11.613	1	0	100.00	Clostridium sp. CAG:221	Firmicutes	Clostridia	Clostridiales	Clostridiaceae	Clostridium				
+10934	-3.570033	-0.978330	1641	40.71	153.093	3	0	99.77	Ruminococcus	Firmicutes	Clostridia	Clostridiales	Ruminococcaceae	Ruminococcus				
+10941	7.678215	-10.165249	1640	44.63	8.015	3	0	100.00	Prevotella sp. CAG:891	Bacteroidetes	Bacteroidia	Bacteroidales	Prevotellaceae	Prevotella				
+10949	11.097987	3.055414	1639	41.43	7.625	0	0	0										
+10969	-2.478709	-28.363300	2425	45.94	4.932	3	0	100.00	Escherichia coli	Proteobacteria	Gammaproteobacteria	Enterobacteriales	Enterobacteriaceae	Escherichia				
+10983	17.363537	7.606642	1633	37.97	9.889	2	0	100.00	Streptococcus	Firmicutes	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus				
+11001	-23.177261	-8.339438	1631	41.26	6.046	1	0	0										
+11020	-3.283344	14.867137	1628	35.38	7.893	1	0	42.20	Clostridiales									
+11090	-5.964459	8.554385	1618	39.74	7.510	2	0	11.24	Clostridium sp. JCC									
+11098	0.371291	3.775664	1617	38.90	27.755	2	0	98.38	[Eubacterium] hallii	Firmicutes	Clostridia	Clostridiales	Eubacteriaceae	Eubacterium				
+11168	-9.586379	-10.989643	1609	45.93	6.697	1	0	21.62	Blautia sp. CAG:237									
+11169	23.682352	-6.627771	2770	47.44	9.660	5	0	0										
+11196	2.005985	19.758107	1606	31.76	6.639	1	0	100.00	Clostridiales	Firmicutes	Clostridia	Clostridiales						
+11223	-8.855067	-11.371564	1602	44.76	6.509	1	0	0										
+11236	19.770291	8.059151	1601	41.16	11.561	2	0	100.00	Streptococcus	Firmicutes	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus				
+11240	-13.024703	10.499421	1601	41.54	14.262	1	0	100.00	Lachnospiraceae	Firmicutes	Clostridia	Clostridiales	Lachnospiraceae					
+11249	0.353733	-1.786021	1599	40.65	153.390	1	0	100.00	Bacteria									
+11250	9.889272	23.953661	1598	31.98	7.844	1	0	80.00	Firmicutes	Firmicutes								
+11277	23.071276	-6.973327	1594	50.13	7.793	2	0	0										
+11356	14.063584	-17.014836	1585	49.21	7.891	2	0	100.00	Atopobium	Actinobacteria	Coriobacteriia	Coriobacteriales	Atopobiaceae	Atopobium				
+11373	-5.633235	8.258972	1582	37.23	9.595	3	0	100.00	Dorea formicigenerans	Firmicutes	Clostridia	Clostridiales	Lachnospiraceae	Dorea				
+11391	-24.851839	-16.810245	1580	44.49	7.263	2	0	13.41	Blautia sp. CAG:237									
+11429	33.509065	-1.645293	1575	45.71	19.498	2	0	100.00	Streptococcus parasanguinis	Firmicutes	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus	VFG000959			
+11459	-7.607252	-14.530792	1572	44.97	6.158	1	0	0										
+11469	6.993197	30.584722	1571	26.10	9.288	2	0	77.48	Clostridium sp. JCC	Firmicutes	Clostridia	Clostridiales	Clostridiaceae	Clostridium				
+11489	-7.494365	-38.031478	1569	53.98	20.489	2	0	100.00	Escherichia coli	Proteobacteria	Gammaproteobacteria	Enterobacteriales	Enterobacteriaceae	Escherichia			139004	
+11498	34.087799	0.492010	1568	47.90	7.156	2	0	100.00	Streptococcus australis	Firmicutes	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus				
+11511	5.462943	-6.119596	1566	40.42	7.844	2	0	56.86	Prevotella sp. CAG:1092									
+11531	28.938314	-18.173590	1564	67.14	486.020	1	0	99.79	Collinsella	Actinobacteria	Coriobacteriia	Coriobacteriales	Coriobacteriaceae	Collinsella				
+11540	-21.974996	-5.135434	1563	42.48	5.810	2	0	0										
+11572	28.087407	-18.165978	1559	66.97	8.361	2	0	100.00	Atopobium sp. ICM58	Actinobacteria	Coriobacteriia	Coriobacteriales	Atopobiaceae	Atopobium				
+11578	-18.097683	3.829537	1558	36.91	188.515	1	0	99.90	Ruminococcus sp. CAG:9	Firmicutes	Clostridia	Clostridiales	Ruminococcaceae	Ruminococcus				
+11607	9.929302	25.295671	1554	31.92	9.019	2	0	100.00	Clostridium sp. CAG:221	Firmicutes	Clostridia	Clostridiales	Clostridiaceae	Clostridium				
+11610	-14.974057	-19.367482	1554	45.43	8.840	1	0	100.00	Clostridiales	Firmicutes	Clostridia	Clostridiales						
+11657	12.796500	11.254414	1547	37.30	11.778	3	0	100.00	Streptococcus	Firmicutes	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus				
+11680	4.574285	34.108465	2015	22.68	11.363	1	0	1.10	Eggerthia catenaformis									
+11705	2.825380	3.330400	1542	38.07	48.015	1	0	100.00	Clostridiales	Firmicutes	Clostridia	Clostridiales						
+11711	-7.954960	0.760910	2074	39.59	10.059	2	0	0										
+11724	0.959673	-20.297558	1540	56.62	8.388	2	0	30.68	Clostridium sp. ATCC BAA-442									
+11727	-6.815905	8.067033	1539	37.56	7.843	1	0	0										
+11744	-12.802621	2.540109	1538	40.38	264.402	2	0	100.00	Ruminococcus	Firmicutes	Clostridia	Clostridiales	Ruminococcaceae	Ruminococcus				
+11796	2.885434	22.774284	2467	30.12	12.358	3	0	100.00	Streptococcus parasanguinis	Firmicutes	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus				
+11842	7.547860	8.569495	1525	39.02	7.115	1	0	67.47	Solobacterium moorei									
+11844	-14.842598	-22.568988	1525	47.21	8.400	1	0	93.81	Blautia sp. CAG:37	Firmicutes	Clostridia	Clostridiales	Lachnospiraceae	Blautia				
+11870	-15.335351	-20.597425	1522	48.49	7.339	1	0	100.00	Blautia sp. CAG:37	Firmicutes	Clostridia	Clostridiales	Lachnospiraceae	Blautia		RF0142		
+11871	-5.363653	-38.245804	1522	55.72	17.552	2	0	100.00	Escherichia coli	Proteobacteria	Gammaproteobacteria	Enterobacteriales	Enterobacteriaceae	Escherichia	VFG002052,VFG002051			
+11874	-26.967112	-12.162432	1522	43.56	10.533	1	0	4.46	Blautia sp. CAG:237									
+11886	9.930434	-18.888983	1519	51.88	7.338	5	0	50.65	Flavonifractor plautii									
+11910	15.362001	14.102787	1516	35.22	5.175	0	0	100.00	Streptococcus	Firmicutes	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus				
+11917	-8.267093	-3.913246	1515	41.98	7.160	1	0	20.62	Coprococcus									
+11920	10.440442	7.191804	1514	43.79	9.008	1	0	4.17	Bacteroidales									
+11923	1.085587	29.447052	1514	23.18	11.659	2	0	0										
+11938	6.559970	25.451105	1512	30.03	4.202	1	0	0										
+11991	-26.396942	-13.793396	1508	42.71	7.452	3	0	0										
+12005	11.896298	31.169428	2526	31.27	8.363	4	0	100.00	Clostridium sp. JCC	Firmicutes	Clostridia	Clostridiales	Clostridiaceae	Clostridium				
+12006	-12.935367	-15.534304	1506	49.87	11.041	1	0	22.22	Blautia									
+12013	-13.441701	-20.597080	1505	49.24	8.361	1	0	4.44	Blautia sp. CAG:237									
+12029	25.659422	5.761674	1503	39.12	15.426	1	0	100.00	Streptococcus parasanguinis	Firmicutes	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus				
+12035	-0.657405	16.601880	1503	32.40	56.824	2	0	76.73	Blautia	Firmicutes	Clostridia	Clostridiales						
+12134	1.890380	21.099917	1494	29.65	4.677	2	0	100.00	Anaerostipes hadrus	Firmicutes	Clostridia	Clostridiales	Lachnospiraceae	Anaerostipes				
+12137	16.355308	-2.628017	1494	36.88	9.023	2	0	0										
+12142	-9.801292	12.384525	1494	38.15	9.049	1	0	100.00	Clostridiales	Firmicutes	Clostridia	Clostridiales						
+12200	-9.906941	-17.076900	1488	46.44	7.629	1	0	0										
+12217	3.161459	30.373783	1485	22.15	7.096	1	0	0										
+12247	-5.098648	-10.637827	1480	43.04	15.014	1	0	93.08	Blautia obeum	Firmicutes	Clostridia	Clostridiales	Lachnospiraceae	Blautia				
+12262	-4.785687	-2.929620	1479	42.46	5.802	2	0	100.00	Blautia sp. KLE 1732	Firmicutes	Clostridia	Clostridiales	Lachnospiraceae	Blautia				
+12294	32.007823	2.081617	1475	46.64	15.807	1	0	100.00	Streptococcus parasanguinis	Firmicutes	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus				
+12299	26.312143	-19.478021	1474	62.08	9.804	1	0	100.00	Actinobacteria	Actinobacteria								
+12321	9.501507	25.471146	1472	30.16	11.213	1	0	100.00	Clostridium	Firmicutes	Clostridia	Clostridiales	Clostridiaceae	Clostridium				
+12327	29.085102	-22.391856	1471	64.79	9.453	1	0	100.00	Actinobacteria	Actinobacteria								
+12354	-12.202588	11.286296	1467	39.74	7.294	1	0	100.00	Lachnospiraceae	Firmicutes	Clostridia	Clostridiales	Lachnospiraceae		VFG000232			
+12395	-3.365774	-11.345357	1463	39.99	21.563	5	0	100.00	Blautia obeum	Firmicutes	Clostridia	Clostridiales	Lachnospiraceae	Blautia				
+12405	9.014579	19.422200	1462	36.05	8.908	1	0	0										
+12462	-15.052476	-7.857318	1456	41.69	7.226	2	0	0										
+12565	-22.269744	-18.050426	1445	45.81	13.779	2	0	82.31	Blautia	Firmicutes	Clostridia	Clostridiales						
+12588	18.627723	13.958365	1442	37.79	14.616	1	0	100.00	Streptococcus salivarius	Firmicutes	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus				
+12601	-14.253761	-10.613258	1442	44.87	160.275	2	0	100.00	Clostridiales	Firmicutes	Clostridia	Clostridiales						
+12606	7.512429	-10.436245	1978	44.84	9.011	1	0	97.04	Prevotella sp. CAG:891	Bacteroidetes	Bacteroidia	Bacteroidales	Prevotellaceae	Prevotella				
+12628	16.664883	-29.618869	1439	61.50	7.765	2	0	94.94	Rothia mucilaginosa	Actinobacteria	Actinobacteria	Micrococcales	Micrococcaceae	Rothia				
+12655	-9.002420	-15.121712	1437	47.88	19.325	0	0	100.00	Lachnospiraceae	Firmicutes	Clostridia	Clostridiales	Lachnospiraceae					
+12660	-2.150074	17.593172	1436	39.69	41.474	0	0	100.00	Clostridiales	Firmicutes	Clostridia	Clostridiales						
+12662	-1.948455	-10.596888	1436	45.82	16.119	1	0	96.49	Firmicutes	Firmicutes								
+12690	-0.359089	5.123559	1433	39.01	24.172	0	0	41.53	Eubacterium									
+12716	21.664218	9.727737	2157	43.07	11.830	3	0	100.00	Streptococcus	Firmicutes	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus				
+12720	-18.883938	-8.862746	1430	42.45	6.587	1	0	0										
+12749	2.898219	27.179054	1427	23.20	10.282	2	0	42.86	Clostridium sp. JCC									
+12789	-26.196146	-13.491387	1422	44.37	8.142	1	0	9.30	Blautia obeum									
+12801	9.878842	27.566158	1421	30.54	15.519	1	0	19.74	Clostridium dakarense								12594	
+12803	1.229159	21.238999	1421	28.71	5.425	1	0	100.00	Firmicutes bacterium CAG:41	Firmicutes								
+12806	-14.671169	-4.090677	1420	42.04	15.963	1	0	100.00	Blautia wexlerae	Firmicutes	Clostridia	Clostridiales	Lachnospiraceae	Blautia				
+12827	32.885469	1.594128	1418	47.39	12.709	2	0	98.45	Streptococcus	Firmicutes	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus				
+12858	-5.525757	10.098678	1415	35.41	8.060	2	0	100.00	Firmicutes	Firmicutes								
+12883	-20.378938	2.022950	2023	41.13	7.907	2	0	60.36	Blautia sp. CAG:237									
+12906	-15.130410	-17.098860	1411	43.59	9.489	1	0	66.04	Clostridiales									
+12907	-18.639787	-19.674377	1411	47.98	10.193	1	0	60.61	Clostridiales									
+12912	-17.568770	32.232453	1411	40.26	7.602	1	0	100.00	Firmicutes bacterium CAG:41	Firmicutes								
+12941	-13.353605	12.854521	1408	38.64	8.472	2	0	91.57	Anaerostipes hadrus	Firmicutes	Clostridia	Clostridiales	Lachnospiraceae	Anaerostipes				
+12963	-14.135268	-20.721105	1405	46.12	7.710	1	0	0										
+12980	4.573477	23.217966	1404	29.13	6.736	3	0	83.56	bacterium LF-3									
+12983	9.603087	27.406528	1404	28.92	5.632	1	0	100.00	Clostridium	Firmicutes	Clostridia	Clostridiales	Clostridiaceae	Clostridium				
+13004	19.135894	-7.149570	1402	45.93	8.693	1	0	12.50	Candidatus Saccharibacteria oral taxon TM7x									
+13006	10.066021	0.510345	1402	43.30	10.343	1	0	0										
+13130	-22.392628	-19.721082	1390	44.39	10.747	1	0	36.36	Clostridiales									
+13158	4.677812	-26.308165	1386	57.29	5.691	3	0	0										
+13195	-14.462781	-12.601819	1384	44.58	184.059	1	0	99.37	Ruminococcus	Firmicutes	Clostridia	Clostridiales	Ruminococcaceae	Ruminococcus				
+13200	20.818719	9.335813	1383	42.08	7.576	1	0	92.21	Streptococcus salivarius	Firmicutes	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus				
+13247	8.489644	28.355919	1379	30.02	8.737	0	0	2.41	Clostridium perfringens									
+13254	28.633149	4.494524	1378	42.31	18.499	1	0	98.96	Streptococcus parasanguinis	Firmicutes	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus				
+13260	-15.654599	-19.124514	1378	45.94	9.770	2	0	98.08	Blautia sp. CAG:37	Firmicutes	Clostridia	Clostridiales	Lachnospiraceae	Blautia				
+13284	31.970602	0.254550	1376	44.77	20.165	1	0	100.00	Streptococcus parasanguinis	Firmicutes	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus				
+13359	30.980772	3.591969	1371	42.09	11.182	2	0	100.00	Streptococcus	Firmicutes	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus				
+13386	2.805660	20.106102	1367	30.36	12.091	3	0	30.17	Lachnospiraceae bacterium 5_1_63FAA									
+13394	24.532883	3.535440	1366	40.34	7.136	1	0	89.61	Streptococcus	Firmicutes	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus				
+13395	28.244040	-22.553703	1366	61.05	6.240	1	0	100.00	Eggerthella	Actinobacteria	Coriobacteriia	Eggerthellales	Eggerthellaceae	Eggerthella				
+13412	-22.016025	-11.371979	1365	44.69	138.840	1	0	100.00	Clostridiales	Firmicutes	Clostridia	Clostridiales						
+13420	13.166239	-12.725971	1364	51.10	8.315	1	1	67.06	Coriobacteriia									
+13448	15.308820	-21.543618	1362	55.43	3.794	1	0	68.57	Gordonibacter pamelaeae									
+13481	-4.048554	-7.707913	1359	43.93	11.135	2	0	100.00	Clostridiales	Firmicutes	Clostridia	Clostridiales						
+13492	22.177207	2.270426	1358	41.46	7.443	3	0	20.45	Streptococcus parasanguinis									
+13500	-0.416580	-18.775462	1357	48.56	6.655	1	0	0										
+13511	7.954233	23.939514	1356	27.21	4.262	2	0	100.00	Clostridium	Firmicutes	Clostridia	Clostridiales	Clostridiaceae	Clostridium				
+13518	7.863126	-17.045469	1355	48.12	9.121	1	0	100.00	Parabacteroides	Bacteroidetes	Bacteroidia	Bacteroidales	Porphyromonadaceae	Parabacteroides				
+13519	-12.002511	-12.106360	1355	44.50	6.502	1	0	6.45	Clostridiales									
+13527	6.869657	27.923272	1354	27.84	8.607	1	0	0										
+13530	35.716136	0.075379	1354	51.55	12.593	1	0	100.00	Streptococcus parasanguinis	Firmicutes	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus				
+13571	-14.486264	-23.058502	1350	49.04	4.524	3	0	84.09	Blautia sp. CAG:37	Firmicutes	Clostridia	Clostridiales	Lachnospiraceae	Blautia				
+13578	-4.002022	-8.271811	1349	45.74	8.713	2	0	44.92	Blautia									
+13585	31.823543	9.344480	1349	42.33	10.737	1	0	98.00	Streptococcus	Firmicutes	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus				
+13624	-11.118056	-8.054467	1346	43.31	11.142	1	0	6.73	Blautia sp. CAG:237									
+13642	5.338627	28.966471	1345	26.54	8.497	1	0	2.35	Clostridium sartagoforme									
+13645	-1.782739	9.630982	1345	34.65	9.701	1	0	8.70	Firmicutes									
+13653	7.584042	26.536680	1344	26.71	7.717	1	0	2.47	Candidatus Clostridium anorexicamassiliense									
+13658	-16.824560	-13.002348	1344	42.93	137.057	0	0	100.00	Clostridiales	Firmicutes	Clostridia	Clostridiales						
+13663	8.424228	26.773275	1343	28.59	10.402	1	0	0										
+13666	-17.955638	-2.634173	1343	42.14	155.191	1	0	98.76	Clostridiales	Firmicutes	Clostridia	Clostridiales						
+13670	6.040362	-22.827608	1343	59.72	4.242	1	0	0										
+13682	24.577315	-7.073831	1342	49.33	7.201	0	0	0										
+13736	-7.212339	6.011930	1337	38.37	8.592	1	0	97.59	Dorea longicatena	Firmicutes	Clostridia	Clostridiales	Lachnospiraceae	Dorea				
+13746	3.030922	30.345811	1337	22.44	12.664	1	0	0										
+13751	-16.530637	-15.864593	1336	44.91	5.900	1	0	100.00	Eubacterium sp. CAG:146	Firmicutes	Clostridia	Clostridiales	Eubacteriaceae	Eubacterium				
+13855	-7.523006	-9.435997	1328	42.92	8.030	1	0	0										
+13868	30.423275	-25.776631	2252	63.90	13.953	2	0	95.59	Adlercreutzia equolifaciens	Actinobacteria	Coriobacteriia	Eggerthellales	Eggerthellaceae	Adlercreutzia				
+13915	14.945319	-27.188083	1322	58.55	8.547	2	0	100.00	Rothia mucilaginosa	Actinobacteria	Actinobacteria	Micrococcales	Micrococcaceae	Rothia				
+13922	18.713568	2.622804	1321	43.07	7.231	2	0	0										YP_002925153,YP_009220172
+13929	6.870018	-11.074232	1320	45.15	7.609	1	0	100.00	Bacteroidales	Bacteroidetes	Bacteroidia	Bacteroidales						
+13967	17.776254	11.352885	1317	37.74	10.689	2	0	100.00	Streptococcus salivarius	Firmicutes	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus				
+14010	-3.865201	6.650126	1313	37.55	34.890	1	0	100.00	Lachnospiraceae	Firmicutes	Clostridia	Clostridiales	Lachnospiraceae					
+14059	-18.939296	-8.233826	1308	43.35	89.825	1	0	99.88	Clostridiales	Firmicutes	Clostridia	Clostridiales						
+14157	32.624806	6.158014	1300	41.00	15.458	1	0	100.00	Streptococcus parasanguinis	Firmicutes	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus				
+14166	35.655236	1.930251	1299	48.27	9.785	2	0	100.00	Streptococcus parasanguinis	Firmicutes	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus				
+14183	-9.502361	-9.148780	1298	41.14	6.381	1	0	17.19	Streptococcus australis									
+14191	-14.040522	10.604210	1298	39.52	10.253	1	0	100.00	Firmicutes	Firmicutes								YP_009015561
+14236	-11.860698	10.754462	1294	37.79	9.073	1	0	100.00	Clostridiales	Firmicutes	Clostridia	Clostridiales						
+14258	5.058959	3.611115	2007	41.01	7.640	1	0	78.64	Solobacterium moorei	Firmicutes	Erysipelotrichia	Erysipelotrichales	Erysipelotrichaceae	Solobacterium				
+14294	-10.158917	-4.813216	1288	42.47	7.380	1	0	8.96	Lachnospiraceae									
+14315	8.031807	8.593107	1287	39.63	5.572	0	0	96.00	Solobacterium moorei	Firmicutes	Erysipelotrichia	Erysipelotrichales	Erysipelotrichaceae	Solobacterium				
+14321	8.373913	21.720147	1286	33.90	8.889	1	0	32.50	Clostridiales									
+14322	-16.013924	-4.515312	1286	43.47	5.982	1	0	0										
+14411	-7.214299	-27.503128	1279	54.34	6.704	1	0	100.00	Escherichia coli	Proteobacteria	Gammaproteobacteria	Enterobacteriales	Enterobacteriaceae	Escherichia				NP_543071
+14413	-0.688143	-3.691537	1279	40.66	101.332	2	0	100.00	Blautia wexlerae	Firmicutes	Clostridia	Clostridiales	Lachnospiraceae	Blautia				
+14417	-18.445743	-18.411704	1278	43.51	13.257	2	0	23.93	Blautia									
+14429	7.317292	12.806288	1277	32.65	9.654	1	0	0										
+14472	25.669480	13.041610	1275	42.04	6.906	1	0	100.00	Streptococcus	Firmicutes	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus				
+14477	-3.233863	2.507843	1274	40.11	7.550	1	0	100.00	Eubacterium sp. CAG:146	Firmicutes	Clostridia	Clostridiales	Eubacteriaceae	Eubacterium				
+14479	-25.033015	-21.583793	1274	48.12	9.776	1	0	100.00	Dorea formicigenerans	Firmicutes	Clostridia	Clostridiales	Lachnospiraceae	Dorea				
+14485	-13.511426	-11.874592	1274	46.70	9.614	1	0	0										
+14533	32.881974	0.813382	1269	46.57	5.736	1	0	100.00	Streptococcus	Firmicutes	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus				
+14561	-10.498100	-2.423438	1268	39.20	7.625	2	0	64.00	Firmicutes									
+14563	-10.956498	8.277094	1268	41.40	7.062	1	0	100.00	Lachnospiraceae	Firmicutes	Clostridia	Clostridiales	Lachnospiraceae					
+14579	-14.140422	-12.750976	1267	47.67	3.993	1	0	0										
+14630	-15.523522	-5.398246	1263	41.25	5.162	2	0	0										
+14656	-3.863162	-5.135394	1261	40.92	9.117	1	0	0										
+14658	-14.690056	-23.474010	1261	48.85	4.125	1	0	33.33	Blautia sp. CAG:37									
+14697	12.952244	-24.645727	1258	51.67	7.147	1	0	97.06	Rothia mucilaginosa	Actinobacteria	Actinobacteria	Micrococcales	Micrococcaceae	Rothia				
+14767	20.187020	-21.674742	1253	62.01	5.652	2	0	100.00	Actinomyces sp. S6-Spd3	Actinobacteria	Actinobacteria	Actinomycetales	Actinomycetaceae	Actinomyces				
+14796	7.334035	2.318076	1251	39.49	6.386	2	0	0										
+14811	-10.833665	-7.595683	1249	42.67	7.299	1	0	0										
+14841	-12.317652	-7.272392	1247	42.10	5.788	1	0	0										
+14854	-16.980589	-24.085455	1246	50.56	5.691	1	0	100.00	Blautia sp. CAG:37	Firmicutes	Clostridia	Clostridiales	Lachnospiraceae	Blautia				
+14860	13.275230	-27.285743	1245	54.46	11.602	2	0	98.21	Rothia mucilaginosa	Actinobacteria	Actinobacteria	Micrococcales	Micrococcaceae	Rothia				
+14864	-10.819241	6.282802	1245	41.20	5.855	0	0	100.00	Solobacterium moorei	Firmicutes	Erysipelotrichia	Erysipelotrichales	Erysipelotrichaceae	Solobacterium				
+14867	-13.533511	13.637184	1816	39.26	8.214	3	0	100.00	Firmicutes	Firmicutes								
+14868	-8.221168	1.142084	1245	39.68	69.627	2	0	100.00	Clostridiales	Firmicutes	Clostridia	Clostridiales						
+14871	-1.742789	0.472003	1244	39.23	4.987	2	0	100.00	Eubacterium sp. CAG:146	Firmicutes	Clostridia	Clostridiales	Eubacteriaceae	Eubacterium				
+14946	-10.824858	-1.345103	1239	40.68	49.584	1	0	97.33	Ruminococcus sp. 5_1_39BFAA	Firmicutes	Clostridia	Clostridiales	Ruminococcaceae	Ruminococcus				
+14979	13.642327	12.043875	1236	34.63	10.414	2	0	100.00	Streptococcus salivarius	Firmicutes	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus				
+14987	-15.809580	-16.442612	1235	42.75	10.113	1	0	54.84	Blautia obeum									
+14990	19.873432	11.351984	1687	41.38	10.494	1	0	100.00	Streptococcus salivarius	Firmicutes	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus				
+15002	11.728233	17.801599	1234	38.25	8.361	2	0	35.14	[Eubacterium] eligens									
+15056	-11.117790	-3.671115	1231	41.35	29.273	1	0	99.22	Clostridiales	Firmicutes	Clostridia	Clostridiales						
+15095	27.569979	-19.501452	1228	65.88	9.600	1	0	100.00	Actinobacteria	Actinobacteria								
+15123	-3.539570	-11.386282	1227	40.99	24.071	1	0	100.00	Blautia obeum	Firmicutes	Clostridia	Clostridiales	Lachnospiraceae	Blautia				
+15140	25.605438	-24.571661	1225	63.02	7.335	1	0	100.00	Eggerthella	Actinobacteria	Coriobacteriia	Eggerthellales	Eggerthellaceae	Eggerthella				
+15145	26.692676	0.828912	1225	41.88	8.877	0	0	100.00	Streptococcus australis	Firmicutes	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus				
+15227	-2.517171	9.198334	1218	37.93	67.736	2	0	100.00	Blautia obeum	Firmicutes	Clostridia	Clostridiales	Lachnospiraceae	Blautia				
+15265	5.807699	27.228199	1215	26.67	11.069	1	0	0										
+15278	-8.023800	-8.806675	1214	43.33	4.213	1	0	41.67	Dorea longicatena CAG:42									
+15319	-3.375959	1.281235	1212	40.35	7.436	2	0	100.00	Eubacterium sp. CAG:146	Firmicutes	Clostridia	Clostridiales	Eubacteriaceae	Eubacterium				
+15324	-24.304352	-2.785735	1981	41.97	6.824	2	0	0										
+15352	-14.450636	-15.692800	1210	44.05	8.193	1	0	8.57	Ruminococcus obeum CAG:39									
+15367	6.099372	24.898484	1209	28.78	10.208	1	0	4.17	Clostridiales									
+15371	3.368348	26.111454	1209	24.90	15.415	2	0	14.93	Peptostreptococcaceae bacterium VA2									
+15418	-12.728480	-5.494922	1206	41.79	145.694	0	0	100.00	Ruminococcus sp. 5_1_39BFAA	Firmicutes	Clostridia	Clostridiales	Ruminococcaceae	Ruminococcus				
+15522	-3.082379	10.918848	1420	33.66	107.699	1	0	100.00	Ruminococcus sp. 5_1_39BFAA	Firmicutes	Clostridia	Clostridiales	Ruminococcaceae	Ruminococcus				
+15524	-20.775032	-14.799557	1198	45.08	92.866	2	0	100.00	Ruminococcus	Firmicutes	Clostridia	Clostridiales	Ruminococcaceae	Ruminococcus				
+15561	6.579439	20.998686	1196	30.85	7.161	1	0	100.00	Clostridium sp. CAG:221	Firmicutes	Clostridia	Clostridiales	Clostridiaceae	Clostridium				
+15568	-15.588992	-15.321942	1196	43.14	6.960	3	0	100.00	Blautia sp. CAG:37	Firmicutes	Clostridia	Clostridiales	Lachnospiraceae	Blautia				
+15594	-15.535003	1.619636	1194	38.36	59.036	1	0	100.00	Blautia wexlerae	Firmicutes	Clostridia	Clostridiales	Lachnospiraceae	Blautia				
+15611	32.274742	2.704039	1193	47.95	7.567	1	0	86.30	Streptococcus	Firmicutes	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus				
+15647	-13.010932	-16.376181	1190	47.73	5.892	1	0	100.00	Blautia sp. CAG:52	Firmicutes	Clostridia	Clostridiales	Lachnospiraceae	Blautia				
+15661	-4.959764	-37.886117	1189	54.08	28.898	1	0	100.00	Escherichia coli	Proteobacteria	Gammaproteobacteria	Enterobacteriales	Enterobacteriaceae	Escherichia				YP_006989560
+15680	-5.081383	7.465547	1187	34.37	9.085	0	0	0										
+15683	2.844116	19.286226	1187	29.57	5.073	0	0	42.55	Clostridium sp. JCC									
+15712	4.410548	0.725806	1185	42.28	6.631	2	0	100.00	Eubacterium sp. CAG:146	Firmicutes	Clostridia	Clostridiales	Eubacteriaceae	Eubacterium				
+15736	12.708646	-26.354007	1866	53.48	10.929	2	0	98.60	Rothia mucilaginosa	Actinobacteria	Actinobacteria	Micrococcales	Micrococcaceae	Rothia				
+15740	30.150054	11.933476	1183	43.53	11.213	1	0	100.00	Streptococcus parasanguinis	Firmicutes	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus			116542	
+15741	-13.886921	-21.924630	1183	47.68	5.294	2	0	100.00	Blautia sp. CAG:37	Firmicutes	Clostridia	Clostridiales	Lachnospiraceae	Blautia				
+15761	0.767946	4.347209	1182	38.07	41.863	1	0	92.86	Eubacterium	Firmicutes	Clostridia	Clostridiales	Eubacteriaceae	Eubacterium				
+15763	-2.635318	6.809081	1182	36.97	65.361	1	0	92.67	Clostridiales	Firmicutes	Clostridia	Clostridiales						
+15798	11.134865	6.546900	1180	44.49	6.402	1	0	100.00	Solobacterium moorei	Firmicutes	Erysipelotrichia	Erysipelotrichales	Erysipelotrichaceae	Solobacterium				
+15845	29.917354	-19.452896	1176	68.37	243.026	1	0	24.35	Slackia exigua									
+15880	-15.732003	-14.090651	1173	42.54	9.662	1	0	0										
+15890	0.210013	8.530241	1173	36.32	4.667	1	0	100.00	Eubacterium sp. CAG:146	Firmicutes	Clostridia	Clostridiales	Eubacteriaceae	Eubacterium				
+15902	13.688846	-31.227064	1172	61.86	7.299	1	0	100.00	Rothia mucilaginosa	Actinobacteria	Actinobacteria	Micrococcales	Micrococcaceae	Rothia				
+15927	19.259394	9.429465	1170	39.32	8.856	1	0	100.00	Streptococcus salivarius	Firmicutes	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus				
+15929	25.630847	1.062342	1170	45.73	8.347	1	0	0										
+15931	8.698730	-22.537554	1170	58.72	7.187	1	0	0										
+15943	-0.215761	-4.169538	1169	44.82	154.027	2	0	91.76	Ruminococcus	Firmicutes	Clostridia	Clostridiales	Ruminococcaceae	Ruminococcus				
+15951	9.628098	-3.669417	1169	42.09	8.859	1	0	0										
+15957	-8.404614	-12.616794	1169	47.82	193.713	2	0	100.00	Ruminococcus sp. 5_1_39BFAA	Firmicutes	Clostridia	Clostridiales	Ruminococcaceae	Ruminococcus				
+15966	29.845402	4.119890	1168	43.49	11.308	1	0	100.00	Streptococcus parasanguinis	Firmicutes	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus				
+16002	1.987134	17.380266	1166	30.53	4.670	0	0	0										
+16014	20.348986	5.748749	1165	39.83	12.771	1	0	0										
+16048	-14.483999	-10.183117	1163	44.45	6.696	1	0	24.56	Blautia sp. KLE 1732									
+16055	-12.872350	11.550982	1162	38.30	12.117	1	0	100.00	Clostridiales	Firmicutes	Clostridia	Clostridiales						
+16060	-18.656968	-15.194731	1162	45.96	7.314	1	0	98.41	Clostridiales	Firmicutes	Clostridia	Clostridiales						
+16072	12.904261	12.686298	1162	34.85	5.844	1	0	0										
+16085	19.680344	-7.453196	1161	45.13	7.266	2	0	8.20	Candidatus Saccharibacteria oral taxon TM7x									
+16102	21.040351	-6.843647	1160	45.95	8.665	0	0	13.70	Candidatus Saccharibacteria oral taxon TM7x									
+16112	-12.219341	-7.581850	1160	41.38	3.958	2	0	10.53	Blautia sp. CAG:237									
+16115	-7.854128	7.716167	1159	37.10	96.141	1	0	100.00	Clostridiales	Firmicutes	Clostridia	Clostridiales						
+16118	4.421377	24.482638	1159	26.92	10.915	1	0	0										
+16141	5.031217	25.546663	1159	26.66	8.518	1	0	0										
+16185	7.974455	1.533036	1157	39.50	9.111	0	0	2.82	Mogibacterium sp. CM50									
+16198	30.922470	2.711232	1156	44.29	6.675	1	0	100.00	Streptococcus sp. F0442	Firmicutes	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus	VFG001330			
+16202	-8.013661	-4.093925	1155	43.12	8.047	1	0	100.00	Dorea longicatena	Firmicutes	Clostridia	Clostridiales	Lachnospiraceae	Dorea				
+16211	-14.432830	-19.964064	1155	48.74	9.938	1	0	0										
+16261	27.168135	3.647963	1152	41.67	7.247	1	0	93.85	Streptococcus	Firmicutes	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus				
+16281	7.038185	6.182207	1150	37.04	4.087	1	0	0										
+16326	5.160613	-6.745968	1148	41.81	10.186	0	0	15.56	Prevotella sp. CAG:891									
+16368	-11.656212	-7.705227	1146	43.19	6.687	1	0	0										
+16379	5.201698	26.004431	1145	27.51	8.923	0	0	73.08	Clostridium sp. JCC									
+16391	-19.361317	-17.516598	1145	44.45	10.472	1	0	20.73	Blautia									
+16435	16.398521	-18.913465	1143	55.38	5.815	0	0	100.00	Actinomyces sp. S6-Spd3	Actinobacteria	Actinobacteria	Actinomycetales	Actinomycetaceae	Actinomyces				
+16436	4.883662	14.100348	1143	30.71	5.491	2	0	80.65	Firmicutes	Firmicutes								
+16461	-13.851883	-9.245886	1141	46.80	4.982	2	0	100.00	Ruminococcus sp. JC304	Firmicutes	Clostridia	Clostridiales	Ruminococcaceae	Ruminococcus				
+16469	9.764540	24.346619	1141	29.62	9.916	0	0	100.00	Clostridium sp. JCC	Firmicutes	Clostridia	Clostridiales	Clostridiaceae	Clostridium				
+16480	-6.244439	-6.728934	1140	40.35	67.682	0	0	98.88	Clostridiales	Firmicutes	Clostridia	Clostridiales						
+16522	20.685374	1.369432	1762	40.38	5.223	3	0	79.10	Granulicatella adiacens	Firmicutes	Bacilli	Lactobacillales	Carnobacteriaceae	Granulicatella				
+16567	15.584179	-28.519067	1134	62.26	6.453	1	0	93.10	Rothia mucilaginosa	Actinobacteria	Actinobacteria	Micrococcales	Micrococcaceae	Rothia				
+16571	12.592401	-11.521403	1134	45.24	63.356	1	1	98.44	Dorea longicatena	Firmicutes	Clostridia	Clostridiales	Lachnospiraceae	Dorea				
+16583	-8.977881	-3.054269	1134	40.92	130.415	1	0	100.00	Clostridiales	Firmicutes	Clostridia	Clostridiales						
+16603	4.685839	-17.031517	1132	46.11	7.769	1	0	100.00	Peptoclostridium difficile	Firmicutes	Clostridia	Clostridiales	Peptostreptococcaceae	Peptoclostridium				
+16607	-15.074634	1.428551	1874	42.10	8.859	3	0	98.21	Clostridiales	Firmicutes	Clostridia	Clostridiales						
+16612	-19.219786	-16.964595	1132	46.91	5.913	2	0	4.26	Blautia sp. CAG:237									
+16623	6.770746	-27.283414	1131	60.04	3.804	1	0	6.25	Subdoligranulum variabile									
+16633	2.703709	21.868624	1130	26.19	12.217	0	0	100.00	bacterium LF-3									
+16659	28.348640	6.104870	1129	42.34	9.332	1	0	100.00	Streptococcus	Firmicutes	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus				
+16687	8.059252	26.418204	1127	26.71	9.043	0	0	8.43	Peptostreptococcaceae									
+16702	26.075783	-21.242093	1126	63.41	5.775	2	0	96.97	Collinsella	Actinobacteria	Coriobacteriia	Coriobacteriales	Coriobacteriaceae	Collinsella				
+16721	8.524754	13.199519	1125	35.38	5.212	1	0	15.69	Granulicatella adiacens									
+16729	-29.021997	-10.610043	1983	44.53	9.428	1	0	20.31	Blautia									
+16840	-11.221543	0.247418	1118	40.97	108.941	1	0	98.25	Ruminococcus	Firmicutes	Clostridia	Clostridiales	Ruminococcaceae	Ruminococcus				
+16870	-9.778895	-12.293500	1116	47.49	5.887	1	0	13.64	Blautia sp. CAG:237									
+16901	-10.374708	0.651469	1114	38.96	253.634	0	0	99.95	Clostridiales	Firmicutes	Clostridia	Clostridiales						
+16924	18.864477	7.350742	1113	38.72	6.450	2	0	100.00	Streptococcus	Firmicutes	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus				
+16927	-3.092115	11.190682	1113	33.15	8.377	1	0	0										
+16931	11.947733	24.055746	1112	30.13	5.893	1	0	100.00	Clostridium sp. JCC	Firmicutes	Clostridia	Clostridiales	Clostridiaceae	Clostridium				
+16932	15.552972	-19.378462	1112	52.70	6.439	2	0	89.06	Actinomyces sp. S6-Spd3	Actinobacteria	Actinobacteria	Actinomycetales	Actinomycetaceae	Actinomyces				
+16935	14.527957	-30.145183	1112	61.87	10.118	0	0	98.92	Rothia mucilaginosa	Actinobacteria	Actinobacteria	Micrococcales	Micrococcaceae	Rothia				
+16964	-7.869817	-12.141960	1110	45.59	122.912	1	0	99.39	Ruminococcus	Firmicutes	Clostridia	Clostridiales	Ruminococcaceae	Ruminococcus				
+16977	-11.589362	12.088448	1110	36.67	13.045	1	0	100.00	Firmicutes	Firmicutes								
+16981	-6.347278	-5.534446	1109	39.86	106.564	1	0	100.00	Clostridiales	Firmicutes	Clostridia	Clostridiales						
+16986	23.369932	-19.897271	1109	61.77	8.775	1	0	100.00	Atopobium sp. ICM58	Actinobacteria	Coriobacteriia	Coriobacteriales	Atopobiaceae	Atopobium				
+16989	-5.499762	-8.926683	1109	43.28	35.214	1	0	100.00	Clostridiales	Firmicutes	Clostridia	Clostridiales						
+17038	25.794555	-7.915477	1106	53.25	7.586	0	0	0										
+17066	-2.245199	-31.892742	1105	50.05	7.164	1	0	0										
+17067	-1.446264	10.359329	1105	37.01	53.203	1	0	94.35	Ruminococcus	Firmicutes	Clostridia	Clostridiales	Ruminococcaceae	Ruminococcus				
+17081	-3.207518	9.996029	1104	32.79	5.857	1	0	100.00	Eubacterium sp. CAG:146	Firmicutes	Clostridia	Clostridiales	Eubacteriaceae	Eubacterium				
+17111	7.936665	-10.831053	1103	45.06	6.562	2	0	100.00	Prevotella sp. CAG:891	Bacteroidetes	Bacteroidia	Bacteroidales	Prevotellaceae	Prevotella				
+17179	3.089234	-16.711073	1098	51.18	15.983	3	0	100.00	Lachnospiraceae	Firmicutes	Clostridia	Clostridiales	Lachnospiraceae					
+17241	-9.848489	-13.984813	1095	46.85	52.987	2	0	99.52	Clostridiales	Firmicutes	Clostridia	Clostridiales						
+17244	-7.205753	-13.652555	1095	44.66	8.501	3	0	2.38	Blautia sp. CAG:52									
+17254	-18.661210	32.454276	1094	39.03	8.941	1	0	100.00	Firmicutes bacterium CAG:41	Firmicutes								
+17255	27.907908	1.509753	1094	46.16	14.226	1	0	100.00	Streptococcus parasanguinis	Firmicutes	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus				
+17278	5.258053	-26.346396	1093	57.64	4.924	1	0	0										
+17296	-2.975728	-2.378148	1092	41.67	7.908	0	0	96.55	Eubacterium	Firmicutes	Clostridia	Clostridiales	Eubacteriaceae	Eubacterium				
+17300	-15.181464	-1.909198	1669	43.62	7.188	2	0	80.43	Blautia sp. KLE 1732	Firmicutes	Clostridia	Clostridiales	Lachnospiraceae	Blautia				
+17313	-9.734144	-18.022748	1091	50.87	8.790	0	0	97.10	Clostridiales	Firmicutes	Clostridia	Clostridiales						
+17328	-7.330836	-25.321978	1090	58.62	16.702	1	0	100.00	Escherichia coli	Proteobacteria	Gammaproteobacteria	Enterobacteriales	Enterobacteriaceae	Escherichia				
+17364	5.731112	26.044083	1088	27.67	3.835	2	0	100.00	Clostridium sp. JCC	Firmicutes	Clostridia	Clostridiales	Clostridiaceae	Clostridium				
+17369	1.615680	6.191295	1088	37.78	5.100	1	0	0										
+17376	7.140890	9.131057	1087	36.52	6.159	0	0	38.46	Solobacterium moorei									
+17390	-5.114866	-10.548237	1087	42.87	11.242	1	0	93.33	Clostridiales	Firmicutes	Clostridia	Clostridiales						
+17394	13.863991	8.351829	1086	37.11	4.886	0	0	100.00	Streptococcus parasanguinis	Firmicutes	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus				
+17404	-7.328796	11.359252	1085	33.73	9.156	2	0	100.00	Lachnospiraceae	Firmicutes	Clostridia	Clostridiales	Lachnospiraceae					
+17453	7.922116	-1.071822	1659	42.83	5.709	3	0	0										
+17466	-16.960263	-23.448706	1081	48.01	10.017	2	0	100.00	Blautia sp. CAG:37	Firmicutes	Clostridia	Clostridiales	Lachnospiraceae	Blautia				
+17479	5.389184	9.215765	1081	34.60	5.297	1	0	0										
+17508	19.852880	7.043082	1079	44.11	7.544	1	0	100.00	Streptococcus salivarius	Firmicutes	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus				
+17519	-3.428357	2.812251	1078	36.46	4.006	1	0	100.00	Eubacterium sp. CAG:146	Firmicutes	Clostridia	Clostridiales	Eubacteriaceae	Eubacterium				
+17533	0.188636	3.961250	1078	39.05	40.852	2	0	99.67	Eubacterium hallii CAG:12	Firmicutes	Clostridia	Clostridiales	Eubacteriaceae	Eubacterium				
+17550	0.699276	2.857637	1077	42.34	34.474	2	0	96.89	Eubacterium	Firmicutes	Clostridia	Clostridiales	Eubacteriaceae	Eubacterium				
+17553	-6.734190	1.447748	1077	36.03	6.181	1	0	0										
+17589	-19.423369	-14.028261	1076	44.42	10.030	1	0	70.27	Clostridiales									
+17620	-14.053520	-13.649959	1074	46.93	3.921	1	0	0										
+17621	0.918078	15.328834	1074	32.59	5.328	1	0	100.00	Firmicutes	Firmicutes								
+17625	-13.248287	1.177777	1073	37.47	63.635	2	0	100.00	Ruminococcus sp. CAG:9	Firmicutes	Clostridia	Clostridiales	Ruminococcaceae	Ruminococcus				
+17628	30.463054	2.408413	1073	44.45	13.002	2	0	100.00	Streptococcus	Firmicutes	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus				
+17630	24.317106	4.502745	1073	41.66	5.831	0	0	100.00	Streptococcus australis	Firmicutes	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus				
+17668	-5.238614	0.599973	1072	41.51	50.018	1	0	100.00	Eubacterium hallii CAG:12	Firmicutes	Clostridia	Clostridiales	Eubacteriaceae	Eubacterium				
+17682	-4.850325	10.977562	1071	35.01	5.370	1	0	100.00	Clostridiales	Firmicutes	Clostridia	Clostridiales						
+17697	18.070441	-27.742888	1070	63.36	13.358	1	0	97.98	Rothia mucilaginosa	Actinobacteria	Actinobacteria	Micrococcales	Micrococcaceae	Rothia				
+17711	-4.567227	-11.793638	1070	41.21	13.822	1	0	89.81	Clostridiales	Firmicutes	Clostridia	Clostridiales						
+17721	-17.674170	-20.875327	1069	48.36	5.510	1	0	100.00	Blautia sp. CAG:37	Firmicutes	Clostridia	Clostridiales	Lachnospiraceae	Blautia				
+17739	24.606394	17.359298	1068	43.16	9.386	1	0	100.00	Streptococcus	Firmicutes	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus				
+17744	-20.991995	-16.809280	1068	45.69	172.984	1	0	100.00	Blautia wexlerae	Firmicutes	Clostridia	Clostridiales	Lachnospiraceae	Blautia				
+17753	-13.873876	11.136355	1067	41.05	7.489	0	0	100.00	Lachnospiraceae	Firmicutes	Clostridia	Clostridiales	Lachnospiraceae					
+17791	8.353853	0.592519	1066	40.15	5.582	1	0	0										
+17802	2.973576	7.040262	1065	35.49	23.856	1	0	93.48	Eubacterium	Firmicutes	Clostridia	Clostridiales	Eubacteriaceae	Eubacterium				
+17825	8.239973	22.483400	1064	30.64	6.218	1	0	4.26	Peptostreptococcaceae bacterium VA2									
+17836	-10.279467	-4.451698	1063	40.92	10.688	1	0	100.00	Clostridiales	Firmicutes	Clostridia	Clostridiales						
+17860	17.879123	-6.186619	1062	42.37	5.812	1	0	0										
+17879	4.619637	25.759633	1062	25.14	5.529	2	0	0										
+17880	-8.323197	-9.111200	1062	43.97	8.318	1	0	0										
+17883	23.578369	-23.353750	1062	61.96	3.365	2	0	100.00	Eggerthella	Actinobacteria	Coriobacteriia	Eggerthellales	Eggerthellaceae	Eggerthella				
+17893	3.495688	-23.140595	1061	52.21	24.547	0	0	0										
+17944	-16.273233	-22.484480	1059	47.21	6.073	2	0	100.00	Blautia sp. CAG:37	Firmicutes	Clostridia	Clostridiales	Lachnospiraceae	Blautia				
+17965	10.649071	-21.442186	1058	59.17	3.951	1	0	100.00	Eggerthella	Actinobacteria	Coriobacteriia	Eggerthellales	Eggerthellaceae	Eggerthella				
+17991	-10.919993	-14.615608	1056	45.93	5.713	1	0	4.44	Ruminococcus sp. CAG:90									
+18029	-9.448738	8.429731	1054	41.94	6.474	1	0	0										
+18033	9.266572	22.053520	1054	29.51	5.102	1	0	100.00	Clostridium sp. JCC	Firmicutes	Clostridia	Clostridiales	Clostridiaceae	Clostridium				
+18038	-3.365477	-27.631929	1054	48.29	12.672	1	0	100.00	Escherichia coli	Proteobacteria	Gammaproteobacteria	Enterobacteriales	Enterobacteriaceae	Escherichia				
+18046	8.259721	-22.598868	1054	60.25	5.578	0	0	0										
+18047	3.102760	2.948799	1054	40.61	37.755	0	0	99.32	Clostridiales	Firmicutes	Clostridia	Clostridiales						
+18083	-10.601122	-7.669723	1052	42.02	4.142	3	0	100.00	Ruminococcus sp. JC304	Firmicutes	Clostridia	Clostridiales	Ruminococcaceae	Ruminococcus				
+18098	28.281551	-22.179146	1052	63.21	4.660	1	0	100.00	Eggerthella	Actinobacteria	Coriobacteriia	Eggerthellales	Eggerthellaceae	Eggerthella				
+18139	-8.124392	-11.301667	1049	43.57	18.389	1	0	100.00	Clostridiales	Firmicutes	Clostridia	Clostridiales						
+18158	8.922139	22.126234	1048	30.73	5.699	0	0	4.35	Turicibacter sanguinis									
+18205	-12.396110	-22.784529	1046	50.29	7.296	1	0	0										
+18226	-9.041884	3.348170	1046	38.34	7.351	1	0	59.32	Dorea									
+18251	-8.583067	-1.046048	1045	39.14	133.662	0	0	100.00	Ruminococcus sp. 5_1_39BFAA	Firmicutes	Clostridia	Clostridiales	Ruminococcaceae	Ruminococcus				
+18255	-11.618782	-14.281168	1045	45.55	7.400	1	0	69.81	Clostridiales									
+18285	4.911518	23.131383	1043	28.95	7.373	1	0	0										
+18302	19.546084	7.782649	1043	40.84	6.869	0	0	100.00	Streptococcus	Firmicutes	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus				
+18310	8.536518	-8.398387	1042	40.50	11.036	0	0	100.00	Prevotella sp. CAG:891	Bacteroidetes	Bacteroidia	Bacteroidales	Prevotellaceae	Prevotella				
+18324	27.795782	1.749283	1042	42.71	6.127	1	0	100.00	Streptococcus	Firmicutes	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus				
+18328	25.164318	-0.702333	1042	44.05	34.999	1	0	100.00	Streptococcus parasanguinis	Firmicutes	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus				
+18331	1.009204	5.126030	1042	38.29	6.431	1	0	44.90	Eubacterium sp. CAG:146									
+18334	4.615229	-17.192558	1041	50.24	7.093	1	0	100.00	Clostridiales	Firmicutes	Clostridia	Clostridiales						
+18339	-16.361406	-16.096914	1041	45.44	6.524	2	0	0										
+18350	-2.950712	-2.889152	1041	41.59	7.864	1	0	0										
+18374	-2.766572	-32.262053	1039	49.18	11.796	1	0	100.00	Escherichia coli	Proteobacteria	Gammaproteobacteria	Enterobacteriales	Enterobacteriaceae	Escherichia				
+18410	8.174305	24.029623	1037	29.60	3.634	1	0	100.00	Clostridium	Firmicutes	Clostridia	Clostridiales	Clostridiaceae	Clostridium				
+18432	-2.583810	-5.581617	1036	41.89	5.767	2	0	0										
+18436	8.432501	-8.706419	1036	41.80	6.903	0	0	96.30	Prevotella sp. CAG:891	Bacteroidetes	Bacteroidia	Bacteroidales	Prevotellaceae	Prevotella				
+18450	-5.367817	-7.226827	1035	43.96	4.872	1	0	68.42	Clostridiales									
+18455	9.361584	22.785641	1035	31.01	4.990	1	0	0										
+18473	-9.166191	-6.239876	1034	42.26	7.800	1	0	0										
+18475	7.822916	9.845128	1034	38.20	6.161	0	0	91.67	Solobacterium moorei	Firmicutes	Erysipelotrichia	Erysipelotrichales	Erysipelotrichaceae	Solobacterium				
+18481	10.580603	24.898634	1033	30.01	7.920	2	0	34.85	Clostridiales									
+18489	-10.689193	-2.701025	1033	40.46	6.483	1	0	0										
+18501	-10.276611	-1.919479	1032	38.95	137.509	1	0	100.00	Ruminococcus	Firmicutes	Clostridia	Clostridiales	Ruminococcaceae	Ruminococcus				
+18504	-3.503851	-1.835771	1032	38.95	8.317	0	0	16.39	Ruminococcus sp. CAG:90									
+18554	13.712856	-20.625245	1030	52.43	2.883	1	0	100.00	Eggerthella sp. CAG:298	Actinobacteria	Coriobacteriia	Eggerthellales	Eggerthellaceae	Eggerthella				
+18556	-2.211574	-2.965879	1030	41.65	75.024	1	0	99.44	Blautia wexlerae	Firmicutes	Clostridia	Clostridiales	Lachnospiraceae	Blautia				
+18561	-14.302350	-2.415920	1030	42.82	5.270	1	0	0										
+18577	15.438360	-19.034340	1029	49.76	5.942	1	0	100.00	Bacteria									YP_009124151
+18584	-8.075223	-9.691948	1028	44.07	7.025	1	0	100.00	Blautia obeum	Firmicutes	Clostridia	Clostridiales	Lachnospiraceae	Blautia				
+18595	-12.703681	-3.097879	1028	43.29	170.624	1	0	100.00	Ruminococcus sp. CAG:9	Firmicutes	Clostridia	Clostridiales	Ruminococcaceae	Ruminococcus				
+18603	-14.822674	-9.793276	1028	42.32	10.687	1	0	1.16	Blautia obeum									
+18605	9.104624	-0.428208	1028	42.80	8.587	1	0	0										
+18607	-16.281741	-12.042906	1028	44.84	8.732	1	0	100.00	Dorea formicigenerans	Firmicutes	Clostridia	Clostridiales	Lachnospiraceae	Dorea				
+18628	28.848287	-17.686111	1717	66.63	9.101	4	0	100.00	Atopobium sp. ICM58	Actinobacteria	Coriobacteriia	Coriobacteriales	Atopobiaceae	Atopobium				
+18629	5.960680	22.788052	1027	27.46	5.722	1	0	0										
+18649	9.934812	2.297200	2004	42.07	5.686	2	0	0										
+18682	-18.639084	-22.110143	1024	45.12	6.905	1	0	100.00	Blautia sp. CAG:37	Firmicutes	Clostridia	Clostridiales	Lachnospiraceae	Blautia				
+18696	32.572755	2.560028	1024	47.27	13.085	2	0	100.00	Streptococcus parasanguinis	Firmicutes	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus				
+18706	-11.232879	-5.518385	1023	43.99	122.543	2	0	100.00	Clostridiales	Firmicutes	Clostridia	Clostridiales						
+18732	-2.353147	5.543159	1022	37.18	27.250	3	0	97.20	Lachnospiraceae	Firmicutes	Clostridia	Clostridiales	Lachnospiraceae					
+18741	-8.353418	0.961276	1021	39.47	6.436	1	0	100.00	Dorea longicatena CAG:42	Firmicutes	Clostridia	Clostridiales	Lachnospiraceae	Dorea				
+18744	-7.340267	-18.443648	1021	51.13	20.689	0	0	0										
+18754	16.951926	-1.172732	1021	41.33	6.036	1	0	0										
+18759	21.473171	-15.868368	1021	61.31	3.383	1	0	100.00	Bifidobacterium kashiwanohense	Actinobacteria	Actinobacteria	Bifidobacteriales	Bifidobacteriaceae	Bifidobacterium				
+18776	26.610765	10.329654	1020	40.69	7.000	3	0	100.00	Streptococcus australis	Firmicutes	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus				
+18785	3.474889	17.348260	1019	31.89	9.472	1	0	100.00	Peptoniphilaceae	Firmicutes	Clostridia	Clostridiales	Peptoniphilaceae					
+18827	-12.033754	-15.646408	1018	46.86	8.798	1	0	35.29	Firmicutes									
+18831	7.398869	3.536293	1017	38.45	10.164	2	0	0										
+18861	21.290126	-18.966470	1016	58.56	33.672	0	0	29.07	Actinobacteria									
+18889	0.889890	4.315849	1015	39.31	33.498	0	0	99.18	[Eubacterium] hallii	Firmicutes	Clostridia	Clostridiales	Eubacteriaceae	Eubacterium				
+18891	20.653259	0.359031	1015	41.97	8.011	0	0	0										
+18892	-14.413165	-23.698471	1015	52.22	6.281	1	0	94.12	Blautia sp. CAG:37	Firmicutes	Clostridia	Clostridiales	Lachnospiraceae	Blautia				
+18909	22.884985	2.842808	1014	39.15	9.910	1	0	100.00	Streptococcus australis	Firmicutes	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus			135990	
+18914	16.099936	-28.951475	1013	60.51	6.792	1	0	100.00	Rothia mucilaginosa	Actinobacteria	Actinobacteria	Micrococcales	Micrococcaceae	Rothia				
+18945	26.581874	-22.459784	1012	64.82	4.438	1	0	100.00	Gordonibacter pamelaeae	Actinobacteria	Coriobacteriia	Eggerthellales	Eggerthellaceae	Gordonibacter				
+19005	-10.993967	-17.010712	1010	48.71	7.063	0	0	0										
+19012	-10.843382	6.528748	1009	40.04	72.032	1	0	100.00	Clostridiales	Firmicutes	Clostridia	Clostridiales						
+19036	-12.680250	-12.164412	1007	47.17	6.737	1	0	0										
+19083	9.433184	-13.251598	1005	48.16	20.132	1	0	100.00	Escherichia coli	Proteobacteria	Gammaproteobacteria	Enterobacteriales	Enterobacteriaceae	Escherichia			24218	
+19088	24.340132	-22.304753	1005	62.99	4.603	3	0	76.19	Eggerthella	Actinobacteria	Coriobacteriia	Eggerthellales	Eggerthellaceae	Eggerthella				
+19123	-18.673624	32.698955	1004	39.64	6.521	0	0	100.00	Firmicutes bacterium CAG:41	Firmicutes								
+19129	15.203461	7.106432	1003	38.19	7.556	0	0	100.00	Streptococcus	Firmicutes	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus				
+19158	-12.079429	-6.669964	1002	43.51	8.699	1	0	0										
+19172	-10.417427	-6.227491	1001	42.76	11.195	1	0	1.20	Gemmata obscuriglobus									
+19187	-0.923104	-4.414385	1001	40.26	111.595	0	0	88.08	Ruminococcus	Firmicutes	Clostridia	Clostridiales	Ruminococcaceae	Ruminococcus				
+19188	2.940512	13.678808	1001	34.37	41.217	1	0	100.00	Clostridiales	Firmicutes	Clostridia	Clostridiales						
+19195	22.469726	-4.937914	1001	47.45	8.206	1	0	0										
+19201	-14.269823	-23.024810	1000	49.30	4.272	2	0	58.33	Lachnospiraceae									
+19218	14.298346	-26.402552	1000	56.70	9.847	1	0	84.42	Rothia mucilaginosa	Actinobacteria	Actinobacteria	Micrococcales	Micrococcaceae	Rothia	VFG001348			
+19597	-10.481132	13.305543	1788	36.27	7.441	2	0	100.00	Firmicutes	Firmicutes								
+20264	-0.936788	13.825302	1734	34.43	11.667	2	0	55.56	Blautia obeum									
+20628	25.078967	-25.869880	1712	59.58	6.334	3	0	100.00	Eggerthella	Actinobacteria	Coriobacteriia	Eggerthellales	Eggerthellaceae	Eggerthella				
+21579	10.627170	3.085783	1396	41.62	7.670	2	0	7.06	Mogibacterium sp. CM50									
+22806	23.837506	6.476053	1638	38.22	6.511	2	0	100.00	Streptococcus parasanguinis	Firmicutes	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus				
+22844	-4.529414	2.437825	1454	40.10	8.505	2	0	100.00	Eubacterium sp. CAG:146	Firmicutes	Clostridia	Clostridiales	Eubacteriaceae	Eubacterium				
+23686	-13.868932	-4.801555	1342	40.46	6.063	1	0	51.95	Ruminococcus sp. JC304									
+24021	19.484765	-26.849464	1245	58.63	12.541	3	0	77.27	Subdoligranulum variabile	Firmicutes	Clostridia	Clostridiales	Ruminococcaceae	Subdoligranulum				
+25642	2.670103	22.838112	1405	28.54	7.122	2	0	100.00	Streptococcus vestibularis	Firmicutes	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus				
+27952	9.678002	27.513746	1378	28.81	7.610	1	0	100.00	Clostridium sp. JCC	Firmicutes	Clostridia	Clostridiales	Clostridiaceae	Clostridium				
+30239	9.297083	14.721321	1316	35.26	9.697	2	0	100.00	Streptococcus parasanguinis	Firmicutes	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus				
