@@ -6,18 +6,6 @@
   <title>BinaRena live demo</title>
 
   <script>
-    // var xhr = new XMLHttpRequest();
-    // xhr.open("GET", "examples/input.tsv", false);
-    // xhr.send();
-    // if (xhr.status == 200) {
-    //   dataText = xhr.responseText;
-    //   xhr.open("GET", "BinaRena.html", false);
-    //   xhr.send();
-    //   if (xhr.status == 200) {
-    //     document.write(xhr.responseText);
-    //   }
-    // }
-
     var dataPath = 'examples/input.tsv';
     var xhr = new XMLHttpRequest();
     // xhr.onreadystatechange = function() {
@@ -25,6 +13,7 @@
     //     document.write(this.responseText);
     //   }
     // }
+    // I know sync is depreciated; but I couldn't find an async way.
     xhr.open('GET', 'BinaRena.html', false);
     xhr.send();
     if (xhr.status == 200) {
