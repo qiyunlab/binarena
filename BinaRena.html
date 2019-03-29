@@ -1,0 +1,346 @@
+<!doctype html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>BinaRena</title>
+  <link rel="stylesheet" href="static/vendor/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="static/css/style.css">
+  <script src="static/js/main.js"></script>
+  <script src="static/js/interface.js"></script>
+  <script src="static/js/operation.js"></script>
+  <script src="static/js/util.js"></script>
+  <script src="static/js/resource.js"></script>
+  <script src="static/js/rule.js"></script>
+  <script src="static/js/data.js"></script>
+</head>
+
+<body>
+  <!-- side frame -->
+  <div id="side-frame">
+  <div id="side-frame-content">
+
+    <!-- view panel -->
+    <div class="panel" id="view-panel">
+      <div class="panel-head">View</div>
+      <div class="panel-body" style="display:block">
+
+        <!-- tool bar -->
+        <div class="toolbar">
+          <button id="data-btn" class="square" title="Show data table"><i class="fa fa-table fa-lg"></i></button>
+          &nbsp;|&nbsp;
+          <button id="reset-btn" class="square" style="font-weight: bold;" title="Reset"><i class="fa fa-refresh fa-lg"></i></button><!--
+          --><button id="png-btn" class="square" title="Export current view to PNG image"><i class="fa fa-camera fa-lg"></i></button><!--
+          --><button id="svg-btn" class="square hidden" title="Export current view to SVG image"><i class="fa fa-file-image-o fa-lg"></i></button><!--
+          --><button id="grid-btn" class="square" title="Show/hide grid and coordinates"><i class="fa fa-th fa-lg"></i></button>
+          &nbsp;|&nbsp;
+          <button id="nav-btn" class="square" title="Show navigation controls"><i class="fa fa-compass fa-lg"></i></button>
+          <button id="help-btn" class="square" style="float:right" title="Show help information"><i class="fa fa-question fa-lg"></i></button>
+          <!-- for test purpose -->
+          <button id="test-btn" class="square" style="float:right" title="Test"><i class="fa fa-flask fa-lg"></i></button>
+        </div>
+
+        <!-- navigation controls -->
+        <div id="nav-ctrls" class="toolbar hidden">
+          <button id="zoomin-btn" class="square" title="Zoom in"><i class="fa fa-plus fa-lg"></i></button><!--
+          --><button id="zoomout-btn" class="square" title="Zoom out"><i class="fa fa-minus fa-lg"></i></button>
+          &nbsp;|&nbsp;
+          <button id="left-btn" class="square" title="Move left"><i class="fa fa-arrow-left fa-lg"></i></button><!--
+          --><button id="up-btn" class="square" title="Move up"><i class="fa fa-arrow-up fa-lg"></i></button><!--
+          --><button id="right-btn" class="square" title="Move right"><i class="fa fa-arrow-right fa-lg"></i></button><!--
+          --><button id="down-btn" class="square" title="Move down"><i class="fa fa-arrow-down fa-lg"></i></button>
+        </div>
+        <hr>
+
+        <!-- display items -->
+        <div id="display-items">
+          <p>
+            <label class="aligned">X-axis</label>
+            <select id="x-field-sel" style="width: 150px;"></select>
+            <span id="x-param-span" class="hidden">
+              <button class="square dropdown scale-btn" id="x-scale-btn"></button>
+            </span>
+          </p>
+          <p>
+            <label class="aligned">Y-axis</label>
+            <select id="y-field-sel" style="width: 150px;"></select>
+            <span id="y-param-span" class="hidden">
+              <button class="square dropdown scale-btn" id="y-scale-btn"></button>
+            </span>
+          </p>
+          <p>
+            <label class="aligned">Size</label>
+            <select id="size-field-sel" style="width: 150px;"></select>
+            <span id="size-param-span" class="hidden">
+              <button class="square dropdown scale-btn" id="size-scale-btn"></button>
+            </span>
+          </p>
+          <p>
+            <label class="aligned">Opacity</label>
+            <select id="opacity-field-sel" style="width: 150px;"></select>
+            <span id="opacity-param-span" class="hidden">
+              <button class="square dropdown scale-btn" id="opacity-scale-btn"></button>
+            </span>
+          </p>
+          <p>
+            <label class="aligned">Color</label>
+            <select id="color-field-sel" style="width: 150px;"></select>
+            <span id="color-param-span" class="hidden">
+              <select id="color-palette-sel"></select>
+            </span>
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- select panel -->
+    <div class="panel" id="select-panel">
+      <div class="panel-head">Select</div>
+      <div class="panel-body" style="display:block">
+
+        <!-- tool bar -->
+        <div class="toolbar">
+          <span class="btn-group">
+            <button id="sel-select-btn" class="square pressed" title="Select mode"><i class="fa fa-hand-pointer-o fa-lg"></i></button><!--
+            --><button id="sel-exclude-btn" class="square" title="Filter mode"><i class="fa fa-filter fa-lg"></i></button>
+          </span>
+          &nbsp;|&nbsp;
+          <span class="btn-group">
+            <button id="sel-new-btn" class="square pressed" title="New selection"><i class="fa fa-asterisk fa-lg"></i></button><!--
+            --><button id="sel-add-btn" class="square" title="Add to selection"><i class="fa fa-plus fa-lg"></i></button><!--
+            --><button id="sel-remove-btn" class="square" title="Remove from selection"><i class="fa fa-minus fa-lg"></i></button>
+          </span>
+          &nbsp;|&nbsp;
+          <button id="polygon-btn" title="Draw polygon with mouse clicks to contain multiple contigs."><i class="fa fa-pencil fa-lg"></i> Draw</button>
+          &nbsp;|&nbsp;
+          <button title="Highlight" class="square"><i class="fa fa-star-o fa-lg"></i></button>
+          <button title="Hide" class="square"><i class="fa fa-eye-slash fa-lg"></i></button>
+        </div>
+        <hr>
+
+        <!-- search by criteria -->
+        <div id="select-utils">
+          <p>
+            <label class="aligned">Search</label>
+            <select id="field-list" style="width: 150px;"><option value="0"></option></select>
+            <button class="square hidden" id="search-btn" title="Search by criteria"><i class="fa fa-search"></i></button>
+          </p>
+          <p class="hidden" id="num-sel-p">
+            <label class="aligned">in</label>
+            <button class="static" id="min-btn" title="Lower bound included">[</button>
+            <input type="text" id="min-txt" title="Lower bound" style="width: 50px; text-align: right;">
+            &nbsp;,&nbsp;
+            <input type="text" id="max-txt" title="Upper bound" style="width: 50px;">
+            <button class="static" id="max-btn" title="Upper bound included">]</button>
+          </p>
+          <p class="hidden" id="cat-sel-p">
+            <label class="aligned">is</label>
+            <input type="text" id="cat-sel-txt" class="dropdown" title="Enter a category" style="width: 150px;">
+          </p>
+          <p class="hidden" id="fea-sel-p">
+            <label class="aligned">has</label>
+            <input type="text" id="fea-sel-txt" class="dropdown" title="Enter a feature" style="width: 150px;">
+          </p>
+          <p class="hidden" id="des-sel-p">
+            <label class="aligned">is</label>
+            <input type="text" id="des-sel-txt" title="Enter description" style="width: 150px;">
+          </p>
+          <span id="str-match-span" class="hidden">
+            <button class="square" id="case-btn" title="Match case">Aa</button><!--
+            --><button class="square" id="whole-btn" title="Match whole value">&ldquo;&rdquo;</button>
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- bins panel -->
+    <div class="panel" id="bin-panel">
+      <div class="panel-head">Bins</div>
+      <div class="panel-body" style="display: block; overflow: auto;">
+
+        <!-- toolbar -->
+        <div class="toolbar">
+          <button id="new-bin-btn" class="square" title="New bin"><i class="fa fa-file-o fa-lg"></i></button><!--
+          --><button class="square hidden" id="add-to-bin-btn" title="Add to bin"><i class="fa fa-plus fa-lg"></i></button><!--
+          --><button class="square hidden" id="remove-from-bin-btn" title="Remove from bin"><i class="fa fa-minus fa-lg"></i></button><!--
+          --><button class="square hidden" id="delete-bin-btn" title="Delete bin"><i class="fa fa-trash fa-lg"></i></button><!--
+          --><button class="square hidden" id="merge-bin-btn" title="Merge bins"><i class="fa fa-compress fa-lg"></i></button>
+          &nbsp;|&nbsp;
+          <button id="load-bin-btn" class="square dropdown" title="Load bins from a categorical field"><i class="fa fa-list fa-lg"></i></button>
+          &nbsp;|&nbsp;
+          <button id="auto-bin-btn" title="Automatic binning"><i class="fa fa-graduation-cap"></i> Auto</button>
+          &nbsp;|&nbsp;
+          <button id="save-bin-btn" title="Export current binning plan"><i class="fa fa-floppy-o fa-lg"></i></button>
+        </div>
+        <hr>
+
+        <!-- bin table -->
+        <div style="display: block; max-height: 200px; overflow-y: auto;">
+          <table id="bin-table">
+            <thead id="bin-thead">
+              <tr>
+                <th title="Unique bin identifier">Name</th>
+                <th title="Number of contigs">Ctgs</th>
+                <th title="Total length of contigs (kbp)">Length</th>
+                <th title="Sum of length x coverage normalized by the entire sample (%)">Abund</th>
+              </tr>
+            </thead>
+            <tbody id="bin-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- information panel -->
+    <div class="panel" id="info-panel">
+      <div class="panel-head">Information</div>
+      <div class="panel-body">
+        <p id="no-select-msg" class="indent">No contig is selected.</p>
+        <table id="info-table"></table>
+        <span id="info-ctrl-span" class="hidden">
+          <button class="dropdown" id="info-metric-btn" title="Metric">f(x)</button><!--
+          --><span id="info-ref-span">&nbsp;by&nbsp;<select id="info-ref-sel" title="Weight by reference field"></select></span><!--
+          --><button id="info-plot-btn" title="Plot distribution">&#9684;</button><!--
+          --><button id="info-hide-btn" title="Hide field">&times;</button>
+        </span>
+      </div>
+    </div>
+
+  </div>
+  </div>
+
+  <!-- main plot -->
+  <!-- from bottom to top, elements are:
+    z = 2: coordinates
+    z = 1: arena canvas
+    z = 0: overlay canvas
+    z = -1: drop sign
+  -->
+  <div id="main-frame" style="height: 100vh; overflow: auto;">
+    <div style="height: 100%; position: relative;">
+      <div id="coords-label" class="hidden" style="z-index: 2;"></div>
+      <canvas id="arena-canvas" class="main-plot" tabindex="1" style="z-index: 1;"></canvas>
+      <canvas id="overlay-canvas" class="main-plot" style="z-index: 0;"></canvas>
+      <div id="drop-sign" style="z-index:-1;">
+        <p>Drag & drop data table here</p>
+      </div>
+    </div>
+
+    <!-- context menu -->
+    <div id="menu-panel" style="z-index: 2;">
+      <!-- <button id="menu-btn">&equiv;</button> -->
+      <button id="menu-btn"><i class="fa fa-bars fa-lg"></i></button>
+      <br>
+      <div id="menu-body" class="hidden">
+        <div id="menu-content">
+          <a id="load-data-a" href="#">Load data</a>
+          <a id="show-data-a" href="#">Show data</a>
+          <a id="close-data-a"href="#">Close data</a>
+          <hr>
+          <a id="export-bins-a" href="#">Export bins</a>
+          <a id="export-data-a" href="#">Export data</a>
+          <a id="export-image-a" href="#">Export image</a>
+          <hr>
+          <a id="help-a" href="#">Help</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- slide panel -->
+  <div id="slide-panel" style="z-index: 2;">
+    <button id="slide-btn" title="Show/hide side panel">
+      <p style="transform: rotate(45deg);">&#9699;</p>
+    </button>
+  </div>
+
+  <!-- data table -->
+  <div id="data-table-modal" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-head">Data</div>
+      <div class="toolbar">
+        <button id="load-data-btn" title="Load data"><i class="fa fa-folder-open-o fa-lg"></i></button>
+      </div>
+      <br>
+      <div id="data-table-container">
+        <table id="data-table" class="sheet"></table>
+      </div>
+    </div>
+  </div>
+
+
+  <!--
+    shared elements
+  -->
+
+  <!-- scale select dropdown -->
+  <div id="scale-select" class="popup hidden">
+    <p>Scale: <span id="current-scale"></span></p>
+    <table class="square" id="scale-options">
+      <tr>
+        <td title="none"><i>x</i></td>
+      </tr>
+      <tr>
+        <td title="square"><i>x</i><sup><small>2</small></sup></td>
+        <td title="cube"><i>x</i><sup><small>3</small></sup></td>
+      </tr>
+      <tr>
+        <td title="sqrt">&radic;<i>x</i></td>
+        <td title="cbrt"><sup><small>3</small></sup>&radic;<i>x</i></td>
+      </tr>
+      <tr>
+        <td title="log">log</td>
+        <td title="log2">log<sub><small>2</small></sub></td>
+        <td title="log10">log<sub><small>10</small></sub></td>
+      </tr>
+      <tr>
+        <td title="exp"><i>e</i><sup><small><i>x</i></small></sup></td>
+        <td title="exp2">2<sup><small><i>x</i></small></sup></td>
+        <td title="exp10">10<sup><small><i>x</i></small></sup></td>
+      </tr>
+    </table>
+  </div>
+
+
+  <!--
+    generic elements
+  -->
+
+  <!-- toast message -->
+  <div id="toast" class="hidden"></div>
+
+  <!-- list select dropdown (also for auto-complete textbox) -->
+  <div id="list-select" class="popup hidden">
+    <table id="list-options"></table>
+  </div>
+
+  <!-- modals -->
+  <div id="myModal" class="modal hidden">
+    <div class="modal-content">
+      <p class="title-bar"><span>Test</span><button class="close">&times;</button></p>
+      <br>
+      <hr>
+      <p>Some text in the Modal..</p>
+    </div>
+  </div>
+
+  <!-- popup message box -->
+  <div class="tooltip" id="div-tooltip">
+    <p id="p-tooltip"></p>
+  </div>
+
+  <!--
+    hidden elements
+  -->
+  <div style="display:none">
+    <!-- file I/O cache -->
+    <textarea id="text-cache"></textarea>
+    <!-- file upload button -->
+    <input type="file" id="open-file">
+    <!-- styles defined by CSS -->
+    <label id="highlight-color">hightlight color</label>
+    <label id="polygon-color">polygon color</label>
+  </div>
+</body>
+
+</html>
