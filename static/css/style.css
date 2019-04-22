@@ -1,27 +1,37 @@
-/* default styles */
+/**
+ * global setting
+ */
 
 body {
   font-family: Arial, Helvetica, sans-serif;
-  font-size: 75%;
+  font-size: 10pt;
   margin: 0;
+
+  display: flex;
+  display: -webkit-box;
+  display: -moz-box;
+  display: -ms-flexbox;
+  display: -webkit-flex;
+}
+
+
+/**
+ * default styles
+ */
+
+input, textarea, select, button, a {
+  outline: none;
 }
 
 button {
-  background-color: whitesmoke;
-  color: black;
-  border: 0;
-  padding: 0 5px;
-  text-align: center;
+  border: none;
   display: inline-block;
   cursor: pointer;
-  height: 24px;
-  /* min-width: 24px; */
   border-radius: 0;
-  font-size: 10.5px;
 }
 
-button:hover {
-  background-color: lightgray;
+button::-moz-focus-inner {
+  border: 0;
 }
 
 input[type=text] {
@@ -57,6 +67,15 @@ select {
   padding-right: 5px;
 }
 
+select::-ms-expand {
+  display: none;
+}
+
+select:-moz-focusring {
+  color: transparent;
+  text-shadow: 0 0 0 black;
+}
+
 select:hover {
   background-color: whitesmoke;
 }
@@ -65,8 +84,8 @@ select:focus {
   border-bottom: 1px solid dimgray;
 }
 
-input, textarea, select, button, a {
-  outline: none;
+table {
+  border-collapse: collapse;
 }
 
 hr {
@@ -89,7 +108,7 @@ sub {
 /* general classes */
 
 .hidden {
-  display: none;
+  display: none !important;
 }
 
 .indent {
@@ -104,11 +123,18 @@ sub {
   -o-transform: rotate(-90deg);
 }
 
-label.aligned {
-  display: inline-block;
-  width: 50px;
-  text-align: right;
-  margin-right: 10px;
+p.setting {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+p.setting label:first-child {
+  margin-right: auto;
+}
+
+p.setting button:only-child {
+  margin-right: auto;
 }
 
 button.pressed {
@@ -149,20 +175,50 @@ button.close:hover {
 }
 
 
-/* toolbar */
+/**
+ * dock
+ */
+
+div.dock {
+  z-index: 2;
+}
+
+/**
+ * toolbar
+ */
 
 div.toolbar {
   color: dimgray;
+  background-color: white;
+  height: 28px;
+  border-bottom: 1px solid lightgray;
+  flex-shrink: 0;
+  position: -webkit-sticky;
+  position: sticky; /* IE incompatible */
+  top: 0;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
 }
 
 div.toolbar button {
   color: dimgray;
   background-color: transparent;
+  height: 100%;
+  min-width: 28px;
 }
 
 div.toolbar button:hover {
   color: black;
   background-color: lightgray;
+}
+
+div.toolbar span.spacer {
+  display: inline-block;
+  height: 18px;
+  width: 2px;
+  border-left: 1px solid lightgray;
+  margin-left: 2px;
 }
 
 
@@ -258,11 +314,11 @@ div.popup {
   background-color: white;
   min-width: 100px;
   box-shadow: 3px 3px 15px lightgray;
-  padding: 5px;
+  /* padding: 5px; */
 }
 
 div.popup p {
-  margin: 2px 5px;
+  margin: 5px 10px;
 }
 
 table.square td {
@@ -280,7 +336,6 @@ table.square td:hover {
 
 #list-options {
   width: 100%;
-  border-collapse: collapse;
   border: none;
 }
 
@@ -294,7 +349,7 @@ table.square td:hover {
 }
 
 #list-options td.active {
-  background-color: skyblue !important;
+  background-color: lightsteelblue !important;
 }
 
 
@@ -306,16 +361,11 @@ canvas.main-plot {
   position: absolute;
 }
 
-#arena-canvas {
-  box-shadow: inset 0 0 8px gray;
-}
-
 #coords-label {
   position: absolute;
   left: 20px;
   top: 20px;
   color:dimgray;
-  font-size: 12px;
   font-family: monospace;
   background: white;
   border: 1px solid dimgray;
@@ -342,165 +392,255 @@ canvas.main-plot {
 }
 
 
-/* context menu */
+/**
+ * dashboard
+ */
 
-#menu-panel {
-  position: absolute;
-  left: 20px;
-  top: 20px;
+#dash-frame {
+  position: fixed;
+  top: 0;
+  left: 0;
+}
+
+/** start panel */
+
+#start-panel {
+  width: 100%;
+  height: 32px;
 }
 
 #menu-btn {
-  width: 30px;
-  height: 30px;
-  color: transparent;
-  background-color: transparent;
-  border: 1px solid lightgray;
-  /* font-weight: bold;
-  font-size: 150%; */
+  width: 100px;
+  font-size: 12px;
+  font-style: oblique;
+  font-weight: bold;
 }
 
-#menu-btn:hover {
-  color: gray;
-  border: 0;
-  background-color: white;
-  box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.25);
+#dash-btn {
+  width: 32px;
 }
 
-#menu-body {
-  position: relative;
-}
-
-#menu-content {
+#dash-btn:after {
   position: absolute;
-  z-index: 2;
+  content: "";
+  top: 13px;
+  right: 10px;
+  width: 0;
+  height: 0;
+  border: 6px solid transparent;
+  border-color: white transparent transparent transparent;
+}
+
+#dash-btn.active:after {
+  border-color: transparent transparent white transparent;
+  top: 6px;
+}
+
+/** dash panel */
+
+button.dash-head {
+  height: 35px;
+  width: 100%;
+  text-align: left;
+  padding: 10px 20px;
+}
+
+div.dash-content {
+  color: black;
   background-color: white;
+  padding: 10px 15px;
+}
+
+div.dash-content p {
+  margin: 0;
+  line-height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+div.dash-content p *:first-child {
+  margin-right: auto;
+}
+
+div.dash-content button {
+  height: 24px;
+  padding: 0 5px;
+}
+
+div.dash-content table {
+  margin: 0 0 5px 0;
+}
+
+div.dash-content table tr {
+  line-height: 26px;
+}
+
+div.dash-content table tr td {
+  padding: 0;
+  white-space: nowrap;
+}
+
+div.dash-content table tr td:first-child {
+  text-align: right;
+  padding-right: 5px;
+}
+
+div.dash-content table tr td:nth-child(2) {
+  width: 100%;
+  padding-right: 5px;
+}
+
+div.dash-content table tr td:nth-child(2) input[type=text], select {
+  width: 100%;
+}
+/* 
+div.dash-content table tr td:nth-child(2) select {
+  width: 100%;
+} */
+
+
+/**
+ * context menu
+ */
+
+#context-menu {
+  position: fixed;
   min-width: 160px;
+  padding: 5px 0;
+  border: none;
+  background-color: white;
   box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.25);
 }
 
-#menu-content a {
+#context-menu a {
   color: black;
   padding: 6px 12px;
   text-decoration: none;
   display: block;
 }
 
-#menu-content a:hover {
-  background-color: lightgray;
+#context-menu a:hover {
+  background-color: gainsboro;
 }
 
-#menu-content hr {
+#context-menu hr {
   margin-left: 10px;
   margin-right: 10px;
 }
 
 
-/* slide button */
+/**
+ * screenshot
+ */
 
-#slide-panel {
+#widget-frame {
   position: fixed;
-  top: 80px;
+  left: 0;
+  bottom: 0;
+}
+
+#widget-frame > div {
+  display: inline-block;
+  height: 32px;
+  color: white;
+}
+
+#widget-frame > div > button {
+  height: 100%;
+  width: 32px;
+}
+
+#widget-frame div:not(:first-child) {
+  border-left: 1px solid white;
+}
+
+
+/**
+ * side frame
+ */
+
+#side-frame {
+  width: 360px;
+  min-width: 240px;
+  height: 100vh;
+  overflow: hidden;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+}
+
+/* show/hide buttons */
+
+#show-frame {
+  position: fixed;
+  top: 0;
   right: 0;
 }
 
-#slide-btn {
-  width: 22px;
-  height: 44px;
-  color: transparent;
-  background-color: transparent;
-  border: 1px solid lightgray;
-  border-right: none;
-  padding: 0;
+#show-side-btn, #hide-side-btn{
+  height: 32px;
+  width: 32px;
 }
 
-#slide-btn:hover {
-  color: gray;
-  border: 0;
-  background-color: white;
-  box-shadow: -1px 1px 5px rgba(0, 0, 0, 0.25);
+#show-side-btn:after, #hide-side-btn:after{
+  position: absolute;
+  content: "";
+  top: 12px;
+  right: 12px;
+  height: 0;
+  width: 0;
+  border: 4px solid transparent;
 }
 
-/* side frame */
-
-#side-frame-content {
-  float: right;
-  height: 100vh;
-  overflow: hidden;
-
-  display: flex;
-  display: -webkit-box;
-  display: -moz-box;
-  display: -ms-flexbox;
-  display: -webkit-flex;
-
-  flex-direction: column;
-  -ms-flex-direction: column;
-  -moz-flex-direction: column;
-  -webkit-flex-direction: column;
+#show-side-btn:after {
+  border-color: transparent transparent white white;
 }
 
+#hide-side-btn:after {
+  border-color: white white transparent transparent;
+}
 
 /* side panels */
 
-div.panel {
-  width: 350px;
+ div.side-head {
+  background-color: dimgray;
+  height: 32px;
+  color: white;
 }
 
-div.panel-head {
-  background-color: rgb(225, 225, 225);
-  padding: 0 0 0 10px;
-  line-height: 25px;
-  font-weight: bold;
-}
-
-div.panel-body {
+div.side-content {
   border-top: 0;
-  padding: 5px;
+  resize: vertical; /* IE incompatible */
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
 }
 
-div.panel-head button {
-  float: right;
-  width: 24px;
-  height: 24px; 
-  background-color: transparent;
-  color: transparent;
-  font-size: 75%;
+div.side-head span {
+  height: 100%;
 }
 
-div.panel-head:hover button {
-  color: dimgray;
+div.side-head button {
+  height: 100%;
+  color: white;
+  background: transparent;
 }
 
-div.panel-head button:hover {
-  color: black !important;
+div.side-head span:last-of-type {
+  display: block;
+  overflow: hidden;
 }
 
-
-/* view panel */
-
-#display-items {
-  padding-bottom: 5px;
+div.side-head span:last-of-type button {
+  width: 100%;
+  text-align: left;
 }
 
-#display-items p {
-  margin-top: 0;
-  margin-bottom: 0;
+div.side-head button:hover {
+  background: darkgray;
 }
 
-#display-items p button {
-  background-color: transparent;
-  color: transparent;
-}
-
-#display-items p:hover button {
-  color: gray;
-}
-
-#display-items p button:hover {
-  background-color: whitesmoke;
-  color: black;
-}
 
 /* #display-items select {
   width: 100px;
@@ -533,12 +673,25 @@ div.panel-head button:hover {
 
 #bin-table {
   width: 100%;
-  border-collapse: collapse;
   border: none;
+  flex-grow: 1;
+}
+
+#bin-thead {
+  background-color: whitesmoke;
+}
+
+#bin-tbody {
+  overflow: auto;
+  /* min-height: 100px; */
 }
 
 #bin-table th,td {
   padding: 2px 5px;
+}
+
+#bin-thead th {
+  overflow: auto;
 }
 
 #bin-thead tr th {
@@ -564,7 +717,7 @@ div.panel-head button:hover {
 }
 
 #bin-tbody tr.selected {
-  background-color: skyblue ;
+  background-color: lightsteelblue ;
 }
 
 #bin-tbody tr.current {
@@ -576,65 +729,57 @@ div.panel-head button:hover {
 }
 
 
-/* information panel */
-
-#info-panel {
-  height: 100%;
-  overflow: hidden;
-}
-
-#info-panel div.panel-body {
-  height: calc(100% - 50px);
-  overflow: auto;
-}
-
+/**
+ * info panel
+ */
 
 /* information table */
 
 #info-table {
   width: 100%;
-  border-collapse: collapse;
   border: none;
 }
 
 #info-table tr td {
-  vertical-align: middle;
-  /* text-overflow: ellipsis; */
+  vertical-align: baseline;
+  height: 20px;
 }
 
 #info-table tr td:nth-child(1) {
   width: 25%;
   text-align: right;
-  padding-right: 5px;
+  padding: 0 5px 0 0;
   font-weight: bold;
 }
 
 #info-table tr td:nth-child(2) {
   text-align: left;
-  padding-left: 5px;
-}
-
-#info-table tr td:nth-child(3) {
-  text-align: right;
-  white-space: nowrap;
-  padding: 0;
+  padding: 0 0 0 5px;
 }
 
 #info-table tr:hover {
   background-color: whitesmoke;
 }
 
+/** control span */
+
 #info-ctrl-span {
   margin: 0;
   padding: 0;
   color: dimgray;
+  float: right;
+  display: block;
+  position: relative;
+  top: 0;
+  height: 20px;
 }
 
 #info-ctrl-span button {
   background-color: transparent;
   color: dimgray;
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 100%;
+  margin: 0;
   padding: 0;
 }
 
@@ -646,7 +791,7 @@ div.panel-head button:hover {
 #info-ctrl-span select {
   background-color: transparent;
   color: dimgray;
-  height: 18px;
+  height: 100%;
   padding: 0;
   border: none;
   min-width: 30px;
@@ -667,7 +812,6 @@ div.panel-head button:hover {
 
 table.sheet {
   border: none;
-  border-collapse: collapse;
   background-color: white;
   table-layout: fixed;
 }
@@ -760,17 +904,4 @@ table.sheet td.detail {
   padding: 10px;
   background-color: lightyellow;
   font-size: 80%;
-}
-
-
-/* program-accessible styles */
-
-/* color scheme */
-
-#highlight-color {
-  color: royalblue;
-}
-
-#polygon-color {
-  color: royalblue;
 }

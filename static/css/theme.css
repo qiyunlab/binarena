@@ -1,0 +1,43 @@
+/** dock dimension */
+
+#dash-panel {
+  width: 280px;
+}
+
+/** colors **/
+
+div.dock {
+  background-color: dimgray;
+  opacity: 0.5;
+}
+
+div.dock.active {
+  opacity: 1.0;
+  box-shadow: 0 0 25px 5px rgba(0, 0, 0, 0.2);
+}
+
+div.dock > div > button {
+  cursor: pointer;
+  border: none;
+  margin: 0;
+  color: white;
+  background-color: transparent;
+  height: 100%;
+}
+
+div.dock > div > button:enabled:hover {
+  background-color: darkgray;
+}
+
+
+/* program-accessible styles */
+
+/* color scheme */
+
+#highlight-color {
+  color: royalblue;
+}
+
+#polygon-color {
+  color: royalblue;
+}

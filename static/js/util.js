@@ -1,10 +1,10 @@
 "use strict";
 
 /**!
+ * @module util
  * @file Utilities - functions for general purposes.
  * They only operate on the parameters that are explicitly passed to them.
- * They do NOT directly access any global object (e.g., "document") or the
- * master objects (e.g., "view" and "data") defined by the window load event.
+ * They do NOT directly access the master object OR the "document" object.
  * They are not related to any visual elements.
  */
 
@@ -29,8 +29,8 @@ function splitLines(text) {
  * Convert hex to RGB.
  * @function hexToRgb
  * @param {string} hex - hex code of color
- * @returns {string} r,g,b of color
- * @see https://stackoverflow.com/questions/5623838/rgb-to-hex-and-hex-to-rgb
+ * @returns {string} r, g, b of color
+ * @see {@link https://stackoverflow.com/questions/5623838/}
  */
 function hexToRgb(hex) {
   var bigint = parseInt(hex, 16);
@@ -253,7 +253,8 @@ function maxDecimals(arr) {
  * @returns {boolean} whether point is within polygon
  * @description Reimplemented following W Randolph Franklin:
  * PNPOLY - Point Inclusion in Polygon Test
- * @see https://www.ecse.rpi.edu/Homepages/wrf/Research/Short_Notes/pnpoly.html
+ * @see {@link https://www.ecse.rpi.edu/Homepages/wrf/Research/Short_Notes/
+ * pnpoly.html}
  */
 function pnpoly(x, y, polygon) {
   var res = false;
