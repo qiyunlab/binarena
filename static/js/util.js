@@ -244,6 +244,30 @@ function maxDecimals(arr) {
 
 
 /**
+ * Check if a circle and a rectangle collide
+ * @function rectCircleColliding
+ * @param {Object.<x: number, y: number, r: number>} circle - circle
+ * @param {Object.<x: number, y: number, w: number, h: number>} rect - rectangle
+ * @description adopted from markE's answer at:
+ * @see {@link: https://stackoverflow.com/questions/21089959/}
+ */
+function rectCircleColliding(circle, rect){
+  var distX = Math.abs(circle.x - rect.x - rect.w / 2);
+  var distY = Math.abs(circle.y - rect.y - rect.h / 2);
+
+  if (distX > (rect.w / 2 + circle.r)) return false;
+  if (distY > (rect.h / 2 + circle.r)) return false;
+
+  if (distX <= (rect.w / 2)) return true;
+  if (distY <= (rect.h / 2)) return true;
+
+  var dx = distX-rect.w / 2;
+  var dy = distY-rect.h / 2;
+  return (dx * dx + dy * dy <= (circle.r * circle.r));
+}
+
+
+/**
  * Check if a point is within a polygon.
  * @function pnpoly
  * @param {number} x - x-coordinate of point
