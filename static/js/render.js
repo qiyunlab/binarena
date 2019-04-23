@@ -55,6 +55,8 @@ function resizeArena(rena, oray) {
  * @function renderArena
  * @param {Object} mo - master object
  * @todo {@link https://stackoverflow.com/questions/21089959/}
+ * @todo round floats into integers should improve performance, but may cause
+ * problem when zoomin scale is large, needs further thought
  */
 function renderArena(mo) {
   var data = mo.data;
@@ -110,6 +112,9 @@ function renderArena(mo) {
     smax = view.size.max;
   var ci = view.color.i,
     cmap = view.color.map;
+  var dx = xmax - xmin,
+    dy = ymax - ymin,
+    sratio = sbase / smax;
 
   // rendering parameters
   var paths = {};
@@ -120,17 +125,15 @@ function renderArena(mo) {
     var datum = data.df[i];
 
     // determine radius
-    var radius = si ? scaleNum(datum[si], sscale) * sbase / smax : sbase;
+    var radius = si ? scaleNum(datum[si], sscale) * sratio : sbase;
     var rviz = radius * scale;
 
     // if contig occupies less than one pixel on screen, skip
     if (rviz < min1) continue;
 
     // determine x- and y-coordinates
-    var x = Math.round(((scaleNum(datum[xi], xscale) - xmin)
-      / (xmax - xmin) - 0.5) * w);
-    var y = Math.round(((ymax - scaleNum(datum[yi], yscale))
-      / (ymax - ymin) - 0.5) * h);
+    var x = Math.round(((scaleNum(datum[xi], xscale) - xmin) / dx - 0.5) * w);
+    var y = Math.round(((ymax - scaleNum(datum[yi], yscale)) / dy - 0.5) * h);
 
     // determine color
     var c = '0,0,0';
@@ -191,44 +194,68 @@ function renderArena(mo) {
  * Render shadows around selected contigs.
  * @function renderSelection
  * @param {Object} mo - master object
+ * @see renderArena
  */
 function renderSelection(mo) {
   var data = mo.data;
   var view = mo.view;
   var oray = mo.oray;
 
-  var color = getComputedStyle(document.getElementById('highlight-color'))
-    .color;
+  // get shadow color
+  var color = getComputedStyle(document.getElementById('hilite-color')).color;
+
+  // clear canvas
   var ctx = oray.getContext('2d');
   ctx.clearRect(0, 0, oray.width, oray.height);
 
   var indices = Object.keys(mo.pick);
-  if (indices.length > 0) {
-    ctx.save();
-    ctx.translate(view.pos.x, view.pos.y);
-    ctx.scale(view.scale, view.scale);
+  var n = indices.length;
+  if (n === 0) return;
 
-    var pi2 = Math.PI * 2;
-    var idx = view.size.i;
-    indices.forEach(function (i) {
-      var datum = data.df[i];
-      var x = ((scaleNum(datum[view.x.i], view.x.scale) - view.x.min) /
-        (view.x.max - view.x.min) - 0.5) * oray.width;
-      var y = ((view.y.max - scaleNum(datum[view.y.i], view.y.scale)) /
-        (view.y.max - view.y.min) - 0.5) * oray.height;
-      ctx.beginPath();
-      ctx.fillStyle = color;
-      ctx.arc(x, y, idx ? scaleNum(datum[idx], view.size.scale) *
-        view.size.base / view.size.max : view.size.base, 0, pi2, true);
-      ctx.closePath();
-      ctx.shadowColor = color;
-      ctx.shadowBlur = 10; // note: canvas shadow blur is expensive
-      ctx.shadowOffsetX = 0;
-      ctx.shadowOffsetY = 0;
-      ctx.fill();
-    });
-    ctx.restore();
+  // prepare canvas
+  ctx.save();
+  ctx.translate(view.pos.x, view.pos.y);
+  ctx.scale(view.scale, view.scale);
+  ctx.fillStyle = color;
+  ctx.shadowColor = color;
+  ctx.shadowBlur = 10; // note: canvas shadow blur is expensive
+  ctx.shadowOffsetX = 0;
+  ctx.shadowOffsetY = 0;
+
+  // cache constant
+  var pi2 = Math.PI * 2;
+
+  // cache parameters
+  var w = oray.width,
+    h = oray.height;
+  var xi = view.x.i,
+    xscale = view.x.scale,
+    xmin = view.x.min,
+    xmax = view.x.max;
+  var yi = view.y.i,
+    yscale = view.y.scale,
+    ymin = view.y.min,
+    ymax = view.y.max;
+  var si = view.size.i,
+    sscale = view.size.scale,
+    sbase = view.size.base,
+    smax = view.size.max;
+  var dx = xmax - xmin,
+    dy = ymax - ymin,
+    sratio = sbase / smax;
+
+  // render shadows around selected contigs
+  ctx.beginPath();
+  for (var i = 0; i < n; i++) {
+    var datum = data.df[indices[i]];
+    var radius = Math.round(si ? scaleNum(datum[si], sscale) * sratio : sbase);
+    var x = Math.round(((scaleNum(datum[xi], xscale) - xmin) / dx - 0.5) * w);
+    var y = Math.round(((ymax - scaleNum(datum[yi], yscale)) / dy - 0.5) * h);
+    ctx.moveTo(x, y);
+    ctx.arc(x, y, radius, 0, pi2, true);
   }
+  ctx.fill();
+  ctx.restore();
 }
 
 
@@ -236,30 +263,32 @@ function renderSelection(mo) {
  * Render polygon drawn by user.
  * @function drawPolygon
  * @param {Object} master - master object
+ * @see renderArena
  */
 function drawPolygon(mo) {
   var view = mo.view;
   var stat = mo.stat;
   var oray = mo.oray;
-
+  var vertices = stat.polygon;
+  var pi2 = Math.PI * 2;
+  var radius = 3 / view.scale;
   var color = getComputedStyle(document.getElementById('polygon-color')).color;
   var ctx = oray.getContext('2d');
   ctx.clearRect(0, 0, oray.width, oray.height);
   ctx.save();
   ctx.translate(view.pos.x, view.pos.y);
   ctx.scale(view.scale, view.scale);
-  for (var i = 0; i < stat.polygon.length; i++) {
+  ctx.fillStyle = color;
+  ctx.strokeStyle = color;
+  for (var i = 0; i < vertices.length; i++) {
     ctx.beginPath();
-    ctx.fillStyle = color;
-    ctx.arc(stat.polygon[i].x, stat.polygon[i].y, 3 / view.scale, 0,
-      Math.PI * 2, true);
+    ctx.arc(vertices[i].x, vertices[i].y, radius, 0, pi2, true);
     ctx.closePath();
     ctx.lineWidth = 1 / view.scale;
-    ctx.moveTo(stat.polygon[i].x, stat.polygon[i].y);
+    ctx.moveTo(vertices[i].x, vertices[i].y);
     var j = i + 1;
-    if (j == stat.polygon.length) j = 0;
-    ctx.lineTo(stat.polygon[j].x, stat.polygon[j].y);
-    ctx.strokeStyle = color;
+    if (j == vertices.length) j = 0;
+    ctx.lineTo(vertices[j].x, vertices[j].y);
     ctx.stroke();
   }
   ctx.restore();
