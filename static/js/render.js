@@ -54,6 +54,7 @@ function resizeArena(rena, oray) {
  * Render arena given current data and view.
  * @function renderArena
  * @param {Object} mo - master object
+ * @todo {@link https://stackoverflow.com/questions/21089959/}
  */
 function renderArena(mo) {
   var data = mo.data;
@@ -61,48 +62,121 @@ function renderArena(mo) {
   var rena = mo.rena;
 
   // prepare canvas context
+  // note: origin (0, 0) is at the upper-left corner
   var ctx = rena.getContext('2d');
+
+  // clear canvas
   ctx.clearRect(0, 0, rena.width, rena.height);
   ctx.save();
+
+  // move to current position
   ctx.translate(view.pos.x, view.pos.y);
-  ctx.scale(view.scale, view.scale);
+  
+  // scale canvas
+  var scale = view.scale;
+  ctx.scale(scale, scale);
+
+  // alternative: css scale, which is theoretically faster, but it blurs when
+  // zoom in
+  // rena.style.transformOrigin = '0 0';
+  // rena.style.transform = 'scale(' + view.scale + ')';
 
   var masking = (Object.keys(mo.mask).length > 0);
   var coloring = Boolean(view.color.i && view.color.palette);
 
+  // cache constants
+  var pi2 = Math.PI * 2;
+  var pi1_2 = Math.sqrt(Math.PI);
+  var min1 = Math.sqrt(1 / Math.PI);
+  var min2 = Math.sqrt(4 / Math.PI);
+
+  // cache parameters
+  var w = rena.width,
+    h = rena.height;
+  var xi = view.x.i,
+    xscale = view.x.scale,
+    xmin = view.x.min,
+    xmax = view.x.max;
+  var yi = view.y.i,
+    yscale = view.y.scale,
+    ymin = view.y.min,
+    ymax = view.y.max;
+  var oi = view.opacity.i,
+    oscale = view.opacity.scale,
+    omax = view.opacity.max;
+  var si = view.size.i,
+    sscale = view.size.scale,
+    sbase = view.size.base,
+    smax = view.size.max;
+  var ci = view.color.i,
+    cmap = view.color.map;
+
+  // rendering parameters
+  var paths = {};
+
+  // determine appearance of contig
   for (var i = 0; i < data.df.length; i++) {
     if (masking && i in mo.mask) continue;
     var datum = data.df[i];
 
-    // determine x- and y-coordinates
-    var x = ((scaleNum(datum[view.x.i], view.x.scale) - view.x.min) /
-      (view.x.max - view.x.min) - 0.5) * rena.width;
-    var y = ((view.y.max - scaleNum(datum[view.y.i], view.y.scale)) /
-      (view.y.max - view.y.min) - 0.5) * rena.height;
+    // determine radius
+    var radius = si ? scaleNum(datum[si], sscale) * sbase / smax : sbase;
+    var rviz = radius * scale;
 
-    ctx.beginPath();
+    // if contig occupies less than one pixel on screen, skip
+    if (rviz < min1) continue;
+
+    // determine x- and y-coordinates
+    var x = Math.round(((scaleNum(datum[xi], xscale) - xmin)
+      / (xmax - xmin) - 0.5) * w);
+    var y = Math.round(((ymax - scaleNum(datum[yi], yscale))
+      / (ymax - ymin) - 0.5) * h);
 
     // determine color
     var c = '0,0,0';
     if (coloring) {
-      var val = datum[view.color.i];
+      var val = datum[ci];
       if (val !== null) {
         var cat = val[0];
-        if (cat in view.color.map) {
-          c = hexToRgb(view.color.map[cat]);
-        }
+        if (cat in cmap) c = hexToRgb(cmap[cat]);
       }
     }
 
     // determine opacity
-    ctx.fillStyle = 'rgba(' + c + ',' + (scaleNum(datum[view.opacity.i],
-      view.opacity.scale) / view.opacity.max).toFixed(2) + ')';
+    var alpha = (scaleNum(datum[oi], oscale) / omax).toFixed(2);
 
-    // determine radius and draw circle
-    ctx.arc(x, y, scaleNum(datum[view.size.i], view.size.scale) *
-      view.size.base / view.size.max, 0, Math.PI * 2, true);
+    // generate fill style string
+    var fs = 'rgba(' + c + ',' + alpha + ')';
+    if (!(fs in paths)) paths[fs] = { 'square': [], 'circle': [] };
 
-    ctx.closePath();
+    // if contig occupies less than four pixels on screen, draw a square
+    if (rviz < min2) {
+      paths[fs]['square'].push([x, y, Math.round(radius * pi1_2)]);
+    }
+
+    // if bigger, draw a circle
+    else {
+      paths[fs]['circle'].push([x, y, Math.round(radius)]);
+    }
+  }
+
+  // render contigs
+  // note: minimizing changes of fill style can improve performance
+  // note: minimizing numbers of paths can improve performance
+  for (var fs in paths) {
+    ctx.fillStyle = fs;
+    for (var i = 0; i < paths[fs]['square'].length; i++) {
+      var sq = paths[fs]['square'][i];
+      ctx.fillRect(sq[0], sq[1], sq[2], sq[2]);
+    }
+    var n = paths[fs]['circle'].length;
+    if (n === 0) continue;
+    ctx.beginPath();
+    for (var i = 0; i < n; i++) {
+      var ci = paths[fs]['circle'][i];
+      ctx.moveTo(ci[0], ci[1]);
+      ctx.arc(ci[0], ci[1], ci[2], 0, pi2, true);
+    }
     ctx.fill();
   }
 
@@ -127,11 +201,15 @@ function renderSelection(mo) {
     .color;
   var ctx = oray.getContext('2d');
   ctx.clearRect(0, 0, oray.width, oray.height);
+
   var indices = Object.keys(mo.pick);
   if (indices.length > 0) {
     ctx.save();
     ctx.translate(view.pos.x, view.pos.y);
     ctx.scale(view.scale, view.scale);
+
+    var pi2 = Math.PI * 2;
+    var idx = view.size.i;
     indices.forEach(function (i) {
       var datum = data.df[i];
       var x = ((scaleNum(datum[view.x.i], view.x.scale) - view.x.min) /
@@ -140,11 +218,11 @@ function renderSelection(mo) {
         (view.y.max - view.y.min) - 0.5) * oray.height;
       ctx.beginPath();
       ctx.fillStyle = color;
-      ctx.arc(x, y, scaleNum(datum[view.size.i], view.size.scale) *
-        view.size.base / view.size.max, 0, Math.PI * 2, true);
+      ctx.arc(x, y, idx ? scaleNum(datum[idx], view.size.scale) *
+        view.size.base / view.size.max : view.size.base, 0, pi2, true);
       ctx.closePath();
       ctx.shadowColor = color;
-      ctx.shadowBlur = 10;
+      ctx.shadowBlur = 10; // note: canvas shadow blur is expensive
       ctx.shadowOffsetX = 0;
       ctx.shadowOffsetY = 0;
       ctx.fill();

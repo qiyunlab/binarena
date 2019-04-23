@@ -245,7 +245,7 @@ function resetView(mo, keep) {
     indices.push(view[items[i]].i);
     values.push([]);
   }
-  var masking = (Object.keys(mo.mask).length > 0) ? true : false;
+  var masking = (Object.keys(mo.mask).length > 0);
   for (var i = 0; i < data.df.length; i++) {
     if (masking && i in mo.mask) continue;
     for (var j = 0; j < items.length; j++) {

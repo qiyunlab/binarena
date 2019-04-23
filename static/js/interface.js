@@ -718,6 +718,7 @@ function initCanvas(mo) {
 
   /* keyboard events */
   rena.addEventListener('keydown', function (e) {
+    // var t0 = performance.now();
     switch (e.keyCode) {
       case 37: // Left
         view.pos.x -= 15;
@@ -763,6 +764,8 @@ function initCanvas(mo) {
         if (stat.drawing) polygonSelect(mo);
         break;
     }
+    // var t1 = performance.now();
+    // console.log(t1 - t0);
   });
 }
 
@@ -796,9 +799,12 @@ function canvasMouseClick(e, mo) {
     for (var i = 0; i < data.df.length; i++) {
       if (masking && i in mo.mask) continue;
       var datum = data.df[i];
-      var ratio = scaleNum(datum[view.size.i], view.size.scale) *
-        view.size.base / view.size.max;
-      var r2 = ratio * ratio; // this is faster than Math.pow(x, 2)
+      var idx = view.size.i;
+      var radius = idx ? scaleNum(datum[idx], view.size.scale) * view.size.base
+        / view.size.max : view.size.base;
+      // var ratio = scaleNum(datum[view.size.i], view.size.scale) *
+      //   view.size.base / view.size.max;
+      var r2 = radius * radius; // this is faster than Math.pow(x, 2)
       var x = ((scaleNum(datum[view.x.i], view.x.scale) - view.x.min) /
         (view.x.max - view.x.min) - 0.5) * rena.width;
       var y = ((view.y.max - scaleNum(datum[view.y.i], view.y.scale)) /

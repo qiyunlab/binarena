@@ -142,7 +142,7 @@ function transpose(df) {
 
 
 /**
- * Scale a number by key
+ * Scale a number by key.
  * @function scaleNum
  * @param {number} num - number to scale
  * @param {string|number} scale - scale name or power
