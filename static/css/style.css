@@ -45,7 +45,7 @@ input[type=text] {
 }
 
 input[type=text]:hover {
-  background-color: whitesmoke;
+  background-color: #EEE;
 }
 
 input[type=text]:focus {
@@ -77,7 +77,7 @@ select:-moz-focusring {
 }
 
 select:hover {
-  background-color: whitesmoke;
+  background-color: #EEE;
 }
 
 select:focus {
@@ -137,20 +137,13 @@ p.setting button:only-child {
   margin-right: auto;
 }
 
-button.pressed {
-  border: 1px solid darkgray;
-  box-sizing: border-box;
-  /* background-color: darkgray !important;
-  color: white !important; */
-}
-
 button.static {
   background-color: transparent;
   color: black;
 }
 
 button.static:hover {
-  background-color: whitesmoke;
+  background-color: #EEE;
 }
 
 button.square {
@@ -162,16 +155,56 @@ button.switch {
   background-color: lightgray;
 }
 
-button.close {
-  background-color: transparent;
-  font-size: 16px;
-  float: right;
-  width: 24px;
-  height: 24px;
+
+/**
+ * shared classes
+ */
+
+/* panel head */
+
+div.panel-head {
+  background-color: dimgray;
+  height: 32px;
+  min-height: 32px;
+  color: white;
+  position: relative;
 }
 
-button.close:hover {
-  background-color: lightgray;
+div.panel-head span {
+  height: 100%;
+}
+
+div.panel-head button {
+  height: 100%;
+  color: white;
+  background: transparent;
+  font-size: 9pt;
+}
+
+div.panel-head span:last-of-type {
+  display: block;
+  overflow: hidden;
+}
+
+div.panel-head span:last-of-type button:hover:after {
+  position: absolute;
+  content: "";
+  top: 11px;
+  left: 8px;
+  width: 0;
+  height: 0;
+  border: 5px solid transparent;
+  border-color: transparent transparent transparent white;
+}
+
+div.panel-head span:last-of-type button {
+  width: 100%;
+  text-align: left;
+  padding-left: 20px;
+}
+
+div.panel-head button:hover {
+  background: darkgray;
 }
 
 
@@ -259,28 +292,33 @@ div.modal-content {
   background: white;
   max-width: 80%;
   margin: 5% auto;
-  padding: 10px;
+  /* padding: 10px; */
   overflow: hidden;
 }
 
 div.modal-head {
-  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   height: 32px;
+  padding-left: 10px;
+  font-weight: bold;
+  color: white;
+  background-color: dimgray;
 }
 
-/* tooltip (currently not used) */
-
-div.tooltip {
-  display: none;
-  position: absolute;
-  text-align: left;
-  opacity: 0.8;
-  margin-left: -100px;
-  margin-top: -25px;
-  background: lightyellow;
-  border: 1px solid gray;
-  box-shadow: 6px 6px 3px gray;
+div.modal-head button:last-child {
+  height: 100%;
+  min-width: 32px;
+  color: white;
+  font-size: 16px;
+  background-color: transparent;
 }
+
+div.modal-head button:last-child:hover {
+  background-color: darkgray;
+}
+
 
 
 /* button group (currently not used) */
@@ -330,7 +368,7 @@ table.square td {
 }
 
 table.square td:hover {
-  background-color: whitesmoke;
+  background-color: lightgray;
   color: black;
 }
 
@@ -345,7 +383,7 @@ table.square td:hover {
 }
 
 #list-options td:hover {
-  background-color: whitesmoke;
+  background-color: lightgray;
 }
 
 #list-options td.active {
@@ -378,12 +416,10 @@ canvas.main-plot {
   position: absolute;
   border: 5px dashed lightgray;
   text-align: center;
-  width: 90%;
-  left: 50%;
-  margin-left: -45%;
-  height: 600px;
-  top: 300px;
-  margin-top: -200px;
+  left: 100px;
+  width: calc(100% - 200px);
+  top: 100px;
+  height: calc(100% - 200px);
 }
 
 #drop-sign p {
@@ -494,6 +530,30 @@ div.dash-content table tr td:nth-child(2) {
 div.dash-content table tr td:nth-child(2) input[type=text], select {
   width: 100%;
 }
+
+div.dash-content table tr td:last-child > span {
+  visibility: hidden;
+}
+
+div.dash-content table tr:hover td:last-child > span {
+  visibility: visible;
+}
+
+div.dash-content table tr td:last-child > span button {
+  background-color: transparent;
+  color: gray;
+}
+
+div.dash-content table tr td:last-child > span button:hover {
+  background-color: #EEE;
+  color: black;
+}
+
+div.dash-content button.pressed {
+  border: 1px solid darkgray;
+  box-sizing: border-box;
+}
+
 /* 
 div.dash-content table tr td:nth-child(2) select {
   width: 100%;
@@ -531,19 +591,27 @@ div.dash-content table tr td:nth-child(2) select {
 
 
 /**
- * screenshot
+ * widget frame
  */
 
 #widget-frame {
   position: fixed;
   left: 0;
   bottom: 0;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+#widget-frame:hover {
+  opacity: 1.0;
 }
 
 #widget-frame > div {
-  display: inline-block;
   height: 32px;
   color: white;
+  display: flex;
+  align-items: center;
 }
 
 #widget-frame > div > button {
@@ -551,8 +619,35 @@ div.dash-content table tr td:nth-child(2) select {
   width: 32px;
 }
 
+#widget-frame > div > button.pressed {
+  color: black;
+  background-color: white;
+}
+
 #widget-frame div:not(:first-child) {
   border-left: 1px solid white;
+}
+
+#widget-frame span.spacer {
+  display: inline-block;
+  height: 18px;
+  width: 2px;
+  border-left: 1px solid white;
+  margin-left: 2px;
+}
+
+/** setting panel */
+
+#set-panel > div.dock {
+  display: none;
+  position: fixed;
+  left: 0;
+  bottom: 32px;
+  flex-direction: column;
+}
+
+#set-panel:hover > div.dock {
+  display: flex;
 }
 
 
@@ -565,7 +660,6 @@ div.dash-content table tr td:nth-child(2) select {
   min-width: 240px;
   height: 100vh;
   overflow: hidden;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
   display: flex;
   flex-direction: column;
 }
@@ -601,44 +695,12 @@ div.dash-content table tr td:nth-child(2) select {
   border-color: white white transparent transparent;
 }
 
-/* side panels */
-
- div.side-head {
-  background-color: dimgray;
-  height: 32px;
-  color: white;
-}
-
 div.side-content {
   border-top: 0;
   resize: vertical; /* IE incompatible */
   overflow: auto;
   display: flex;
   flex-direction: column;
-}
-
-div.side-head span {
-  height: 100%;
-}
-
-div.side-head button {
-  height: 100%;
-  color: white;
-  background: transparent;
-}
-
-div.side-head span:last-of-type {
-  display: block;
-  overflow: hidden;
-}
-
-div.side-head span:last-of-type button {
-  width: 100%;
-  text-align: left;
-}
-
-div.side-head button:hover {
-  background: darkgray;
 }
 
 
@@ -658,16 +720,6 @@ div.side-head button:hover {
   margin-bottom: 0;
 }
 
-#str-match-span button {
-  background-color: transparent;
-  color: gray;
-}
-
-#str-match-span button:hover {
-  background-color: whitesmoke;
-  color: black;
-}
-
 
 /* bins panel */
 
@@ -678,7 +730,7 @@ div.side-head button:hover {
 }
 
 #bin-thead {
-  background-color: whitesmoke;
+  background-color: #EEE;
 }
 
 #bin-tbody {
@@ -699,7 +751,7 @@ div.side-head button:hover {
 }
 
 #bin-tbody tr:hover {
-  background-color: whitesmoke;
+  background-color: #EEE;
 }
 
 #bin-thead tr th:first-child {
@@ -758,7 +810,7 @@ div.side-head button:hover {
 }
 
 #info-table tr:hover {
-  background-color: whitesmoke;
+  background-color: #EEE;
 }
 
 /** control span */
@@ -839,7 +891,7 @@ table.sheet tbody td {
 }
 
 table.sheet tbody tr:hover {
-  background-color: whitesmoke;
+  background-color: #EEE;
 }
 
 table.sheet tbody td:hover {
@@ -904,4 +956,156 @@ table.sheet td.detail {
   padding: 10px;
   background-color: lightyellow;
   font-size: 80%;
+}
+
+
+/**
+ * legends
+ */
+
+div.legend {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 10px 10px;
+}
+
+div.legend label {
+  display: inline-block;
+  color: gray;
+  padding: 0 5px;
+  font-size: 9pt;
+}
+
+div.legend:hover label {
+  color: black;
+}
+
+div.legend label.min {
+  cursor: pointer;
+  text-align: right;
+}
+
+div.legend:hover label.min {
+  background-color: #EEE;
+}
+
+div.legend button {
+  background-color: transparent;
+  color: gray;
+}
+
+div.legend:hover button {
+  background-color: #EEE;
+  color: black;
+}
+
+div.legend div.gradient {
+  margin: 0 5px;
+  padding: 0;
+  border: 0;
+  height: 16px;
+  width: 100%;
+  cursor: text;
+}
+
+#opacity-gradient {
+  background-image: linear-gradient(to right, rgba(0, 0, 0, 0) , black);
+}
+
+div.legend div.range {
+  position: absolute;
+  display: none;
+  z-index: 3;
+  cursor: move;
+  height: 20px;
+  background-color: white;
+  border: 3px solid transparent;
+  cursor: col-resize;
+}
+
+div.legend:hover div.range {
+  display: block;
+}
+
+div.legend div.range.lower {
+  transform: translateX(-6px);
+  border-color: transparent gray transparent transparent;
+  box-shadow: 2px 0 0 1px white;
+}
+
+div.legend div.range.upper {
+  /* transform: translateX(3px); */
+  border-color: transparent transparent transparent gray;
+  box-shadow: -2px 0 0 1px white;
+}
+
+div.legend div.clip {
+  position: absolute;
+  z-index: 3;
+  margin-top: 0;
+  margin-bottom: 0;
+  padding: 0;
+  border: 0;
+  height: 16px;
+  background-color: white;
+}
+
+div.legend:hover div.clip {
+  background-color: lightgray;
+}
+
+
+/* legend value tooltip */
+
+#legend-tip {
+  z-index: 3;
+  position: fixed;
+  margin-top: 10px;
+  transform: translateX(-50%);
+  text-align: center;
+  min-width: 50px;
+  color: black;
+  background-color: white;
+  border: 1px solid black;
+  border-radius: 5px;
+  line-height: 125%;
+  padding: 5px 10px;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+}
+
+#legend-tip::before {
+  content: " ";
+  position: absolute;
+  left: calc(50% - 5px);
+  bottom: 100%;
+  border-width: 5px;
+  border-style: solid;
+  border-color: transparent transparent black transparent;
+}
+
+#legend-tip::after {
+  content: " ";
+  position: absolute;
+  left: calc(50% - 4px);
+  bottom: 100%;
+  border-width: 4px;
+  border-style: solid;
+  border-color: transparent transparent white transparent;
+}
+
+#legend-circle {
+  display: inline-block;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background-color: black;
+  margin: 5px 10px 5px 0;
+}
+
+#legend-value {
+  display: inline-block;
 }

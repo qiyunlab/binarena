@@ -81,21 +81,15 @@ function initControls(mo) {
   document.getElementById('dash-btn').addEventListener('click', function () {
     this.classList.toggle('active');
     document.getElementById('dash-panel').classList.toggle('hidden');
-    dashFrameToggleActive();
+    document.getElementById('dash-frame').classList.toggle('active');
+    // dashFrameToggleActive();
   });
 
-  document.querySelectorAll('button.dash-head').forEach(function(btn) {
-    btn.addEventListener('click', function() {
-      this.nextElementSibling.classList.toggle('hidden');
-      dashFrameToggleActive();
-    });
-  });
-
-  function dashFrameToggleActive() {
-    document.getElementById('dash-frame').classList.toggle('active',
-      !(document.getElementById('dash-panel').classList.contains('hidden')) &&
-      document.querySelector('.dash-content:not(.hidden)'));
-  }
+  // function dashFrameToggleActive() {
+  //   document.getElementById('dash-frame').classList.toggle('active',
+  //     !(document.getElementById('dash-panel').classList.contains('hidden')) &&
+  //     document.querySelector('.dash-content:not(.hidden)'));
+  // }
 
 
   /**
@@ -126,7 +120,7 @@ function initControls(mo) {
 
   document.getElementById('show-data-a').addEventListener('click',
     function () {
-    document.getElementById('data-btn').click();
+    document.getElementById('data-table-modal').classList.remove('hidden');
   });
 
   document.getElementById('close-data-a').addEventListener('click',
@@ -151,20 +145,48 @@ function initControls(mo) {
   });
 
   document.getElementById('help-a').addEventListener('click', function () {
-    toastMsg(helpInfo, stat);
+    document.getElementById('help-modal').classList.remove('hidden');
   });
+
+
+  /**
+   * @summary Widget panel buttons
+   */
+
+  document.getElementById('polygon-btn').addEventListener('click',
+    function () {
+    polygonSelect(mo);
+  });
+
+  document.getElementById('selmode-btn').addEventListener('click',
+    function () {
+    var modes = ['new', 'add', 'remove'];
+    var icons = ['asterisk', 'plus', 'minus'];
+    var titles = ['new', 'add to', 'remove from'];
+    var i = (modes.indexOf(stat.selmode) + 1) % 3;
+    stat.selmode = modes[i];
+    this.innerHTML = '<i class="fa fa-' + icons[i] + '"></i>';
+    this.title = 'Current selection mode: ' + titles[i] + ' selection';
+  });
+
+  document.getElementById('masking-btn').addEventListener('click',
+    function () {
+    this.classList.toggle('pressed');
+    stat.masking = this.classList.contains('pressed');
+  });
+
 
 
   /**
    * @summary Shared
    */
 
-  // side panel headers
-  document.querySelectorAll('.side-head span:last-of-type button').forEach(
+  // panel header click (show/hide panel)
+  document.querySelectorAll('.panel-head span:last-of-type button').forEach(
     function(btn) {
     btn.addEventListener('click', function() {
-      var pnl = this.parentElement.parentElement.nextElementSibling;
-      if (pnl !== null) pnl.classList.toggle("hidden");
+      var panel = this.parentElement.parentElement.nextElementSibling;
+      if (panel !== null) panel.classList.toggle("hidden");
     });
   });
 
@@ -268,43 +290,45 @@ function initControls(mo) {
 
 
   /**
-   * @summary View panel toolbar
+   * @summary settings panel
    */
 
   // show/hide grid
-  document.getElementById('grid-btn').addEventListener('click', function () {
-    view.grid = !view.grid;
-    document.getElementById('grid-btn').classList.toggle('pressed');
-    document.getElementById('coords-label').classList.toggle('hidden');
+  document.getElementById('grid-chk').addEventListener('change', function () {
+    view.grid = this.checked;
+    document.getElementById('coords-label').classList.toggle('hidden',
+      !this.checked);
     renderArena(mo);
   });
 
-  // reset graph
-  document.getElementById('reset-btn').addEventListener('click',
-    function () {
-    resetView(mo);
+  // show/hide navigation controls
+  document.getElementById('nav-chk').addEventListener('change', function () {
+    document.getElementById('nav-panel').classList.toggle('hidden',
+      !this.checked);
   });
 
-  // show/hide navigation controls
-  document.getElementById('nav-btn').addEventListener('click', function () {
-    this.classList.toggle('pressed');
-    document.getElementById('nav-panel').classList.toggle('hidden');
+  // show/hide frequent buttons
+  document.getElementById('freq-chk').addEventListener('change', function () {
+    document.getElementById('freq-panel').classList.toggle('hidden',
+      !this.checked);
   });
 
   // take screenshot
-  document.getElementById('screenshot-btn').addEventListener('click', function () {
+  document.getElementById('screenshot-btn').addEventListener('click',
+    function () {
     exportPNG(mo.rena);
-  });
-
-  // show data table
-  document.getElementById('data-btn').addEventListener('click', function () {
-    document.getElementById('data-table-modal').classList.remove('hidden');
   });
 
 
   /**
    * @summary Navigation controls
    */
+
+  // reset graph
+  document.getElementById('reset-btn').addEventListener('click',
+    function () {
+    resetView(mo);
+  });
 
   document.getElementById('zoomin-btn').addEventListener('click', function () {
     view.scale /= 0.75;
@@ -341,6 +365,14 @@ function initControls(mo) {
    * @summary View panel body
    */
 
+  document.querySelectorAll('.legend-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      this.classList.toggle('pressed');
+      this.parentElement.parentElement.parentElement.nextElementSibling
+        .classList.toggle('hidden');
+    });
+  });
+
   ['x', 'y', 'size', 'opacity'].forEach(function (key) {
     document.getElementById(key + '-field-sel').addEventListener('change',
       function () {
@@ -372,13 +404,141 @@ function initControls(mo) {
 
 
   /**
-   * @summary Select panel tool bar
+   * @summary Legends
+   * @todo other legends
    */
 
-  document.getElementById('polygon-btn').addEventListener('click',
-    function () {
-    polygonSelect(mo);
+  document.getElementById('opacity-legend').addEventListener('mouseenter',
+    function() {
+    updateLegends(mo, ['opacity']);
+    this.querySelectorAll('.clip').forEach(function(clip) {
+      clip.classList.add('hidden');
+    });
   });
+
+  document.getElementById('opacity-legend').addEventListener('mouseleave',
+    function() {
+    this.setAttribute('data-ranging', 'none');
+    this.querySelectorAll('.clip').forEach(function(clip) {
+      clip.classList.remove('hidden');
+    });
+  });
+
+  document.querySelectorAll('.gradient').forEach(function(grad){
+
+    grad.addEventListener('mousemove', function(e) {
+      var item = this.parentElement.getAttribute('data-item');
+      var v = mo.view[item];
+      var rect = this.getBoundingClientRect();
+      var width = rect.right - rect.left;
+      var offset = e.clientX - rect.left;
+      var step = width / 10;
+      var ranging = this.parentElement.getAttribute('data-ranging');
+
+      // show tooltip
+      if (ranging === 'none') {
+
+        // skip if cursor is outside range
+        if (offset < this.parentElement.querySelector('.range.lower')
+          .getAttribute('data-tick') * step) return;
+        if (offset > this.parentElement.querySelector('.range.upper')
+          .getAttribute('data-tick') * step) return;
+
+        // specify tip position
+        var tip = document.getElementById('legend-tip');
+        tip.style.left = e.clientX + 'px';
+        tip.style.top = Math.round(rect.bottom) + 'px';
+
+        // specify tip label
+        document.getElementById('legend-value').innerHTML = formatNum(
+          scaleNum(v.min + offset / width * (v.max - v.min),
+          unscale(v.scale)), 3);
+        
+        if (item === 'opacity') {
+          document.getElementById('legend-circle').style.backgroundColor
+            = 'rgba(0,0,0,' + (offset / width).toFixed(2) + ')';
+        }
+      }
+
+      // drag to adjust range
+      else {
+        var tick = Math.round(offset / width * 10);
+        var range = this.parentElement.querySelector('.range.' + ranging);
+        if (tick == range.getAttribute('data-tick')) return;
+        // ensure there's at least one step between lower & upper bounds
+        var other = (ranging === 'lower') ? 'upper' : 'lower';
+        var space = (this.parentElement.querySelector('.range.' + other)
+          .getAttribute('data-tick') - tick) * (1 - ['lower', 'upper']
+          .indexOf(ranging) * 2);
+        if (space < 1) return;
+        range.setAttribute('data-tick', tick);
+        range.style.left = Math.round(rect.left + tick * step) + 'px';
+      }
+    });
+
+    grad.addEventListener('mouseenter', function() {
+      if (this.parentElement.getAttribute('data-ranging') === 'none') {
+        document.getElementById('legend-tip').classList.remove('hidden');
+      }
+    });
+
+    grad.addEventListener('mouseleave', function() {
+      document.getElementById('legend-tip').classList.add('hidden');
+    });
+
+    grad.addEventListener('mouseup', function() {
+      var ranging = this.parentElement.getAttribute('data-ranging');
+      if (ranging === 'none') {
+        document.getElementById('legend-tip').classList.add('hidden');
+      } else {
+        this.parentElement.setAttribute('data-ranging', 'none');
+        var item = this.parentElement.getAttribute('data-item');
+        mo.view[item][ranging]= parseInt(this.parentElement.querySelector(
+          '.range.' + ranging).getAttribute('data-tick')) * 10;
+        renderArena(mo);
+        updateLegends(mo, [item]);
+      }
+    });
+  });
+
+  document.querySelectorAll('.legend .range').forEach(function(range){
+    range.title = 'Adjust ' + checkClassName(range, ['lower', 'upper'])
+      + ' bound of ' + range.parentElement.getAttribute('data-item');
+    range.addEventListener('mousedown', rangeMouseDown);
+    range.addEventListener('mouseup', rangeMouseUp);
+  });
+
+  function rangeMouseDown(e) {
+    e.preventDefault();
+    this.parentElement.setAttribute('data-ranging',
+      checkClassName(this, ['lower', 'upper']));
+  }
+
+  function rangeMouseUp(e) {
+    e.preventDefault();
+    this.parentElement.setAttribute('data-ranging', 'none');
+    var item = this.parentElement.getAttribute('data-item');
+    mo.view[item][checkClassName(this, ['lower', 'upper'])]
+      = this.getAttribute('data-tick') * 10;
+    renderArena(mo);
+    updateLegends(mo, [item]);
+  }
+
+  document.querySelectorAll('.legend .min').forEach(function(label) {
+    label.title = 'Toggle zero or minimum value';
+    label.addEventListener('click', function() {
+      var item = this.parentElement.getAttribute('data-item');
+      mo.view[item].zero = !mo.view[item].zero;
+      updateLegends(mo, [item]);
+      renderArena(mo);
+    });
+  });
+
+
+
+
+
+
 
 
   /**
@@ -721,47 +881,44 @@ function initCanvas(mo) {
     // var t0 = performance.now();
     switch (e.keyCode) {
       case 37: // Left
-        view.pos.x -= 15;
-        updateView(mo);
+        document.getElementById('left-btn').click();
         break;
       case 38: // Up
-        view.pos.y -= 15;
-        updateView(mo);
+        document.getElementById('up-btn').click();
         break;
       case 39: // Right
-        view.pos.x += 15;
-        updateView(mo);
+        document.getElementById('right-btn').click();
         break;
       case 40: // Down
-        view.pos.y += 15;
-        updateView(mo);
-        break;
-      case 37: // Left
-        view.pos.x -= 15;
-        updateView(mo);
+        document.getElementById('down-btn').click();
         break;
       case 173: // - (Firefox)
       case 189: // - (others)
-        view.scale *= 0.75;
-        updateView(mo);
+        document.getElementById('zoomout-btn').click();
         break;
       case 61: // = (Firefox)
       case 187: // = (others)
-        view.scale /= 0.75;
-        updateView(mo);
+        document.getElementById('zoomin-btn').click();
+        break;
+      case 48: // 0 (zero)
+        document.getElementById('reset-btn').click();
+        break;
+      case 80: // P
+        document.getElementById('screenshot-btn').click();
+        break;
+      case 77: // M
+        document.getElementById('masking-btn').click();
         break;
       case 46: // Delete
       case 8: // Backspace
         var indices = Object.keys(mo.pick);
         if (indices.length > 0) {
           // switch to "add" mode, then treat deletion
-          document.getElementById('sel-add-btn').click();
-          treatSelection(indices, false, mo);
+          treatSelection(indices, 'add', true, mo);
         }
         break;
       case 13: // Enter
-        // finish polygon selection
-        if (stat.drawing) polygonSelect(mo);
+        polygonSelect(mo);
         break;
     }
     // var t1 = performance.now();
@@ -905,24 +1062,15 @@ function initBtnGroups() {
  * @function initCloseBtns
  */
 function initCloseBtns() {
-  var bars = document.getElementsByClassName('modal-head');
-  for (var i = 0; i < bars.length; i++) {
+  document.querySelectorAll(".modal-head").forEach(function(div) {
     var btn = document.createElement('button');
     btn.innerHTML = '&times;';
-    btn.classList.add('close');
-    btn.title = 'Close the ' + bars[i].textContent
-      .toLowerCase() + ' window';
-    bars[i].appendChild(btn);
+    btn.title = 'Close ' + div.textContent.toLowerCase() + ' window';
     btn.addEventListener('click', function () {
-      this.parentElement.parentElement.parentElement.classList.add('hidden');
+      div.parentElement.parentElement.classList.add('hidden');
     });
-  }
-  // var btns = document.getElementsByClassName('close');
-  // for (var i = 0; i < btns.length; i++) {
-  //   btns[i].addEventListener('click', function () {
-  //     this.parentElement.parentElement.parentElement.classList.add('hidden');
-  //   });
-  // }
+    div.appendChild(btn);
+  });
 }
 
 
@@ -1030,5 +1178,63 @@ function autoComplete(inp, arr) {
     for (var i = 0; i < table.rows.length; i++) {
       table.rows[i].cells[0].classList.remove('active');
     }
+  }
+}
+
+
+/**
+ * Update legends
+ * @function updateLegends
+ * @param {Object} mo - master object
+ * @param {Array.<string>} [items] - display items to update
+ * @todo other items
+ */
+function updateLegends(mo, items) {
+  items = items || ['x', 'y', 'size', 'opacity'];
+  var scale = unscale(mo.view.opacity.scale);
+  var legend = document.getElementById('opacity-legend');
+  var grad = legend.querySelector('.gradient');
+  if (grad === null) return;
+
+  // refresh labels
+  ['min', 'max'].forEach(function(key) {
+    var label = legend.querySelector('label.' + key);
+    var value = formatNum(scaleNum(mo.view.opacity[key], scale), 3);
+    label.setAttribute('data-value', value);
+    label.innerHTML = (key === 'min' && mo.view.opacity.zero) ? 0 : value;
+  });
+
+  // position ranges
+  var rect = grad.getBoundingClientRect();
+  var step = (rect.right - rect.left) / 10;
+  var poses = {};
+  ['lower', 'upper'].forEach(function(key) {
+    poses[key] = legend.querySelector('.range.' + key).getAttribute(
+      'data-tick') * step;
+    legend.querySelector('.range.' + key).style.left = Math.round(rect.left
+      + poses[key]) + 'px';
+  });
+
+  // position clips
+  var clip = legend.querySelector('.clip.lower');
+  clip.style.left = Math.round(rect.left) + 'px';
+  clip.style.width = Math.floor(poses['lower']) + 'px';
+  clip = legend.querySelector('.clip.upper');
+  clip.style.left = Math.round(rect.left + poses['upper']) + 'px';
+  clip.style.width = Math.ceil(rect.right - rect.left - poses['upper'])
+    + 'px';
+}
+
+
+/**
+ * Update legends
+ * @function checkClassName
+ * @param {Object} element - DOM to check
+ * @param {Array.<string>} classes - candidate class names
+ * @todo other items
+ */
+function checkClassName(element, classes) {
+  for (var i = 0; i < classes.length; i++) {
+    if (element.classList.contains(classes[i])) return classes[i];
   }
 }

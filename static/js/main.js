@@ -89,7 +89,18 @@ function masterObj() {
     abundance: null // total abundance (sum of len * cov)
   };
 
-  /** more structures of the view object */
+  /**
+   * Display item properties.
+   * @member {Object} * 
+   * @property {number} i - data column index
+   * @property {string} scale - scale key
+   * @property {number} min - minimum after scaling
+   * @property {number} max - maximum after scaling
+   * @property {number} base - base value (for size)
+   * @property {number} lower - lower bound of visual parameter
+   * @property {number} upper - upper bound of visual parameter
+   * @property {boolean} zero - whether lower bound is zero or minimum
+   */
   var items = ['x', 'y', 'size', 'opacity', 'color'];
   var params = ['i', 'scale', 'min', 'max'];
   for (var i = 0; i < items.length; i++) {
@@ -97,7 +108,15 @@ function masterObj() {
       this.view[items[i]][params[j]] = null;
     }
   }
+
+  /** base radius */
   this.view.size.base = 15;
+
+  /** opacity range */
+  this.view.opacity.lower = 0;
+  this.view.opacity.upper = 100;
+  this.view.opacity.zero = true;
+
   this.view.color['palette'] = null;
   this.view.color['map'] = null;
 
@@ -107,17 +126,21 @@ function masterObj() {
    * @property {boolean} mousedown - mouse is down
    * @property {boolean} mousemove - mouse is moving
    * @property {{x: number, y: number}} drag - dragging position
+   * @property {string} selmode - selection mode (new, add, remove)
+   * @property {boolean} masking - masking mode is on
    * @property {boolean} drawing - polygon drawing is ongoing
+   * @property {Array.<{x: number, y: number}>} polygon - vertices of polygon
    * @property {number} resizing - window resizing is ongoing
    * @property {number} toasting - toasting is ongoing
-   * @property {Array.<{x: number, y: number}>} polygon - vertices of polygon
    */
   this.stat = {
     mousedown: false,
     mousemove: false,
     drag: {},
-    polygon: [],
+    selmode: 'new',
+    masking: false,
     drawing: false,
+    polygon: [],
     resizing: null,
     toasting: null,
   }

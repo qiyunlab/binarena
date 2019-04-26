@@ -95,12 +95,12 @@ function initDisplayItems(data, view) {
 
 
 /**
- * Update control panel based on new data.
- * @function updateControls
+ * Update controls based on new data.
+ * @function updateCtrlByData
  * @param {Object} data - data object
  * @param {Object} view - view object
  */
-function updateControls(data, view) {
+function updateCtrlByData(data, view) {
 
   // update field list in filtering
   var fl = document.getElementById('field-list');
@@ -220,7 +220,6 @@ function updateColorMap(mo, n) {
  * @param {boolean} [keep=false] - whether keep selection and masked
  */
 function resetView(mo, keep) {
-  var data = mo.data;
   var view = mo.view;
   var rena = mo.rena;
   var oray = mo.oray;
@@ -237,33 +236,54 @@ function resetView(mo, keep) {
   view.pos.x = rena.width / 2;
   view.pos.y = rena.height / 2;
 
-  // calculate min and max of display items
-  var items = ['x', 'y', 'size', 'opacity'];
-  var indices = [],
-    values = [];
-  for (var i = 0; i < items.length; i++) {
-    indices.push(view[items[i]].i);
-    values.push([]);
-  }
-  var masking = (Object.keys(mo.mask).length > 0);
-  for (var i = 0; i < data.df.length; i++) {
-    if (masking && i in mo.mask) continue;
-    for (var j = 0; j < items.length; j++) {
-      values[j].push(data.df[i][indices[j]]);
-    }
-  }
-  for (var i = 0; i < items.length; i++) {
-    view[items[i]].max = scaleNum(Math.max.apply(null, values[i]),
-      view[items[i]].scale);
-    view[items[i]].min = scaleNum(Math.min.apply(null, values[i]),
-      view[items[i]].scale);
-  }
+  // re-calculate display item ranges
+  calcDispMinMax(mo);
 
   // clear overlay canvas
   oray.getContext('2d').clearRect(0, 0, oray.width, oray.height);
 
   // re-render
   updateView(mo);
+}
+
+
+/**
+ * Calculate min and max of display items
+ * @function calcDispMinMax
+ * @param {Object} mo - master object
+ * @param {Array.<string>} [items] - display items to calculate
+ */
+function calcDispMinMax(mo, items) {
+  items = items || ['x', 'y', 'size', 'opacity'];
+  var data = mo.data;
+  var view = mo.view;
+
+  var indices = [],
+    values = [];
+  for (var i = 0; i < items.length; i++) {
+    indices.push(view[items[i]].i);
+    values.push([]);
+  }
+
+  // exclude masked contigs
+  var hasMask = (Object.keys(mo.mask).length > 0);
+  for (var i = 0; i < data.df.length; i++) {
+    if (hasMask && i in mo.mask) continue;
+    for (var j = 0; j < items.length; j++) {
+      values[j].push(data.df[i][indices[j]]);
+    }
+  }
+
+  // calculate min and max of display items
+  for (var i = 0; i < items.length; i++) {
+    var scale = view[items[i]].scale;
+    var mm = arrMinMax(values[i]);
+    view[items[i]].min = scaleNum(mm[0], scale);
+    view[items[i]].max = scaleNum(mm[1], scale);
+  }
+
+  // update controls
+  updateLegends(mo);
 }
 
 
@@ -316,11 +336,13 @@ function updateViewByData(mo, cache) {
 
   // manipulate interface
   initDisplayItems(mo.data, mo.view);
-  updateControls(mo.data, mo.view);
+  updateCtrlByData(mo.data, mo.view);
   initInfoTable(mo.data, mo.view.lencol, mo.pick);
   initDataTable(mo.data.cols, mo.data.types);
   fillDataTable(data);
   document.getElementById('bin-tbody').innerHTML = '';
+
+  // reset view
   resetView(mo);
 }
 
@@ -332,11 +354,19 @@ function updateViewByData(mo, cache) {
  * @param {Object} i - field index
  * @param {Object} scale - scaling factor
  * @param {Object} mo - master object
+ * @todo throw if max === min
  */
 function displayItemChange(item, i, scale, mo) {
   mo.view[item].i = i;
   mo.view[item].scale = scale;
-  resetView(mo, true);
+  // keep current viewport unless x- or y-coordinates change
+  if (item === 'x' || item === 'y') {
+    resetView(mo, true);
+  } else {
+    calcDispMinMax(mo, [item]);
+    renderArena(mo);
+  }
+  updateLegends(mo, [item]);
 }
 
 
@@ -483,10 +513,10 @@ function updateInfoRow(row, mo, arr, refarr) {
  * @param {Object} view - view object
  */
 function selectFieldChange(e, data, view) {
-  ['search-btn', 'num-sel-p', 'cat-sel-p', 'fea-sel-p', 'des-sel-p']
-    .forEach(function (id) {
+  ['num-sel-p', 'cat-sel-p', 'fea-sel-p', 'des-sel-p'].forEach(function (id) {
     document.getElementById(id).classList.add('hidden');
   });
+  document.getElementById('search-btn').style.visibility = 'hidden';
   var span = document.getElementById('str-match-span');
   span.classList.add('hidden');
 
@@ -524,7 +554,7 @@ function selectFieldChange(e, data, view) {
         p.classList.remove('hidden');
         break;
     }
-    document.getElementById('search-btn').classList.remove('hidden');
+    document.getElementById('search-btn').style.visibility = 'visible';
   }
 }
 
@@ -548,7 +578,7 @@ function selectByCriteria(mo) {
 
   // filter contigs by currently specified criteria
   var indices = [];
-  var masking = (Object.keys(mask).length > 0) ? true : false;
+  var hasMask = (Object.keys(mask).length > 0);
 
   // search by threshold
   if (type === 'number') {
@@ -572,14 +602,12 @@ function selectByCriteria(mo) {
     } else max = Number(max);
 
     // whether to include lower and upper bounds
-    var minIn = (document.getElementById('min-btn').innerHTML === '[') ?
-      true : false;
-    var maxIn = (document.getElementById('max-btn').innerHTML === '[') ?
-      true : false;
+    var minIn = (document.getElementById('min-btn').innerHTML === '[');
+    var maxIn = (document.getElementById('max-btn').innerHTML === '[');
 
     // compare values to threshold(s)
     for (var i = 0; i < data.df.length; i++) {
-      if (masking && i in mask) continue;
+      if (hasMask && i in mask) continue;
       var val = data.df[i][f];
       if ((val !== null) &&
         (min === null || (minIn ? (val >= min) : (val > min))) &&
@@ -603,7 +631,7 @@ function selectByCriteria(mo) {
     var mwhole = document.getElementById('whole-btn').classList
       .contains('pressed');
     for (var i = 0; i < data.df.length; i++) {
-      if (masking && i in mask) continue;
+      if (hasMask && i in mask) continue;
       var val = data.df[i][f];
       if (val === null) continue;
 
@@ -627,8 +655,7 @@ function selectByCriteria(mo) {
     }
   }
 
-  var selecting = !document.getElementById('mask-chk').checked;
-  treatSelection(indices, selecting, mo);
+  treatSelection(indices, mo.stat.selmode, mo.stat.masking, mo);
   return true;
 }
 
@@ -637,28 +664,29 @@ function selectByCriteria(mo) {
  * Deal with selected contigs.
  * @function treatSelection
  * @param {number[]} indices - indices of contigs to be selected / excluded
- * @param {boolean} [selecting=true] - pick or mask
+ * @param {string} [selmode='new'] - selection mode (new, add, remove)
+ * @param {boolean} [masking=false] - masking mode on/off
  * @param {Object} mo - master object
  */
-function treatSelection(indices, selecting, mo) {
-  selecting = (typeof selecting !== 'undefined') ? selecting : true;
-  var target = selecting ? mo.pick : mo.mask;
+function treatSelection(indices, selmode, masking, mo) {
+  if (typeof masking === 'undefined') masking = false;
+  if (typeof selmode === 'undefined') selmode = mo.stat.selmode;
+  var target = masking ? mo.mask : mo.pick;
 
   // new selection
-  if (document.getElementById('sel-new-btn').classList.contains('pressed')) {
+  if (selmode === 'new') {
     Object.keys(target).forEach(function (i) {
       delete target[i];
     });
     indices.forEach(function (i) {
       target[i] = null;
     });
-    toastMsg((selecting ? 'Selected' : 'Masked') + ' ' + indices.length +
+    toastMsg((masking ? 'Masked' : 'Selected') + ' ' + indices.length +
       ' contig(s).', mo.stat);
   }
 
   // add to selection
-  else if (document.getElementById('sel-add-btn').classList
-    .contains('pressed')) {
+  else if (selmode === 'add') {
     var n = 0;
     indices.forEach(function (i) {
       if (!(i in target)) {
@@ -666,13 +694,12 @@ function treatSelection(indices, selecting, mo) {
         n++;
       }
     });
-    toastMsg('Added ' + n + ' contig(s) to ' + (selecting ? 'selection' :
-      'mask') + '.', mo.stat);
+    toastMsg('Added ' + n + ' contig(s) to ' + (masking ? 'mask' : 'selection')
+      + '.', mo.stat);
   }
 
   // remove from selection
-  else if (document.getElementById('sel-remove-btn').classList
-    .contains('pressed')) {
+  else if (selmode === 'remove') {
     var toDel = [];
     indices.forEach(function (i) {
       if (i in target) toDel.push(i);
@@ -680,12 +707,12 @@ function treatSelection(indices, selecting, mo) {
     toDel.forEach(function (i) {
       delete target[i];
     });
-    toastMsg('Removed ' + parseInt(toDel.length) + ' contig(s) from ' +
-      (selecting ? 'selection' : 'mask') + '.', mo.stat);
+    toastMsg('Removed ' + toDel.length + ' contig(s) from ' + (masking ?
+      'mask' : 'selection') + '.', mo.stat);
   }
 
   // remove excluded contigs from selection, if any
-  if (!selecting) {
+  if (masking) {
     var toDel = [];
     Object.keys(mo.pick).forEach(function (i) {
       if (i in mo.mask) toDel.push(i);
@@ -703,6 +730,7 @@ function treatSelection(indices, selecting, mo) {
 /**
  * Let user draw polygon to select a region of data points.
  * @function polygonSelect
+ * @param {Object} mo - master object
  */
 function polygonSelect(mo) {
   var data = mo.data;
@@ -710,18 +738,27 @@ function polygonSelect(mo) {
   var stat = mo.stat;
   var rena = mo.rena;
   var oray = mo.oray;
+
+  // change button appearance
   var btn = document.getElementById('polygon-btn');
+  var title = btn.title;
+  btn.title = btn.getAttribute('data-title');
+  btn.setAttribute('data-title', title);
+  btn.classList.toggle('pressed');
+
+  // start drawing
   if (!stat.drawing) {
-    btn.innerHTML = btn.innerHTML.substr(0, btn.innerHTML.lastIndexOf(' ') +
-      1) + 'Finish';
     stat.polygon = [];
     stat.drawing = true;
-  } else {
+  }
+  
+  // finish drawing
+  else {
     oray.getContext('2d').clearRect(0, 0, oray.width, oray.height);
     var indices = [];
-    var masking = (Object.keys(mo.mask).length > 0) ? true : false;
+    var hasMask = (Object.keys(mo.mask).length > 0);
     for (var i = 0; i < data.df.length; i++) {
-      if (masking && i in mo.mask) continue;
+      if (hasMask && i in mo.mask) continue;
       var datum = data.df[i];
       var x = ((scaleNum(datum[view.x.i], view.x.scale) - view.x.min) /
         (view.x.max - view.x.min) - 0.5) * rena.width;
@@ -729,13 +766,12 @@ function polygonSelect(mo) {
         (view.y.max - view.y.min) - 0.5) * rena.height;
       if (pnpoly(x, y, stat.polygon)) indices.push(i);
     }
-    btn.innerHTML = btn.innerHTML.substr(0, btn.innerHTML.lastIndexOf(' ') +
-      1) + 'Start';
     stat.polygon = [];
     stat.drawing = false;
+
+    // treat selection
     if (indices.length > 0) {
-      var selecting = !document.getElementById('mask-chk').checked;
-      treatSelection(indices, selecting, mo);
+      treatSelection(indices, stat.selmode, stat.masking, mo);
     }
   }
 }

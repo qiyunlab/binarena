@@ -105,7 +105,11 @@ function renderArena(mo) {
     ymax = view.y.max;
   var oi = view.opacity.i,
     oscale = view.opacity.scale,
-    omax = view.opacity.max;
+    omax = view.opacity.max,
+    omin = view.opacity.zero ? 0 : view.opacity.min,
+    olower = view.opacity.lower,
+    oupper = view.opacity.upper;
+    // ozero = view.opacity.zero;
   var si = view.size.i,
     sscale = view.size.scale,
     sbase = view.size.base,
@@ -114,6 +118,8 @@ function renderArena(mo) {
     cmap = view.color.map;
   var dx = xmax - xmin,
     dy = ymax - ymin,
+    doo = omax - omin,
+    orange = oupper - olower,
     sratio = sbase / smax;
 
   // rendering parameters
@@ -146,7 +152,12 @@ function renderArena(mo) {
     }
 
     // determine opacity
-    var alpha = (scaleNum(datum[oi], oscale) / omax).toFixed(2);
+    // var alpha = (scaleNum(datum[oi], oscale) / omax).toFixed(2);
+    var alpha = (((scaleNum(datum[oi], oscale) - omin) / doo * orange + olower)
+      / 100).toFixed(2);
+    // var alpha = ((scaleNum(datum[oi], oscale) / omax * orange + olower) / 100)
+    //   .toFixed(2);
+
 
     // generate fill style string
     var fs = 'rgba(' + c + ',' + alpha + ')';

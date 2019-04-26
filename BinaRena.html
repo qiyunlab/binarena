@@ -2,18 +2,37 @@
 
 <!--
   The program interface consists of:
-  rendering area (main-frame)
+  1. rendering area (main-frame)
     arena-canvas: scatter plot
     overlay-canvas: selection highlight etc.
-  control panels:
-    dash-frame: top left
-    side-frame: right side
+  2. docked panel:
+    dashboard (dash-frame): top left
+      start-panels:
+        menu-button (toggle context-menu)
+        dash-button (toggle dash-panel)
+      dash-panel:
+        search-panel
+        display-panel
+    side-frame: right side (toggled by show-side-btn)
+      bins-panel (contains hide-side-btn)
+      info-panel (for selected)
+      mask-head (no body)
     widget-frame: bottom left
-  context menu
-  floating elements:
+      set-panel (expand on set-btn hover)
+      freq-panel
+      nav-panel
+  3. context menu:
+    (below start button on click, or after cursor on right click)
+  4. floating panels:
+    scale-select
+    data-table-modal
+    help-modal
+  5. generic elements:
     toast
-    modal
-  )
+    list-select
+    popup message
+  6. hidden elements:
+    file upload button
 -->
 
 <html>
@@ -37,7 +56,7 @@
 <body>
 
   <!--
-    rendering area
+    1. rendering area
   -->
   <div id="main-frame" style="height: 100vh; width: 100%; overflow: auto;">
 
@@ -57,6 +76,11 @@
     </div>
   </div>
 
+
+  <!--
+    2. docked panels
+  -->
+
   <!--
     dashboard
   -->
@@ -71,25 +95,18 @@
     <!-- dash panel -->
     <div id="dash-panel" class="hidden">
 
-      <!-- data panel -->
-      <button class="dash-head">Data</button>
-      <div class="dash-content">
-        <p class="setting">
-          <label>Show</label>
-          <button id="data-btn" title="Data table"><i class="fa fa-table"></i> Data table</button>
-        </p>
+      <!-- search panel -->
+      <div id="search-head" class="panel-head">
+        <span><button title="Show/hide search panel">Search</button></span>
       </div>
-
-      <!-- select panel -->
-      <button class="dash-head">Select</button>
       <div class="dash-content">
 
         <!-- search a column -->
         <table>
           <tr>
-            <td>Search</td>
-            <td><select id="field-list"><option value="0"></option></select></td>
-            <td><button class="hidden" id="search-btn" title="Search by criteria"><i class="fa fa-search"></i> Search</button></td>
+            <td>Column</td>
+            <td><select id="field-list" title="Select a column to search"><option value="0"></option></select></td>
+            <td><button id="search-btn" style="visibility: hidden;" title="Search by criteria"><i class="fa fa-search"></i> Search</button></td>
           </tr>
           <tr class="hidden" id="num-sel-p">
             <td>in</td>
@@ -124,61 +141,74 @@
           --><button class="square" id="whole-btn" title="Match whole value">&ldquo;&rdquo;</button>
         </span>
 
-        <!-- polygon selection -->
-        <p>
-          <label title="Draw polygon with mouse clicks to contain multiple contigs.">Polygon</label>
-          <button id="polygon-btn"><i class="fa fa-pencil"></i> Start</button>
-        </p>
-
         <!-- selection mode -->
-        <p>
+        <!-- <p>
           <label title="Choose a selection mode">Mode</label>
           <span class="btn-group">
-            <button id="sel-new-btn" class="square pressed" title="New selection"><i class="fa fa-asterisk"></i></button><!--
-            --><button id="sel-add-btn" class="square" title="Add to selection"><i class="fa fa-plus"></i></button><!--
-            --><button id="sel-remove-btn" class="square" title="Remove from selection"><i class="fa fa-minus"></i></button>
+            <button id="sel-new-btn" class="square pressed" title="New selection"><i class="fa fa-asterisk"></i></button>
+            <button id="sel-add-btn" class="square" title="Add to selection"><i class="fa fa-plus"></i></button>
+            <button id="sel-remove-btn" class="square" title="Remove from selection"><i class="fa fa-minus"></i></button>
           </span>
-        </p>
-
-        <!-- masking mode -->
-        <p>
-          <label title="Directly add selected contigs to mask.">Masking</label>
-          <input type="checkbox" id="mask-chk">
-        </p>
+        </p> -->
       </div>
 
       <!-- display panel -->
-      <button class="dash-head">Display</button>
+      <div id="display-head" class="panel-head">
+        <span><button title="Show/hide display panel">Display</button></span>
+      </div>
       <div class="dash-content">
         <table>
           <tr>
             <td>X-axis</td>
             <td><select id="x-field-sel"></select></td>
             <td><span id="x-param-span" class="hidden">
-              <button class="square dropdown scale-btn" id="x-scale-btn"></button>
+              <button class="square dropdown scale-btn" id="x-scale-btn"></button><!--
+              --><button class="square swap-btn" title="Swap X- and Y-axes">&darr;</button>
             </span></td>
           </tr>
           <tr>
             <td>Y-axis</td>
             <td><select id="y-field-sel"></select></td>
             <td><span id="y-param-span" class="hidden">
-              <button class="square dropdown scale-btn" id="y-scale-btn"></button>
+              <button class="square dropdown scale-btn" id="y-scale-btn"></button><!--
+              --><button class="square swap-btn" title="Swap X- and Y-axes">&uarr;</button>
             </span></td>
           </tr>
           <tr>
             <td>Size</td>
             <td><select id="size-field-sel"></select></td>
             <td><span id="size-param-span" class="hidden">
-              <button class="square dropdown scale-btn" id="size-scale-btn"></button>
+              <button class="square dropdown scale-btn" id="size-scale-btn"></button><!--
+              --><button class="square legend-btn">&#9783;</button>
             </span></td>
           </tr>
+
+          <!-- opacity -->
           <tr>
             <td>Opacity</td>
             <td><select id="opacity-field-sel"></select></td>
             <td><span id="opacity-param-span" class="hidden">
-              <button class="square dropdown scale-btn" id="opacity-scale-btn"></button>
+              <button class="square dropdown scale-btn" id="opacity-scale-btn"></button><!--
+              --><button class="square legend-btn" title="Show/hide legend">&#9783;</button>
             </span></td>
           </tr>
+
+          <!-- opacity legend -->
+          <tr class="hidden">
+            <td colspan="3">
+              <div id="opacity-legend" class="legend" data-item="opacity" data-ranging="none">
+                <label class="min" data-value=""> </label>
+                <div id="opacity-gradient" class="gradient"> </div>
+                <label class="max" data-value=""> </label>
+                <div class="clip lower"></div>
+                <div class="clip upper"></div>
+                <div class="range lower" data-tick="0"></div>
+                <div class="range upper" data-tick="10"></div>
+              </div>
+            </td>
+          </tr>
+
+          <!-- color -->
           <tr>
             <td>Color</td>
             <td><select id="color-field-sel"></select></td>
@@ -189,51 +219,57 @@
         </table>
       </div>
 
-      <!-- view panel -->
-      <button class="dash-head">View</button>
-      <div class="dash-content">
-        <p class="setting">
-          <label>Show</label>
-          <button id="grid-btn" title="Show/hide grid and coordinates"><i class="fa fa-th"></i> Grid</button><!--
-          --><button id="nav-btn" title="Show navigation controls"><i class="fa fa-compass"></i> Navigation</button>
-        </p>
+      <!-- tooltip for legend -->
+      <div id="legend-tip" class="hidden">
+        <span id="legend-circle"></span>
+        <span id="legend-value"></span>
       </div>
     </div>
   </div>
 
-  <!--
-    context menu
-  -->
-  <div id="context-menu" style="z-index: 2;" class="hidden">
-    <a id="load-data-a" href="#">Load data</a>
-    <a id="show-data-a" href="#">Show data</a>
-    <a id="close-data-a" href="#">Close data</a>
-    <hr>
-    <a id="export-bins-a" href="#">Export bins</a>
-    <a id="export-data-a" href="#">Export data</a>
-    <a id="export-image-a" href="#">Export image</a>
-    <hr>
-    <a id="help-a" href="#">Help</a>
-  </div>
 
   <!--
-    widget panel
+    widget frame
   -->
   <div id="widget-frame" class="dock">
-    <div id="widget-panel"">
-      <button id="screenshot-btn" title="Take a screenshot"><i class="fa fa-camera"></i></button><!--
-      --><button id="reset-btn" title="Reset view"><i class="fa fa-refresh"></i></button>
-    </div><!--
-    --><div id="nav-panel" class="hidden">
-      <button id="zoomin-btn" title="Zoom in"><i class="fa fa-plus"></i></button><!--
-      --><button id="zoomout-btn" title="Zoom out"><i class="fa fa-minus"></i></button>
-      |
-      <button id="left-btn" title="Move left"><i class="fa fa-arrow-left"></i></button><!--
-      --><button id="up-btn" title="Move up"><i class="fa fa-arrow-up"></i></button><!--
-      --><button id="right-btn" title="Move right"><i class="fa fa-arrow-right"></i></button><!--
-      --><button id="down-btn" title="Move down"><i class="fa fa-arrow-down"></i></button>
+
+    <!-- setting panel -->
+    <div id="set-panel">
+      <button id="set-btn" title="Show settings"><i class="fa fa-sliders fa-lg"></i></button>
+      <div class="dock active">
+        <div class="panel-head"><span><button disabled>Settings</button></span></div>
+        <div class="dash-content">
+          <p><label><b>Show:</b></label></p>
+          <p><label>Grid</label><input type="checkbox" id="grid-chk"></p>
+          <p><label>Navigation bar</label><input type="checkbox" id="nav-chk"></p>
+          <p><label>Quick buttons</label><input type="checkbox" id="freq-chk" checked></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- frequent panel -->
+    <div id="freq-panel">
+      <button id="screenshot-btn" title="Take a screenshot (P)"><i class="fa fa-camera"></i></button>
+      <button id="polygon-btn" title="Draw polygon with mouse clicks to contain multiple contigs (Enter)" data-title="Finish polygon selection (Enter)"><i class="fa fa-pencil fa-lg"></i></button>
+      <button id="selmode-btn" title="Current selection mode: new selection"><i class="fa fa-asterisk"></i></button>
+      <button id="masking-btn" title="Masking mode: directly add selected contigs to mask (M)"><i class="fa fa-eye-slash fa-lg"></i></button>
+      <!--&#9974;-->
+    </div>
+
+    <!-- navigation panel -->
+    <div id="nav-panel" class="hidden">
+      <button id="zoomin-btn" title="Zoom in (+)"><i class="fa fa-plus"></i></button>
+      <button id="zoomout-btn" title="Zoom out (-)"><i class="fa fa-minus"></i></button>
+      <span class="spacer"></span>
+      <button id="left-btn" title="Move left (&larr;)"><i class="fa fa-arrow-left"></i></button>
+      <button id="up-btn" title="Move up (&uarr;)"><i class="fa fa-arrow-up"></i></button>
+      <button id="right-btn" title="Move right (&rarr;)"><i class="fa fa-arrow-right"></i></button>
+      <button id="down-btn" title="Move down (&darr;)"><i class="fa fa-arrow-down"></i></button>
+      <span class="spacer"></span>
+      <button id="reset-btn" title="Reset view (0)"><i class="fa fa-refresh"></i></button>
     </div>
   </div>
+
 
   <!--
     side frame
@@ -247,9 +283,9 @@
   <div id="side-frame" class="hidden" style="flex-grow: 1; margin-left: auto;">
 
     <!-- bins panel -->
-    <div id="bins-head" class="side-head">
+    <div id="bins-head" class="panel-head">
       <span style="float: right;"><button id="hide-side-btn" title="Hide side frame"></button></span>
-      <span><button>Bins</button></span>
+      <span><button title="Show/hide bins panel">Bins</button></span>
     </div>
 
     <div class="side-content">
@@ -283,8 +319,8 @@
     </div>
 
     <!-- info panel -->
-    <div id="info-head" class="side-head">
-      <span><button>Selected</button></span>
+    <div id="info-head" class="panel-head">
+      <span><button title="Show/hide selected panel">Selected</button></span>
     </div>
     <div class="side-content" style="flex-grow: 1;"><!-- filling remaing height -->
 
@@ -307,11 +343,32 @@
     </div>
 
     <!-- mask panel -->
-    <div id="mask-head" class="side-head" style="margin-top: auto;">
+    <div id="mask-head" class="panel-head" style="margin-top: auto;">
       <span style="float: right;"><button id="clear-mask-btn" title="Clear mask"><i class="fa fa-eraser"></i> Clear</button></span>
       <span><button>Masked</button></span>
     </div>
   </div>
+
+
+  <!--
+    context menu
+  -->
+  <div id="context-menu" style="z-index: 2;" class="hidden">
+    <a id="load-data-a" href="#">Load data</a>
+    <a id="show-data-a" href="#">Show data</a>
+    <a id="close-data-a" href="#">Close data</a>
+    <hr>
+    <a id="export-bins-a" href="#">Export bins</a>
+    <a id="export-data-a" href="#">Export data</a>
+    <a id="export-image-a" href="#">Export image</a>
+    <hr>
+    <a id="help-a" href="#">Help</a>
+  </div>
+
+
+  <!--
+    floating panels
+  -->
 
   <!-- data table -->
   <div id="data-table-modal" class="modal hidden">
@@ -320,17 +377,40 @@
       <div class="toolbar">
         <button id="load-data-btn" title="Load data"><i class="fa fa-folder-open-o fa-lg"></i></button>
       </div>
-      <br>
       <div id="data-table-container">
         <table id="data-table" class="sheet"></table>
       </div>
     </div>
   </div>
 
-
-  <!--
-    shared elements
-  -->
+  <!-- help window -->
+  <div id="help-modal" class="modal hidden">
+    <div class="modal-content" style="width: 600px;">
+      <div class="modal-head">Help</div>
+      <table style="border-collapse: separate;">
+        <tr>
+          <td rowspan="4" style="padding-right: 25px;"><img src="path/to/logo.png" alt="BinaRena" width="200" height="176"></td>
+          <td><big>BinaRena</big></td>
+        </tr>
+        <tr><td>Version: 0.0.1</td></tr>
+        <tr><td>Main developer: Qiyun Zhu (<a href="mailto:qiyunzhu@gmail.com">qiyunzhu@gmail.com</a>)</td></tr>
+        <tr><td>Website: <a href="https://github.com/qiyunzhu/binarena">https://github.com/qiyunzhu/binarena</a></td></tr>
+      </table>
+      <br>
+      <div id="quick-help">
+        <p>Quick tips</p>
+        <hr>
+        <ul>
+          <li>Mouse drag to move, mouse scroll to zoom.</li>
+          <li>Mouse over a node to show taxonomy and download.</li>
+          <li>Taxonomic annotation by NCBI and GTDB, original and curated.</li>
+          <li>Dynamic labeling and collapsing by taxonomic rank.</li>
+          <li>Coloring by metadata and user upload.</li>
+        </ul>
+        <br>
+      </div>
+    </div>
+  </div>
 
   <!-- scale select dropdown -->
   <div id="scale-select" class="popup hidden">
@@ -387,6 +467,7 @@
   <div class="tooltip" id="div-tooltip">
     <p id="p-tooltip"></p>
   </div>
+
 
   <!--
     hidden elements

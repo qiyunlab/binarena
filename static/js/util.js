@@ -26,6 +26,18 @@ function splitLines(text) {
 
 
 /**
+ * Format number.
+ * @function formatNum
+ * @param {number} num - number to format
+ * @param {number} digits - number of digits to retain
+ * @returns {string} formatted number
+ */
+function formatNum(num, digits) {
+  return num.toPrecision(digits || 0).replace(/\.?0+$/, '');
+}
+
+
+/**
  * Convert hex to RGB.
  * @function hexToRgb
  * @param {string} hex - hex code of color
@@ -148,6 +160,7 @@ function transpose(df) {
  * @param {string|number} scale - scale name or power
  * @throws Error if scale is invalid
  * @returns {number} scaled number
+ * @todo
  */
 function scaleNum(num, scale) {
   if (scale == null) {
@@ -181,6 +194,40 @@ function scaleNum(num, scale) {
       default:
         throw 'Error: invalid scale name "' + scale + '".';
     }
+  } else {
+    throw 'Error: invalid scale type';
+  }
+}
+
+
+/**
+ * Revert a scale code.
+ * @function unscale
+ * @param {string|number} scale - scale name or power
+ * @throws Error if scale is invalid
+ * @returns {number} scaled number
+ * @todo
+ */
+function unscale(scale) {
+  var dict = {
+    'none': 'none',
+    'square': 'sqrt',
+    'sqrt': 'square',
+    'cube': 'cbrt',
+    'cbrt': 'cube',
+    'log': 'exp',
+    'exp': 'log',
+    'log2': 'exp2',
+    'exp2': 'log2',
+    'log10': 'exp10',
+    'exp10': 'log10'
+  };
+  if (scale == null) {
+    return null;
+  } else if (typeof(scale) === 'number') {
+    return 1 / scale;
+  } else if (typeof(scale) === 'string') {
+    if (scale in dict) return dict[scale];
   } else {
     throw 'Error: invalid scale type';
   }
