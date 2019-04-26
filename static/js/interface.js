@@ -367,9 +367,13 @@ function initControls(mo) {
 
   document.querySelectorAll('.legend-btn').forEach(function(btn) {
     btn.addEventListener('click', function() {
+      var tr = this.parentElement.parentElement.parentElement;
+      var legend = tr.nextElementSibling;
+      legend.classList.toggle('hidden');
       this.classList.toggle('pressed');
-      this.parentElement.parentElement.parentElement.nextElementSibling
-        .classList.toggle('hidden');
+      if (legend.display !== 'none') {
+        updateLegends(mo, [tr.getAttribute('data-item')]);
+      }
     });
   });
 
@@ -408,23 +412,38 @@ function initControls(mo) {
    * @todo other legends
    */
 
-  document.getElementById('opacity-legend').addEventListener('mouseenter',
-    function() {
-    updateLegends(mo, ['opacity']);
-    this.querySelectorAll('.clip').forEach(function(clip) {
-      clip.classList.add('hidden');
+  document.querySelectorAll('.legend').forEach(function(leg) {
+
+    leg.addEventListener('mouseenter', function() {
+      this.querySelectorAll('.clip').forEach(function(clip) {
+        clip.classList.add('hidden');
+      });
+    });
+
+    leg.addEventListener('mouseleave', function() {
+      this.setAttribute('data-ranging', 'none');
+      this.querySelectorAll('.clip').forEach(function(clip) {
+        clip.classList.remove('hidden');
+      });
     });
   });
 
-  document.getElementById('opacity-legend').addEventListener('mouseleave',
-    function() {
-    this.setAttribute('data-ranging', 'none');
-    this.querySelectorAll('.clip').forEach(function(clip) {
-      clip.classList.remove('hidden');
-    });
-  });
+  // document.getElementById('opacity-legend').addEventListener('mouseenter',
+  //   function() {
+  //   this.querySelectorAll('.clip').forEach(function(clip) {
+  //     clip.classList.add('hidden');
+  //   });
+  // });
 
-  document.querySelectorAll('.gradient').forEach(function(grad){
+  // document.getElementById('opacity-legend').addEventListener('mouseleave',
+  //   function() {
+  //   this.setAttribute('data-ranging', 'none');
+  //   this.querySelectorAll('.clip').forEach(function(clip) {
+  //     clip.classList.remove('hidden');
+  //   });
+  // });
+
+  document.querySelectorAll('.gradient').forEach(function(grad) {
 
     grad.addEventListener('mousemove', function(e) {
       var item = this.parentElement.getAttribute('data-item');
@@ -450,13 +469,32 @@ function initControls(mo) {
         tip.style.top = Math.round(rect.bottom) + 'px';
 
         // specify tip label
-        document.getElementById('legend-value').innerHTML = formatNum(
-          scaleNum(v.min + offset / width * (v.max - v.min),
-          unscale(v.scale)), 3);
-        
-        if (item === 'opacity') {
-          document.getElementById('legend-circle').style.backgroundColor
-            = 'rgba(0,0,0,' + (offset / width).toFixed(2) + ')';
+        var value = scaleNum(v.min + offset / width * (v.max - v.min),
+          unscale(v.scale));
+        var col = mo.data.cols[mo.view[item].i];
+        var lencol = mo.view.lencol;
+        if (lencol && col === lencol) {
+          var fmtlen = FormatLength(value);
+          document.getElementById('legend-value').innerHTML
+            = formatNum(fmtlen[0], 3) + ' ' + fmtlen[1];
+        } else {
+          document.getElementById('legend-value').innerHTML
+            = formatNum(value, 3);
+        }
+
+        // item-specific operations
+        var circle = document.getElementById('legend-circle');
+        if (item === 'size') {
+          circle.style.backgroundColor = 'black';
+          var diameter = Math.ceil(mo.view.rbase * 2 * offset / width);
+          circle.style.height = diameter + 'px';
+          circle.style.width = diameter + 'px';
+        }
+        else if (item === 'opacity') {
+          circle.style.height = '15px';
+          circle.style.width = '15px';
+          circle.style.backgroundColor = 'rgba(0,0,0,' + (offset / width)
+            .toFixed(2) + ')';
         }
       }
 
@@ -533,12 +571,6 @@ function initControls(mo) {
       renderArena(mo);
     });
   });
-
-
-
-
-
-
 
 
   /**
@@ -957,10 +989,10 @@ function canvasMouseClick(e, mo) {
       if (masking && i in mo.mask) continue;
       var datum = data.df[i];
       var idx = view.size.i;
-      var radius = idx ? scaleNum(datum[idx], view.size.scale) * view.size.base
-        / view.size.max : view.size.base;
+      var radius = idx ? scaleNum(datum[idx], view.size.scale) * view.rbase
+        / view.size.max : view.rbase;
       // var ratio = scaleNum(datum[view.size.i], view.size.scale) *
-      //   view.size.base / view.size.max;
+      //   view.rbase / view.size.max;
       var r2 = radius * radius; // this is faster than Math.pow(x, 2)
       var x = ((scaleNum(datum[view.x.i], view.x.scale) - view.x.min) /
         (view.x.max - view.x.min) - 0.5) * rena.width;
@@ -1183,58 +1215,71 @@ function autoComplete(inp, arr) {
 
 
 /**
- * Update legends
+ * Update legends.
  * @function updateLegends
  * @param {Object} mo - master object
  * @param {Array.<string>} [items] - display items to update
  * @todo other items
  */
 function updateLegends(mo, items) {
-  items = items || ['x', 'y', 'size', 'opacity'];
-  var scale = unscale(mo.view.opacity.scale);
-  var legend = document.getElementById('opacity-legend');
-  var grad = legend.querySelector('.gradient');
-  if (grad === null) return;
+  // items = items || ['x', 'y', 'size', 'opacity', 'color'];
+  items = items || ['size', 'opacity'];
+  items.forEach(function(item) {
+    var scale = unscale(mo.view[item].scale);
+    var legend = document.getElementById(item + '-legend');
+    var grad = legend.querySelector('.gradient');
+    if (grad === null) return;
+  
+    // refresh labels
+    var col = mo.data.cols[mo.view[item].i];
+    var lencol = mo.view.lencol;
+    ['min', 'max'].forEach(function(key) {
+      var label = legend.querySelector('label.' + key);
+      var value = scaleNum(mo.view[item][key], scale);
+      if (lencol && col === lencol) value = FormatLength(value)[0];
+      value = formatNum(value, 3);
+      label.setAttribute('data-value', value);
+      label.innerHTML = (key === 'min' && mo.view[item].zero) ? 0 : value;
+    });
 
-  // refresh labels
-  ['min', 'max'].forEach(function(key) {
-    var label = legend.querySelector('label.' + key);
-    var value = formatNum(scaleNum(mo.view.opacity[key], scale), 3);
-    label.setAttribute('data-value', value);
-    label.innerHTML = (key === 'min' && mo.view.opacity.zero) ? 0 : value;
+    // item-specific operations
+    if (item === 'size') updateSizeGradient(mo);
+
+    // position ranges
+    var rect = grad.getBoundingClientRect();
+    var step = (rect.right - rect.left) / 10;
+    var poses = {};
+    ['lower', 'upper'].forEach(function(key) {
+      poses[key] = legend.querySelector('.range.' + key).getAttribute(
+        'data-tick') * step;
+      legend.querySelector('.range.' + key).style.left = Math.round(rect.left
+        + poses[key]) + 'px';
+    });
+  
+    // position clips
+    var clip = legend.querySelector('.clip.lower');
+    clip.style.left = Math.round(rect.left) + 'px';
+    clip.style.width = Math.floor(poses['lower']) + 'px';
+    clip = legend.querySelector('.clip.upper');
+    clip.style.left = Math.round(rect.left + poses['upper']) + 'px';
+    clip.style.width = Math.ceil(rect.right - rect.left - poses['upper']) + 'px';
   });
-
-  // position ranges
-  var rect = grad.getBoundingClientRect();
-  var step = (rect.right - rect.left) / 10;
-  var poses = {};
-  ['lower', 'upper'].forEach(function(key) {
-    poses[key] = legend.querySelector('.range.' + key).getAttribute(
-      'data-tick') * step;
-    legend.querySelector('.range.' + key).style.left = Math.round(rect.left
-      + poses[key]) + 'px';
-  });
-
-  // position clips
-  var clip = legend.querySelector('.clip.lower');
-  clip.style.left = Math.round(rect.left) + 'px';
-  clip.style.width = Math.floor(poses['lower']) + 'px';
-  clip = legend.querySelector('.clip.upper');
-  clip.style.left = Math.round(rect.left + poses['upper']) + 'px';
-  clip.style.width = Math.ceil(rect.right - rect.left - poses['upper'])
-    + 'px';
 }
 
 
 /**
- * Update legends
- * @function checkClassName
- * @param {Object} element - DOM to check
- * @param {Array.<string>} classes - candidate class names
- * @todo other items
+ * Update grradient in size legend.
+ * @function updateSizeGradient
+ * @param {Object} mo - master object
+ * @description The ladder-shaped gradient is achieved by css borders, which,
+ * cannot accept percentage, thus need to be adjusted specifically.d
  */
-function checkClassName(element, classes) {
-  for (var i = 0; i < classes.length; i++) {
-    if (element.classList.contains(classes[i])) return classes[i];
-  }
+function updateSizeGradient(mo) {
+  var rbase = mo.view.rbase;
+  var grad = document.getElementById('size-gradient');
+  grad.style.height = rbase + 'px';
+  grad.style.borderTopWidth = rbase + 'px';
+  var rect = grad.getBoundingClientRect();
+  var width = Math.floor(rect.right - rect.left);
+  grad.style.borderRightWidth = width + 'px';
 }

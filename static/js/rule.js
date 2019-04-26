@@ -334,12 +334,12 @@ function guessCovColumn(data) {
 
 /**
  * Guess a proper metric based on column name.
- * Options are: none, sum, mean, sumby meanby.
- * e.g., "length" and "genes" => sum
- * e.g., "gc" and "coverage" => meanby (length)
  * @function guessColMetric
  * @param {string[]} col - column name
  * @returns {string} metric
+ * @description Options are: none, sum, mean, sumby meanby.
+ * e.g., "length" and "genes" => sum
+ * e.g., "gc" and "coverage" => meanby (length)
  */
 function guessColMetric(col) {
   var res = 'sum';
@@ -352,6 +352,23 @@ function guessColMetric(col) {
       break;
   }
   return res;
+}
+
+/**
+ * Format length value.
+ * @function FormatLength
+ * @param {number} len - length (bp)
+ * @returns {Array.<number, string>} number and unit
+ */
+function FormatLength(len) {
+  var abslen = Math.abs(len);
+  if (abslen < 1000) {
+    return [len, 'bp'];
+  } else if (abslen < 1000000) {
+    return [len / 1000, 'kb'];
+  } else {
+    return [len / 1000000, 'Mb'];
+  }
 }
 
 

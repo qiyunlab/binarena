@@ -61,6 +61,7 @@ function masterObj() {
    * @property {Object} size - size variable
    * @property {Object} opacity - opacity variable
    * @property {boolean} grid - whether show grid
+   * @property {number} rbase - base radius (px) of contig
    */
   this.view = {
     /** canvas rendering */
@@ -79,6 +80,7 @@ function masterObj() {
 
     /** display features */
     grid: false,
+    rbase: 15,
 
     /** pre-cached data info */
     lencol: null, // name of putative "length" column
@@ -96,7 +98,6 @@ function masterObj() {
    * @property {string} scale - scale key
    * @property {number} min - minimum after scaling
    * @property {number} max - maximum after scaling
-   * @property {number} base - base value (for size)
    * @property {number} lower - lower bound of visual parameter
    * @property {number} upper - upper bound of visual parameter
    * @property {boolean} zero - whether lower bound is zero or minimum
@@ -109,13 +110,13 @@ function masterObj() {
     }
   }
 
-  /** base radius */
-  this.view.size.base = 15;
-
-  /** opacity range */
-  this.view.opacity.lower = 0;
-  this.view.opacity.upper = 100;
-  this.view.opacity.zero = true;
+  items = ['size', 'opacity', 'color'];
+  for (var i = 0; i < items.length; i++) {
+    var obj = this.view[items[i]];
+    obj['lower'] = 0;
+    obj['upper'] = 100;
+    obj['zero'] = true;
+  }
 
   this.view.color['palette'] = null;
   this.view.color['map'] = null;

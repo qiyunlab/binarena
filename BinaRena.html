@@ -158,7 +158,7 @@
       </div>
       <div class="dash-content">
         <table>
-          <tr>
+          <tr data-item="x">
             <td>X-axis</td>
             <td><select id="x-field-sel"></select></td>
             <td><span id="x-param-span" class="hidden">
@@ -166,7 +166,7 @@
               --><button class="square swap-btn" title="Swap X- and Y-axes">&darr;</button>
             </span></td>
           </tr>
-          <tr>
+          <tr data-item="y">
             <td>Y-axis</td>
             <td><select id="y-field-sel"></select></td>
             <td><span id="y-param-span" class="hidden">
@@ -174,7 +174,9 @@
               --><button class="square swap-btn" title="Swap X- and Y-axes">&uarr;</button>
             </span></td>
           </tr>
-          <tr>
+
+          <!-- size -->
+          <tr data-item="size">
             <td>Size</td>
             <td><select id="size-field-sel"></select></td>
             <td><span id="size-param-span" class="hidden">
@@ -183,8 +185,23 @@
             </span></td>
           </tr>
 
+          <!-- size legend -->
+          <tr class="hidden">
+            <td colspan="3">
+              <div id="size-legend" class="legend" data-item="size" data-ranging="none">
+                <label class="min" data-value="">Hi</label>
+                <div id="size-gradient" class="gradient"> </div>
+                <label class="max" data-value="">All</label>
+                <div class="clip lower"></div>
+                <div class="clip upper"></div>
+                <div class="range lower" data-tick="0"></div>
+                <div class="range upper" data-tick="10"></div>
+              </div>
+            </td>
+          </tr>
+
           <!-- opacity -->
-          <tr>
+          <tr data-item="opacity">
             <td>Opacity</td>
             <td><select id="opacity-field-sel"></select></td>
             <td><span id="opacity-param-span" class="hidden">
@@ -209,7 +226,7 @@
           </tr>
 
           <!-- color -->
-          <tr>
+          <tr data-item="color">
             <td>Color</td>
             <td><select id="color-field-sel"></select></td>
             <td><span id="color-param-span" class="hidden">

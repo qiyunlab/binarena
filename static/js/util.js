@@ -158,7 +158,7 @@ function transpose(df) {
  * @function scaleNum
  * @param {number} num - number to scale
  * @param {string|number} scale - scale name or power
- * @throws Error if scale is invalid
+ * @throws if scale is invalid
  * @returns {number} scaled number
  * @todo
  */
@@ -204,7 +204,7 @@ function scaleNum(num, scale) {
  * Revert a scale code.
  * @function unscale
  * @param {string|number} scale - scale name or power
- * @throws Error if scale is invalid
+ * @throws if scale is invalid
  * @returns {number} scaled number
  * @todo
  */
@@ -341,4 +341,17 @@ function pnpoly(x, y, polygon) {
     }
   }
   return res;
+}
+
+
+/**
+ * Return class name if present
+ * @function checkClassName
+ * @param {Object} element - DOM to check
+ * @param {Array.<string>} classes - candidate class names
+ */
+function checkClassName(element, classes) {
+  for (var i = 0; i < classes.length; i++) {
+    if (element.classList.contains(classes[i])) return classes[i];
+  }
 }

@@ -1009,6 +1009,12 @@ div.legend div.gradient {
   cursor: text;
 }
 
+#size-gradient {
+  box-sizing: border-box;
+  border-top: 0 solid white;
+  border-right: 0 solid dimgray;
+}
+
 #opacity-gradient {
   background-image: linear-gradient(to right, rgba(0, 0, 0, 0) , black);
 }
@@ -1020,7 +1026,8 @@ div.legend div.range {
   cursor: move;
   height: 20px;
   background-color: white;
-  border: 3px solid transparent;
+  border-top: 5px solid transparent;
+  border-bottom: 5px solid transparent;
   cursor: col-resize;
 }
 
@@ -1030,15 +1037,17 @@ div.legend:hover div.range {
 
 div.legend div.range.lower {
   transform: translateX(-6px);
-  border-color: transparent gray transparent transparent;
-  box-shadow: 2px 0 0 1px white;
+  border-left: 2px solid transparent;
+  border-right: 4px solid darkgray;
+  box-shadow: 1px 0 0 1px white;
 }
 
 div.legend div.range.upper {
-  /* transform: translateX(3px); */
-  border-color: transparent transparent transparent gray;
-  box-shadow: -2px 0 0 1px white;
+  border-left: 4px solid darkgray;
+  border-right: 2px solid transparent;
+  box-shadow: -1px 0 0 1px white;
 }
+
 
 div.legend div.clip {
   position: absolute;

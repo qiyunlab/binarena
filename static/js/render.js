@@ -95,32 +95,34 @@ function renderArena(mo) {
   // cache parameters
   var w = rena.width,
     h = rena.height;
+  // x-coordinate
   var xi = view.x.i,
     xscale = view.x.scale,
     xmin = view.x.min,
-    xmax = view.x.max;
+    xmax = view.x.max,
+    dx = xmax - xmin;
+  // y-coordinate
   var yi = view.y.i,
     yscale = view.y.scale,
     ymin = view.y.min,
-    ymax = view.y.max;
-  var oi = view.opacity.i,
-    oscale = view.opacity.scale,
-    omax = view.opacity.max,
-    omin = view.opacity.zero ? 0 : view.opacity.min,
-    olower = view.opacity.lower,
-    oupper = view.opacity.upper;
-    // ozero = view.opacity.zero;
+    ymax = view.y.max,
+    dy = ymax - ymin;
+  // size
+  var rbase = view.rbase;
   var si = view.size.i,
     sscale = view.size.scale,
-    sbase = view.size.base,
-    smax = view.size.max;
+    smin = view.size.zero ? 0 : view.size.min,
+    slow = view.size.lower / 100,
+    sfac = (view.size.upper / 100 - slow) / (view.size.max - smin);
+  // opacity
+  var oi = view.opacity.i,
+    oscale = view.opacity.scale,
+    omin = view.opacity.zero ? 0 : view.opacity.min,
+    olow = view.opacity.lower / 100,
+    ofac = (view.opacity.upper / 100 - olow) / (view.opacity.max - omin);
+  // color
   var ci = view.color.i,
     cmap = view.color.map;
-  var dx = xmax - xmin,
-    dy = ymax - ymin,
-    doo = omax - omin,
-    orange = oupper - olower,
-    sratio = sbase / smax;
 
   // rendering parameters
   var paths = {};
@@ -130,8 +132,10 @@ function renderArena(mo) {
     if (masking && i in mo.mask) continue;
     var datum = data.df[i];
 
-    // determine radius
-    var radius = si ? scaleNum(datum[si], sscale) * sratio : sbase;
+    // determine radius (size)
+    // var radius = si ? scaleNum(datum[si], sscale) * rbase / smax : rbase;
+    var radius = si ? ((scaleNum(datum[si], sscale) - smin) * sfac + slow)
+      * rbase : rbase;
     var rviz = radius * scale;
 
     // if contig occupies less than one pixel on screen, skip
@@ -153,11 +157,8 @@ function renderArena(mo) {
 
     // determine opacity
     // var alpha = (scaleNum(datum[oi], oscale) / omax).toFixed(2);
-    var alpha = (((scaleNum(datum[oi], oscale) - omin) / doo * orange + olower)
-      / 100).toFixed(2);
-    // var alpha = ((scaleNum(datum[oi], oscale) / omax * orange + olower) / 100)
-    //   .toFixed(2);
-
+    var alpha = oi ? ((scaleNum(datum[oi], oscale) - omin) * ofac + olow)
+      .toFixed(2) : 1.0;
 
     // generate fill style string
     var fs = 'rgba(' + c + ',' + alpha + ')';
@@ -237,29 +238,32 @@ function renderSelection(mo) {
   var pi2 = Math.PI * 2;
 
   // cache parameters
+  var rbase = view.rbase;
   var w = oray.width,
     h = oray.height;
   var xi = view.x.i,
     xscale = view.x.scale,
     xmin = view.x.min,
-    xmax = view.x.max;
+    xmax = view.x.max,
+    dx = xmax - xmin;
   var yi = view.y.i,
     yscale = view.y.scale,
     ymin = view.y.min,
-    ymax = view.y.max;
+    ymax = view.y.max,
+    dy = ymax - ymin;
   var si = view.size.i,
     sscale = view.size.scale,
-    sbase = view.size.base,
-    smax = view.size.max;
-  var dx = xmax - xmin,
-    dy = ymax - ymin,
-    sratio = sbase / smax;
+    smin = view.size.zero ? 0 : view.size.min,
+    slow = view.size.lower / 100,
+    sfac = (view.size.upper / 100 - slow) / (view.size.max - smin);
 
   // render shadows around selected contigs
   ctx.beginPath();
   for (var i = 0; i < n; i++) {
     var datum = data.df[indices[i]];
-    var radius = Math.round(si ? scaleNum(datum[si], sscale) * sratio : sbase);
+    // var radius = Math.round(si ? scaleNum(datum[si], sscale) * sratio : rbase);
+    var radius = Math.round(si ? ((scaleNum(datum[si], sscale) - smin)
+      * sfac + slow) * rbase : rbase);
     var x = Math.round(((scaleNum(datum[xi], xscale) - xmin) / dx - 0.5) * w);
     var y = Math.round(((ymax - scaleNum(datum[yi], yscale)) / dy - 0.5) * h);
     ctx.moveTo(x, y);
