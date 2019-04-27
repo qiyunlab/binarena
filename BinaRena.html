@@ -181,7 +181,7 @@
             <td><select id="size-field-sel"></select></td>
             <td><span id="size-param-span" class="hidden">
               <button class="square dropdown scale-btn" id="size-scale-btn"></button><!--
-              --><button class="square legend-btn">&#9783;</button>
+              --><button class="square legend-btn" title="Show/hide legend">&#9783;</button>
             </span></td>
           </tr>
 
@@ -228,10 +228,32 @@
           <!-- color -->
           <tr data-item="color">
             <td>Color</td>
-            <td><select id="color-field-sel"></select></td>
+            <td>
+              <div>
+              <select id="color-field-sel"></select><!--
+              --><button id="palette-btn" class="dropdown inside" title="Choose a color palette">...</button>
+              </div>
+            </td>
             <td><span id="color-param-span" class="hidden">
-              <select id="color-palette-sel"></select>
+              <button class="square dropdown scale-btn" id="color-scale-btn"></button><!--
+              --><button class="square legend-btn" title="Show/hide legend">&#9783;</button>
             </span></td>
+          </tr>
+
+          <!-- color legend -->
+          <tr class="hidden">
+            <td colspan="3">
+              <div><select id="color-palette-sel"></select></div>
+              <div id="color-legend" class="legend" data-item="color" data-ranging="none">
+                <label class="min" data-value=""> </label>
+                <div id="color-gradient" class="gradient"> </div>
+                <label class="max" data-value=""> </label>
+                <div class="clip lower"></div>
+                <div class="clip upper"></div>
+                <div class="range lower" data-tick="0"></div>
+                <div class="range upper" data-tick="10"></div>
+              </div>
+            </td>
           </tr>
         </table>
       </div>
@@ -455,6 +477,15 @@
         <td title="exp10">10<sup><small><i>x</i></small></sup></td>
       </tr>
     </table>
+  </div>
+
+  <!-- palette select dropdown -->
+  <div id="palette-select" class="popup hidden">
+    <div class="qual disc hidden"><p>Qualitative</p></div>
+    <div class="sequ cont hidden"><p>Sequential</p></div>
+    <div class="sequ disc hidden"><p>Sequential</p></div>
+    <div class="dive cont hidden"><p>Diverging</p></div>
+    <div class="dive disc hidden"><p>Diverging</p></div>
   </div>
 
 

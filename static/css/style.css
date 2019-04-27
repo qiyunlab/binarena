@@ -155,6 +155,10 @@ button.switch {
   background-color: lightgray;
 }
 
+button.inside {
+  margin-left: -24px;
+}
+
 
 /**
  * shared classes
@@ -320,8 +324,7 @@ div.modal-head button:last-child:hover {
 }
 
 
-
-/* button group (currently not used) */
+/** button group (currently not used) */
 
 /* span.btn-group button {
   height: 22px;
@@ -344,7 +347,7 @@ span.btn-group button:not(:first-child):not(:last-child) {
 
 /* shared elements */
 
-/* popup select */
+/** popup selects */
 
 div.popup {
   position: fixed;
@@ -352,12 +355,13 @@ div.popup {
   background-color: white;
   min-width: 100px;
   box-shadow: 3px 3px 15px lightgray;
-  /* padding: 5px; */
 }
 
 div.popup p {
   margin: 5px 10px;
 }
+
+/** square table (for scale select) */
 
 table.square td {
   width: 24px;
@@ -371,6 +375,8 @@ table.square td:hover {
   background-color: lightgray;
   color: black;
 }
+
+/** generic auto-complete select */
 
 #list-options {
   width: 100%;
@@ -388,6 +394,53 @@ table.square td:hover {
 
 #list-options td.active {
   background-color: lightsteelblue !important;
+}
+
+/** palette select */
+
+#palette-select {
+  max-height: 360px;
+  overflow-y: auto;
+}
+
+#palette-select p {
+  background-color: #EEE;
+  margin: 0;
+  padding: 3px;
+}
+
+#palette-select table tr {
+  height: 24px;
+  color: dimgray;
+  text-align: left;
+  cursor: pointer;
+}
+
+#palette-select table tr:hover {
+  background-color: lightgray;
+  color: black;
+}
+
+#palette-select table tr td:first-child {
+  width: 60px;
+}
+
+#palette-select table tr td:last-child {
+  width: 120px;
+  padding: 3px;
+}
+
+#palette-select table tr td:last-child div {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: stretch;
+}
+
+#palette-select table tr td:last-child div span {
+  display: inline-block;
+  height: 100%;
+  width: 100%;
 }
 
 
@@ -530,6 +583,30 @@ div.dash-content table tr td:nth-child(2) {
 div.dash-content table tr td:nth-child(2) input[type=text], select {
   width: 100%;
 }
+
+/** button inside text/select box */
+
+div.dash-content table tr td:nth-child(2) > div {
+  display: inline-block;
+  width: 100%;
+}
+
+div.dash-content table tr td:nth-child(2) > div > button {
+  margin-left: -24px;
+  color: transparent;
+  background: transparent;
+}
+
+div.dash-content table tr td:nth-child(2):hover > div > button {
+  color: gray;
+}
+
+div.dash-content table tr td:nth-child(2) > div > button:hover {
+  background-color: #EEE;
+  color: black;
+}
+
+/** button emerging after text/select box */
 
 div.dash-content table tr td:last-child > span {
   visibility: hidden;

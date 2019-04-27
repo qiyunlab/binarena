@@ -54,7 +54,7 @@ function masterObj() {
   /**
    * View object.
    * @member {Object} view
-   * @property {{x: number, y: number}} pos - current viewport position
+   * @property {{x: number, y: number}} pos - viewport position
    * @property {number} scale - scaling factor
    * @property {Object} x - x-axis variable
    * @property {Object} y - y-axis variable
@@ -62,6 +62,8 @@ function masterObj() {
    * @property {Object} opacity - opacity variable
    * @property {boolean} grid - whether show grid
    * @property {number} rbase - base radius (px) of contig
+   * @property {string} contPal - continuous palette
+   * @property {string} discPal - discrete palette
    */
   this.view = {
     /** canvas rendering */
@@ -81,6 +83,8 @@ function masterObj() {
     /** display features */
     grid: false,
     rbase: 15,
+    contPal: DEFAULT_CONTINUOUS_PALETTE,
+    discPal: DEFAULT_DISCRETE_PALETTE,
 
     /** pre-cached data info */
     lencol: null, // name of putative "length" column

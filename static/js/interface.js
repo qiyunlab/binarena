@@ -67,8 +67,9 @@ function initControls(mo) {
         }
       }
       if (hideDropdown) {
-        document.getElementById('list-select').classList.add('hidden');
-        document.getElementById('scale-select').classList.add('hidden');
+        document.querySelectorAll('.popup').forEach(function(div) {
+          div.classList.add('hidden');
+        })
       }
     }
   });
@@ -249,9 +250,8 @@ function initControls(mo) {
 
   // scale select buttons
   var list = document.getElementById('scale-select');
-  var btns = document.getElementsByClassName('scale-btn');
-  for (var i = 0; i < btns.length; i++) {
-    btns[i].addEventListener('click', function () {
+  document.querySelectorAll('button.scale-btn').forEach(function(btn) {
+    btn.addEventListener('click', function () {
       document.getElementById('current-scale').innerHTML =
         this.getAttribute('data-scale');
       list.setAttribute('data-target-id', this.id);
@@ -260,7 +260,7 @@ function initControls(mo) {
       list.style.left = rect.left + 'px';
       list.classList.toggle('hidden');
     });
-  }
+  });
 
   // scale select options
   var table = document.getElementById('scale-options');
@@ -287,6 +287,28 @@ function initControls(mo) {
       });
     }
   }
+
+  // color palette select button
+  document.getElementById('palette-btn').addEventListener('click', function() {
+    var list = document.getElementById('palette-select');
+    if (list.classList.contains('hidden')) {
+      var val = document.getElementById('color-field-sel').value;
+      if (!val) return;
+      var isNum = (mo.data.types[val] === 'number');
+      list.querySelectorAll('.disc').forEach(function(div) {
+        div.classList.toggle('hidden', isNum);
+      });
+      list.querySelectorAll('.cont').forEach(function(div) {
+        div.classList.toggle('hidden', !isNum);
+      });
+      var rect = this.getBoundingClientRect();
+      list.style.top = rect.bottom + 'px';
+      list.style.left = rect.left + 'px';
+      list.classList.remove('hidden');
+    } else {
+      list.classList.add('hidden');
+    }
+  });
 
 
   /**
@@ -380,18 +402,16 @@ function initControls(mo) {
   ['x', 'y', 'size', 'opacity'].forEach(function (key) {
     document.getElementById(key + '-field-sel').addEventListener('change',
       function () {
-      var span = document.getElementById(key + '-param-span');
-      if (this.value) span.classList.remove('hidden');
-      else span.classList.add('hidden');
+      document.getElementById(key + '-param-span').classList.toggle('hidden',
+        !this.value);
       displayItemChange(key, this.value, view[key].scale, mo);
     });
   });
 
   document.getElementById('color-field-sel').addEventListener('change',
     function () {
-    var span = document.getElementById('color-param-span');
-    if (this.value) span.classList.remove('hidden');
-    else span.classList.add('hidden');
+    document.getElementById('color-param-span').classList.toggle('hidden',
+      !this.value);
     view.color.i = this.value;
     var sel = document.getElementById('color-palette-sel');
     view.color.palette = sel.options[sel.selectedIndex].text;
@@ -405,6 +425,22 @@ function initControls(mo) {
     updateColorMap(mo);
     renderArena(mo);
   });
+
+  // swap x- and y-axes
+  document.querySelectorAll('button.swap-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var xx = mo.view.x;
+      var yy = mo.view.y;
+      ['i', 'scale', 'min', 'max'].forEach(function(key) {
+        xx[key] = [yy[key], yy[key] = xx[key]][0];
+      });
+      updateCtrlByData(mo.data, mo.view);
+      renderArena(mo);
+    });
+  });
+
+  // populate palette select
+  populatePaletteSelect();
 
 
   /**
@@ -427,21 +463,6 @@ function initControls(mo) {
       });
     });
   });
-
-  // document.getElementById('opacity-legend').addEventListener('mouseenter',
-  //   function() {
-  //   this.querySelectorAll('.clip').forEach(function(clip) {
-  //     clip.classList.add('hidden');
-  //   });
-  // });
-
-  // document.getElementById('opacity-legend').addEventListener('mouseleave',
-  //   function() {
-  //   this.setAttribute('data-ranging', 'none');
-  //   this.querySelectorAll('.clip').forEach(function(clip) {
-  //     clip.classList.remove('hidden');
-  //   });
-  // });
 
   document.querySelectorAll('.gradient').forEach(function(grad) {
 
@@ -1282,4 +1303,47 @@ function updateSizeGradient(mo) {
   var rect = grad.getBoundingClientRect();
   var width = Math.floor(rect.right - rect.left);
   grad.style.borderRightWidth = width + 'px';
+}
+
+
+/**
+ * Populate palette select box
+ * @function populatePaletteSelect
+ */
+function populatePaletteSelect() {
+  var popup = document.getElementById('palette-select');
+  popup.querySelectorAll('div').forEach(function(div) {
+    var table = document.createElement('table');
+    var pals = div.classList.contains('sequ') ? SEQUENTIAL_PALETTES
+      : (div.classList.contains('dive') ? DIVERGING_PALETTES
+      : QUALITATIVE_PALETTES);
+
+    // create palette list
+    pals.forEach(function(pal) {
+      var row = table.insertRow(-1);
+      var cell = row.insertCell(-1);
+      cell.innerHTML = pal;
+      cell = row.insertCell(-1);
+      var box = document.createElement('div');
+
+      // continuous color
+      if (div.classList.contains('cont')) {
+        box.innerHTML = '&nbsp;';
+        box.style.backgroundImage = 'linear-gradient(to right, '
+          + PALETTES[pal].map(function(e) {return '#' + e}).join(', ') + ')';
+      }
+
+      // discrete color
+      else {
+        for (var i = 0; i < 8; i++) {
+          var span = document.createElement('span');
+          span.innerHTML = '&nbsp;';
+          span.style.backgroundColor = '#' + PALETTES[pal][i];
+          box.appendChild(span);
+        }
+      }
+      cell.appendChild(box);
+    });
+    div.appendChild(table);
+  });
 }

@@ -129,11 +129,25 @@ function updateCtrlByData(data, view) {
     }
   }
 
-  // numeric fields
-  ['x', 'y', 'size', 'opacity'].forEach(function (item) {
+  ['x', 'y', 'size', 'opacity', 'color'].forEach(function(item) {
     var sel = document.getElementById(item + '-field-sel');
     sel.innerHTML = '';
     sel.add(document.createElement('option'));
+
+    // categorical fields for color
+    if (item === 'color') {
+      catFields.forEach(function(cat) {
+        var opt = document.createElement('option');
+        opt.text = cat[1];
+        opt.value = cat[0];
+        sel.add(opt);
+      });
+      var palette = view.color.palette;
+      if (palette) document.getElementById('color-palette-sel').value =
+        mo.palettes.list.indexOf(palette);
+    }
+
+    // numerical fields for all
     for (var j = 0; j < numFields.length; j++) {
       var opt = document.createElement('option');
       opt.text = numFields[j][1];
@@ -155,22 +169,6 @@ function updateCtrlByData(data, view) {
     btn.title = 'Scale: ' + scale;
     btn.innerHTML = scale2HTML(scale);
   });
-
-  // categorical fields
-  var sel = document.getElementById('color-field-sel');
-  sel.innerHTML = '';
-  sel.add(document.createElement('option'));
-  catFields.forEach(function (cat) {
-    var opt = document.createElement('option');
-    opt.text = cat[1];
-    opt.value = cat[0];
-    sel.add(opt);
-  });
-  var idx = view.color.i;
-  if (idx) sel.value = idx;
-  var palette = view.color.palette;
-  if (palette) document.getElementById('color-palette-sel').value =
-    mo.palettes.list.indexOf(palette);
 }
 
 
