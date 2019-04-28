@@ -384,8 +384,10 @@ function initControls(mo) {
       var legend = tr.nextElementSibling;
       legend.classList.toggle('hidden');
       this.classList.toggle('pressed');
-      if (legend.display !== 'none') updateLegends(mo, [tr.getAttribute(
-        'data-item')]);
+      // have to update legends here, because it relies on visibility
+      if (!legend.classList.contains('hidden')) {
+        updateLegends(mo, [tr.getAttribute('data-item')]);
+      }
     });
   });
 
@@ -432,15 +434,35 @@ function initControls(mo) {
           .contains('cont')) {
           mo.view.contpal = palette;
           mo.view.color.contmap = palette11to101(PALETTES[palette]);
-          updateLegends(mo, ['color']);
         } else {
           mo.view.discpal = palette;
           updateColorMap(mo);
         }
+        updateLegends(mo, ['color']);
         renderArena(mo);
       });
     }
   });
+
+  // add/remove discrete color
+  document.getElementById('add-color-btn').addEventListener('click',
+    function() {
+    mo.view.ncolor += 1;
+    updateColorNum();
+  });
+
+  document.getElementById('remove-color-btn').addEventListener('click',
+    function() {
+    if (mo.view.ncolor === 1) return;
+    mo.view.ncolor -= 1;
+    updateColorNum();
+  });
+
+  function updateColorNum() {
+    updateColorMap(mo);
+    renderArena(mo);
+    updateLegends(mo, ['color']);
+  }
 
 
   /**
@@ -512,8 +534,8 @@ function initControls(mo) {
         else if (item === 'color') {
           circle.style.height = '15px';
           circle.style.width = '15px';
-          circle.style.backgroundColor = 'rgb(' + getColorForValue((offset
-            / width).toFixed(2), PALETTES[mo.view.contpal]) + ')';
+          circle.style.backgroundColor = 'rgb(' + mo.view.color.contmap[
+            Math.round(offset / width * 100)] + ')';
         }
       }
 
@@ -802,6 +824,14 @@ function initControls(mo) {
    * @summary Information table events
    */
 
+  document.getElementById('mask-btn').addEventListener('click', function() {
+    var indices = Object.keys(mo.pick);
+    if (indices.length > 0) {
+      // switch to "add" mode, then treat deletion
+      treatSelection(indices, 'add', true, mo);
+    }
+  });
+
   document.getElementById('info-metric-btn').addEventListener('click',
     function () {
     var row = this.parentElement.parentElement.parentElement;
@@ -962,11 +992,7 @@ function initCanvas(mo) {
         break;
       case 46: // Delete
       case 8: // Backspace
-        var indices = Object.keys(mo.pick);
-        if (indices.length > 0) {
-          // switch to "add" mode, then treat deletion
-          treatSelection(indices, 'add', true, mo);
-        }
+        document.getElementById('mask-btn').click();
         break;
       case 13: // Enter
         polygonSelect(mo);
@@ -1242,14 +1268,30 @@ function autoComplete(inp, arr) {
  */
 function updateLegends(mo, items) {
   items = items || ['size', 'opacity', 'color'];
-  items.forEach(function(item) {
+  for (var i = 0; i < items.length; i++) {
+    
+    var item = items[i];
     var icol = mo.view[item].i;
-    if (!icol) return;
+    if (!icol) continue;
 
+    // discrete colors
+    if (item === 'color') {
+      var isCat = (mo.data.types[icol] === 'category');
+      document.getElementById('color-legend').classList.toggle('hidden',
+        isCat);
+      document.getElementById('color-legend-2').classList.toggle('hidden',
+        !isCat);
+      if (isCat) {
+        updateColorTable(mo);
+        continue;
+      }
+    }
+
+    // continuous data
     var scale = unscale(mo.view[item].scale);
     var legend = document.getElementById(item + '-legend');
     var grad = legend.querySelector('.gradient');
-    if (grad === null) return;
+    if (grad === null) continue;
   
     // refresh labels
     ['min', 'max'].forEach(function(key) {
@@ -1282,7 +1324,7 @@ function updateLegends(mo, items) {
     clip = legend.querySelector('.clip.upper');
     clip.style.left = Math.round(rect.left + poses['upper']) + 'px';
     clip.style.width = Math.ceil(rect.right - rect.left - poses['upper']) + 'px';
-  });
+  }
 }
 
 
@@ -1305,7 +1347,7 @@ function updateSizeGradient(mo) {
 
 
 /**
- * Update gradient in color legend.
+ * Update gradient in continuous color legend.
  * @function updateColorGradient
  * @param {Object} mo - master object
  */
@@ -1316,6 +1358,41 @@ function updateColorGradient(mo) {
   document.getElementById('color-gradient').style.backgroundImage
     = 'linear-gradient(to right, ' + PALETTES[mo.view.contpal].map(
     function(e) {return '#' + e}).join(', ') + ')';
+}
+
+
+/**
+ * Update table in discrete color legend
+ * @function updateColorTable
+ * @param {Object} mo - master object
+ */
+function updateColorTable(mo) {
+  var table = document.getElementById('color-table');
+  table.innerHTML = '';
+  var cmap = mo.view.color.discmap;
+  var row, cell, div;
+
+  // row for each category
+  for (var cat in cmap) {
+    row = table.insertRow(-1);
+    cell = row.insertCell(-1);
+    div = document.createElement('div');
+    div.innerHTML = '&nbsp;';
+    div.style.backgroundColor = '#' + cmap[cat];
+    cell.appendChild(div);
+    cell = row.insertCell(-1);
+    cell.innerHTML = cat;
+  }
+
+  // row for others & n/a
+  row = table.insertRow(-1);
+  cell = row.insertCell(-1);
+  div = document.createElement('div');
+  div.innerHTML = '&nbsp;';
+  div.style.backgroundColor = 'black';
+  cell.appendChild(div);
+  cell = row.insertCell(-1);
+  cell.innerHTML = 'Others & N/A';
 }
 
 
@@ -1372,9 +1449,8 @@ function populatePaletteSelect() {
  * @param {Object} mo - master object
  */
 function formatValueLabel(value, icol, digits, unit, mo) {
-  var col = mo.data.cols[icol];
-  var lencol = mo.view.lencol;
-  if (lencol && col === lencol) {
+  var ilen = mo.view.spcols.len;
+  if (ilen && icol === ilen) {
     var fmtlen = FormatLength(value);
     var res = formatNum(fmtlen[0], digits);
     if (unit) res += ' ' + fmtlen[1];

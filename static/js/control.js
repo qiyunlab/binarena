@@ -85,7 +85,7 @@ function updateView(mo) {
  */
 function initDisplayItems(data, view) {
   var items = ['x', 'y', 'size', 'opacity', 'color'];
-  var indices = guessDisplayFields(data);
+  var indices = guessDisplayFields(data, view);
   var scales = guessDisplayScales(items);
   items.forEach(function (item) {
     view[item].i = indices[item];
@@ -315,23 +315,24 @@ function updateViewByData(mo, cache) {
   view.decimals = cache[0];
   view.categories = cache[1];
   view.features = cache[2];
-  view.lencol = guessLenColumn(data);
-  view.covcol = guessCovColumn(data);
+  view.spcols.len = guessLenColumn(data);
+  view.spcols.cov = guessCovColumn(data);
+  view.spcols.gc = guessGCColumn(data);
 
   // calculate total abundance
-  if (view.lencol && view.covcol) {
-    var il = data.cols.indexOf(view.lencol);
-    var ic = data.cols.indexOf(view.covcol);
+  if (view.spcols.len && view.spcols.cov) {
     view.abundance = 0;
     for (var i = 0; i < data.df.length; i++) {
-      view.abundance += data.df[i][il] * data.df[i][ic];
+      view.abundance += data.df[i][view.spcols.len]
+        * data.df[i][view.spcols.cov];
     }
   }
 
   // manipulate interface
   initDisplayItems(mo.data, mo.view);
+  updateColorMap(mo);
   updateCtrlByData(mo.data, mo.view);
-  initInfoTable(mo.data, mo.view.lencol, mo.pick);
+  initInfoTable(mo.data, mo.view.spcols.len, mo.pick);
   initDataTable(mo.data.cols, mo.data.types);
   fillDataTable(data);
   document.getElementById('bin-tbody').innerHTML = '';
@@ -368,7 +369,7 @@ function displayItemChange(item, i, scale, mo) {
   }
 
   // update legend
-  if (!isCat) updateLegends(mo, [item]);
+  updateLegends(mo, [item]);
 }
 
 
@@ -832,12 +833,12 @@ function updateBinTable(mo) {
   // cache length and coverage data
   var lens = {};
   var covs = {};
-  if (view.lencol || view.covcol) {
-    var il = view.lencol ? data.cols.indexOf(view.lencol) : null;
-    var ic = view.covcol ? data.cols.indexOf(view.covcol) : null;
+  if (view.spcols.len || view.spcols.cov) {
+    var ilen = view.spcols.len ? view.spcols.len : null;
+    var icov = view.spcols.cov ? view.spcols.cov : null;
     for (var i = 0; i < data.df.length; i++) {
-      if (il) lens[i] = data.df[i][il];
-      if (ic) covs[i] = data.df[i][ic];
+      if (ilen) lens[i] = data.df[i][ilen];
+      if (icov) covs[i] = data.df[i][icov];
     }
   }
   
@@ -869,7 +870,7 @@ function updateBinTable(mo) {
 
     // 3rd cell: length (kb)
     var cell = row.insertCell(-1);
-    if (view.lencol) {
+    if (view.spcols.len) {
       var sum = 0;
       for (var i in bins[name]) sum += lens[i];
       cell.innerHTML = parseInt(sum / 1000);
@@ -877,7 +878,7 @@ function updateBinTable(mo) {
     
     // 4th cell: abundance (%)
     var cell = row.insertCell(-1);
-    if (view.lencol && view.covcol) {
+    if (view.spcols.len && view.spcols.cov) {
       var sum = 0;
       for (var i in bins[name]) sum += lens[i] * covs[i];
       cell.innerHTML = (sum * 100 / view.abundance).toFixed(2);

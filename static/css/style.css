@@ -123,20 +123,6 @@ sub {
   -o-transform: rotate(-90deg);
 }
 
-p.setting {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-}
-
-p.setting label:first-child {
-  margin-right: auto;
-}
-
-p.setting button:only-child {
-  margin-right: auto;
-}
-
 button.static {
   background-color: transparent;
   color: black;
@@ -259,7 +245,7 @@ div.toolbar span.spacer {
 }
 
 
-/* toast */
+/** toast */
 
 #toast {
   min-width: 250px;
@@ -277,7 +263,7 @@ div.toolbar span.spacer {
 }
 
 
-/* modal */
+/** modal */
 
 div.modal {
   position: fixed;
@@ -527,13 +513,6 @@ canvas.main-plot {
 
 /** dash panel */
 
-button.dash-head {
-  height: 35px;
-  width: 100%;
-  text-align: left;
-  padding: 10px 20px;
-}
-
 div.dash-content {
   color: black;
   background-color: white;
@@ -557,79 +536,80 @@ div.dash-content button {
   padding: 0 5px;
 }
 
-div.dash-content table {
+div.dash-content button.pressed {
+  border: 1px solid darkgray;
+  box-sizing: border-box;
+}
+
+div.dash-content > table {
   margin: 0 0 5px 0;
 }
 
-div.dash-content table tr {
+div.dash-content > table tr {
   line-height: 26px;
 }
 
-div.dash-content table tr td {
+div.dash-content > table tr td {
   padding: 0;
   white-space: nowrap;
 }
 
-div.dash-content table tr td:first-child {
+div.dash-content > table tr td:first-child {
   text-align: right;
   padding-right: 5px;
 }
 
-div.dash-content table tr td:nth-child(2) {
+div.dash-content > table tr td:nth-child(2) {
   width: 100%;
   padding-right: 5px;
 }
 
-div.dash-content table tr td:nth-child(2) input[type=text], select {
+div.dash-content > table tr td:nth-child(2) input[type=text], select {
   width: 100%;
 }
 
 /** button inside text/select box */
 
-div.dash-content table tr td:nth-child(2) > div {
+div.dash-content > table tr td:nth-child(2) > div {
   display: inline-block;
   width: 100%;
 }
 
-div.dash-content table tr td:nth-child(2) > div > button {
+div.dash-content > table tr td:nth-child(2) > div > button {
   margin-left: -24px;
   color: transparent;
   background: transparent;
 }
 
-div.dash-content table tr td:nth-child(2):hover > div > button {
+div.dash-content > table tr td:nth-child(2):hover > div > button {
   color: gray;
 }
 
-div.dash-content table tr td:nth-child(2) > div > button:hover {
+div.dash-content > table tr td:nth-child(2) > div > button:hover {
   background-color: #EEE;
   color: black;
 }
 
 /** button emerging after text/select box */
 
-div.dash-content table tr td:last-child > span {
+div.dash-content > table tr td:last-child > span {
   visibility: hidden;
 }
 
-div.dash-content table tr:hover td:last-child > span {
+div.dash-content > table tr:hover td:last-child > span {
   visibility: visible;
 }
 
-div.dash-content table tr td:last-child > span button {
+div.dash-content > table tr td:last-child > span button {
   background-color: transparent;
   color: gray;
 }
 
-div.dash-content table tr td:last-child > span button:hover {
+div.dash-content > table tr td:last-child > span button:hover {
   background-color: #EEE;
   color: black;
 }
 
-div.dash-content button.pressed {
-  border: 1px solid darkgray;
-  box-sizing: border-box;
-}
 
 /* 
 div.dash-content table tr td:nth-child(2) select {
@@ -779,11 +759,6 @@ div.side-content {
   display: flex;
   flex-direction: column;
 }
-
-
-/* #display-items select {
-  width: 100px;
-} */
 
 
 /* select panel */
@@ -1130,7 +1105,6 @@ div.legend div.range.upper {
   box-shadow: -1px 0 0 1px white;
 }
 
-
 div.legend div.clip {
   position: absolute;
   z-index: 3;
@@ -1199,4 +1173,65 @@ div.legend:hover div.clip {
 
 #legend-value {
   display: inline-block;
+}
+
+
+/** color table */
+
+#color-legend-2 {
+  margin: 10px 15px;
+  max-height: 360px;
+  overflow-y: auto;
+  position: relative;
+}
+
+#color-table-ctrl {
+  display: none;
+  position: absolute;
+  top: 5px;
+  right: 0;
+}
+
+#color-legend-2:hover #color-table-ctrl {
+  display: flex;
+  flex-direction: column;
+}
+
+#color-legend-2 table {
+  table-layout: fixed;
+  white-space: nowrap;
+  width: 100%;
+  font-size: 9pt;
+}
+
+#color-legend-2 table tr {
+  height: 16px;
+  line-height: 16px;
+}
+
+#color-legend-2 table tr td {
+  color: dimgray;
+  text-align: left;
+}
+
+#color-legend-2 table tr:hover td {
+  color: black;
+}
+
+#color-legend-2 table tr td:first-child {
+  width: 16px;
+  min-width: 16px;
+  cursor: pointer;
+  padding: 3px;
+}
+
+#color-legend-2 table tr td:first-child div {
+  font-size: 10%;
+}
+
+#color-legend-2 table tr td:last-child {
+  padding-left: 6px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }

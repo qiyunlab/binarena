@@ -88,9 +88,14 @@ function masterObj() {
     discpal: DEFAULT_DISCRETE_PALETTE,
     ncolor: 7,
 
+    /** indices of special columns */
+    spcols: {
+      len: null,
+      cov: null,
+      gc: null
+    },
+
     /** pre-cached data info */
-    lencol: null, // name of putative "length" column
-    covcol: null, // name of putative "coverage" column
     categories: {}, // column to category to frequency map
     features: {}, // column to category to frequency map
     decimals: {}, // column to maximum decimals map

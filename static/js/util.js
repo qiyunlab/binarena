@@ -321,10 +321,12 @@ function rectCircleColliding(circle, rect){
  * @param {{x: number, y: number}[]} polygon - x- and y-coordinates of vertices
  * of polygon
  * @returns {boolean} whether point is within polygon
- * @description Reimplemented following W Randolph Franklin:
+ * @description Reimplemented following:
  * PNPOLY - Point Inclusion in Polygon Test
- * @see {@link https://www.ecse.rpi.edu/Homepages/wrf/Research/Short_Notes/
- * pnpoly.html}
+ * @author W Randolph Franklin:
+ * {@link https://wrf.ecse.rpi.edu//Research/Short_Notes/pnpoly.html}
+ * @license MIT license
+ * @see licenses/pnpoly.txt
  */
 function pnpoly(x, y, polygon) {
   var res = false;

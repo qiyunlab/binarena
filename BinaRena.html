@@ -13,6 +13,7 @@
       dash-panel:
         search-panel
         display-panel
+          individual display items have legends
     side-frame: right side (toggled by show-side-btn)
       bins-panel (contains hide-side-btn)
       info-panel (for selected)
@@ -25,6 +26,7 @@
     (below start button on click, or after cursor on right click)
   4. floating panels:
     scale-select
+    palette-select
     data-table-modal
     help-modal
   5. generic elements:
@@ -252,6 +254,14 @@
                 <div class="range lower" data-tick="0"></div>
                 <div class="range upper" data-tick="10"></div>
               </div>
+
+              <div id="color-legend-2">
+                <table id="color-table"></table>
+                <div id="color-table-ctrl">
+                  <button id="add-color-btn" class="square" title="Add a color"><i class="fa fa-plus"></i></button><!--
+                  --><br><button id="remove-color-btn" class="square" title="Remove a color"><i class="fa fa-minus"></i></button>
+                </div>
+              </div>
             </td>
           </tr>
         </table>
@@ -365,7 +375,7 @@
       <!-- toolbar -->
       <div class="toolbar">
         <button title="Highlight" class="square"><i class="fa fa-star-o fa-lg"></i></button>
-        <button title="Mask" class="square"><i class="fa fa-eye-slash fa-lg"></i></button>
+        <button id="mask-btn" title="Mask" class="square"><i class="fa fa-eye-slash fa-lg"></i></button>
       </div>
 
       <!-- info table -->

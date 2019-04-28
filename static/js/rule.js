@@ -1,10 +1,11 @@
 "use strict";
 
 /**!
+ * @module rule
  * @file Rules - Smart predictors to determine which elements should be
- * displayed in what behaviors.
- * Involved lots of human-designed rules. Can be customized to address specific
- * goals.
+ * displayed in what behavior.
+ * @description Involved lots of human-designed rules. Can be customized to
+ * address specific requirements.
  */
 
 
@@ -179,7 +180,13 @@ function parseFieldType(name, arr) {
 
 /**
  * Define display items based on data.
- * Specifically, five display items are to be inferred:
+ * @function guessDisplayFields
+ * @param {Object} data - data object
+ * @param {Object} view - view object
+ * @throws {Error} if x and y cannot be determined
+ * @returns {[number, number, ?number, ?number, ?number]} field indices for
+ * x, y, size, opacity, color
+ * @todo Specifically, five display items are to be inferred:
  *    x, y, size, opacity : {idx, factor, scale, min, max}
  * factor is a number to be multiplied.
  * scale can be: null, square, sqrt, cube, cbrt, log, log10, exp, exp10
@@ -187,13 +194,8 @@ function parseFieldType(name, arr) {
  *    color : {idx, n, cutoff, palette}
  * n is the top n categories to be colored.
  * Options are: number, category, feature, description.
- * @function guessDisplayFields
- * @param {Object} data - data object
- * @throws {Error} if x and y cannot be determined
- * @returns {[number, number, ?number, ?number, ?number]} field indices for
- * x, y, size, opacity, color
  */
-function guessDisplayFields(data) {
+function guessDisplayFields(data, view) {
 
   var res = {
     x: null,
@@ -212,21 +214,35 @@ function guessDisplayFields(data) {
     var name = data.cols[i].toLowerCase();
     if (name === 'x') {
       xyCand[0] = i;
-      // res.x = {idx: i, factor: 1, scale: null, min: null, max: null}
     } else if (name === 'y') {
       xyCand[1] = i;
     }
   }
+
+  // be satisfied if both obtained
   if (xyCand[0] !== null && xyCand[1] !== null) {
     res.x = xyCand[0];
     res.y = xyCand[1];
+
+    // add other items
+    res.size = view.spcols.len || null;
+    res.opacity = view.spcols.cov || null;
+    res.color = guessRankColumn(data) || view.spcols.gc || null;
   }
 
-  res.x = 1;
-  res.y = 2;
-  res.size = 3;
-  res.opacity = 5;
-  res.color = null;
+  // otherwise, get gc -> coverage -> length
+  else {
+    var keys = ['gc', 'cov', 'len'];
+    var avails = [];
+    for (var i = 1; i < keys.length; i++) {
+      var icol = view.spcols[keys[i]];
+      if (icol !== null) avails.push(icol);
+    }
+    if (avails.length >= 2) {
+      res.x = avails[0];
+      res.y = avails[1];
+    }
+  }
   return res;
 }
 
@@ -261,70 +277,121 @@ function guessDisplayScales(items) {
 
 
 /**
- * Guess which column represents the "length" property of contigs.
+ * Guess which column represents the "length" property.
  * @function guessLenColumn
  * @param {Object} data - data object
- * @returns {string} - name of "length" column
+ * @returns {number} - index of "length" column
  */
 function guessLenColumn(data) {
-  // pre-defined strings that mean "length"
-  var lens = ['length', 'size', 'len', 'bp'];
-  // get numeric columns
-  var numcols = [];
-  for (var i = 1; i < data.cols.length; i++) {
-    if (data.types[i] === 'number') {
-      numcols.push(data.cols[i]);
-    }
-  }
+  var keys = ['length', 'size', 'len', 'bp'];
+  return findColumnByKeys(data, keys, ['number']);
+}
+
+
+/**
+ * Guess which column represents the "coverage" property.
+ * @function guessCovColumn
+ * @param {Object} data - data object
+ * @returns {number} - index of "coverage" column
+ */
+function guessCovColumn(data) {
+  var keys = ['coverage', 'cov', 'depth'];
+  return findColumnByKeys(data, keys, ['number']);
+}
+
+
+/**
+ * Guess which column represents the "gc" property.
+ * @function guessGCColumn
+ * @param {Object} data - data object
+ * @returns {number} - index of "gc" column
+ */
+function guessGCColumn(data) {
+  var keys = ['gc', 'g+c', 'gc%', 'gc-content', 'gc-ratio'];
+  return findColumnByKeys(data, keys, ['number']);
+}
+
+
+/**
+ * Guess which column represents the highest taxonomic rank.
+ * @function guessRankColumn
+ * @param {Object} data - data object
+ * @returns {number} - index of high rank column
+ */
+function guessRankColumn(data) {
+  // ignore kingdom/domain and species
+  var keys = ['phylum', 'class', 'order', 'family', 'genus'];
+  return findColumnByKeys(data, keys, ['category']);
+}
+
+
+/**
+ * Find column name by keywords
+ * @function findColName
+ * @param {Object} data - data object
+ * @param {string[]} keys - keywords
+ * @param {string[]} [types=] - data types
+ * @returns {number} - index of result column
+ */
+function findColumnByKeys(data, keys, types) {
+
+  // get column names
+  var cols = getColNames(data, types);
+
   // find a column name that is identical to one of the "length" strings
-  for (var i = 1; i < numcols.length; i++) {
-    if (lens.indexOf(numcols[i].toLowerCase()) !== -1) {
-      return numcols[i];
-    }
-  }
+  var col = matchWhole(keys, cols);
+  if (col) return data.cols.indexOf(col);
+
   // if fail, find a column name that starts with one of the "length" strings
-  var delims = [' ', '/', '_', '.'];
-  for (var i = 1; i < delims.length; i++) {
-    for (var j = 1; j < numcols.length; j++) {
-      var prefix = numcols[j].toLowerCase().split(delims[i], 1)[0];
-      if (lens.indexOf(prefix) !== -1) {
-        return numcols[j];
-      }
-    }
+  col = matchPrefix(keys, cols);
+  if (col) return data.cols.indexOf(col);
+  else return null;
+}
+
+
+/**
+ * Get column names by type.
+ * @function getColNames
+ * @param {Object} data - data object
+ * @param {string[]} [types=] - data types
+ */
+function getColNames(data, types) {
+  var notype = (typeof masking === 'undefined');
+  var res = [];
+  for (var i = 1; i < data.cols.length; i++) {
+    if (notype || types.indexOf(data.types[i]) !== -1) res.push(data.cols[i]);
+  }
+  return res;
+}
+
+
+/**
+ * Match two arrays by whole
+ * @function matchWhole
+ * @param {string[]} keys - keywords
+ * @param {string[]} cols - column names
+ */
+function matchWhole(keys, cols) {
+  for (var i = 1; i < cols.length; i++) {
+    if (keys.indexOf(cols[i].toLowerCase()) !== -1) return cols[i];
   }
   return null;
 }
 
 
 /**
- * Guess which column represents the "coverage" property of contigs.
- * @function guessCovColumn
- * @param {Object} data - data object
- * @returns {string} - name of "coverage" column
+ * Match two arrays by prefix
+ * @function matchWhole
+ * @param {string[]} keys - keywords
+ * @param {string[]} cols - column names
  */
-function guessCovColumn(data) {
-  // pre-defined strings that mean "length"
-  var lens = ['coverage', 'cov', 'depth'];
-  // get numeric columns
-  var numcols = [];
-  for (var i = 1; i < data.cols.length; i++) {
-    if (data.types[i] === 'number') {
-      numcols.push(data.cols[i]);
-    }
-  }
-  // find a column name that is identical to one of the "length" strings
-  for (var i = 1; i < numcols.length; i++) {
-    if (lens.indexOf(numcols[i].toLowerCase()) !== -1) {
-      return numcols[i];
-    }
-  }
-  // if fail, find a column name that starts with one of the "length" strings
+function matchPrefix(keys, cols) {
   var delims = [' ', '/', '_', '.'];
   for (var i = 1; i < delims.length; i++) {
-    for (var j = 1; j < numcols.length; j++) {
-      var prefix = numcols[j].toLowerCase().split(delims[i], 1)[0];
-      if (lens.indexOf(prefix) !== -1) {
-        return numcols[j];
+    for (var j = 1; j < cols.length; j++) {
+      var prefix = cols[j].toLowerCase().split(delims[i], 1)[0];
+      if (keys.indexOf(prefix) !== -1) {
+        return cols[i];
       }
     }
   }
