@@ -865,7 +865,9 @@ div.side-content {
 /* information table */
 
 #info-table {
+  table-layout: fixed;
   width: 100%;
+  white-space: nowrap;
   border: none;
 }
 
@@ -884,6 +886,9 @@ div.side-content {
 #info-table tr td:nth-child(2) {
   text-align: left;
   padding: 0 0 0 5px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 #info-table tr:hover {

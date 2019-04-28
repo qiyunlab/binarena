@@ -362,9 +362,9 @@ function guessColMetric(col) {
  */
 function FormatLength(len) {
   var abslen = Math.abs(len);
-  if (abslen < 1000) {
+  if (abslen < 999.5) {
     return [len, 'bp'];
-  } else if (abslen < 1000000) {
+  } else if (abslen < 999500) {
     return [len / 1000, 'kb'];
   } else {
     return [len / 1000000, 'Mb'];

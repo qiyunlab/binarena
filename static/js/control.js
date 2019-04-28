@@ -142,9 +142,6 @@ function updateCtrlByData(data, view) {
         opt.value = cat[0];
         sel.add(opt);
       });
-      var palette = view.color.palette;
-      if (palette) document.getElementById('color-palette-sel').value =
-        mo.palettes.list.indexOf(palette);
     }
 
     // numerical fields for all
@@ -176,37 +173,36 @@ function updateCtrlByData(data, view) {
  * Update color map based on selected field and palette.
  * @function updateColorMap
  * @param {Object} mo - master object
- * @param {number} [n=7] - number of colors to display
+ * @todo add feature (treat as number)
  */
-function updateColorMap(mo, n) {
-  n = n || 7;
-  mo.view.color.map = {};
-  var palette = mo.palettes.make(mo.view.color.palette, 10);
+function updateColorMap(mo) {
+  var icol = mo.view.color.i;
+  if (!icol) return;
+  if (mo.data.types[icol] !== 'category') return;
+  mo.view.color.discmap = {};
 
-  // get categories and their occurrence numbers
-  var cats = {}
+  // get categories and their frequencies
+  var cats = {};
   for (var i = 0; i < mo.data.df.length; i++) {
-    var val = mo.data.df[i][mo.view.color.i];
+    var val = mo.data.df[i][icol];
     if (val === undefined || val === null) continue;
-    var cat = val[0];
-    if (cat in cats) {
-      cats[cat]++;
-    } else {
-      cats[cat] = 1;
-    }
+    cats[val[0]] = (cats[val[0]] || 0) + 1;
   }
 
-  // convert object to array of key: value pairs, then sort
-  cats = Object.keys(cats).map(function (key) {
-    return [key, cats[key]];
-  });
-  cats.sort(function (a, b) {
-    return b[1] - a[1];
-  });
+  // convert object to array of key: value pairs
+  cats = Object.keys(cats).map(function (key) { return [key, cats[key]]; });
 
-  // take up to given number of frequent categories
-  for (var i = 0; i < Math.min(n, cats.length); i++) {
-    mo.view.color.map[cats[i][0]] = palette[i];
+  // sort by frequency from high to low
+  cats.sort(function (a, b) { return b[1] - a[1]; });
+
+  // number of colors to show
+  var ncolor = Math.min(mo.view.ncolor, cats.length);
+
+  // obtain colors from palette (allow repeats if palette is shorter)
+  var palette = PALETTES[mo.view.discpal];
+  var m = palette.length;
+  for (var i = 0; i < ncolor; i++) {
+    mo.view.color.discmap[cats[i][0]] = palette[i % m];
   }
 }
 
@@ -252,7 +248,7 @@ function resetView(mo, keep) {
  * @param {Array.<string>} [items] - display items to calculate
  */
 function calcDispMinMax(mo, items) {
-  items = items || ['x', 'y', 'size', 'opacity'];
+  items = items || ['x', 'y', 'size', 'opacity', 'color'];
   var data = mo.data;
   var view = mo.view;
 
@@ -357,14 +353,22 @@ function updateViewByData(mo, cache) {
 function displayItemChange(item, i, scale, mo) {
   mo.view[item].i = i;
   mo.view[item].scale = scale;
-  // keep current viewport unless x- or y-coordinates change
+  var isCat = (item === 'color' && mo.data.types[i] === 'category');
+
+  // if x- or y-coordinates change, reset view
   if (item === 'x' || item === 'y') {
     resetView(mo, true);
-  } else {
-    calcDispMinMax(mo, [item]);
+  }
+  
+  // otherwise, keep current viewport
+  else {
+    if (isCat) updateColorMap(mo);
+    else calcDispMinMax(mo, [item]);
     renderArena(mo);
   }
-  updateLegends(mo, [item]);
+
+  // update legend
+  if (!isCat) updateLegends(mo, [item]);
 }
 
 

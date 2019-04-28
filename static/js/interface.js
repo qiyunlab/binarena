@@ -222,16 +222,6 @@ function initControls(mo) {
   // close buttons
   initCloseBtns();
 
-  // color palettes
-  var sel = document.getElementById('color-palette-sel');
-  mo.palettes.list.forEach(function (palette, i) {
-    var opt = document.createElement('option');
-    opt.text = palette;
-    opt.value = i;
-    sel.add(opt);
-  });
-  sel.value = 0;
-
 
   // generic list select table
   document.getElementById('list-options').addEventListener('click',
@@ -387,43 +377,30 @@ function initControls(mo) {
    * @summary View panel body
    */
 
+  // show/hide legend
   document.querySelectorAll('.legend-btn').forEach(function(btn) {
     btn.addEventListener('click', function() {
       var tr = this.parentElement.parentElement.parentElement;
       var legend = tr.nextElementSibling;
       legend.classList.toggle('hidden');
       this.classList.toggle('pressed');
-      if (legend.display !== 'none') {
-        updateLegends(mo, [tr.getAttribute('data-item')]);
-      }
+      if (legend.display !== 'none') updateLegends(mo, [tr.getAttribute(
+        'data-item')]);
     });
   });
 
-  ['x', 'y', 'size', 'opacity'].forEach(function (key) {
+  // change display item
+  ['x', 'y', 'size', 'opacity', 'color'].forEach(function (key) {
     document.getElementById(key + '-field-sel').addEventListener('change',
       function () {
       document.getElementById(key + '-param-span').classList.toggle('hidden',
         !this.value);
+      if (!this.value) {
+        var div = document.getElementById(key + '-legend');
+        if (div) div.parentElement.parentElement.classList.add('hidden');
+      }
       displayItemChange(key, this.value, view[key].scale, mo);
     });
-  });
-
-  document.getElementById('color-field-sel').addEventListener('change',
-    function () {
-    document.getElementById('color-param-span').classList.toggle('hidden',
-      !this.value);
-    view.color.i = this.value;
-    var sel = document.getElementById('color-palette-sel');
-    view.color.palette = sel.options[sel.selectedIndex].text;
-    updateColorMap(mo);
-    renderArena(mo);
-  });
-
-  document.getElementById('color-palette-sel').addEventListener('change',
-    function () {
-    view.color.palette = this.options[this.selectedIndex].text;
-    updateColorMap(mo);
-    renderArena(mo);
   });
 
   // swap x- and y-axes
@@ -439,13 +416,35 @@ function initControls(mo) {
     });
   });
 
-  // populate palette select
+  // populate palettes
   populatePaletteSelect();
+
+  // initialize continuous color map
+  mo.view.color.contmap = palette11to101(PALETTES[mo.view.contpal]);
+
+  // select palette
+  document.getElementById('palette-select').querySelectorAll('table').forEach(
+    function(table) {
+    for (var i = 0; i < table.rows.length; i++) {
+      table.rows[i].addEventListener('click', function() {
+        var palette = this.firstElementChild.innerHTML;
+        if (this.parentElement.parentElement.parentElement.classList
+          .contains('cont')) {
+          mo.view.contpal = palette;
+          mo.view.color.contmap = palette11to101(PALETTES[palette]);
+          updateLegends(mo, ['color']);
+        } else {
+          mo.view.discpal = palette;
+          updateColorMap(mo);
+        }
+        renderArena(mo);
+      });
+    }
+  });
 
 
   /**
    * @summary Legends
-   * @todo other legends
    */
 
   document.querySelectorAll('.legend').forEach(function(leg) {
@@ -490,18 +489,11 @@ function initControls(mo) {
         tip.style.top = Math.round(rect.bottom) + 'px';
 
         // specify tip label
-        var value = scaleNum(v.min + offset / width * (v.max - v.min),
+        var vmin = v.zero ? 0 : v.min;
+        var value = scaleNum(vmin + offset / width * (v.max - vmin),
           unscale(v.scale));
-        var col = mo.data.cols[mo.view[item].i];
-        var lencol = mo.view.lencol;
-        if (lencol && col === lencol) {
-          var fmtlen = FormatLength(value);
-          document.getElementById('legend-value').innerHTML
-            = formatNum(fmtlen[0], 3) + ' ' + fmtlen[1];
-        } else {
-          document.getElementById('legend-value').innerHTML
-            = formatNum(value, 3);
-        }
+        document.getElementById('legend-value').innerHTML = formatValueLabel(
+          value, mo.view[item].i, 3, true, mo);
 
         // item-specific operations
         var circle = document.getElementById('legend-circle');
@@ -516,6 +508,12 @@ function initControls(mo) {
           circle.style.width = '15px';
           circle.style.backgroundColor = 'rgba(0,0,0,' + (offset / width)
             .toFixed(2) + ')';
+        }
+        else if (item === 'color') {
+          circle.style.height = '15px';
+          circle.style.width = '15px';
+          circle.style.backgroundColor = 'rgb(' + getColorForValue((offset
+            / width).toFixed(2), PALETTES[mo.view.contpal]) + ')';
         }
       }
 
@@ -1243,28 +1241,28 @@ function autoComplete(inp, arr) {
  * @todo other items
  */
 function updateLegends(mo, items) {
-  // items = items || ['x', 'y', 'size', 'opacity', 'color'];
-  items = items || ['size', 'opacity'];
+  items = items || ['size', 'opacity', 'color'];
   items.forEach(function(item) {
+    var icol = mo.view[item].i;
+    if (!icol) return;
+
     var scale = unscale(mo.view[item].scale);
     var legend = document.getElementById(item + '-legend');
     var grad = legend.querySelector('.gradient');
     if (grad === null) return;
   
     // refresh labels
-    var col = mo.data.cols[mo.view[item].i];
-    var lencol = mo.view.lencol;
     ['min', 'max'].forEach(function(key) {
       var label = legend.querySelector('label.' + key);
       var value = scaleNum(mo.view[item][key], scale);
-      if (lencol && col === lencol) value = FormatLength(value)[0];
-      value = formatNum(value, 3);
+      value = formatValueLabel(value, icol, 3, false, mo);
       label.setAttribute('data-value', value);
       label.innerHTML = (key === 'min' && mo.view[item].zero) ? 0 : value;
     });
 
     // item-specific operations
     if (item === 'size') updateSizeGradient(mo);
+    if (item === 'color') updateColorGradient(mo);
 
     // position ranges
     var rect = grad.getBoundingClientRect();
@@ -1289,7 +1287,7 @@ function updateLegends(mo, items) {
 
 
 /**
- * Update grradient in size legend.
+ * Update gradient in size legend.
  * @function updateSizeGradient
  * @param {Object} mo - master object
  * @description The ladder-shaped gradient is achieved by css borders, which,
@@ -1303,6 +1301,21 @@ function updateSizeGradient(mo) {
   var rect = grad.getBoundingClientRect();
   var width = Math.floor(rect.right - rect.left);
   grad.style.borderRightWidth = width + 'px';
+}
+
+
+/**
+ * Update gradient in color legend.
+ * @function updateColorGradient
+ * @param {Object} mo - master object
+ */
+function updateColorGradient(mo) {
+  var ci = mo.view.color.i;
+  if (!ci) return;
+  if (mo.data.types[ci] === 'category') return;
+  document.getElementById('color-gradient').style.backgroundImage
+    = 'linear-gradient(to right, ' + PALETTES[mo.view.contpal].map(
+    function(e) {return '#' + e}).join(', ') + ')';
 }
 
 
@@ -1346,4 +1359,27 @@ function populatePaletteSelect() {
     });
     div.appendChild(table);
   });
+}
+
+
+/**
+ * Format a value to be a label depending on content
+ * @function formatValueLabel
+ * @param {number} value - value to format
+ * @param {number} icol - column index
+ * @param {number} digits - number of digits to keep
+ * @param {boolean} unit - whether to keep unit if available
+ * @param {Object} mo - master object
+ */
+function formatValueLabel(value, icol, digits, unit, mo) {
+  var col = mo.data.cols[icol];
+  var lencol = mo.view.lencol;
+  if (lencol && col === lencol) {
+    var fmtlen = FormatLength(value);
+    var res = formatNum(fmtlen[0], digits);
+    if (unit) res += ' ' + fmtlen[1];
+    return res;
+  } else {
+    return formatNum(value, digits);
+  }
 }

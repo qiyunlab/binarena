@@ -62,8 +62,9 @@ function masterObj() {
    * @property {Object} opacity - opacity variable
    * @property {boolean} grid - whether show grid
    * @property {number} rbase - base radius (px) of contig
-   * @property {string} contPal - continuous palette
-   * @property {string} discPal - discrete palette
+   * @property {string} contpal - continuous palette
+   * @property {string} discpal - discrete palette
+   * @property {number} ncolor - number of categories to color
    */
   this.view = {
     /** canvas rendering */
@@ -83,8 +84,9 @@ function masterObj() {
     /** display features */
     grid: false,
     rbase: 15,
-    contPal: DEFAULT_CONTINUOUS_PALETTE,
-    discPal: DEFAULT_DISCRETE_PALETTE,
+    contpal: DEFAULT_CONTINUOUS_PALETTE,
+    discpal: DEFAULT_DISCRETE_PALETTE,
+    ncolor: 7,
 
     /** pre-cached data info */
     lencol: null, // name of putative "length" column
@@ -122,8 +124,11 @@ function masterObj() {
     obj['zero'] = true;
   }
 
-  this.view.color['palette'] = null;
-  this.view.color['map'] = null;
+  /**
+   * Item-specific properties
+   */
+  this.view.color['contmap'] = [];
+  this.view.color['discmap'] = {};
 
   /**
    * Stat object

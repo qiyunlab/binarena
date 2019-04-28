@@ -73,7 +73,7 @@ function renderArena(mo) {
 
   // move to current position
   ctx.translate(view.pos.x, view.pos.y);
-  
+
   // scale canvas
   var scale = view.scale;
   ctx.scale(scale, scale);
@@ -84,7 +84,6 @@ function renderArena(mo) {
   // rena.style.transform = 'scale(' + view.scale + ')';
 
   var masking = (Object.keys(mo.mask).length > 0);
-  var coloring = Boolean(view.color.i && view.color.palette);
 
   // cache constants
   var pi2 = Math.PI * 2;
@@ -122,7 +121,13 @@ function renderArena(mo) {
     ofac = (view.opacity.upper / 100 - olow) / (view.opacity.max - omin);
   // color
   var ci = view.color.i,
-    cmap = view.color.map;
+    discmap = view.color.discmap,
+    contmap = view.color.contmap,
+    ctype = ci ? data.types[ci] : null,
+    cscale = view.color.scale,
+    cmin = view.color.zero ? 0 : view.color.min,
+    clow = view.color.lower,
+    cfac = (view.color.upper - clow) / (view.color.max - cmin);
 
   // rendering parameters
   var paths = {};
@@ -147,11 +152,20 @@ function renderArena(mo) {
 
     // determine color
     var c = '0,0,0';
-    if (coloring) {
+    if (ci) {
       var val = datum[ci];
       if (val !== null) {
-        var cat = val[0];
-        if (cat in cmap) c = hexToRgb(cmap[cat]);
+        // discrete data
+        if (ctype === 'category') {
+          var cat = val[0];
+          if (cat in discmap) c = hexToRgb(discmap[cat]);
+        }
+
+        // continuous data
+        else {
+          c = contmap[Math.round((scaleNum(datum[ci], cscale) - cmin) * cfac
+            + clow)];
+        }
       }
     }
 
