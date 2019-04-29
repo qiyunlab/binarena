@@ -1,11 +1,10 @@
 "use strict";
 
 /**!
+ * @module operation
  * @file Operative functions.
- * They do NOT directly access the master objects (e.g., "view" and "data")
- * defined by the window load event in "main.js".
- * Nor do they directly access the "document" object.
- * But they may access DOMs that are explicitly passed to them.
+ * They do NOT directly access the master object OR the "document" object.
+ * They may the "data" object and DOMs that are explicitly passed to them.
  */
 
 
@@ -18,7 +17,7 @@
  * @function updateDataFromText
  * @param {String} text - imported text
  * @param {Object} data - data object
- * @returns {[Object, Object, Object]} - decimals, categories and features
+ * @returns {Array.<Object, Object, Object>} - decimals, categories and features
  *
  * The file may be JSON format, or TSV format.
  * In later case, it should follow these rules:
@@ -67,7 +66,7 @@ function updateDataFromText(text, data) {
  * @function parseTable
  * @param {String} text - multi-line string in tsv format
  * @param {Object} data - data object
- * @returns {[Object, Object, Object]} - decimals, categories and features
+ * @returns {Array.<Object, Object, Object>} - decimals, categories and features
  * @see cacheData
  * This function duplicates the function of cacheData due to consideration of
  * big data processing.
@@ -146,7 +145,7 @@ function parseTable(text, data) {
  * @function cacheData
  * @param {String} text - multi-line string in tsv format
  * @param {Object} data - data object
- * @returns {[Object, Object, Object]} - decimals, categories and features
+ * @returns {Array.<Object, Object, Object>} - decimals, categories and features
  * @see parseTable
  */
 function cacheData(data) {
@@ -418,13 +417,13 @@ function columnInfo(arr, type, met, deci, refarr) {
           else res = arrProdSum(arr, refarr) / arrSum(refarr);
           break;
       }
-      res = parseFloat(res).toFixed(deci);
+      res = formatNum(res, deci);
       break;
     case 'category':
       var x = objMinMax(listCats(arr));
       var frac = x[1][1] / arr.length;
-      res = (frac > 0.5) ? (x[1][0] + ' (' + (frac * 100).toFixed(2) + '%)') :
-        'ambiguous';
+      res = (frac > 0.5) ? (x[1][0] + ' (' + (frac * 100).toFixed(2)
+        .replace(/\.?0+$/, '') + '%)') : 'ambiguous';
       break;
     case 'feature':
       var x = listFeats(arr);

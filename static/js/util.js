@@ -1,10 +1,10 @@
 "use strict";
 
 /**!
+ * @module util
  * @file Utilities - functions for general purposes.
  * They only operate on the parameters that are explicitly passed to them.
- * They do NOT directly access any global object (e.g., "document") or the
- * master objects (e.g., "view" and "data") defined by the window load event.
+ * They do NOT directly access the master object OR the "document" object.
  * They are not related to any visual elements.
  */
 
@@ -26,11 +26,23 @@ function splitLines(text) {
 
 
 /**
+ * Format number.
+ * @function formatNum
+ * @param {number} num - number to format
+ * @param {number} digits - number of digits to retain
+ * @returns {string} formatted number
+ */
+function formatNum(num, digits) {
+  return digits ? num.toPrecision(digits || 0).replace(/\.?0+$/, '') : num;
+}
+
+
+/**
  * Convert hex to RGB.
  * @function hexToRgb
  * @param {string} hex - hex code of color
- * @returns {string} r,g,b of color
- * @see https://stackoverflow.com/questions/5623838/rgb-to-hex-and-hex-to-rgb
+ * @returns {string} r, g, b of color
+ * @see {@link https://stackoverflow.com/questions/5623838/}
  */
 function hexToRgb(hex) {
   var bigint = parseInt(hex, 16);
@@ -39,7 +51,6 @@ function hexToRgb(hex) {
   var b = bigint & 255;
   return [r, g, b].join();
 }
-
 
 
 /**
@@ -142,12 +153,13 @@ function transpose(df) {
 
 
 /**
- * Scale a number by key
+ * Scale a number by key.
  * @function scaleNum
  * @param {number} num - number to scale
  * @param {string|number} scale - scale name or power
- * @throws Error if scale is invalid
+ * @throws if scale is invalid
  * @returns {number} scaled number
+ * @todo
  */
 function scaleNum(num, scale) {
   if (scale == null) {
@@ -181,6 +193,40 @@ function scaleNum(num, scale) {
       default:
         throw 'Error: invalid scale name "' + scale + '".';
     }
+  } else {
+    throw 'Error: invalid scale type';
+  }
+}
+
+
+/**
+ * Revert a scale code.
+ * @function unscale
+ * @param {string|number} scale - scale name or power
+ * @throws if scale is invalid
+ * @returns {number} scaled number
+ * @todo
+ */
+function unscale(scale) {
+  var dict = {
+    'none': 'none',
+    'square': 'sqrt',
+    'sqrt': 'square',
+    'cube': 'cbrt',
+    'cbrt': 'cube',
+    'log': 'exp',
+    'exp': 'log',
+    'log2': 'exp2',
+    'exp2': 'log2',
+    'log10': 'exp10',
+    'exp10': 'log10'
+  };
+  if (scale == null) {
+    return null;
+  } else if (typeof(scale) === 'number') {
+    return 1 / scale;
+  } else if (typeof(scale) === 'string') {
+    if (scale in dict) return dict[scale];
   } else {
     throw 'Error: invalid scale type';
   }
@@ -244,6 +290,30 @@ function maxDecimals(arr) {
 
 
 /**
+ * Check if a circle and a rectangle collide
+ * @function rectCircleColliding
+ * @param {Object.<x: number, y: number, r: number>} circle - circle
+ * @param {Object.<x: number, y: number, w: number, h: number>} rect - rectangle
+ * @description adopted from markE's answer at:
+ * @see {@link: https://stackoverflow.com/questions/21089959/}
+ */
+function rectCircleColliding(circle, rect){
+  var distX = Math.abs(circle.x - rect.x - rect.w / 2);
+  var distY = Math.abs(circle.y - rect.y - rect.h / 2);
+
+  if (distX > (rect.w / 2 + circle.r)) return false;
+  if (distY > (rect.h / 2 + circle.r)) return false;
+
+  if (distX <= (rect.w / 2)) return true;
+  if (distY <= (rect.h / 2)) return true;
+
+  var dx = distX-rect.w / 2;
+  var dy = distY-rect.h / 2;
+  return (dx * dx + dy * dy <= (circle.r * circle.r));
+}
+
+
+/**
  * Check if a point is within a polygon.
  * @function pnpoly
  * @param {number} x - x-coordinate of point
@@ -251,9 +321,12 @@ function maxDecimals(arr) {
  * @param {{x: number, y: number}[]} polygon - x- and y-coordinates of vertices
  * of polygon
  * @returns {boolean} whether point is within polygon
- * @description Reimplemented following W Randolph Franklin:
+ * @description Reimplemented following:
  * PNPOLY - Point Inclusion in Polygon Test
- * @see https://www.ecse.rpi.edu/Homepages/wrf/Research/Short_Notes/pnpoly.html
+ * @author W Randolph Franklin:
+ * {@link https://wrf.ecse.rpi.edu//Research/Short_Notes/pnpoly.html}
+ * @license MIT license
+ * @see licenses/pnpoly.txt
  */
 function pnpoly(x, y, polygon) {
   var res = false;
@@ -268,5 +341,48 @@ function pnpoly(x, y, polygon) {
       res = !res;
     }
   }
+  return res;
+}
+
+
+/**
+ * Return class name if present
+ * @function checkClassName
+ * @param {Object} element - DOM to check
+ * @param {Array.<string>} classes - candidate class names
+ */
+function checkClassName(element, classes) {
+  for (var i = 0; i < classes.length; i++) {
+    if (element.classList.contains(classes[i])) return classes[i];
+  }
+}
+
+
+/**
+ * Extend an 11-stop hex palette to 101 RGB values
+ * @function palette11to101
+ * @param {Object} palette - array of 11 hexes
+ * @returns {string[]} - array of 101 "r,g,b"s
+ */
+function palette11to101(palette) {
+  var rgbs = [[], [], []];
+  for (var i = 0; i < 11; i++) {
+    for (var j = 0; j < 3; j++) {
+      rgbs[j].push(parseInt(palette[i].substr(j * 2, 2), 16))
+    }
+  }
+  var res = [];
+  for (var i = 0; i < 10; i++) {
+    res.push([rgbs[0][i], rgbs[1][i], rgbs[2][i]].join());
+    var step = (rgbs[0][i + 1] - rgbs[0][i]) / 10;
+    for (var j = 0; j < 9; j++) {
+      var rgb = [];
+      for (var k = 0; k < 3; k++) {
+        rgb.push(Math.round(rgbs[k][i] + step * j))
+      }
+      res.push(rgb.join());
+    }
+  }
+  res.push([rgbs[0][10], rgbs[1][10], rgbs[2][10]].join());
   return res;
 }
