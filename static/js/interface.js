@@ -737,6 +737,13 @@ function initControls(mo) {
     exportBins(mo.bins, mo.data);
   });
 
+  document.getElementById('clear-bin-btn').addEventListener('click',
+    function () {
+    mo.bins = {};
+    updateBinTable(mo);
+    updateBinToolbar(mo);
+  });
+
   // let user choose a categorical field
   document.getElementById('load-bin-btn').addEventListener('click',
     function () {
@@ -834,7 +841,8 @@ function initControls(mo) {
 
   document.getElementById('info-metric-btn').addEventListener('click',
     function () {
-    var row = this.parentElement.parentElement.parentElement;
+    var row = document.getElementById('info-table').rows[this.parentElement
+      .getAttribute('data-row')];
     if (row.getAttribute('data-metric') === 'sum') {
       row.setAttribute('data-metric', 'mean');
       this.innerHTML = '<span style="text-decoration: overline;">' +
@@ -848,17 +856,18 @@ function initControls(mo) {
 
   document.getElementById('info-ref-sel').addEventListener('change',
     function () {
-    var row = this.parentElement.parentElement.parentElement.parentElement;
+    var row = document.getElementById('info-table').rows[this.parentElement
+      .parentElement.getAttribute('data-row')];
     row.setAttribute('data-refcol', this.value);
     updateInfoRow(row, mo);
   });
 
   document.getElementById('info-hide-btn').addEventListener('click',
     function () {
-    var span = this.parentElement;
-    var row = span.parentElement.parentElement;
-    span.classList.add('hidden');
-    document.body.appendChild(span);
+    var div = this.parentElement;
+    var row = document.getElementById('info-table').rows[div
+      .getAttribute('data-row')];
+    div.classList.add('hidden');
     document.getElementById('info-table').deleteRow(row.rowIndex);
   });
 

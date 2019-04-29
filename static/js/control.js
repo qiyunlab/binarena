@@ -433,7 +433,6 @@ function updateSelectionInfo(mo) {
     table.classList.add('hidden');
   } else {
     var rows = table.rows;
-    var span = document.getElementById('info-ctrl-span');
 
     // single contig
     if (indices.length === 1) {
@@ -441,10 +440,7 @@ function updateSelectionInfo(mo) {
       for (var i = 0; i < rows.length; i++) {
         var val = selData[rows[i].getAttribute('data-index')];
         var type = rows[i].getAttribute('data-type');
-        var spanIn = (rows[i].cells[1].contains(span));
-        if (spanIn) table.parentElement.appendChild(span);
         rows[i].cells[1].innerHTML = value2Str(val, type);
-        if (spanIn) rows[i].cells[1].appendChild(span);
       }
     }
 
@@ -489,22 +485,14 @@ function updateInfoRow(row, mo, arr, refarr) {
     .map(function (x) { return x[row.getAttribute('data-index')]; });
   var type = row.getAttribute('data-type');
 
-  // temporarily move control span, if present
-  var span = document.getElementById('info-ctrl-span');
-  var spanIn = (row.cells[1].contains(span));
-  if (spanIn) row.parentElement.parentElement.appendChild(span);
-
   if (type !== 'number') {
-    row.cells[1].innerHTML = columnInfo(arr, type);
+    row.cells[1].innerHTML = row.cells[1].title = columnInfo(arr, type);
   } else {
     var met = row.getAttribute('data-metric');
     var deci = mo.view.decimals[row.getAttribute('data-col')];
     var refcol = row.getAttribute('data-refcol');
     row.cells[1].innerHTML = columnInfo(arr, type, met, deci, refarr);
   }
-
-  // move control span back
-  if (spanIn) row.cells[1].appendChild(span);
 }
 
 
@@ -790,31 +778,24 @@ function polygonSelect(mo) {
  * @param {Object} mo - master object
  */
 function updateBinToolbar(mo) {
+  var n = Object.keys(mo.bins).length;
   document.getElementById('bins-head').lastElementChild.firstElementChild
-    .innerHTML = 'Bins: ' + Object.keys(mo.bins).length;
-  var n = 0;
+    .innerHTML = 'Bins: ' + n;
+  document.getElementById('save-bin-btn').classList.toggle('hidden', !n);
+  document.getElementById('clear-bin-btn').classList.toggle('hidden', !n);
+  document.getElementById('bin-thead').classList.toggle('hidden', !n);
+  var m = 0;
   var table = document.getElementById('bin-tbody');
   for (var i = 0; i < table.rows.length; i++) {
-    if (table.rows[i].classList.contains('selected')) n ++;
+    if (table.rows[i].classList.contains('selected')) m ++;
   }
-  if (n === 0) {
-    document.getElementById('delete-bin-btn').classList.add('hidden');
-    document.getElementById('merge-bin-btn').classList.add('hidden');
-  } else if (n === 1) {
-    document.getElementById('delete-bin-btn').classList.remove('hidden');
-    document.getElementById('merge-bin-btn').classList.add('hidden');
-  } else {
-    document.getElementById('delete-bin-btn').classList.remove('hidden');
-    document.getElementById('merge-bin-btn').classList.remove('hidden');
-  }
-  if (n === 0 || Object.keys(mo.pick).length === 0) {
-    document.getElementById('add-to-bin-btn').classList.add('hidden');
-    document.getElementById('remove-from-bin-btn').classList.add('hidden');
-  } else {
-    document.getElementById('add-to-bin-btn').classList.remove('hidden');
-    document.getElementById('remove-from-bin-btn').classList
-      .remove('hidden');
-  }
+  document.getElementById('delete-bin-btn').classList.toggle('hidden', !m);
+  document.getElementById('merge-bin-btn').classList.toggle('hidden', (m < 2));
+  var k = Object.keys(mo.pick).length;
+  document.getElementById('add-to-bin-btn').classList.toggle('hidden',
+    !(m === 1 && k));
+  document.getElementById('remove-from-bin-btn').classList.toggle('hidden',
+    !(m === 1 && k));
 }
 
 
@@ -849,7 +830,7 @@ function updateBinTable(mo) {
     var cell = row.insertCell(-1);
     // name label
     var label = document.createElement('span');
-    label.innerHTML = name;
+    label.title = label.innerHTML = name;
     cell.appendChild(label);
     // rename text box
     var text = document.createElement('input');
@@ -873,7 +854,7 @@ function updateBinTable(mo) {
     if (view.spcols.len) {
       var sum = 0;
       for (var i in bins[name]) sum += lens[i];
-      cell.innerHTML = parseInt(sum / 1000);
+      cell.innerHTML = Math.round(sum / 1000);
     } else cell.innerHTML = 'na';
     
     // 4th cell: abundance (%)
@@ -940,9 +921,8 @@ function initInfoTable(data, lencol, pick) {
   var table = document.getElementById('info-table');
 
   // temporarily move control span
-  var span = document.getElementById('info-ctrl-span');
-  span.classList.add('hidden');
-  table.parentElement.appendChild(span);
+  var div = document.getElementById('info-ctrl');
+  div.classList.add('hidden');
 
   // weight-by selection - clear
   var sel = document.getElementById('info-ref-sel');
@@ -997,12 +977,10 @@ function initInfoTable(data, lencol, pick) {
       }
 
       // append controls to row
-      this.cells[this.cells.length - 1].appendChild(span);
-      span.classList.remove('hidden');
-    });
-    row.addEventListener('mouseleave', function () {
-      if (document.activeElement === sel) return false;
-      span.classList.add('hidden');
+      div.setAttribute('data-row', this.rowIndex);
+      var rect = this.getBoundingClientRect();
+      div.style.top = rect.top + 'px';
+      div.classList.remove('hidden');
     });
 
     // weight-by selection - add numeric field
@@ -1018,6 +996,11 @@ function initInfoTable(data, lencol, pick) {
     cell.innerHTML = data.cols[i];
     row.insertCell(-1); // 2nd cell: field value
   }
+
+  table.parentElement.addEventListener('mouseleave', function () {
+    if (document.activeElement === sel) return;
+    div.classList.add('hidden');
+  });
 }
 
 

@@ -33,7 +33,7 @@ function splitLines(text) {
  * @returns {string} formatted number
  */
 function formatNum(num, digits) {
-  return num.toPrecision(digits || 0).replace(/\.?0+$/, '');
+  return digits ? num.toPrecision(digits || 0).replace(/\.?0+$/, '') : num;
 }
 
 

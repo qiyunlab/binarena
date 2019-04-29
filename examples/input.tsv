@@ -1,5 +1,5 @@
 id	x	y	length	gc	coverage	orfs	ssus	mapped	taxon|d	phylum	class	order	family	genus	virulence	resistance	plasmid	virus
-18	6.259677	5.702276	153774	41.43	856.977	196	0	0.07	Bacteria									YP_006560672,YP_398573
+18	6.259677	5.702276	153774	41.43	156.977	196	0	0.07	Bacteria									YP_006560672,YP_398573
 45	21.600085	-14.832082	98533	57.07	29.005	117	0	86.04	Bifidobacterium longum	Actinobacteria	Actinobacteria	Bifidobacteriales	Bifidobacteriaceae	Bifidobacterium			146937,146934	YP_004306251,YP_004957628
 69	25.478767	-26.985218	81114	59.12	150.640	69	0	90.58	Collinsella	Actinobacteria	Coriobacteriia	Coriobacteriales	Coriobacteriaceae	Collinsella				
 83	-8.631061	20.878683	71697	39.13	87.254	101	0	98.74	Bacteroides	Bacteroidetes	Bacteroidia	Bacteroidales	Bacteroidaceae	Bacteroides				YP_008241225,YP_112541

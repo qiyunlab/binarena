@@ -417,13 +417,13 @@ function columnInfo(arr, type, met, deci, refarr) {
           else res = arrProdSum(arr, refarr) / arrSum(refarr);
           break;
       }
-      res = parseFloat(res).toFixed(deci);
+      res = formatNum(res, deci);
       break;
     case 'category':
       var x = objMinMax(listCats(arr));
       var frac = x[1][1] / arr.length;
-      res = (frac > 0.5) ? (x[1][0] + ' (' + (frac * 100).toFixed(2) + '%)') :
-        'ambiguous';
+      res = (frac > 0.5) ? (x[1][0] + ' (' + (frac * 100).toFixed(2)
+        .replace(/\.?0+$/, '') + '%)') : 'ambiguous';
       break;
     case 'feature':
       var x = listFeats(arr);

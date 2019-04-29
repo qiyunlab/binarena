@@ -379,7 +379,7 @@ table.square td:hover {
 }
 
 #list-options td.active {
-  background-color: lightsteelblue !important;
+  background-color: #a5cdff !important;
 }
 
 /** palette select */
@@ -719,6 +719,9 @@ div.dash-content table tr td:nth-child(2) select {
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  flex-grow: 1;
+  margin-left: auto;
+  background-color: #EEE;
 }
 
 /* show/hide buttons */
@@ -758,6 +761,7 @@ div.side-content {
   overflow: auto;
   display: flex;
   flex-direction: column;
+  background-color: white;
 }
 
 
@@ -779,6 +783,7 @@ div.side-content {
   width: 100%;
   border: none;
   flex-grow: 1;
+  table-layout: fixed;
 }
 
 #bin-thead {
@@ -792,6 +797,9 @@ div.side-content {
 
 #bin-table th,td {
   padding: 2px 5px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 #bin-thead th {
@@ -821,7 +829,7 @@ div.side-content {
 }
 
 #bin-tbody tr.selected {
-  background-color: lightsteelblue ;
+  background-color: #a5cdff;
 }
 
 #bin-tbody tr.current {
@@ -841,14 +849,19 @@ div.side-content {
 
 #info-table {
   table-layout: fixed;
-  width: 100%;
-  white-space: nowrap;
   border: none;
+  width: 100%;
+}
+
+#info-table tr {
+  line-height: 20px;
+  height: 20px;
 }
 
 #info-table tr td {
-  vertical-align: baseline;
-  height: 20px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 #info-table tr td:nth-child(1) {
@@ -861,9 +874,6 @@ div.side-content {
 #info-table tr td:nth-child(2) {
   text-align: left;
   padding: 0 0 0 5px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 #info-table tr:hover {
@@ -872,18 +882,19 @@ div.side-content {
 
 /** control span */
 
-#info-ctrl-span {
+#info-ctrl {
   margin: 0;
   padding: 0;
   color: dimgray;
   float: right;
   display: block;
-  position: relative;
-  top: 0;
+  position: fixed;
   height: 20px;
+  right: 0;
+  z-index: 2;
 }
 
-#info-ctrl-span button {
+#info-ctrl button {
   background-color: transparent;
   color: dimgray;
   width: 20px;
@@ -892,12 +903,12 @@ div.side-content {
   padding: 0;
 }
 
-#info-ctrl-span button:hover {
-  background-color: lightgray;
+#info-ctrl button:hover {
+  background-color: #EEE;
   color: black;
 }
 
-#info-ctrl-span select {
+#info-ctrl select {
   background-color: transparent;
   color: dimgray;
   height: 100%;
@@ -905,10 +916,11 @@ div.side-content {
   border: none;
   min-width: 30px;
   max-width: 50px;
+  cursor: pointer;
 }
 
-#info-ctrl-span select:hover {
-  background-color: white;
+#info-ctrl select:hover {
+  background-color: #EEE;
 }
 
 
