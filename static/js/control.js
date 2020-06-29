@@ -841,7 +841,7 @@ function updateBinTable(mo) {
       this.select();
     });
     text.addEventListener('keyup', function (e) {
-      binNameKeyUp(e, mo.stat);
+      binNameKeyUp(e, mo.stat, mo.bins);
     });
     cell.appendChild(text);
 
@@ -873,8 +873,9 @@ function updateBinTable(mo) {
  * @function binNameKeyUp
  * @param {Object} e - event object
  * @param {Object} stat - status object
+ * @param {Object} bins - binning plan
  */
-function binNameKeyUp(e, stat) {
+function binNameKeyUp(e, stat, bins) {
   var text = e.target;
   var label = text.parentElement.firstElementChild;
   var name = label.innerHTML;
