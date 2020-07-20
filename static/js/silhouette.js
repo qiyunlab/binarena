@@ -1,14 +1,13 @@
 'use strict'
 
 /**
- * Calculate euclidean distance between two points
- *
- * @function euclideanDist
- * @param {array} x - coordinate of point x
- * @param {array} y - coordinate of point y
+ * Calculate euclidean distance between two points.
+ * @function euclidean
+ * @param {number[]} x - coordinate of point x
+ * @param {number[]} y - coordinate of point y
  * @return {number} euclidean distance between x and y
  */
-function euclideanDist(x, y) {
+function euclidean(x, y) {
   // check x, y
   if (x == y) {
     return 0;
@@ -21,14 +20,13 @@ function euclideanDist(x, y) {
 }
 
 /**
- * return the pairwise distance matrix of each point in the input data array
- *
- * @function pairwiseDist
- * @param {Array} x - the input data array
- * @return {Array} distance matrix of the given data
+ * Return the pairwise distance matrix of each point in the input data array.
+ * @function pdist
+ * @param {number[]} x - the input data array
+ * @return {number[]} distance matrix of the given data
  */
-//TODO: add metrics='euclideanDist'
-function pairwiseDist(x) {
+//TODO: add metrics='euclidean'
+function pdist(x) {
   let d = Array(x.length).fill().map(()=>Array(x.length).fill());
   for (let i = 0; i < x.length; i++) {
     for (let j = 0; j < x.length; j++) {
@@ -37,7 +35,7 @@ function pairwiseDist(x) {
       } else if (j < i) {
         d[i][j] = d[j][i];
       } else {
-        d[i][j] = euclideanDist(x[i], x[j]);
+        d[i][j] = euclidean(x[i], x[j]);
       }
     }
   }
@@ -46,11 +44,10 @@ function pairwiseDist(x) {
 
 
 /**
- * return the occurrence of each entry in the input data
- *
+ * Return the occurrence of each entry in the input data.
  * @function bincount
- * @param {Array} x - the input data array
- * @return {Array} the occurrence of each entry in the input data
+ * @param {number[]} x - the input data array
+ * @return {number[]} the occurrence of each entry in the input data
  */
 function bincount(x) {
   let res = Array(Math.max.apply(Math, x) + 1).fill(0);
@@ -62,13 +59,12 @@ function bincount(x) {
 
 
 /**
- * calculate the average of each element in the input data array
- *
- * @function mean
- * @param {Array} x - the input data array
- * @return {Number} the average value of each element of the array
+ * Calculate the average of each element in the input data array.
+ * @function arrMean
+ * @param {number[]} x - the input data array
+ * @return {number} the average value of each element of the array
  */
-function mean(x) {
+function arrMean(x) {
   let sum = 0;
   for (let i = 0; i < x.length; i++) {
     sum += x[i];
@@ -78,16 +74,15 @@ function mean(x) {
 
 
 /**
- * compute the silhouette coefficient for each sample
- *
+ * Compute the silhouette coefficient for each sample.
  * @function silhouette_score
- * @param {Array} x - the input data array
- * @param {Array} label - the label of input data
- * @return {Array} silhouette score of each data point
+ * @param {number[]} x - the input data array
+ * @param {number[]} label - the label of input data
+ * @return {number[]} silhouette score of each data point
  */
 function silhouetteSample(x, label) {
   let count = bincount(label);
-  let dist = pairwiseDist(x);
+  let dist = pdist(x);
   let intraDist = Array(x.length).fill(0);
   let interDist = Array(x.length).fill().map(()=>Array(count.length).fill(0));
   let res = Array(x.length).fill();
@@ -123,15 +118,14 @@ function silhouetteSample(x, label) {
 }
 
 /**
- * compute the mean of silhouette coefficient over all samples
- *
+ * Compute the mean of silhouette coefficient over all samples.
  * @function silhouetteScore
- * @param {Array} x - the input data array
- * @param {Array} label - the label of input data
- * @return {Number} the silhouette score that evaluates the result of clutering
+ * @param {number[]} x - the input data array
+ * @param {number[]} label - the label of input data
+ * @return {number} the silhouette score that evaluates the result of clutering
  */
 function silhouetteScore(x, label) {
-  return mean(silhouetteSample(x, label));  
+  return arrMean(silhouetteSample(x, label));  
 }
 
 
