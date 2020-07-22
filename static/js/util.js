@@ -117,7 +117,7 @@ function arrSum(arr) {
 
 /**
  * Calculate the average of all elements in the input array.
- * @fcuntion arrMean
+ * @function arrMean
  * @param {number[]} arr - input array
  * returns {number} mean
  */

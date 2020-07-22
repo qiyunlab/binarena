@@ -60,7 +60,7 @@ function bincount(x) {
 
 /**
  * Compute the silhouette coefficient for each sample.
- * @function silhouette_score
+ * @function silhouetteSample
  * @param {number[]} x - the input data array
  * @param {number[]} label - the label of input data
  * @return {number[]} silhouette score of each data point
@@ -72,10 +72,6 @@ function silhouetteSample(x, label) {
   let interDist = Array(x.length).fill().map(()=>Array(count.length).fill(0));
   let res = Array(x.length).fill();
   for (let i = 0; i < x.length; i++) {
-    /*
-    if (count[i] == 0) {
-      continue;
-    }*/
     if (count[label[i]] === 1) {
       res[i] = 0;
     } else {
