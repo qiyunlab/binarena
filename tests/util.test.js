@@ -36,9 +36,22 @@
     expect(arrSum([0.05, 1.0, 2.25])).toBe(3.3);
   });
 
+  it('arrMean', function() {
+    expect(arrMean([1, 2, 3])).toBe(2);
+    expect(arrMean([0.05, 1.0, 2.25])).toBe(1.1);
+  });
+
   it('arrProdSum', function() {
     expect(arrProdSum([1, 2, 3], [0, 1, 2])).toBe(8);
     expect(arrProdSum([2.5, 3.2, 4.5], [0.1, 1.2, -0.4])).toBe(2.29);
+  });
+
+  it('arrEqual', function() {
+    expect(arrEqual([0, 1], 0)).toBeFalsy();
+    expect(arrEqual([0, 0], [0, 1])).toBeFalsy();
+    expect(arrEqual([[0, 0], [0, 1]], [0, 1])).toBeFalsy();
+    expect(arrEqual([[0, 0], [0, 1]], [[0, 1], [0, 0]])).toBeFalsy();
+    expect(arrEqual([[0, 0], [[1, 0], [1, 1]]], [[0, 0], [[1, 0], [1, 1]]])).toBeTruthy();
   });
 
   it('transpose', function() {
