@@ -50,7 +50,7 @@ function pdist(x) {
  * @return {number[]} the occurrence of each entry in the input data
  */
 function bincount(x) {
-  let res = Array(Math.max.apply(Math, x) + 1).fill(0);
+  let res = Array(Math.max.apply(null, x) + 1).fill(0);
   for (let i = 0; i < x.length; i++) {
     res[x[i]]++;
   }
@@ -89,7 +89,7 @@ function silhouetteSample(x, label) {
       }
       intraDist[i] /= (count[label[i]] - 1);
       //console.log('count[i] is ' + count[label[i]])
-      interDist[i] = Math.min.apply(Math, interDist[i].filter(Boolean));
+      interDist[i] = Math.min.apply(null, interDist[i].filter(Boolean));
       //console.log('interDist: ' + interDist[i])
       //console.log('intraDist: ' + intraDist[i])
       res[i] = (interDist[i] - intraDist[i]) / Math.max(interDist[i], intraDist[i]);
@@ -109,9 +109,3 @@ function silhouetteScore(x, label) {
   return arrMean(silhouetteSample(x, label));  
 }
 
-
-/**
-let a = [[5,0],[3,3],[7,9]];
-let label = [0,0,1];
-console.log(silhouetteScore(a,label))
-*/
