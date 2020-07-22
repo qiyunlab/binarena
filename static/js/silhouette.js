@@ -9,7 +9,7 @@
  */
 function euclidean(x, y) {
   // check x, y
-  if (x == y) {
+  if (arrEqual(x, y)) {
     return 0;
   }
   let sum = 0;
@@ -55,21 +55,6 @@ function bincount(x) {
     res[x[i]]++;
   }
   return res;
-}
-
-
-/**
- * Calculate the average of each element in the input data array.
- * @function arrMean
- * @param {number[]} x - the input data array
- * @return {number} the average value of each element of the array
- */
-function arrMean(x) {
-  let sum = 0;
-  for (let i = 0; i < x.length; i++) {
-    sum += x[i];
-  }
-  return sum / x.length;
 }
 
 

@@ -116,6 +116,18 @@ function arrSum(arr) {
 
 
 /**
+ * Calculate the average of all elements in the input array.
+ * @fcuntion arrMean
+ * @param {number[]} arr - input array
+ * returns {number} mean
+ */
+function arrMean(arr) {
+  // to avoid floating point err in js
+  return (arrSum(arr) * 10) / (arr.length * 10);
+}
+
+
+/**
  * Calculate sum of products of paired numbers in two arrays.
  * @function arrProdSum
  * @param {number[]} arr1 - input array
@@ -128,6 +140,30 @@ function arrProdSum(arr1, arr2) {
     sum += arr1[i] * arr2[i];
   }
   return sum;
+}
+
+
+/**
+ * Recursively check whether two arrays are equal.
+ * @function arrEqual
+ * @param {number[]} arr1 - input array
+ * @param {number[]} arr2 - input array
+ * @return {boolean} true if input arrays are equal, false otherwise 
+ */
+function arrEqual(arr1, arr2) {
+  if (arr1 instanceof Array && arr2 instanceof Array) {
+    if (arr1.length !== arr2.length) {
+      return false;
+    }
+    for (let i = 0; i < arr1.length; i++) {
+      if (!arrEqual(arr1[i], arr2[i])) {
+        return false;
+      }
+    }
+    return true;
+  } else {
+    return arr1 == arr2;
+  }
 }
 
 
