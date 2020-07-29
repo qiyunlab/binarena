@@ -129,7 +129,7 @@ function updateCtrlByData(data, view) {
     }
   }
 
-  ['x', 'y', 'size', 'opacity', 'color'].forEach(function(item) {
+  ['x', 'y', 'size', 'opacity', 'color'].forEach(function (item) {
     var sel = document.getElementById(item + '-field-sel');
     sel.innerHTML = '';
     sel.add(document.createElement('option'));

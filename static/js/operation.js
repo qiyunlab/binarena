@@ -3,8 +3,8 @@
 /**!
  * @module operation
  * @file Operative functions.
- * They do NOT directly access the master object OR the "document" object.
- * They may the "data" object and DOMs that are explicitly passed to them.
+ * They do NOT directly access the master object OR the "document" object, but
+ * may access the "data" object and DOMs that are explicitly passed to them.
  */
 
 
@@ -385,7 +385,7 @@ function value2Str(val, type) {
       str = feature2Str(val);
       break;
     default:
-      str = val.toString();
+      str = (val === null) ? 'na' : val.toString();
   }
   return str
 }
@@ -413,7 +413,7 @@ function columnInfo(arr, type, met, deci, refarr) {
           else res = arrProdSum(arr, refarr);
           break;
         case 'mean':
-          if (!isRef) res = arrSum(arr) / arr.length;
+          if (!isRef) res = arrMean(arr);
           else res = arrProdSum(arr, refarr) / arrSum(refarr);
           break;
       }

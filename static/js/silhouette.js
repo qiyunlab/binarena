@@ -69,7 +69,7 @@ function silhouetteSample(x, label) {
   let count = bincount(label);
   let dist = pdist(x);
   let intraDist = Array(x.length).fill(0);
-  let interDist = Array(x.length).fill().map(()=>Array(count.length).fill(0));
+  let interDist = Array(x.length).fill().map(() => Array(count.length).fill(0));
   let res = Array(x.length).fill();
   for (let i = 0; i < x.length; i++) {
     if (count[label[i]] === 1) {
@@ -98,6 +98,7 @@ function silhouetteSample(x, label) {
   return res;
 }
 
+
 /**
  * Compute the mean of silhouette coefficient over all samples.
  * @function silhouetteScore
@@ -108,4 +109,3 @@ function silhouetteSample(x, label) {
 function silhouetteScore(x, label) {
   return arrMean(silhouetteSample(x, label));  
 }
-

@@ -32,7 +32,7 @@ function initControls(mo) {
 
   // main frame resize event
   // IE 10 incompatible
-  var observer = new MutationObserver(function(mutations) {
+  var observer = new MutationObserver(function (mutations) {
     var mutation = mutations[0];
     if (mutation.attributeName !== 'style') return;
     var mf = mutation.target;
@@ -67,7 +67,7 @@ function initControls(mo) {
         }
       }
       if (hideDropdown) {
-        document.querySelectorAll('.popup').forEach(function(div) {
+        document.querySelectorAll('.popup').forEach(function (div) {
           div.classList.add('hidden');
         })
       }
@@ -184,8 +184,8 @@ function initControls(mo) {
 
   // panel header click (show/hide panel)
   document.querySelectorAll('.panel-head span:last-of-type button').forEach(
-    function(btn) {
-    btn.addEventListener('click', function() {
+    function (btn) {
+    btn.addEventListener('click', function () {
       var panel = this.parentElement.parentElement.nextElementSibling;
       if (panel !== null) panel.classList.toggle("hidden");
     });
@@ -240,7 +240,7 @@ function initControls(mo) {
 
   // scale select buttons
   var list = document.getElementById('scale-select');
-  document.querySelectorAll('button.scale-btn').forEach(function(btn) {
+  document.querySelectorAll('button.scale-btn').forEach(function (btn) {
     btn.addEventListener('click', function () {
       document.getElementById('current-scale').innerHTML =
         this.getAttribute('data-scale');
@@ -279,16 +279,16 @@ function initControls(mo) {
   }
 
   // color palette select button
-  document.getElementById('palette-btn').addEventListener('click', function() {
+  document.getElementById('palette-btn').addEventListener('click', function () {
     var list = document.getElementById('palette-select');
     if (list.classList.contains('hidden')) {
       var val = document.getElementById('color-field-sel').value;
       if (!val) return;
       var isNum = (mo.data.types[val] === 'number');
-      list.querySelectorAll('.disc').forEach(function(div) {
+      list.querySelectorAll('.disc').forEach(function (div) {
         div.classList.toggle('hidden', isNum);
       });
-      list.querySelectorAll('.cont').forEach(function(div) {
+      list.querySelectorAll('.cont').forEach(function (div) {
         div.classList.toggle('hidden', !isNum);
       });
       var rect = this.getBoundingClientRect();
@@ -378,8 +378,8 @@ function initControls(mo) {
    */
 
   // show/hide legend
-  document.querySelectorAll('.legend-btn').forEach(function(btn) {
-    btn.addEventListener('click', function() {
+  document.querySelectorAll('.legend-btn').forEach(function (btn) {
+    btn.addEventListener('click', function () {
       var tr = this.parentElement.parentElement.parentElement;
       var legend = tr.nextElementSibling;
       legend.classList.toggle('hidden');
@@ -406,11 +406,11 @@ function initControls(mo) {
   });
 
   // swap x- and y-axes
-  document.querySelectorAll('button.swap-btn').forEach(function(btn) {
-    btn.addEventListener('click', function() {
+  document.querySelectorAll('button.swap-btn').forEach(function (btn) {
+    btn.addEventListener('click', function () {
       var xx = mo.view.x;
       var yy = mo.view.y;
-      ['i', 'scale', 'min', 'max'].forEach(function(key) {
+      ['i', 'scale', 'min', 'max'].forEach(function (key) {
         xx[key] = [yy[key], yy[key] = xx[key]][0];
       });
       updateCtrlByData(mo.data, mo.view);
@@ -426,9 +426,9 @@ function initControls(mo) {
 
   // select palette
   document.getElementById('palette-select').querySelectorAll('table').forEach(
-    function(table) {
+    function (table) {
     for (var i = 0; i < table.rows.length; i++) {
-      table.rows[i].addEventListener('click', function() {
+      table.rows[i].addEventListener('click', function () {
         var palette = this.firstElementChild.innerHTML;
         if (this.parentElement.parentElement.parentElement.classList
           .contains('cont')) {
@@ -446,13 +446,13 @@ function initControls(mo) {
 
   // add/remove discrete color
   document.getElementById('add-color-btn').addEventListener('click',
-    function() {
+    function () {
     mo.view.ncolor += 1;
     updateColorNum();
   });
 
   document.getElementById('remove-color-btn').addEventListener('click',
-    function() {
+    function () {
     if (mo.view.ncolor === 1) return;
     mo.view.ncolor -= 1;
     updateColorNum();
@@ -469,25 +469,25 @@ function initControls(mo) {
    * @summary Legends
    */
 
-  document.querySelectorAll('.legend').forEach(function(leg) {
+  document.querySelectorAll('.legend').forEach(function (leg) {
 
-    leg.addEventListener('mouseenter', function() {
-      this.querySelectorAll('.clip').forEach(function(clip) {
+    leg.addEventListener('mouseenter', function () {
+      this.querySelectorAll('.clip').forEach(function (clip) {
         clip.classList.add('hidden');
       });
     });
 
-    leg.addEventListener('mouseleave', function() {
+    leg.addEventListener('mouseleave', function () {
       this.setAttribute('data-ranging', 'none');
-      this.querySelectorAll('.clip').forEach(function(clip) {
+      this.querySelectorAll('.clip').forEach(function (clip) {
         clip.classList.remove('hidden');
       });
     });
   });
 
-  document.querySelectorAll('.gradient').forEach(function(grad) {
+  document.querySelectorAll('.gradient').forEach(function (grad) {
 
-    grad.addEventListener('mousemove', function(e) {
+    grad.addEventListener('mousemove', function (e) {
       var item = this.parentElement.getAttribute('data-item');
       var v = mo.view[item];
       var rect = this.getBoundingClientRect();
@@ -555,17 +555,17 @@ function initControls(mo) {
       }
     });
 
-    grad.addEventListener('mouseenter', function() {
+    grad.addEventListener('mouseenter', function () {
       if (this.parentElement.getAttribute('data-ranging') === 'none') {
         document.getElementById('legend-tip').classList.remove('hidden');
       }
     });
 
-    grad.addEventListener('mouseleave', function() {
+    grad.addEventListener('mouseleave', function () {
       document.getElementById('legend-tip').classList.add('hidden');
     });
 
-    grad.addEventListener('mouseup', function() {
+    grad.addEventListener('mouseup', function () {
       var ranging = this.parentElement.getAttribute('data-ranging');
       if (ranging === 'none') {
         document.getElementById('legend-tip').classList.add('hidden');
@@ -580,7 +580,7 @@ function initControls(mo) {
     });
   });
 
-  document.querySelectorAll('.legend .range').forEach(function(range){
+  document.querySelectorAll('.legend .range').forEach(function (range) {
     range.title = 'Adjust ' + checkClassName(range, ['lower', 'upper'])
       + ' bound of ' + range.parentElement.getAttribute('data-item');
     range.addEventListener('mousedown', rangeMouseDown);
@@ -603,9 +603,9 @@ function initControls(mo) {
     updateLegends(mo, [item]);
   }
 
-  document.querySelectorAll('.legend .min').forEach(function(label) {
+  document.querySelectorAll('.legend .min').forEach(function (label) {
     label.title = 'Toggle zero or minimum value';
-    label.addEventListener('click', function() {
+    label.addEventListener('click', function () {
       var item = this.parentElement.getAttribute('data-item');
       mo.view[item].zero = !mo.view[item].zero;
       updateLegends(mo, [item]);
@@ -744,6 +744,11 @@ function initControls(mo) {
     updateBinToolbar(mo);
   });
 
+  document.getElementById('silhouette-btn').addEventListener('click',
+    function () {
+    calcSilhouette(mo);
+  });
+
   // let user choose a categorical field
   document.getElementById('load-bin-btn').addEventListener('click',
     function () {
@@ -786,7 +791,7 @@ function initControls(mo) {
   document.getElementById('bin-tbody').addEventListener('click',
     function (e) {
     // prevent table text from being selected
-    this.onselectstart = function() {
+    this.onselectstart = function () {
       return false;
     }
     var selected;
@@ -831,7 +836,7 @@ function initControls(mo) {
    * @summary Information table events
    */
 
-  document.getElementById('mask-btn').addEventListener('click', function() {
+  document.getElementById('mask-btn').addEventListener('click', function () {
     var indices = Object.keys(mo.pick);
     if (indices.length > 0) {
       // switch to "add" mode, then treat deletion
@@ -1148,7 +1153,7 @@ function initBtnGroups() {
  * @function initCloseBtns
  */
 function initCloseBtns() {
-  document.querySelectorAll(".modal-head").forEach(function(div) {
+  document.querySelectorAll(".modal-head").forEach(function (div) {
     var btn = document.createElement('button');
     btn.innerHTML = '&times;';
     btn.title = 'Close ' + div.textContent.toLowerCase() + ' window';
@@ -1303,7 +1308,7 @@ function updateLegends(mo, items) {
     if (grad === null) continue;
   
     // refresh labels
-    ['min', 'max'].forEach(function(key) {
+    ['min', 'max'].forEach(function (key) {
       var label = legend.querySelector('label.' + key);
       var value = scaleNum(mo.view[item][key], scale);
       value = formatValueLabel(value, icol, 3, false, mo);
@@ -1319,7 +1324,7 @@ function updateLegends(mo, items) {
     var rect = grad.getBoundingClientRect();
     var step = (rect.right - rect.left) / 10;
     var poses = {};
-    ['lower', 'upper'].forEach(function(key) {
+    ['lower', 'upper'].forEach(function (key) {
       poses[key] = legend.querySelector('.range.' + key).getAttribute(
         'data-tick') * step;
       legend.querySelector('.range.' + key).style.left = Math.round(rect.left
@@ -1366,12 +1371,12 @@ function updateColorGradient(mo) {
   if (mo.data.types[ci] === 'category') return;
   document.getElementById('color-gradient').style.backgroundImage
     = 'linear-gradient(to right, ' + PALETTES[mo.view.contpal].map(
-    function(e) {return '#' + e}).join(', ') + ')';
+    function (e) {return '#' + e}).join(', ') + ')';
 }
 
 
 /**
- * Update table in discrete color legend
+ * Update table in discrete color legend.
  * @function updateColorTable
  * @param {Object} mo - master object
  */
@@ -1406,19 +1411,19 @@ function updateColorTable(mo) {
 
 
 /**
- * Populate palette select box
+ * Populate palette select box.
  * @function populatePaletteSelect
  */
 function populatePaletteSelect() {
   var popup = document.getElementById('palette-select');
-  popup.querySelectorAll('div').forEach(function(div) {
+  popup.querySelectorAll('div').forEach(function (div) {
     var table = document.createElement('table');
     var pals = div.classList.contains('sequ') ? SEQUENTIAL_PALETTES
       : (div.classList.contains('dive') ? DIVERGING_PALETTES
       : QUALITATIVE_PALETTES);
 
     // create palette list
-    pals.forEach(function(pal) {
+    pals.forEach(function (pal) {
       var row = table.insertRow(-1);
       var cell = row.insertCell(-1);
       cell.innerHTML = pal;
@@ -1429,7 +1434,7 @@ function populatePaletteSelect() {
       if (div.classList.contains('cont')) {
         box.innerHTML = '&nbsp;';
         box.style.backgroundImage = 'linear-gradient(to right, '
-          + PALETTES[pal].map(function(e) {return '#' + e}).join(', ') + ')';
+          + PALETTES[pal].map(function (e) {return '#' + e}).join(', ') + ')';
       }
 
       // discrete color
@@ -1449,7 +1454,7 @@ function populatePaletteSelect() {
 
 
 /**
- * Format a value to be a label depending on content
+ * Format a value to be a label depending on content.
  * @function formatValueLabel
  * @param {number} value - value to format
  * @param {number} icol - column index
@@ -1467,4 +1472,80 @@ function formatValueLabel(value, icol, digits, unit, mo) {
   } else {
     return formatNum(value, digits);
   }
+}
+
+
+/**
+ * Calculate silhouette scores based on current binning plan.
+ * @function calcSilhouette
+ * @param {Object} mo - master object
+ */
+function calcSilhouette(mo) {
+  var data = mo.data;
+  var view = mo.view;
+  var bins = mo.bins;
+
+  // validate binning plan
+  var names = Object.keys(bins);
+  var n = names.length;
+  if (n === 0) {
+    toastMsg('Must define at least one bin.', mo.stat);
+    return;
+  }
+
+  // get bin labels
+  var labels = Array(data.df.length).fill(0);
+  names.forEach(function (name, i) {
+    Object.keys(bins[name]).forEach(function (idx) {
+      labels[idx] = i + 1;
+    });
+  });
+
+  // get contig positions
+  var xi = view.x.i;
+  var yi = view.y.i;
+  var vals = data.df.map(function (datum) {
+    return [datum[xi], datum[yi]];
+  });
+
+  // calculate silhouette scores
+  var scores = silhouetteSample(vals, labels);
+
+  // remove unbinned contigs
+  scores = scores.map(function (score, i) {
+    return labels[i] ? score : null;
+  });
+
+  // add scores to data table
+  var col = data.cols.indexOf('silhouette');
+  if (col === -1) {
+
+    // append new column and modify controls
+    scores.forEach(function (score, i) {
+      data.df[i].push(score);
+    });
+    col = data.cols.length;
+    data.cols.push('silhouette');
+    data.types.push('number');
+    updateCtrlByData(data, view);
+    initInfoTable(data, view.spcols.len, mo.pick);
+  } else {
+
+    // update existing column
+    scores.forEach(function (score, i) {
+      data.df[i][col] = score;
+    });
+  }
+
+  // color contigs by score
+  var sel = document.getElementById('color-field-sel');
+  sel.value = col;
+  sel.dispatchEvent(new Event('change'));
+
+  // summarize scores
+  scores = scores.filter(function (score) {
+    return score !== null;
+  })
+  toastMsg('Mean silhouette score of contigs under ' + n + ' bins: '
+    + arrMean(scores).toFixed(3) + '.', mo.stat, 3000);
 }

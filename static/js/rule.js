@@ -100,8 +100,6 @@ function parseFieldType(name, arr) {
         arr[i] = isMissing(arr[i]) ? null : parseFloat(arr[i]);
       }
     }
-    // arr.length = 0;
-    // arr.push.apply(arr, Array2);
     return ['number', name];
   }
 
@@ -413,9 +411,13 @@ function guessColMetric(col) {
   switch(col.toLowerCase()) {
     case 'x':
     case 'y':
+      break;
     case 'gc':
     case 'coverage':
       res = 'meanby';
+      break;
+    case 'silhouette':
+      res = 'mean';
       break;
   }
   return res;
