@@ -155,18 +155,11 @@ function adjustedRandScore(labelTrue, labelPred) {
 	let sumComb = arrSum([for (nIJ of contingency[1]) comb(nIJ, 2)]);
 	*/
 
-	let combK = [];
-	let combC = [];
-	let combIJ = [];
-	for (let nK of classSum) {
-		combK.push(comb(nK, 2));
-	}
-	for (let nC of clusterSum) {
-		combC.push(comb(nC, 2));
-	}
-	for (let nIJ of contingency[1]) {
-		combIJ.push(comb(nIJ, 2));
-	}
+
+	let combK = classSum.map(x => comb(x, 2));
+	let combC = clusterSum.map(x => comb(x, 2));
+	let combIJ = contingency[1].map(x => comb(x, 2));
+	
 	console.log(contingency)
 	console.log(classSum)
 	console.log('combK is: ' + combK)
