@@ -25,10 +25,8 @@ function factorial(n, m=1) {
     return 0;
   }
   let res = m;
-  let i = m;
-  while (i < n) {
-    res *= i + 1;
-    i++;
+  for (let i = m + 1; i <= n; i++) {
+    res *= i;
   }
   return res;
 }
@@ -94,7 +92,7 @@ function coordinateMatrix(row, col, data, shape, sparse=false) {
   } else {
     let key = [], value = [];
     for (let i = 0; i < res[0].length; i++) {
-      for (let j = 0; j < res[1].length;      j ++) {
+      for (let j = 0; j < res[1].length; j++) {
         if (res[i][j] !== 0) {
           key.push([i, j]);
           value.push(res[i][j]);
@@ -133,10 +131,8 @@ function adjustedRandScore(labelTrue, labelPred) {
   let nSamples = labelTrue.length;
   let nClasses = unique(labelTrue).length;
   let nClusters = unique(labelPred).length;
-  console.log('n_sample: ' + nSamples + '\n n_classes: ' + nClasses + '\n n_clusters: ' + nClusters);
 
   if (nClasses == nClusters === 1 || nClasses == nClusters === 0 || nClasses === nClusters === nSamples) {
-    console.log('true')
     return 1.0;
   }
 
