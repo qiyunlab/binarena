@@ -13,7 +13,8 @@ function euclidean(x, y) {
     return 0;
   }
   let sum = 0;
-  for (let i = 0; i < x.length; i++) {
+  let l = x.length;
+  for (let i = 0; i < l; i++) {
     sum += (x[i] - y[i]) ** 2;
   }
   return Math.sqrt(sum);
@@ -27,9 +28,10 @@ function euclidean(x, y) {
  */
 //TODO: add metrics='euclidean'
 function pdist(x) {
-  let d = Array(x.length).fill().map(()=>Array(x.length).fill());
-  for (let i = 0; i < x.length; i++) {
-    for (let j = 0; j < x.length; j++) {
+  let l = x.length;
+  let d = Array(l).fill().map(()=>Array(x.l).fill());
+  for (let i = 0; i < l; i++) {
+    for (let j = 0; j < l; j++) {
       if (j === i) {
         d[i][j] = 0;
       } else if (j < i) {
@@ -51,7 +53,8 @@ function pdist(x) {
  */
 function bincount(x) {
   let res = Array(Math.max.apply(null, x) + 1).fill(0);
-  for (let i = 0; i < x.length; i++) {
+  let l = x.length;
+  for (let i = 0; i < l; i++) {
     res[x[i]]++;
   }
   return res;
@@ -66,16 +69,18 @@ function bincount(x) {
  * @return {number[]} silhouette score of each data point
  */
 function silhouetteSample(x, label) {
+  let l = x.length;
   let count = bincount(label);
+  let c = count.length;
   let dist = pdist(x);
-  let intraDist = Array(x.length).fill(0);
-  let interDist = Array(x.length).fill().map(() => Array(count.length).fill(0));
-  let res = Array(x.length).fill();
-  for (let i = 0; i < x.length; i++) {
+  let intraDist = Array(l).fill(0);
+  let interDist = Array(l).fill().map(()=>Array(c).fill(0));
+  let res = Array(l).fill();
+  for (let i = 0; i < l; i++) {
     if (count[label[i]] === 1) {
       res[i] = 0;
     } else {
-      for (let j = 0; j < x.length; j++) {
+      for (let j = 0; j < l; j++) {
         if (label[i] == label[j]) {
           //console.log('label i: ' + label[i] + 'label j' + label[j])
           intraDist[i] += dist[i][j];
@@ -84,7 +89,7 @@ function silhouetteSample(x, label) {
           interDist[i][label[j]] += dist[i][j];
         }  
       }
-      for (let j = 0; j < count.length; j++) { // for each cluster
+      for (let j = 0; j < c; j++) { // for each cluster
         interDist[i][j] /= count[j];
       }
       intraDist[i] /= (count[label[i]] - 1);
