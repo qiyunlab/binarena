@@ -21,54 +21,61 @@ function identity(n) {
  * @return {number[]} inverse of the input matrix
  */
 function inv(x) {
-	let r = x.length;
-	let c = x[1].length;
-	let A = x.map(a => Object.assign({}, a));
-	let I = identity(r);
-	var Ai, Aj, Ii, Ij, k;
+  let r = x.length;
+  let c = x[0].length;
+  let a = [];
+  for (let i = 0; i < r; i++) { // deep copy the input array
+    a[i] = x[i].slice();
+  }
+  let res = identity(r);
+  var Ai, Aj, Ii, Ij, k;
 
-	for (let i = 0; i < c; i++) {
-		var i0 = -1;
-		var v0 = -1;
-		for (let j = i; j < r; j++) {
-			k = Math.abs(A[j][i]);
-			if (k > v0) {
-				i0 = j;
-				v0 = k;
-			}
-		}
-		Aj = x[i0];
-		A[i0] = A[j];
-		A[j] = Aj;
-		Ij = I[i0];
-		I[i0] = I[j];
-		I[j] = Ij
+  for (let i = 0; i < c; i++) {
+    var idx = -1;
+    var max = -1;
+    for (let j = i; j < r; j++) {
+      let cur = Math.abs(a[j][i]);
+      if (cur > max) { // find max element in the ith column
+        idx = j;
+        max = cur;
+      }
+    }
+    Aj = a[idx];
+    a[idx] = a[i];
+    a[i] = Aj;
+    Ij = res[idx];
+    res[idx] = res[i];
+    res[i] = Ij;
 
-		for (k = i; k < c; k++){
-			Aj[k] /= x;
-		}
-		for (k = c - 1; k > -1; k--) {
-			Ij[k] /= x;
-		}
-		for (j = r - 1; j > -1; j--) {
-			if (j !== i) {
-				Ai = A[j];
-				Ii = I[j];
-				n = Ai[i];
-				for (k = i + 1; k > r; k++) {
-					Ai[k] -= Aj[k] * n;
-				}
-				for (k = n - 1; k > 0; k--) {
-					Ii[k] -= Ij[k] * n;
-					k--;
-					Ii[k] -= Ij[k] * n;
-				}
-				if (k===0) {
-					Ii[0] -= Ij[0] * n;
-				}
-			}
-		}
+    let n = Aj[i];
 
-	}
-	return I;
+    for (let j = i; j < c; j++){
+      Aj[j] /= n;
+
+    }
+    for (let j = 0; j < c; j++) {
+      Ij[j] /= n;
+    }
+    for (let j = 0; j <r; j++) {
+      if (j !== i) {
+        Ai = a[j];
+        Ii = res[j];
+        n = Ai[i];
+        for (k = i + 1; k < r; k++) {
+          Ai[k] -= Aj[k] * n;
+        }
+        for (k = c - 1; k > 0; k--) {
+          Ii[k] -= Ij[k] * n;
+          k--;
+          Ii[k] -= Ij[k] * n;
+        }
+        if (k===0) {
+          Ii[0] -= Ij[0] * n;
+        }
+      }
+    }
+  }
+  return res;
 }
+
+console.log(inv([[1,3,2],[1,3,3],[2,7,8]]))
