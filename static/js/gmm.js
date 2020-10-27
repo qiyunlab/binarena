@@ -9,9 +9,27 @@ function arrSum(arr) {
   return sum;
 }
 
+
+// for test use
 function arrMean(arr) {
   // to avoid floating point err in js
   return (arrSum(arr) * 10) / (arr.length * 10);
+}
+
+
+// for test use
+function transpose(df) {
+  var res = [];
+  var n = df[0].length;
+  for (var i = 0; i < n; i++) {
+    res.push([]);
+  }
+  for (var i = 0; i < df.length; i++) {
+    for (var j = 0; j < n; j++) {
+      res[j].push(df[i][j]);
+    }
+  }
+  return res;
 }
 
 
@@ -36,6 +54,9 @@ function identity(n) {
  * @return {number[]} inverse of the input matrix
  */
 function inv(x) {
+	if (typeof(x) === 'number') {
+		return 1 / x;
+	}
 	let r = x.length;
 	let c = x[0].length;
 	let a = [];
@@ -68,28 +89,29 @@ function inv(x) {
 		let Aj = a[i];
 		let Ij = res[i];
 
-		let n = Aj[i];
-		for (let j = i; j < c; j++){
-			Aj[j] /= n;
+		let f = Aj[i];
+		for (let j = i; j < c; j++) {
+			Aj[j] /= f;
 		}
 		for (let j = 0; j < c; j++) {
-			Ij[j] /= n;
+			Ij[j] /= f;
 		}
-		for (let j = 0; j <r; j++) {
+		// eleminate non-zero values on other rows at column c
+		for (let j = 0; j < r; j++) {
 			if (j !== i) {
 				let Ai = a[j];
 				Ii = res[j];
-				n = Ai[i];
+				f = Ai[i];
 				for (k = i + 1; k < c; k++) {
-					Ai[k] -= Aj[k] * n;
+					Ai[k] -= Aj[k] * f;
 				}
 				for (k = c - 1; k > 0; k--) {
-					Ii[k] -= Ij[k] * n;
+					Ii[k] -= Ij[k] * f;
 					k--;
-					Ii[k] -= Ij[k] * n;
+					Ii[k] -= Ij[k] * f;
 				}
 				if (k===0) {
-					Ii[0] -= Ij[0] * n;
+					Ii[0] -= Ij[0] * f;
 				}
 			}
 		}
@@ -100,7 +122,7 @@ function inv(x) {
 //console.log(inv([[1,3,2],[1,3,3],[2,7,8]]))
 
 /**
- * Compute the determinant of matrix
+ * Compute the determinant of matrix.
  * @function det
  * @param {number[]} x - the input square matrix
  * @return {number} the determinant of the matrix
@@ -148,103 +170,88 @@ function det(x) {
 	return res * m[i][i];
 }
 
-console.log(det([[2,-3,1],[2,0,-1],[1,4,5]]));
+//console.log(det([[2,-3,1],[2,0,-1],[1,4,5]]));
 
 
-function gaussian(params) {
-	this.variance = params.variance;
-	this.mean = params.mean;
-	this.dim = this.mean.length;
-
-	//var det = det(this.variance);
-	this.invMean = inv(this.mean);
-	this.coefficient = 1 / (Math.pow(Math.sqrt(Math.PI * 2), this.dim) * Math.sqrt(det));
+/**
+ * Instantiation of n-dimensional multivariate Gaussian distribution
+ * @function gaussian
+ * @param {number[]} mean - the mean of the distribution with length n
+ * @param {number[]} variance - the covariance matrix of the distribution
+ */
+function gaussian(mean, variance) {
+	this.mean = mean;
+	this.variance = variance;
+	this.n = mean.length;
 }
 
 
-gaussian.prototype.density = function(x) {
-	let delta = x.map(a => a - this.mean);
-	let prob = 0;
-	for (let i = 0; i < this.dim; i++) {
-		let invMean = this.invMean[i];
+/**
+ * Compute the probability density function of gaussian distribution
+ * @function pdf
+ */
+gaussian.prototype.pdf = function(x) {
+	let mean = this.mean;
+	let delta = x.map(function(n, i) { // element-wise array substraction
+		return n - mean[i];
+	});
+	let ex = 0; // exponent
+	let invVar = inv(this.variance);
+	for (let i = 0; i < this.n; i++) {
 		let sum = 0;
-		for (let j = 0; j < this.dim; j++) {
-			sum += invMean[j] * delta[j];
+		for (let j = 0; j < this.n; j++) {
+			sum += invVar[i][j] * delta[j];
 		}
-		prob += delta[i] * sum;
+		ex += delta[i] * sum;
 	}
-	return this.coefficient * Math.exp(prob / -2);
+	return 1 / (Math.pow(Math.sqrt(2 * Math.PI), this.n) * Math.sqrt(det(this.variance))) * Math.exp(ex / -2);
 };
 
 
-function gmm(weight, mean, variance) {
+var g = new gaussian([1,2], [[1,0],[0,1]]);
+console.log(g.pdf([0,1]));
+console.log(inv(0.5))
+
+
+// class of mixture model
+function gmm(mean, variance) {
 	this.weight = weight;
-	this.variance = variance;
 	this.mean = mean;
+	this.variance = variance;
 	this.gaussian = new gaussian(this);
 }
 
-gmm.prototype.density = function(x) {
-	return this.weight * this.gaussian.density(point);
+
+/**
+ * Compute the proability of the mixture
+ * @function probability
+ * @param {number[]} x - the input array
+ * @return the probability of the mixture model
+ */
+gmm.prototype.probability = function(x) {
+	return this.weight * this.gaussian.pdf(x);
 };
 
 
-function estimate_covariance(){
-	return 0;
-}
-
-
-function mStep(x) {
-	let n = x.length; // n: n component
-	let res = Array(n);
-	let sum = arrSum(n);
-
-	for (let i = 0; i < n; i++) {
-		let resp = resps[i];
-		let nk = 0;
-		for (let j = 0; j < dim; j++) { // use arraysum
-			nk += resp[j];
-		}
-
-		//update weight
-		weights[i] = nk / x.length;
-
-		//update means
-		let mean = means[i].fill(0);
-		for (let j = 0; j < dim; j++) {
-			for (let k = 0; k < mean.length; k++) {
-				means[k] += resp[j] * x[j][k];
-			}
-		}
-		for (let j = 0; j < mean.length; j++) {
-			mean[j] /= nk;
-		}
-
-		//update covariances
-		let cov = estimate_covariance(x, resp, nk, means);
-
-	}
-}
-
 
 function estimate_params(x) {
-	let len = x.length;
-	let res = Array(len);
+	let n = x.length;
+	let res = Array(n);
 	let sum = n.sum(x);
-	for (let i = 0; i < len; i++) {
+	for (let i = 0; i < n; i++) {
 		let nk = arrSum(x[i]);
 		let weight = nk / sum;
-		let mean = transpose(x) / nk; // TODO: array division
+		let mean = transpose(x) / nk;
 		let dim = mean.length;
 		for (let j = 0; j < dim; j++) {
 			let meanSum = mean[j].map(a => a * nk); // can use reduce function
 		}
 
-		let cov = n.diag(n.rep([dim], n.epsilon)); // add function estimate covariane
-		for (let j = 0; j < x.length; j++) {
-			let point = x[i];
+		let cov = 0; // add function estimate covariane
+		for (let j = 0; j < n; j++) {
+			let sample = x[i];
 			let diff = Array(dim);
-			for (let j = 0; j < x.length; j++) {
+			for (let j = 0; j < n; j++) {
 				for (let k = 0; k < dim; k++) {
 					diff[k] = x[j][k] - means[k];
 				}
@@ -259,9 +266,9 @@ function estimate_params(x) {
 			for (let j = 0; j < diff.length; j++) {
 				for (let k = 0; k <= j; k++) {
 					let tmp = coeff * diff[j] * diff[k];
-					sigma[a][b] += tmp;
+					variance[a][b] += tmp;
 					if (k !== j) {
-						sigma[k][j] += tmp;
+						variance[k][j] += tmp;
 					}
 				}
 			}
@@ -269,4 +276,78 @@ function estimate_params(x) {
 		res[i] = new gmm(weight, mean, variance);
 	}
 	return res;
+}
+
+
+function mStep(x) {
+	let n = x.length; // n samples
+	let dim = x[0].length;
+	let res = Array(n);
+	let sum = 0;
+	for (let i = 0; i < n; i++) {
+		sum += arrSum(x[i]);
+	}
+
+	for (let i = 0; i < n; i++) {
+		let nk = 0;
+		for (let j = 0; j < dim; j++) { // use arrsum
+			nk += x[i][j];
+		}
+
+		//update weight
+		weights[i] = nk / sum;
+
+		//update means
+		let mean = means[i].fill(0);
+		for (let j = 0; j < dim; j++) {
+			for (let k = 0; k < mean.length; k++) {
+				means[k] += resp[j] * x[j][k];
+			}
+		}
+		for (let j = 0; j < mean.length; j++) {
+			mean[j] /= nk;
+		}
+
+		//update covariances
+		for (let j = 0; j < dim; j++) {
+			let sample = x[j];
+			let diff = sample - mean[j];
+			let coeff = x[j] / nk;
+		}
+
+	}
+}
+
+
+
+
+/**
+ * @param {number[]} x - clustered input array
+ * @param {number} k - the number of clusters
+ */
+function eStep(x, k) {
+	let n = x.length;
+	let res = Array(n);
+	for (let i = 0; i < n; i++) {
+		let sample = x[i];
+		let l = Array(k)
+		let sum = 0;
+		for (let j = 0; j < k; j++) {
+			let cluster = x[j];
+			let p = cluster.probability(x);
+			l[j] = p;
+			sum += p;
+		}
+		if (sum > 0) {
+			for (let j = 0; j < k; j++) {
+				l[j] /= sum;
+			}
+		} else {
+			for (let j = 0; j < k; j++) {
+				l[j] = 1 / k;
+			}
+		}
+		res[i] = l;
+	}
+	return transpose(res);
 }
