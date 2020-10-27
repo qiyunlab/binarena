@@ -192,6 +192,9 @@ function gaussian(mean, variance) {
  */
 gaussian.prototype.pdf = function(x) {
 	let mean = this.mean;
+	if (typeof(x) === 'number') {
+		return 1 / (this.variance * Math.sqrt(2 * Math.PI)) * Math.exp((x - mean)**2 / (-2 * this.variance**2));
+	}
 	let delta = x.map(function(n, i) { // element-wise array substraction
 		return n - mean[i];
 	});
@@ -210,7 +213,8 @@ gaussian.prototype.pdf = function(x) {
 
 var g = new gaussian([1,2], [[1,0],[0,1]]);
 console.log(g.pdf([0,1]));
-console.log(inv(0.5))
+var h = new gaussian(0.5, 2.5);
+console.log(h.pdf(0));
 
 
 // class of mixture model
