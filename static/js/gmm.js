@@ -286,6 +286,14 @@ function estimate_params(x, k) {
 	return res;
 }
 
+
+/**
+ * Returns the covariance matrix.
+ * @function cov
+ * @param {number[]} x - input data array
+ * @param {number[]} mean - mean array
+ * @return {number[]} cov - covariance matrix
+ */
 function cov(x, mean) {
 	let d = x.map(function(a, i){
 		return a - mean[i];
@@ -297,6 +305,7 @@ function cov(x, mean) {
 			cov[i][j] = d[i] * d[j];
 		}
 	}
+	return cov;
 }
 
 
