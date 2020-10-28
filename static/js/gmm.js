@@ -299,6 +299,17 @@ function cov(x, mean) {
 	}
 }
 
+
+/**
+ * Maximization step of EM algorithm.
+ * @function mStep
+ * @param {number[]} x - input data
+ * @param {number[]} mean - means of gmm
+ * @param {number[]} variance - covariance matrices of gmm
+ * @param {number} k - number of clusters
+ * @param {number[]} z -latent variable matrix
+ * @param {number[]} weight - weight matrix of gmm
+ */
 function mStep(x, mean, variance, k, z, weight) {
 	let m = x.length; // m samples
 	let n = x[0].length; // n dimension
