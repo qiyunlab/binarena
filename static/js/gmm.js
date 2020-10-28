@@ -195,17 +195,17 @@ gaussian.prototype.pdf = function(x) {
 	if (typeof(x) === 'number') {
 		return 1 / (this.variance * Math.sqrt(2 * Math.PI)) * Math.exp((x - mean)**2 / (-2 * this.variance**2));
 	}
-	let delta = x.map(function(n, i) { // element-wise array substraction
-		return n - mean[i];
+	let d = x.map(function(a, i) { // element-wise array substraction
+		return a - mean[i];
 	});
 	let ex = 0; // exponent
 	let invVar = inv(this.variance);
 	for (let i = 0; i < this.n; i++) {
 		let sum = 0;
 		for (let j = 0; j < this.n; j++) {
-			sum += invVar[i][j] * delta[j];
+			sum += invVar[i][j] * d[j];
 		}
-		ex += delta[i] * sum;
+		ex += d[i] * sum;
 	}
 	return 1 / (Math.pow(Math.sqrt(2 * Math.PI), this.n) * Math.sqrt(det(this.variance))) * Math.exp(ex / -2);
 };
@@ -213,16 +213,20 @@ gaussian.prototype.pdf = function(x) {
 
 var g = new gaussian([1,2], [[1,0],[0,1]]);
 console.log(g.pdf([0,1]));
-var h = new gaussian(0.5, 2.5);
-console.log(h.pdf(0));
+var h = new gaussian(2.5, 0.5);
+console.log(h.pdf(1));
 
 
-// class of mixture model
-function gmm(mean, variance) {
-	this.weight = weight;
+/*
+ * Representation of a single Gaussian Mixture Model.
+ * @class gmm
+ */
+function gmm(x, mean, variance, weight) {
+	this.data = x;
 	this.mean = mean;
 	this.variance = variance;
-	this.gaussian = new gaussian(this);
+	this.weight = weight;
+	this.gaussian = new gaussian(mean, variance);
 }
 
 
@@ -238,7 +242,7 @@ gmm.prototype.probability = function(x) {
 
 
 
-function estimate_params(x) {
+function estimate_params(x, k) {
 	let n = x.length;
 	let res = Array(n);
 	let sum = n.sum(x);
@@ -282,43 +286,35 @@ function estimate_params(x) {
 	return res;
 }
 
-
-function mStep(x) {
-	let n = x.length; // n samples
-	let dim = x[0].length;
-	let res = Array(n);
-	let sum = 0;
+function cov(x, mean) {
+	let d = x.map(function(a, i){
+		return a - mean[i];
+	});
+	let n = x.length;
+	let cov = Array(n).fill().map(() => Array(n).fill());
 	for (let i = 0; i < n; i++) {
-		sum += arrSum(x[i]);
+		for (let j = 0; j < n; j++) {
+			cov[i][j] = d[i] * d[j];
+		}
 	}
+}
 
-	for (let i = 0; i < n; i++) {
-		let nk = 0;
-		for (let j = 0; j < dim; j++) { // use arrsum
-			nk += x[i][j];
+function mStep(x, mean, variance, k, z, weight) {
+	let m = x.length; // m samples
+	let n = x[0].length; // n dimension
+	for (let j = 0; j < k; j++) {
+		// column sum
+		let c = z.map(function(a, i) {return a[j]}).reduce((acc, cur) => acc + cur);
+		weigh[j] = 1 / m * c;
+		let mu = Array(n).fill(0);
+		let sigma = Array(n).fill().map(() => Array(n).fill(0));
+		for (let i = 0; i < m; i++) {
+			mu = mu.map(function(a, idx) {return a + x[i].map(a => a * z[i, j])[idx]});
+			// matrix element-wise operations need to fix
+			sigma = sigma.map(function(a, idx){return a + cov(x[i], mean[j]).map(a => a * z[i, j])[idx]});
 		}
-
-		//update weight
-		weights[i] = nk / sum;
-
-		//update means
-		let mean = means[i].fill(0);
-		for (let j = 0; j < dim; j++) {
-			for (let k = 0; k < mean.length; k++) {
-				means[k] += resp[j] * x[j][k];
-			}
-		}
-		for (let j = 0; j < mean.length; j++) {
-			mean[j] /= nk;
-		}
-
-		//update covariances
-		for (let j = 0; j < dim; j++) {
-			let sample = x[j];
-			let diff = sample - mean[j];
-			let coeff = x[j] / nk;
-		}
-
+		mean[j] = mu.map(a => a / c);
+		variance[j] = sigma.map(a => a / c);
 	}
 }
 
