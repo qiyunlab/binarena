@@ -314,15 +314,15 @@ function mStep(x, mean, variance, k, z, weight) {
 	let m = x.length; // m samples
 	let n = x[0].length; // n dimension
 	for (let j = 0; j < k; j++) {
-		// column sum
+		// column sum of latent matrix
 		let c = z.map(function(a, i) {return a[j]}).reduce((acc, cur) => acc + cur);
 		weigh[j] = 1 / m * c;
 		let mu = Array(n).fill(0);
 		let sigma = Array(n).fill().map(() => Array(n).fill(0));
 		for (let i = 0; i < m; i++) {
-			mu = mu.map(function(a, idx) {return a + x[i].map(a => a * z[i, j])[idx]});
+			mu = mu.map(function(a, idx) {return a + x[i].map(a => a * z[i][j])[idx]});
 			// matrix element-wise operations need to fix
-			sigma = sigma.map(function(a, idx){return a + cov(x[i], mean[j]).map(a => a * z[i, j])[idx]});
+			sigma = sigma.map(function(a, idx){return a + cov(x[i], mean[j]).map(a => a * z[i][j])[idx]});
 		}
 		mean[j] = mu.map(a => a / c);
 		variance[j] = sigma.map(a => a / c);
@@ -333,32 +333,30 @@ function mStep(x, mean, variance, k, z, weight) {
 
 
 /**
- * @param {number[]} x - clustered input array
+ * Estimation step of EM algorithm.
+ * @function eStep
+ * @param {number[]} x - input array
+ * @param {number[]} mean - the mean array of the gaussian mixture
+ * @param {number[]} variance -  the array of covariance matrix
+ * @param {number[]} z - the latent variance array
  * @param {number} k - the number of clusters
+ * @param {number[]} weight - the array of weights of each clusters
  */
-function eStep(x, k) {
-	let n = x.length;
-	let res = Array(n);
-	for (let i = 0; i < n; i++) {
+function eStep(x, mean, variance, z, k, weight) {
+	let m = x.length; // m samples
+	for (let i = 0; i < m; i++) {
 		let sample = x[i];
-		let l = Array(k)
-		let sum = 0;
+		let c = 0;
 		for (let j = 0; j < k; j++) {
-			let cluster = x[j];
-			let p = cluster.probability(x);
-			l[j] = p;
-			sum += p;
+			let cluster = new gaussian(mean[j], variance[j]);
+			let p = weight[j] * cluster.pdf(x[i]);
+			c += p;
+			z[i][j] = p;
 		}
-		if (sum > 0) {
-			for (let j = 0; j < k; j++) {
-				l[j] /= sum;
-			}
+		if (c > 0) {
+			z[i] = z[i].map(a => a / c);
 		} else {
-			for (let j = 0; j < k; j++) {
-				l[j] = 1 / k;
-			}
+			z[i].fill(1 / k);
 		}
-		res[i] = l;
 	}
-	return transpose(res);
 }
