@@ -369,3 +369,34 @@ function eStep(x, mean, variance, z, k, weight) {
 		}
 	}
 }
+
+
+function loglikelihood(x, mean, variance, weight) {
+	return 0;
+}
+
+
+function fit(x, k, tol=1e-5) {
+	let m = x.length;
+	let n = x[0].length;
+	//initialization
+	let avg = 0;
+	let cur = 1;
+	let prev = 0;
+	for (let i = 0; i < m; i++) {
+		for (let j = 0; j < n; j++) {
+			avg += x[i][j];
+		}
+	}
+	let mean = Array(k).fill().map(() => Array(n).fill(avg));
+	let variance = Array(k).fill().map(() => identity(n));
+	let weight = Array(k).fill(1 / k);
+	let z = Array(m).fill().map(() => Array(k).fill());
+
+	while(cur > prev) {
+		prev = loglikelihood(x, mean, variance, weight);
+		eStep;
+		mStep;
+		cur = loglikelihood(x, mean, variance, weight);
+	}
+}
