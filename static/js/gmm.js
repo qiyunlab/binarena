@@ -376,7 +376,14 @@ function loglikelihood(x, mean, variance, weight) {
 }
 
 
-function fit(x, k, tol=1e-5) {
+/**
+ * Fitting the Gaussian mixture model by em algorithm
+ * @function fit
+ * @param {number[]} x - the input array
+ * @param (number} k - the number of clusters
+ * @param {number} tol - the convergence tolerance
+ */
+function fit(x, k=2, tol=1e-5) {
 	let m = x.length;
 	let n = x[0].length;
 	//initialization
