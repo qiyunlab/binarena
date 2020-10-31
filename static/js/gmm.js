@@ -325,7 +325,7 @@ function mStep(x, mean, variance, k, z, weight) {
 	for (let j = 0; j < k; j++) {
 		// column sum of latent matrix
 		let c = z.map(function(a, i) {return a[j]}).reduce((acc, cur) => acc + cur);
-		weigh[j] = 1 / m * c;
+		weight[j] = 1 / m * c;
 		let mu = Array(n).fill(0);
 		let sigma = Array(n).fill().map(() => Array(n).fill(0));
 		for (let i = 0; i < m; i++) {
