@@ -371,8 +371,18 @@ function eStep(x, mean, variance, z, k, weight) {
 }
 
 
-function loglikelihood(x, mean, variance, weight) {
-	return 0;
+function loglikelihood(x, mean, variance, weight, k) {
+	let m = x.length;
+	let res = 0;
+	for (let i = 0; i < m; i++) {
+		let tmp = 0;
+		for (let j = 0; j < k; j++) {
+			let g = new gaussian(mean, variance);
+			tmp += g.pdf(x[i]) * weight[j];
+		}
+		res += Math.log(tmp);
+	}
+	return res;
 }
 
 
