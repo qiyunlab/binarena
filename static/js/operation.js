@@ -39,7 +39,6 @@
  *   e.g., "", "-", "N/A", "na", "#NaN"
  */
 function updateDataFromText(text, data) {
-
   // first, try to parse as JSON
   try {
     var x = JSON.parse(text);
@@ -53,7 +52,12 @@ function updateDataFromText(text, data) {
 
   // second, try to parse as table
   catch (err) {
+    if(getFileFormat(text)) {
+      return parseAssembly(text, data);
+    }
+    else {
     return parseTable(text, data);
+    }
   }
 
   // update view
@@ -135,10 +139,159 @@ function parseTable(text, data) {
   data.types = types;
   data.features = [];
   data.df = df;
-
   return [deci, cats, feats];
 }
 
+/**
+ * Parse data as assembly.
+ * @function parseAssembly
+ * @param {String} text - multi-line string in tsv format
+ * @param {Object} data - data object
+ * @returns {Array.<Object, Object, Object>} - decimals, categories and features
+ * @see cacheData
+ * This function duplicates the function of cacheData due to consideration of
+ * big data processing.
+ */
+function parseAssembly(text, data) {
+  var lines = splitLines(text);
+  if (lines.length == 1) throw 'Error: there is only one line.';
+
+  var format = getFileFormat(text); // read file format of the inputted text
+  var types = ['id'];
+  var cols = ['id', 'length', 'gc', 'coverage']; // the information available in the contig titles
+  var ncol = cols.length;
+  var df = [];
+  var id = 0;
+  var length = 0;
+  var gc = 0;
+  var coverage = 0;
+  var contig_length = 0;
+  var GC_count = 0;
+  for (var i = 0; i < lines.length; i++) {
+    var line = lines[i];
+    if(line.indexOf(">") == 0) { // Checking if the current line is a contig title
+      if(i !== 0) {
+        df.push([id, length, gc, coverage]) // append dataframe with contig title information
+        GC_count = 0;
+        contig_length = 0;
+      }
+      var info = parseContigTitles(line, format); // identified 3 of 4 components of the contig title
+      // update found information
+      id = info[0];
+      length = info[1];
+      coverage = info[2];
+    }
+    else {
+      var arr = calculateGCAndLength(line, GC_count, contig_length);
+      GC_count = arr[0];
+      contig_length = arr[1];
+      gc = ((GC_count/contig_length).toFixed(2)).toString(); // idnetified last component of contig title
+    }
+  }
+
+  var deci = {};
+  var cats = {};
+  var feats = {};
+
+  // identify field types and re-format data
+  var types = ['id'];
+  for (var i = 1; i < cols.length; i++) {
+    var arr = [];
+    for (var j = 0; j < df.length; j++) {
+      arr.push(df[df.length - j - 1][i]);
+    }
+      var x = parseFieldType(cols[i], arr);
+      var type = x[0];
+      var col = x[1];
+      types.push(type); // identified type
+      cols[i] = col; // updated name
+      for (var j = 0; j < df.length; j++) {
+        df[j][i] = arr[j];
+      }
+  }
+    // summarize categories or features
+    switch (type) {
+      case 'number':
+        deci[col] = maxDecimals(arr);
+        break;
+      case 'category':
+        cats[col] = listCats(arr);
+        break;
+      case 'feature':
+        feats[col] = listFeats(arr);
+        break;
+    }
+
+  data.cols = cols;
+  data.types = types;
+  data.features = [];
+  data.df = df;
+  return [deci, cats, feats];
+}
+
+/**
+ * Calculates GC count in and length of one line in the contig.
+ * @function calculateGCAndLength
+ * @param {String} line - one line string in contig
+ * @param {Integer} numGC - current counter of GC instances in contig
+ * @param {Integer} totalBP - current counter of length of contig
+ * @returns {Array.<Integer, Integer>} - updated GC count of contig, updated length of contig
+ */
+function calculateGCAndLength(line, numGC, totalBP) {
+  var count = numGC;
+  var length = totalBP + line.length;
+  // iterating through the line to find 'G' or 'C'
+  for(var i = 0; i < line.length; i++) {
+      if(line.charAt(i).toUpperCase() == 'G' || line.charAt(i).toUpperCase() == 'C') {
+        count++;
+      }
+  }
+  return [count, length];
+}
+
+/**
+ * Gets the file format of the input data
+ * @function getFileFormat
+ * @param {String} text - multi-line string in tsv format
+ * @returns {String} - file type of input data
+ */
+function getFileFormat(text) {
+  // searching for unique starting sequences of different file formats
+  if(text.indexOf(">NODE_") === 0) {
+    return '.fasta';
+  }
+  else if(text.indexOf(">k141_") === 0) {
+    return '.fa';
+  }
+  else {
+    return null;
+  }
+}
+
+/**
+ * Parses and retrieves information in the contig titles of the input data
+ * @function parseContigTitles
+ * @param {String} line - one line string of the contig title
+ * @param {String} format - file type of input data
+ * @returns {Array.<String, String, String>} - id, length, coverage of contig
+ */
+function parseContigTitles(line, format) {
+  var id = '';
+  var length = 0;
+  var coverage = 0;
+  if (format === '.fasta') {
+    id = line.substring(line.indexOf("_") + 1, line.indexOf("l") - 1);
+    length = line.substring(line.indexOf("h") + 2, line.indexOf("c") - 1);
+    coverage = line.substring(line.indexOf("v") + 2);
+  }
+  else if(format === '.fa') {
+    id = line.substring(line.indexOf("_") + 1, line.indexOf(" "));
+    length = line.substring(line.indexOf("n") + 2);
+    coverage = line.substring(line.indexOf("i") + 2, line.indexOf("e") - 2);
+  }
+  coverage = (Number(coverage).toFixed(3)).toString();
+  return [id, length, coverage];
+}
 
 /**
  * Pre-cache summary of data.

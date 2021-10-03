@@ -196,7 +196,6 @@ function parseFieldType(name, arr) {
  * Options are: number, category, feature, description.
  */
 function guessDisplayFields(data, view) {
-
   var res = {
     x: null,
     y: null,
@@ -234,7 +233,7 @@ function guessDisplayFields(data, view) {
   else {
     var keys = ['gc', 'cov', 'len'];
     var avails = [];
-    for (var i = 1; i < keys.length; i++) {
+    for (var i = 0; i < keys.length; i++) {
       var icol = view.spcols[keys[i]];
       if (icol !== null) avails.push(icol);
     }
