@@ -52,7 +52,7 @@ function updateDataFromText(text, data) {
 
   // second, try to parse as table
   catch (err) {
-    if(getFileFormat(text)) {
+    if (getFileFormat(text)) {
       return parseAssembly(text, data);
     }
     else {
@@ -154,40 +154,41 @@ function parseTable(text, data) {
  */
 function parseAssembly(text, data) {
   var lines = splitLines(text);
-  if (lines.length == 1) throw 'Error: there is only one line.';
+  if (lines.length === 1) throw 'Error: there is only one line.';
 
   var format = getFileFormat(text); // read file format of the inputted text
   var types = ['id'];
   var cols = ['id', 'length', 'gc', 'coverage']; // the information available in the contig titles
-  var ncol = cols.length;
   var df = [];
+
   var id = 0;
   var length = 0;
   var gc = 0;
   var coverage = 0;
   var contig_length = 0;
   var GC_count = 0;
+
   for (var i = 0; i < lines.length; i++) {
     var line = lines[i];
-    if(line.indexOf(">") == 0) { // Checking if the current line is a contig title
-      if(i !== 0) {
+    if (line.toUpperCase().match(/^[ATGCU]+$/g)) { // Checking if the current line is not a contig title
+      [GC_count, contig_length] = calculateGCAndLength(line, GC_count, contig_length);
+      gc = ((GC_count/contig_length).toFixed(2)).toString(); // idnetified last component of contig title
+    }
+    else {
+      if (i !== 0) {
+        if (length <= 1000) {
+          continue;
+        }
         df.push([id, length, gc, coverage]) // append dataframe with contig title information
         GC_count = 0;
         contig_length = 0;
       }
-      var info = parseContigTitles(line, format); // identified 3 of 4 components of the contig title
-      // update found information
-      id = info[0];
-      length = info[1];
-      coverage = info[2];
-    }
-    else {
-      var arr = calculateGCAndLength(line, GC_count, contig_length);
-      GC_count = arr[0];
-      contig_length = arr[1];
-      gc = ((GC_count/contig_length).toFixed(2)).toString(); // idnetified last component of contig title
+      [id, length, coverage] = parseContigTitles(line, format);
+      coverage = (Number(coverage).toFixed(3)).toString();
     }
   }
+  if (df.length === 0) throw 'Error: No contig is bigger than 1000 base pairs.';
+
 
   var deci = {};
   var cats = {};
@@ -242,7 +243,7 @@ function calculateGCAndLength(line, numGC, totalBP) {
   var length = totalBP + line.length;
   // iterating through the line to find 'G' or 'C'
   for(var i = 0; i < line.length; i++) {
-      if(line.charAt(i).toUpperCase() == 'G' || line.charAt(i).toUpperCase() == 'C') {
+      if (line.charAt(i).toUpperCase() == 'G' || line.charAt(i).toUpperCase() == 'C') {
         count++;
       }
   }
@@ -257,15 +258,15 @@ function calculateGCAndLength(line, numGC, totalBP) {
  */
 function getFileFormat(text) {
   // searching for unique starting sequences of different file formats
-  if(text.indexOf(">NODE_") === 0) {
-    return '.fasta';
+  var metaspades_regex = /^>NODE_\d+\_length_\d+\_cov_\d*\.?\d*/g;
+  var megahit_regex = /^>k\d+_\d+\sflag=\d+\smulti=\d*\.?\d*\slen=\d+/g;
+  if (text.search(metaspades_regex) === 0) {
+    return 'metaspades';
   }
-  else if(text.indexOf(">k141_") === 0) {
-    return '.fa';
+  else if (text.search(megahit_regex) === 0) {
+    return 'megahit';
   }
-  else {
-    return null;
-  }
+  return null;
 }
 
 /**
@@ -279,18 +280,17 @@ function parseContigTitles(line, format) {
   var id = '';
   var length = 0;
   var coverage = 0;
-  if (format === '.fasta') {
-    id = line.substring(line.indexOf("_") + 1, line.indexOf("l") - 1);
-    length = line.substring(line.indexOf("h") + 2, line.indexOf("c") - 1);
-    coverage = line.substring(line.indexOf("v") + 2);
+  if (format === 'metaspades') {
+    var regex = /(?<=_)(\+|-)?[0-9]*(\.[0-9]*)?$|\d+/g;
+    [id, length, coverage] = line.match(regex);
+    return [id, length, coverage];
   }
-  else if(format === '.fa') {
-    id = line.substring(line.indexOf("_") + 1, line.indexOf(" "));
-    length = line.substring(line.indexOf("n") + 2);
-    coverage = line.substring(line.indexOf("i") + 2, line.indexOf("e") - 2);
+  else if (format === 'megahit') {
+    var regex = /(?<==|_)[0-9]*(\.[0-9]*)?/g;
+    [id, , coverage, length] = line.match(regex);
+    return [id, length, coverage];
   }
-  coverage = (Number(coverage).toFixed(3)).toString();
-  return [id, length, coverage];
+  return null;
 }
 
 /**
