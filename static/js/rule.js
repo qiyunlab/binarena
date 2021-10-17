@@ -233,8 +233,8 @@ function guessDisplayFields(data, view) {
   else {
     var keys = ['gc', 'cov', 'len'];
     var avails = [];
-    for (var i = 0; i < keys.length; i++) {
-      var icol = view.spcols[keys[i]];
+    for (var i = 1; i < keys.length; i++) {
+      var icol = view.spcols[keys[i - 1]];
       if (icol !== null) avails.push(icol);
     }
     if (avails.length >= 2) {

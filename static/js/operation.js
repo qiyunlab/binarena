@@ -53,10 +53,10 @@ function updateDataFromText(text, data) {
   // second, try to parse as table
   catch (err) {
     if (getFileFormat(text)) {
-      return parseAssembly(text, data);
+      return parseAssembly(text, data, 1000);
     }
     else {
-    return parseTable(text, data);
+      return parseTable(text, data);
     }
   }
 
@@ -96,50 +96,11 @@ function parseTable(text, data) {
         throw ('Error: table has ' + ncol + ' columns but row ' + i +
           ' has ' + arr.length + ' cells.');
       }
-      df.push(arr)
+      df.push(arr);
     }
   }
 
-  var deci = {};
-  var cats = {};
-  var feats = {};
-
-  // identify field types and re-format data
-  var types = ['id'];
-  for (var i = 1; i < cols.length; i++) {
-    var arr = [];
-    for (var j = 0; j < df.length; j++) {
-      arr.push(df[j][i]);
-    }
-    var x = parseFieldType(cols[i], arr);
-    var type = x[0];
-    var col = x[1];
-    types.push(type); // identified type
-    cols[i] = col; // updated name
-    for (var j = 0; j < df.length; j++) {
-      df[j][i] = arr[j];
-    }
-
-    // summarize categories or features
-    switch (type) {
-      case 'number':
-        deci[col] = maxDecimals(arr);
-        break;
-      case 'category':
-        cats[col] = listCats(arr);
-        break;
-      case 'feature':
-        feats[col] = listFeats(arr);
-        break;
-    }
-  }
-
-  // update data object
-  data.cols = cols;
-  data.types = types;
-  data.features = [];
-  data.df = df;
-  return [deci, cats, feats];
+  return formatData(data, df, cols);
 }
 
 /**
@@ -147,12 +108,13 @@ function parseTable(text, data) {
  * @function parseAssembly
  * @param {String} text - multi-line string in tsv format
  * @param {Object} data - data object
+ * @param {Integer} minContigLength - minimum contig length of contig
  * @returns {Array.<Object, Object, Object>} - decimals, categories and features
  * @see cacheData
  * This function duplicates the function of cacheData due to consideration of
  * big data processing.
  */
-function parseAssembly(text, data) {
+function parseAssembly(text, data, minContigLength) {
   var lines = splitLines(text);
   if (lines.length === 1) throw 'Error: there is only one line.';
 
@@ -165,89 +127,69 @@ function parseAssembly(text, data) {
   var length = 0;
   var gc = 0;
   var coverage = 0;
-  var contig_length = 0;
-  var GC_count = 0;
+  var currentContigLength = 0;
+  var gcCount = 0;
 
   for (var i = 0; i < lines.length; i++) {
     var line = lines[i];
-    if (line.toUpperCase().match(/^[ATGCU]+$/g)) { // Checking if the current line is not a contig title
-      [GC_count, contig_length] = calculateGCAndLength(line, GC_count, contig_length);
-      gc = ((GC_count/contig_length).toFixed(2)).toString(); // idnetified last component of contig title
+    if (line.search(/^>{1}/gm) === 0) { // Checking if the current line is a contig title
+        [id, length, coverage] = parseContigTitles(line, format);
+        if (length <= minContigLength) 
+          continue;
+
+        // append dataframe with contig title information
+        df.push([id, length, , coverage]) // gc not calculated yet
+        gcCount = 0;
+        currentContigLength = 0;
     }
     else {
-      if (i !== 0) {
-        if (length <= 1000) {
-          continue;
-        }
-        df.push([id, length, gc, coverage]) // append dataframe with contig title information
-        GC_count = 0;
-        contig_length = 0;
+      gcCount += calculateLineGC(line);
+      currentContigLength += line.length; 
+      if (df.length != 0 && currentContigLength === Number(length)) { // verifying if current line is last line in contig
+        gc = (gcCount/currentContigLength).toString(); // identified last component of contig title
+        df[df.length - 1][2] = gc; // update gc in dataframe
       }
-      [id, length, coverage] = parseContigTitles(line, format);
-      coverage = (Number(coverage).toFixed(3)).toString();
     }
   }
-  if (df.length === 0) throw 'Error: No contig is bigger than 1000 base pairs.';
 
+  if (df.length === 0) throw 'Error: No contig is bigger than ' + minContigLength + ' base pairs.';
 
-  var deci = {};
-  var cats = {};
-  var feats = {};
-
-  // identify field types and re-format data
-  var types = ['id'];
-  for (var i = 1; i < cols.length; i++) {
-    var arr = [];
-    for (var j = 0; j < df.length; j++) {
-      arr.push(df[df.length - j - 1][i]);
-    }
-      var x = parseFieldType(cols[i], arr);
-      var type = x[0];
-      var col = x[1];
-      types.push(type); // identified type
-      cols[i] = col; // updated name
-      for (var j = 0; j < df.length; j++) {
-        df[j][i] = arr[j];
-      }
-  }
-    // summarize categories or features
-    switch (type) {
-      case 'number':
-        deci[col] = maxDecimals(arr);
-        break;
-      case 'category':
-        cats[col] = listCats(arr);
-        break;
-      case 'feature':
-        feats[col] = listFeats(arr);
-        break;
-    }
-
-  data.cols = cols;
-  data.types = types;
-  data.features = [];
-  data.df = df;
-  return [deci, cats, feats];
+  return formatData(data, df, cols);
 }
 
 /**
- * Calculates GC count in and length of one line in the contig.
- * @function calculateGCAndLength
+ * Calculates GC count in one line in the contig.
+ * @function calculateLineGC
  * @param {String} line - one line string in contig
- * @param {Integer} numGC - current counter of GC instances in contig
- * @param {Integer} totalBP - current counter of length of contig
- * @returns {Array.<Integer, Integer>} - updated GC count of contig, updated length of contig
+ * @returns {Integer} - GC count of one contig line
  */
-function calculateGCAndLength(line, numGC, totalBP) {
-  var count = numGC;
-  var length = totalBP + line.length;
-  // iterating through the line to find 'G' or 'C'
-  for(var i = 0; i < line.length; i++) {
-      if (line.charAt(i).toUpperCase() == 'G' || line.charAt(i).toUpperCase() == 'C') {
-        count++;
+function calculateLineGC(line) {
+  var count = 0;
+  // iterating through the line to find IUPAC nucleotide codes that have a probability of including 'G' or 'C'
+  for (var i = 0; i < line.length; i++) {
+      switch (line.charAt(i).toUpperCase()) {
+        case 'G':
+        case 'C':
+        case 'S':
+          count ++;
+          break;
+        case 'R':
+        case 'Y':
+        case 'K':
+        case 'M':
+        case 'N':
+          count += 0.5;
+          break;
+        case 'D':
+        case 'H':
+          count += 0.33;
+          break;
+        case 'B':
+        case 'V':
+          count += 0.67;
       }
   }
-  return [count, length];
+  return count;  
 }
 
 /**
@@ -258,10 +200,10 @@ function calculateGCAndLength(line, numGC, totalBP) {
  */
 function getFileFormat(text) {
   // searching for unique starting sequences of different file formats
-  var metaspades_regex = /^>NODE_\d+\_length_\d+\_cov_\d*\.?\d*/g;
+  var spades_regex = /^>NODE_\d+\_length_\d+\_cov_\d*\.?\d*/g;
   var megahit_regex = /^>k\d+_\d+\sflag=\d+\smulti=\d*\.?\d*\slen=\d+/g;
-  if (text.search(metaspades_regex) === 0) {
-    return 'metaspades';
+  if (text.search(spades_regex) === 0) {
+    return 'spades';
   }
   else if (text.search(megahit_regex) === 0) {
     return 'megahit';
@@ -280,7 +222,7 @@ function parseContigTitles(line, format) {
   var id = '';
   var length = 0;
   var coverage = 0;
-  if (format === 'metaspades') {
+  if (format === 'spades') {
     var regex = /(?<=_)(\+|-)?[0-9]*(\.[0-9]*)?$|\d+/g;
     [id, length, coverage] = line.match(regex);
     return [id, length, coverage];
@@ -291,6 +233,55 @@ function parseContigTitles(line, format) {
     return [id, length, coverage];
   }
   return null;
+}
+
+/**
+ * Formats data into usable types
+ * @function formatData
+ * @param {Object} data - data object
+ * @param {Matrix} dataframe - data points for available characteristices of contigs
+ * @param {Object} columns - available characteristics of contigs
+ * @returns {Array.<Object, Object, Object>} - id, length, coverage of contig
+ */
+function formatData(data, dataframe, columns) {
+  var deci = {};
+  var cats = {};
+  var feats = {};
+
+  // identify field types and re-format data
+  var types = ['id'];
+  for (var i = 1; i < columns.length; i++) {
+    var arr = [];
+    for (var j = 0; j < dataframe.length; j++) {
+      arr.push(dataframe[dataframe.length - j - 1][i]);
+    }
+      var x = parseFieldType(columns[i], arr);
+      var type = x[0];
+      var col = x[1];
+      types.push(type); // identified type
+      columns[i] = col; // updated name
+      for (var j = 0; j < dataframe.length; j++) {
+        dataframe[j][i] = arr[j];
+      }
+  }
+    // summarize categories or features
+    switch (type) {
+      case 'number':
+        deci[col] = maxDecimals(arr);
+        break;
+      case 'category':
+        cats[col] = listCats(arr);
+        break;
+      case 'feature':
+        feats[col] = listFeats(arr);
+        break;
+    }
+
+  data.cols = columns;
+  data.types = types;
+  data.features = [];
+  data.df = dataframe;
+  return [deci, cats, feats];
 }
 
 /**
@@ -588,5 +579,5 @@ function columnInfo(arr, type, met, deci, refarr) {
       res = a.join(', ');
       break;
   }
-  return res;
+  return res; 
 }
