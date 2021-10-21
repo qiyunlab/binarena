@@ -114,7 +114,7 @@ function parseTable(text, data) {
  * This function duplicates the function of cacheData due to consideration of
  * big data processing.
  */
-function parseAssembly(text, data, minContigLength) {
+function parseAssembly(text, data, minLen) {
   var lines = splitLines(text);
   if (lines.length === 1) throw 'Error: there is only one line.';
 
@@ -123,74 +123,75 @@ function parseAssembly(text, data, minContigLength) {
   var cols = ['id', 'length', 'gc', 'coverage']; // the information available in the contig titles
   var df = [];
 
-  var id = 0;
+  var id = NaN;
   var length = 0;
   var gc = 0;
   var coverage = 0;
-  var currentContigLength = 0;
-  var gcCount = 0;
 
   for (var i = 0; i < lines.length; i++) {
     var line = lines[i];
-    if (line.search(/^>{1}/gm) === 0) { // Checking if the current line is a contig title
-        [id, length, coverage] = parseContigTitles(line, format);
-        if (length <= minContigLength) 
-          continue;
-
-        // append dataframe with contig title information
-        df.push([id, length, , coverage]) // gc not calculated yet
-        gcCount = 0;
-        currentContigLength = 0;
+    if (line.charAt() === '>') { // Checking if the current line is a contig title
+        if (id !== NaN && length > minLen) {
+          // append dataframe with contig title information
+          df.push([id, length.toString(), (gc / length).toString(), coverage]);
+        }
+        [id, coverage] = parseContigTitles(line, format);
+        gc = 0;
+        length = 0;
     }
     else {
-      gcCount += calculateLineGC(line);
-      currentContigLength += line.length; 
-      if (df.length != 0 && currentContigLength === Number(length)) { // verifying if current line is last line in contig
-        gc = (gcCount/currentContigLength).toString(); // identified last component of contig title
-        df[df.length - 1][2] = gc; // update gc in dataframe
-      }
+      // adding length and gc count of each line to the total counter for gc and length
+      gc += countGC(line);
+      length += line.length;
     }
   }
 
-  if (df.length === 0) throw 'Error: No contig is bigger than ' + minContigLength + ' base pairs.';
+  if (df.length === 0) throw 'Error: No contig is bigger than ' + minLen + ' base pairs.';
 
   return formatData(data, df, cols);
 }
 
+
 /**
+ * See [IUPAC Codes]{@link https://www.bioinformatics.org/sms/iupac.html}
  * Calculates GC count in one line in the contig.
- * @function calculateLineGC
+ * @function countGC
  * @param {String} line - one line string in contig
  * @returns {Integer} - GC count of one contig line
  */
-function calculateLineGC(line) {
+function countGC(line) {
   var count = 0;
   // iterating through the line to find IUPAC nucleotide codes that have a probability of including 'G' or 'C'
   for (var i = 0; i < line.length; i++) {
-      switch (line.charAt(i).toUpperCase()) {
-        case 'G':
-        case 'C':
-        case 'S':
-          count ++;
-          break;
-        case 'R':
-        case 'Y':
-        case 'K':
-        case 'M':
-        case 'N':
-          count += 0.5;
-          break;
-        case 'D':
-        case 'H':
-          count += 0.33;
-          break;
-        case 'B':
-        case 'V':
-          count += 0.67;
-      }
+    // multiplied gc counts by 6 to convert decimals into integers
+    switch (line.charAt(i).toUpperCase()) {
+      case 'G':
+      case 'C':
+      case 'S':
+        count += 6;
+        break;
+      case 'R':
+      case 'Y':
+      case 'K':
+      case 'M':
+      case 'N':
+        count += 3;
+        break;
+      case 'D':
+      case 'H':
+        count += 2;
+        break;
+      case 'B':
+      case 'V':
+        count += 4;
+    }
   }
+  
+  // reconverting gc counter into decimals
+  count /= 6;
   return count;  
 }
+
 
 /**
  * Gets the file format of the input data
@@ -211,6 +212,7 @@ function getFileFormat(text) {
   return null;
 }
 
+
 /**
  * Parses and retrieves information in the contig titles of the input data
  * @function parseContigTitles
@@ -225,15 +227,16 @@ function parseContigTitles(line, format) {
   if (format === 'spades') {
     var regex = /(?<=_)(\+|-)?[0-9]*(\.[0-9]*)?$|\d+/g;
     [id, length, coverage] = line.match(regex);
-    return [id, length, coverage];
+    return [id, coverage];
   }
   else if (format === 'megahit') {
     var regex = /(?<==|_)[0-9]*(\.[0-9]*)?/g;
     [id, , coverage, length] = line.match(regex);
-    return [id, length, coverage];
+    return [id, coverage];
   }
   return null;
 }
+
 
 /**
  * Formats data into usable types
@@ -283,6 +286,7 @@ function formatData(data, dataframe, columns) {
   data.df = dataframe;
   return [deci, cats, feats];
 }
+
 
 /**
  * Pre-cache summary of data.
