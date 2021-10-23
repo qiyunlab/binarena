@@ -132,7 +132,7 @@ function parseAssembly(text, data, minLen) {
     if (line.charAt() === '>') { // Checking if the current line is a contig title
         if (id !== null && length >= minLen) {
           // append dataframe with contig title information
-          df.push([id, length.toString(), (gc / length).toString(), coverage]);
+          df.push([id, length, gc / length, coverage]);
         }
         [id, coverage] = parseContigTitles(line, format);
         gc = 0;
@@ -146,7 +146,7 @@ function parseAssembly(text, data, minLen) {
   }
 
   if (id !== null && length >= minLen) {
-    df.push([id, length.toString(), (gc / length).toString(), coverage]);
+    df.push([id, length, gc / length, coverage]);
   }
 
   if (df.length === 0) throw 'Error: No contig is bigger than ' + minLen + ' base pairs.';

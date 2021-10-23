@@ -16,6 +16,7 @@
  * @returns {boolean} check result
  */
 function isMissing(str) {
+  str = str.toString();
   var nulls = ['na', 'n/a', 'nan', 'null', ''];
   try {
     str = str.replace(/^[#-]+/, '');
@@ -81,7 +82,7 @@ function parseFieldType(name, arr) {
   if (areNumbers && ((type === '') || (type === 'number'))) {
     var areIntegers = true;
     for (var i = 0; i < arr.length; i++) {
-      if (!isMissing(arr[i]) && (arr[i].indexOf('.') !== -1)) { // has float point
+      if (!isMissing(arr[i]) && (arr[i].toString().indexOf('.') !== -1)) { // has float point
         areIntegers = false;
         break
       }
