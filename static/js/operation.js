@@ -39,7 +39,6 @@
  *   e.g., "", "-", "N/A", "na", "#NaN"
  */
 function updateDataFromText(text, data) {
-
   // first, try to parse as JSON
   try {
     var x = JSON.parse(text);
@@ -53,7 +52,12 @@ function updateDataFromText(text, data) {
 
   // second, try to parse as table
   catch (err) {
-    return parseTable(text, data);
+    if (getFileFormat(text)) {
+      return parseAssembly(text, data, 1000);
+    }
+    else {
+      return parseTable(text, data);
+    }
   }
 
   // update view
@@ -92,30 +96,181 @@ function parseTable(text, data) {
         throw ('Error: table has ' + ncol + ' columns but row ' + i +
           ' has ' + arr.length + ' cells.');
       }
-      df.push(arr)
+      df.push(arr);
     }
   }
 
+  return formatData(data, df, cols);
+}
+
+/**
+ * Parse data as assembly.
+ * @function parseAssembly
+ * @param {String} text - multi-line string in tsv format
+ * @param {Object} data - data object
+ * @param {Integer} minContigLength - minimum contig length of contig
+ * @returns {Array.<Object, Object, Object>} - decimals, categories and features
+ * @see cacheData
+ * This function duplicates the function of cacheData due to consideration of
+ * big data processing.
+ */
+function parseAssembly(text, data, minLen) {
+  var lines = splitLines(text);
+  if (lines.length === 1) throw 'Error: there is only one line.';
+
+  var format = getFileFormat(text); // read file format of the inputted text
+  var cols = ['id', 'length', 'gc', 'coverage']; // the information available in the contig titles
+  var df = [];
+
+  var id = null;
+  var length = 0;
+  var gc = 0;
+  var coverage = 0;
+
+  for (var i = 0; i < lines.length; i++) {
+    var line = lines[i];
+    if (line.charAt() === '>') { // Checking if the current line is a contig title
+        if (id !== null && length >= minLen) {
+          // append dataframe with contig title information
+          df.push([id, length.toString(), (gc / length).toString(), coverage]);
+        }
+        [id, coverage] = parseContigTitles(line, format);
+        gc = 0;
+        length = 0;
+    }
+    else {
+      // adding length and gc count of each line to the total counter for gc and length
+      gc += countGC(line);
+      length += line.length;
+    }
+  }
+
+  if (id !== null && length >= minLen) {
+    df.push([id, length.toString(), (gc / length).toString(), coverage]);
+  }
+
+  if (df.length === 0) throw 'Error: No contig is bigger than ' + minLen + ' base pairs.';
+
+  return formatData(data, df, cols);
+}
+
+
+/**
+ * See [IUPAC Codes]
+ * {@link https://www.bioinformatics.org/sms/iupac.html}
+ * Calculates GC count in one line in the contig.
+ * @function countGC
+ * @param {String} line - one line string in contig
+ * @returns {Integer} - GC count of one contig line
+ */
+function countGC(line) {
+  var count = 0;
+  // iterating through the line to find IUPAC nucleotide codes that have a probability of including 'G' or 'C'
+  for (var i = 0; i < line.length; i++) {
+    // multiplied gc counts by 6 to convert decimals into integers
+    switch (line.charAt(i).toUpperCase()) {
+      case 'G':
+      case 'C':
+      case 'S':
+        count += 6;
+        break;
+      case 'R':
+      case 'Y':
+      case 'K':
+      case 'M':
+      case 'N':
+        count += 3;
+        break;
+      case 'D':
+      case 'H':
+        count += 2;
+        break;
+      case 'B':
+      case 'V':
+        count += 4;
+    }
+  }
+
+  // reconverting gc counter into decimals
+  count /= 6;
+  return count;  
+}
+
+
+/**
+ * Gets the file format of the input data
+ * @function getFileFormat
+ * @param {String} text - multi-line string in tsv format
+ * @returns {String} - file type of input data
+ */
+function getFileFormat(text) {
+  // searching for unique starting sequences of different file formats
+  var spades_regex = /^>NODE_\d+\_length_\d+\_cov_\d*\.?\d*/g;
+  var megahit_regex = /^>k\d+_\d+\sflag=\d+\smulti=\d*\.?\d*\slen=\d+/g;
+  if (text.search(spades_regex) === 0) {
+    return 'spades';
+  }
+  else if (text.search(megahit_regex) === 0) {
+    return 'megahit';
+  }
+  return null;
+}
+
+
+/**
+ * Parses and retrieves information in the contig titles of the input data
+ * @function parseContigTitles
+ * @param {String} line - one line string of the contig title
+ * @param {String} format - file type of input data
+ * @returns {Array.<String, String, String>} - id, length, coverage of contig
+ */
+function parseContigTitles(line, format) {
+  var id = '';
+  var length = 0;
+  var coverage = 0;
+  if (format === 'spades') {
+    var regex = /(?<=_)(\+|-)?[0-9]*(\.[0-9]*)?$|\d+/g;
+    [id, length, coverage] = line.match(regex);
+    return [id, coverage];
+  }
+  else if (format === 'megahit') {
+    var regex = /(?<==|_)[0-9]*(\.[0-9]*)?/g;
+    [id, , coverage, length] = line.match(regex);
+    return [id, coverage];
+  }
+  return null;
+}
+
+
+/**
+ * Formats data into usable types
+ * @function formatData
+ * @param {Object} data - data object
+ * @param {Matrix} dataframe - data points for available characteristices of contigs
+ * @param {Object} columns - available characteristics of contigs
+ * @returns {Array.<Object, Object, Object>} - id, length, coverage of contig
+ */
+function formatData(data, dataframe, columns) {
   var deci = {};
   var cats = {};
   var feats = {};
 
   // identify field types and re-format data
   var types = ['id'];
-  for (var i = 1; i < cols.length; i++) {
+  for (var i = 1; i < columns.length; i++) {
     var arr = [];
-    for (var j = 0; j < df.length; j++) {
-      arr.push(df[j][i]);
+    for (var j = 0; j < dataframe.length; j++) {
+      arr.push(dataframe[dataframe.length - j - 1][i]);
     }
-    var x = parseFieldType(cols[i], arr);
-    var type = x[0];
-    var col = x[1];
-    types.push(type); // identified type
-    cols[i] = col; // updated name
-    for (var j = 0; j < df.length; j++) {
-      df[j][i] = arr[j];
-    }
-
+      var x = parseFieldType(columns[i], arr);
+      var type = x[0];
+      var col = x[1];
+      types.push(type); // identified type
+      columns[i] = col; // updated name
+      for (var j = 0; j < dataframe.length; j++) {
+        dataframe[j][i] = arr[j];
+      }
+  }
     // summarize categories or features
     switch (type) {
       case 'number':
@@ -128,14 +283,11 @@ function parseTable(text, data) {
         feats[col] = listFeats(arr);
         break;
     }
-  }
 
-  // update data object
-  data.cols = cols;
+  data.cols = columns;
   data.types = types;
   data.features = [];
-  data.df = df;
-
+  data.df = dataframe;
   return [deci, cats, feats];
 }
 
@@ -435,5 +587,5 @@ function columnInfo(arr, type, met, deci, refarr) {
       res = a.join(', ');
       break;
   }
-  return res;
+  return res; 
 }
