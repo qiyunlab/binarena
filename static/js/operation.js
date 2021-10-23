@@ -157,7 +157,7 @@ function parseAssembly(text, data, minLen) {
 
 /**
  * See [IUPAC Codes]
- *{@link https://www.bioinformatics.org/sms/iupac.html}
+ * {@link https://www.bioinformatics.org/sms/iupac.html}
  * Calculates GC count in one line in the contig.
  * @function countGC
  * @param {String} line - one line string in contig
