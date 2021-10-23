@@ -119,11 +119,10 @@ function parseAssembly(text, data, minLen) {
   if (lines.length === 1) throw 'Error: there is only one line.';
 
   var format = getFileFormat(text); // read file format of the inputted text
-  var types = ['id'];
   var cols = ['id', 'length', 'gc', 'coverage']; // the information available in the contig titles
   var df = [];
 
-  var id = NaN;
+  var id = null;
   var length = 0;
   var gc = 0;
   var coverage = 0;
@@ -131,7 +130,7 @@ function parseAssembly(text, data, minLen) {
   for (var i = 0; i < lines.length; i++) {
     var line = lines[i];
     if (line.charAt() === '>') { // Checking if the current line is a contig title
-        if (id !== NaN && length > minLen) {
+        if (id !== null && length >= minLen) {
           // append dataframe with contig title information
           df.push([id, length.toString(), (gc / length).toString(), coverage]);
         }
@@ -146,6 +145,10 @@ function parseAssembly(text, data, minLen) {
     }
   }
 
+  if (id !== null && length >= minLen) {
+    df.push([id, length.toString(), (gc / length).toString(), coverage]);
+  }
+
   if (df.length === 0) throw 'Error: No contig is bigger than ' + minLen + ' base pairs.';
 
   return formatData(data, df, cols);
@@ -153,7 +156,8 @@ function parseAssembly(text, data, minLen) {
 
 
 /**
- * See [IUPAC Codes]{@link https://www.bioinformatics.org/sms/iupac.html}
+ * See [IUPAC Codes]
+ *{@link https://www.bioinformatics.org/sms/iupac.html}
  * Calculates GC count in one line in the contig.
  * @function countGC
  * @param {String} line - one line string in contig
@@ -186,7 +190,7 @@ function countGC(line) {
         count += 4;
     }
   }
-  
+
   // reconverting gc counter into decimals
   count /= 6;
   return count;  
