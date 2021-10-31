@@ -26,7 +26,7 @@ function splitLines(text) {
 
 
 /**
- * Format number.
+ * Format a number.
  * @function formatNum
  * @param {number} num - number to format
  * @param {number} digits - number of digits to retain
@@ -56,6 +56,19 @@ function hexToRgb(hex) {
 /**
  * @summary Arithmetics
  */
+
+
+/**
+ * Round a number to given precision.
+ * @function roundNum
+ * @param {number} num - number to format
+ * @param {number} digits - number of digits after the decimal point
+ * @returns {number} rounded number
+ * @see {@link https://stackoverflow.com/questions/11832914/}
+ */
+function roundNum(num, digits) {
+  return Number(Math.round(num + 'e' + digits) + 'e-' + digits);
+}
 
 
 /**
