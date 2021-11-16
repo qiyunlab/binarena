@@ -4,7 +4,8 @@
  * @module operation
  * @file Operative functions.
  * They do NOT directly access the master object OR the "document" object.
- * They may the "data" object and DOMs that are explicitly passed to them.
+ * They may access the "data" object and DOMs that are explicitly passed to
+ * them.
  */
 
 
@@ -17,68 +18,89 @@
  * @function updateDataFromText
  * @param {String} text - imported text
  * @param {Object} data - data object
- * @returns {Array.<Object, Object, Object>} - decimals, categories and features
+ * @returns {Array.<Object, Object, Object>} - decimals, categories, features
+ * @todo let user specify minimum contig length threshold
  *
- * The file may be JSON format, or TSV format.
- * In later case, it should follow these rules:
- * Columns:
- *   first column: ID
- *   remaining columns: metadata fields
- * Field types (and codes):
- *   id, number(n), category(c), feature(f), description(d)
- * A field name may be written as name|code, or just name.
- * Category vs. feature: a feacture cell can have multiple,
- * comma-separated features.
- *   e.g., "Firmicutes,Proteobacteria,Cyanobacteria"
- * Weight: categories / features may have a numeric suffix following a colon,
- * indicating metrics likes weight, quantity, proportion, confidence etc.
- *   e.g., "Firmicutes:80,Proteobacteria:15"
- * Integer vs. float: numbers are automatically parsed as integer or float.
- * Boolean: considered as category.
- * Null values: automatically identified and converted to JavaScript null.
- *   e.g., "", "-", "N/A", "na", "#NaN"
+ * The file may contain:
+ * 1. Metadata of contigs.
+ * 1.1. JSON format.
+ * 1.2. TSV format.
+ * 2. Assembly file (i.e., contig sequences).
  */
 function updateDataFromText(text, data) {
-  // first, try to parse as JSON
+  // try to parse as JSON
   try {
-    var x = JSON.parse(text);
-    // enumerate valid keys only
-    // note: a direct `data = x` will break object reference
-    for (var key in data) {
-      if (key in x) data[key] = x[key];
-    }
-    return cacheData(data);
+    var obj = JSON.parse(text);
+    return parseObj(obj, data);
   }
-
-  // second, try to parse as table
   catch (err) {
-    if (getFileFormat(text)) {
+    // parse as an assembly
+    if (text.charAt() === '>') {
       return parseAssembly(text, data, 1000);
     }
+    // parse as a table
     else {
       return parseTable(text, data);
     }
   }
-
-  // update view
-  
 }
 
 
 /**
- * Parse data as table.
+ * Parse data as a JavaScript object.
+ * @function parseObj
+ * @param {Object} obj - input object
+ * @param {Object} data - data object
+ * @todo Let it add new columns to "data".
+ */
+function parseObj(obj, data) {
+  // enumerate valid keys only
+  // note: a direct `data = x` will break object reference
+  for (var key in data) {
+    if (key in obj) data[key] = obj[key];
+  }
+  return cacheData(data);
+}
+
+
+/**
+ * Parse data as a table.
  * @function parseTable
  * @param {String} text - multi-line string in tsv format
  * @param {Object} data - data object
- * @returns {Array.<Object, Object, Object>} - decimals, categories and features
+ * @returns {Array.<Object, Object, Object>} - decimals, categories, features
+ * @throws if table is empty
+ * @throws if column number is inconsistent
  * @see cacheData
- * This function duplicates the function of cacheData due to consideration of
- * big data processing.
+ * 
+ * A table file stores properties (metadata) of contigs in an assembly. It will
+ * be parsed following these rules.
+ * 
+ * Columns:
+ *   first column: ID
+ *   remaining columns: metadata fields
+ * 
+ * Field types (and codes):
+ *   id, number(n), category(c), feature(f), description(d)
+ * A field name may be written as "name|code", or just "name".
+ * 
+ * Feature type: a cell can have multiple comma-separated features.
+ *   e.g., "Firmicutes,Proteobacteria,Cyanobacteria"
+ * 
+ * Weight: categories / features may have a numeric suffix following a colon,
+ * indicating metrics likes weight, quantity, proportion, confidence etc.
+ *   e.g., "Firmicutes:80,Proteobacteria:15"
+ * 
+ * Integer vs. float: numbers are automatically parsed as integer or float.
+ * 
+ * Boolean: considered as category.
+ * 
+ * Null values: automatically identified and converted to JavaScript null.
+ *   e.g., "", "-", "N/A", "na", "#NaN"
  */
 function parseTable(text, data) {
   var lines = splitLines(text);
-  if (lines.length == 1) throw 'Error: there is only one line.';
-
+  if (lines.length == 1) throw 'Error: Table is empty.';
   // read column names and table body
   var cols = [];
   var df = [];
@@ -87,88 +109,100 @@ function parseTable(text, data) {
     var arr = lines[i].split('\t');
     // parse table header
     if (i == 0) {
-      // cols = arr.slice(1);
       cols = arr;
       ncol = cols.length;
-      // parse table body
+    // parse table body
     } else {
       if (arr.length !== ncol) {
-        throw ('Error: table has ' + ncol + ' columns but row ' + i +
+        throw ('Error: Table has ' + ncol + ' columns but row ' + i +
           ' has ' + arr.length + ' cells.');
       }
       df.push(arr);
     }
   }
-
   return formatData(data, df, cols);
 }
 
+
 /**
- * Parse data as assembly.
+ * Parse data as an assembly.
  * @function parseAssembly
- * @param {String} text - multi-line string in tsv format
+ * @param {String} text - assembly file content (multi-line string)
  * @param {Object} data - data object
- * @param {Integer} minContigLength - minimum contig length of contig
- * @returns {Array.<Object, Object, Object>} - decimals, categories and features
- * @see cacheData
- * This function duplicates the function of cacheData due to consideration of
- * big data processing.
+ * @param {Integer} minLen - minimum contig length threshold (bp)
+ * @returns {Array.<Object, Object, Object>} - decimals, categories, features
+ * @throws if no contig reaches length threshold
+ * @see formatData
+ * @todo think twice about the hard-coded decimal places
  */
 function parseAssembly(text, data, minLen) {
   var lines = splitLines(text);
-  if (lines.length === 1) throw 'Error: there is only one line.';
+  var format = getAssemblyFormat(text); // infer assembly file format
 
-  var format = getFileFormat(text); // read file format of the inputted text
-  var cols = ['id', 'length', 'gc', 'coverage']; // the information available in the contig titles
   var df = [];
-
   var id = null;
   var length = 0;
   var gc = 0;
   var coverage = 0;
 
+  // append dataframe with current contig information
+  function appendContig() {
+    if (id !== null && length >= minLen) {
+      df.push([id, length, roundNum(100 * gc / length, 3), coverage]);
+    }
+  }
+
   for (var i = 0; i < lines.length; i++) {
     var line = lines[i];
-    if (line.charAt() === '>') { // Checking if the current line is a contig title
-        if (id !== null && length >= minLen) {
-          // append dataframe with contig title information
-          df.push([id, length.toString(), (gc / length).toString(), coverage]);
-        }
-        [id, coverage] = parseContigTitles(line, format);
-        gc = 0;
-        length = 0;
+    if (line.charAt() === '>') { // check if the current line is a contig title
+      appendContig(); // append previous contig
+      [id, coverage] = parseContigTitle(line, format);
+      gc = 0;
+      length = 0;
     }
     else {
-      // adding length and gc count of each line to the total counter for gc and length
+      // add length and gc count of each line to the total counters
       gc += countGC(line);
       length += line.length;
     }
   }
+  appendContig(); // append last contig
 
-  if (id !== null && length >= minLen) {
-    df.push([id, length.toString(), (gc / length).toString(), coverage]);
+  if (df.length === 0) throw (
+    'Error: No contig is ' + minLen + ' bp or larger.');
+
+  // update data object
+  data.cols = ['id', 'length', 'gc', 'coverage'];
+  data.types = ['id', 'number', 'number', 'number']
+  data.features = [];
+  data.df = df;
+
+  // return decimals (hard-coded)
+  var deci = {
+    'length': 0,
+    'gc': 3,
+    'coverage': 6
   }
-
-  if (df.length === 0) throw 'Error: No contig is bigger than ' + minLen + ' base pairs.';
-
-  return formatData(data, df, cols);
+  return [deci, {}, {}];
 }
 
 
 /**
- * See [IUPAC Codes]
- * {@link https://www.bioinformatics.org/sms/iupac.html}
- * Calculates GC count in one line in the contig.
+ * Calculate GC count in one line of a nucleotide sequence.
  * @function countGC
- * @param {String} line - one line string in contig
- * @returns {Integer} - GC count of one contig line
- */
+ * @param {String} line - one line of the sequence
+ * @returns {Integer} - GC count of one sequence line
+ * @see IUPAC nucleotide codes:
+ * {@link https://www.bioinformatics.org/sms/iupac.html}
+*/
 function countGC(line) {
   var count = 0;
-  // iterating through the line to find IUPAC nucleotide codes that have a probability of including 'G' or 'C'
+  // iterate through the line to find IUPAC nucleotide codes that have a
+  // probability of including 'G' or 'C'
   for (var i = 0; i < line.length; i++) {
-    // multiplied gc counts by 6 to convert decimals into integers
-    switch (line.charAt(i).toUpperCase()) {
+    var base = line.charAt(i);
+    // gc count is multiplied by 6 such that it is an integer
+    switch (base.toUpperCase()) {
       case 'G':
       case 'C':
       case 'S':
@@ -190,41 +224,47 @@ function countGC(line) {
         count += 4;
     }
   }
-
-  // reconverting gc counter into decimals
-  count /= 6;
-  return count;  
+  // divide gc count by 6 (now it may be a decimal)
+  return count / 6;
 }
 
 
 /**
- * Gets the file format of the input data
- * @function getFileFormat
- * @param {String} text - multi-line string in tsv format
- * @returns {String} - file type of input data
+ * Infer the format of an assembly file.
+ * @function getAssemblyFormat
+ * @param {String} text - file content (multi-line)
+ * @returns {String} - assembly file format
+ * @see parseContigTitle
+ * This function searches for unique starting sequences of different assembly
+ * formats. Currently, it supports SPAdes and MEGAHIT formats.
  */
-function getFileFormat(text) {
-  // searching for unique starting sequences of different file formats
+function getAssemblyFormat(text) {
+  // SPAdes contig title
+  // e.g. NODE_1_length_1000_cov_12.3
   var spades_regex = /^>NODE_\d+\_length_\d+\_cov_\d*\.?\d*/g;
-  var megahit_regex = /^>k\d+_\d+\sflag=\d+\smulti=\d*\.?\d*\slen=\d+/g;
   if (text.search(spades_regex) === 0) {
     return 'spades';
   }
-  else if (text.search(megahit_regex) === 0) {
+  // MEGAHIT contig title
+  // e.g. k141_1 flag=1 multi=5.0000 len=1000
+  var megahit_regex = /^>k\d+_\d+\sflag=\d+\smulti=\d*\.?\d*\slen=\d+/g;
+  if (text.search(megahit_regex) === 0) {
     return 'megahit';
   }
+  // neither
   return null;
 }
 
 
 /**
- * Parses and retrieves information in the contig titles of the input data
- * @function parseContigTitles
+ * Parses and retrieves information in a contig title.
+ * @function parseContigTitle
  * @param {String} line - one line string of the contig title
- * @param {String} format - file type of input data
- * @returns {Array.<String, String, String>} - id, length, coverage of contig
+ * @param {String} format - assembly file format
+ * @returns {Array.<String, String>} - id and coverage of contig
+ * @see getAssemblyFormat
  */
-function parseContigTitles(line, format) {
+function parseContigTitle(line, format) {
   var id = '';
   var length = 0;
   var coverage = 0;
@@ -233,7 +273,7 @@ function parseContigTitles(line, format) {
     [id, length, coverage] = line.match(regex);
     return [id, coverage];
   }
-  else if (format === 'megahit') {
+  if (format === 'megahit') {
     var regex = /(?<==|_)[0-9]*(\.[0-9]*)?/g;
     [id, , coverage, length] = line.match(regex);
     return [id, coverage];
@@ -243,14 +283,14 @@ function parseContigTitles(line, format) {
 
 
 /**
- * Formats data into usable types
+ * Formats data into usable types.
  * @function formatData
  * @param {Object} data - data object
- * @param {Matrix} dataframe - data points for available characteristices of contigs
+ * @param {Matrix} df - data points for available characteristices of contigs
  * @param {Object} columns - available characteristics of contigs
- * @returns {Array.<Object, Object, Object>} - id, length, coverage of contig
+ * @returns {Array.<Object, Object, Object>} - decimals, categories, features
  */
-function formatData(data, dataframe, columns) {
+function formatData(data, df, columns) {
   var deci = {};
   var cats = {};
   var feats = {};
@@ -259,35 +299,35 @@ function formatData(data, dataframe, columns) {
   var types = ['id'];
   for (var i = 1; i < columns.length; i++) {
     var arr = [];
-    for (var j = 0; j < dataframe.length; j++) {
-      arr.push(dataframe[dataframe.length - j - 1][i]);
+    for (var j = 0; j < df.length; j++) {
+      arr.push(df[df.length - j - 1][i]);
     }
       var x = parseFieldType(columns[i], arr);
       var type = x[0];
       var col = x[1];
       types.push(type); // identified type
       columns[i] = col; // updated name
-      for (var j = 0; j < dataframe.length; j++) {
-        dataframe[j][i] = arr[j];
+      for (var j = 0; j < df.length; j++) {
+        df[j][i] = arr[j];
       }
   }
-    // summarize categories or features
-    switch (type) {
-      case 'number':
-        deci[col] = maxDecimals(arr);
-        break;
-      case 'category':
-        cats[col] = listCats(arr);
-        break;
-      case 'feature':
-        feats[col] = listFeats(arr);
-        break;
-    }
+  // summarize categories or features
+  switch (type) {
+    case 'number':
+      deci[col] = maxDecimals(arr);
+      break;
+    case 'category':
+      cats[col] = listCats(arr);
+      break;
+    case 'feature':
+      feats[col] = listFeats(arr);
+      break;
+  }
 
   data.cols = columns;
   data.types = types;
   data.features = [];
-  data.df = dataframe;
+  data.df = df;
   return [deci, cats, feats];
 }
 
@@ -297,7 +337,7 @@ function formatData(data, dataframe, columns) {
  * @function cacheData
  * @param {String} text - multi-line string in tsv format
  * @param {Object} data - data object
- * @returns {Array.<Object, Object, Object>} - decimals, categories and features
+ * @returns {Array.<Object, Object, Object>} - decimals, categories, features
  * @see parseTable
  */
 function cacheData(data) {
@@ -356,7 +396,7 @@ function renameBin(bins, oldname, newname) {
  * @function createBin
  * @param {Object} [bins] - current bins
  * @param {string} [name] - bin name
- * @throws Error if bin name exists
+ * @throws if bin name exists
  * @returns {string} bin name
  */
 function createBin(bins, name) {
@@ -374,7 +414,7 @@ function createBin(bins, name) {
  * Find current bin.
  * @function currentBin
  * @param {Object} table - bin table
- * @throws {Error} if current bin is not defined
+ * @throws if current bin is not defined
  * @returns {[number, string]} row index and name of current bin
  */
 function currentBin(table) {
