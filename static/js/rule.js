@@ -33,7 +33,7 @@ function isMissing(str) {
  * @function parseFieldType
  * @param {string} name - field name of the column
  * @param {string[]} arr - cell values of the column
- * @throws {Error} if field name is invalid
+ * @throws if field name is invalid
  * @returns {[string, string]} field type, updated field name
  */
 function parseFieldType(name, arr) {
@@ -181,7 +181,7 @@ function parseFieldType(name, arr) {
  * @function guessDisplayFields
  * @param {Object} data - data object
  * @param {Object} view - view object
- * @throws {Error} if x and y cannot be determined
+ * @throws if x and y cannot be determined
  * @returns {[number, number, ?number, ?number, ?number]} field indices for
  * x, y, size, opacity, color
  * @todo Specifically, five display items are to be inferred:
@@ -194,7 +194,6 @@ function parseFieldType(name, arr) {
  * Options are: number, category, feature, description.
  */
 function guessDisplayFields(data, view) {
-
   var res = {
     x: null,
     y: null,
@@ -232,13 +231,16 @@ function guessDisplayFields(data, view) {
   else {
     var keys = ['gc', 'cov', 'len'];
     var avails = [];
-    for (var i = 1; i < keys.length; i++) {
+    for (var i = 0; i < keys.length; i++) {
       var icol = view.spcols[keys[i]];
       if (icol !== null) avails.push(icol);
     }
     if (avails.length >= 2) {
       res.x = avails[0];
       res.y = avails[1];
+      if (avails.length === 3) {
+        res.size = avails[2];
+      }
     }
   }
   return res;
@@ -336,11 +338,11 @@ function findColumnByKeys(data, keys, types) {
   // get column names
   var cols = getColNames(data, types);
 
-  // find a column name that is identical to one of the "length" strings
+  // find a column name that is identical to one of the keywords
   var col = matchWhole(keys, cols);
   if (col) return data.cols.indexOf(col);
 
-  // if fail, find a column name that starts with one of the "length" strings
+  // if fail, find a column name that starts with one of the keywords
   col = matchPrefix(keys, cols);
   if (col) return data.cols.indexOf(col);
   else return null;
@@ -370,7 +372,7 @@ function getColNames(data, types) {
  * @param {string[]} cols - column names
  */
 function matchWhole(keys, cols) {
-  for (var i = 1; i < cols.length; i++) {
+  for (var i = 0; i < cols.length; i++) {
     if (keys.indexOf(cols[i].toLowerCase()) !== -1) return cols[i];
   }
   return null;
@@ -385,8 +387,8 @@ function matchWhole(keys, cols) {
  */
 function matchPrefix(keys, cols) {
   var delims = [' ', '/', '_', '.'];
-  for (var i = 1; i < delims.length; i++) {
-    for (var j = 1; j < cols.length; j++) {
+  for (var i = 0; i < delims.length; i++) {
+    for (var j = 0; j < cols.length; j++) {
       var prefix = cols[j].toLowerCase().split(delims[i], 1)[0];
       if (keys.indexOf(prefix) !== -1) {
         return cols[i];

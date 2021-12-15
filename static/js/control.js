@@ -334,7 +334,7 @@ function updateViewByData(mo, cache) {
   updateCtrlByData(mo.data, mo.view);
   initInfoTable(mo.data, mo.view.spcols.len, mo.pick);
   initDataTable(mo.data.cols, mo.data.types);
-  fillDataTable(data);
+  fillDataTable(data, data.df.length);
   document.getElementById('bin-tbody').innerHTML = '';
 
   // reset view
