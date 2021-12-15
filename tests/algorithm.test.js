@@ -1,26 +1,23 @@
 /**!
- * @file Unit tests for "ari.js".
+ * @file Unit tests for "algorithm.js".
  */
 
-describe('ari.js', function() {
-  it('factorial', function() {
-    expect(factorial(0)).toBe(1);
-    expect(factorial(1)).toBe(1);
-    expect(factorial(5)).toBe(120);
-    expect(factorial(5, 3)).toBe(60);
+describe('algorithm.js', function() {
+
+  it('silhouetteSample', function() {
+    let x0 = [[5, 0], [3, 3], [7, 9]];
+    let label0 = [0, 0, 1];
+    expect(silhouetteSample(x0, label0))
+      .toEqual([(Math.sqrt(85) - Math.sqrt(13)) / Math.sqrt(85), 0.5, 0]);
+    let x1 = [[3, 0], [0, 4], [3, 4], [0, 0]];
+    let label1 = [0, 1, 1, 0];
+    expect(silhouetteSample(x1, label1)).toEqual([1/3, 1/3, 1/3, 1/3]);
   });
 
-  it('comb', function() {
-    expect(comb(1, 2)).toBe(0);
-    expect(comb(5, 3)).toBe(10);
-    expect(comb(5, 2)).toBe(10);
-    expect(comb(4, 2)).toBe(6);
-  });
-
-  it('unique', function() {
-    expect(unique([0, 2, 0, 1, 2])).toEqual([0, 2, 1]);
-    expect(unique([0, 2, 0, 1, 2], true)).toEqual([[0, 2, 1], [0, 1, 0, 2, 1]]);
-    expect(unique([1, 2, 5, 2], true)).toEqual([[1, 2, 5], [0, 1, 2, 1]]);
+  it('silhouetteScore', function() {
+    let x0 = [[3, 0], [0, 4], [3, 4], [0, 0]];
+    let label0 = [0, 1, 1, 0];
+    expect(silhouetteScore(x0, label0)).toBe(1/3);
   });
 
   it('coordinateMatrix', function() {
@@ -43,7 +40,5 @@ describe('ari.js', function() {
     expect(adjustedRandScore([0, 0, 1, 0, 2], [0, 1, 1, 0, 2]))
       .toBe(0.4 / 1.9);
   });
+
 });
-
-
-
