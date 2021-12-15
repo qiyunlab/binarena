@@ -302,26 +302,27 @@ function formatData(data, df, columns) {
     for (var j = 0; j < df.length; j++) {
       arr.push(df[df.length - j - 1][i]);
     }
-      var x = parseFieldType(columns[i], arr);
-      var type = x[0];
-      var col = x[1];
-      types.push(type); // identified type
-      columns[i] = col; // updated name
-      for (var j = 0; j < df.length; j++) {
-        df[j][i] = arr[j];
-      }
-  }
-  // summarize categories or features
-  switch (type) {
-    case 'number':
-      deci[col] = maxDecimals(arr);
-      break;
-    case 'category':
-      cats[col] = listCats(arr);
-      break;
-    case 'feature':
-      feats[col] = listFeats(arr);
-      break;
+    var x = parseFieldType(columns[i], arr);
+    var type = x[0];
+    var col = x[1];
+    types.push(type); // identified type
+    columns[i] = col; // updated name
+    for (var j = 0; j < df.length; j++) {
+      df[j][i] = arr[j];
+    }
+
+    // summarize categories or features
+    switch (type) {
+      case 'number':
+        deci[col] = maxDecimals(arr);
+        break;
+      case 'category':
+        cats[col] = listCats(arr);
+        break;
+      case 'feature':
+        feats[col] = listFeats(arr);
+        break;
+    }
   }
 
   data.cols = columns;
