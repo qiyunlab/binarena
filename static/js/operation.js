@@ -577,7 +577,7 @@ function value2Str(val, type) {
       str = feature2Str(val);
       break;
     default:
-      str = val.toString();
+      str = (val === null) ? 'na' : val.toString();
   }
   return str
 }
@@ -605,7 +605,7 @@ function columnInfo(arr, type, met, deci, refarr) {
           else res = arrProdSum(arr, refarr);
           break;
         case 'mean':
-          if (!isRef) res = arrSum(arr) / arr.length;
+          if (!isRef) res = arrMean(arr);
           else res = arrProdSum(arr, refarr) / arrSum(refarr);
           break;
       }

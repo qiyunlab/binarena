@@ -103,6 +103,7 @@ function silhouetteSample(x, label) {
   return res;
 }
 
+
 /**
  * Compute the mean of silhouette coefficient over all samples.
  * @function silhouetteScore
@@ -113,4 +114,3 @@ function silhouetteSample(x, label) {
 function silhouetteScore(x, label) {
   return arrMean(silhouetteSample(x, label));  
 }
-
