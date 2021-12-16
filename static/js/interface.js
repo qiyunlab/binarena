@@ -697,13 +697,12 @@ function initControls(mo) {
    * @summary Bin panel tool bar
    */
 
-  // let user choose a categorical field
+  // load bins from a categorical field
   document.getElementById('load-bin-btn').addEventListener('click',
     function () {
     listSelect(this, Object.keys(view.categories).sort());
   });
 
-  // load bins from a categorical field
   document.getElementById('load-bin-btn').addEventListener('focus',
     function () {
     if (this.value !== '') {
@@ -814,6 +813,14 @@ function initControls(mo) {
     listSelect(this, Object.keys(view.categories).sort());
   });
 
+  document.getElementById('ari-btn').addEventListener('focus',
+    function () {
+    if (this.value !== '') {
+      calcAdjRand(mo, this.value);
+      this.value = '';
+    }
+  });
+
 
   /** 
    * @summary Bin table events
@@ -825,9 +832,11 @@ function initControls(mo) {
     this.onselectstart = function () {
       return false;
     }
+    var rows = this.rows;
+    var n = rows.length;
     var selected;
-    for (var i = 0; i < this.rows.length; i++) {
-      var row = this.rows[i];
+    for (var i = 0; i < n; i++) {
+      var row = rows[i];
       var label = row.cells[0].firstElementChild;
       var text = row.cells[0].lastElementChild;
       if (row.contains(e.target)) { // bin being clicked
@@ -1209,7 +1218,7 @@ function initCloseBtns() {
  * Let user select from a list displayed in a dropdown menu.
  * @function listSelect
  * @param {Object} src - source DOM
- * @param {Array.<string>} lst - list of options
+ * @param {string[]} lst - list of options
  */
  function listSelect(src, lst) {
   var div = document.getElementById('list-select');
@@ -1612,4 +1621,41 @@ function calcSilhouette(mo) {
   })
   toastMsg('Mean silhouette score of contigs of ' + n + ' bins: '
     + arrMean(scores).toFixed(3) + '.', mo.stat, 0);
+}
+
+
+/**
+ * Calculate adjusted Rand index between current and reference binning plans.
+ * @function calcAdjRand
+ * @param {Object} mo - master object
+ * @param {string} field - categorical field to serve as reference
+ */
+function calcAdjRand(mo, field) {
+  var df = mo.data.df;
+  var n = df.length;
+
+  // current labels
+  var cur = Array(n).fill(0);
+  var bins = mo.bins;
+  for (var bin in bins) {
+    for (var i in bins[bin]) {
+      cur[i] = bin;
+    }
+  }
+  
+  // reference labels
+  var ref = Array(n).fill(0);
+  var idx = mo.data.cols.indexOf(field);
+  for (var i = 0; i < n; i++) {
+    var val = df[i][idx];
+    if (val !== null) {
+      ref[i] = val[0];
+    }
+  }
+
+  // calculation
+  var ari = adjustedRandScore(ref, cur);
+
+  toastMsg('Adjusted Rand index between current binning plan and "' + field +
+    '": ' + ari.toFixed(3) + '.', mo.stat, 0);
 }
