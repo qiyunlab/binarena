@@ -65,6 +65,7 @@ function masterObj() {
    * @property {string} contpal - continuous palette
    * @property {string} discpal - discrete palette
    * @property {number} ncolor - number of categories to color
+   * @property {{len: number, cov: number}} filter - contig filter
    */
   this.view = {
     /** canvas rendering */
@@ -87,6 +88,12 @@ function masterObj() {
     contpal: DEFAULT_CONTINUOUS_PALETTE,
     discpal: DEFAULT_DISCRETE_PALETTE,
     ncolor: 7,
+
+    /** contig filter */
+    filter: {
+      len: 1000,
+      cov: 1.0
+    },
 
     /** indices of special columns */
     spcols: {

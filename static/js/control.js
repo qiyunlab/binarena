@@ -31,8 +31,9 @@
 function uploadFile(file, mo) {
   var reader = new FileReader();
   reader.onload = function (e) {
-    var cache = updateDataFromText(e.target.result, mo.data);
+    var cache = updateDataFromText(e.target.result, mo.data, mo.view.filter);
     updateViewByData(mo, cache);
+    toastMsg('Read ' + mo.data.df.length + ' contigs.', mo.stat);
   }
   reader.readAsText(file);
 }
@@ -50,8 +51,10 @@ function updateDataFromRemote(path, mo) {
   xhr.onreadystatechange = function() {
     if (this.readyState == 4) {
       if (this.status == 200) {
-        var cache = updateDataFromText(this.responseText, mo.data);
+        var cache = updateDataFromText(this.responseText, mo.data,
+          mo.view.filter);
         updateViewByData(mo, cache);
+        toastMsg('Read ' + mo.data.df.length + ' contigs.', mo.stat);
       }
     }
   }
@@ -293,9 +296,10 @@ function calcDispMinMax(mo, items) {
 function updateViewByData(mo, cache) {
   var data = mo.data;
   var view = mo.view;
+  var n = data.df.length;
 
   // close or open data
-  if (data.df.length === 0) {
+  if (n === 0) {
     document.getElementById('hide-side-btn').click();
     document.getElementById('show-side-btn').disabled = true;
     document.getElementById('drop-sign').classList.remove('hidden');
@@ -322,7 +326,7 @@ function updateViewByData(mo, cache) {
   // calculate total abundance
   if (view.spcols.len && view.spcols.cov) {
     view.abundance = 0;
-    for (var i = 0; i < data.df.length; i++) {
+    for (var i = 0; i < n; i++) {
       view.abundance += data.df[i][view.spcols.len]
         * data.df[i][view.spcols.cov];
     }

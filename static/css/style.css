@@ -268,11 +268,10 @@ div.toolbar span.spacer {
 }
 
 #toast-close-btn {
-  font-size: 1.25em;
-  vertical-align: middle;
+  font-size: 1.5em;
   background-color: dimgray;
   color: white;
-  float: right;
+  vertical-align: middle;
 }
 
 #toast-close-btn:hover {
@@ -711,18 +710,12 @@ div.dash-content table tr td:nth-child(2) select {
   margin-left: 2px;
 }
 
-/** setting panel */
-
-#set-panel > div.dock {
-  display: none;
+#widget-frame > div > div.dock {
+  display: flex;
   position: fixed;
   left: 0;
   bottom: 32px;
   flex-direction: column;
-}
-
-#set-panel:hover > div.dock {
-  display: flex;
 }
 
 

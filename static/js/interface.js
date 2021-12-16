@@ -305,6 +305,35 @@ function initControls(mo) {
    * @summary settings panel
    */
 
+  // display settings
+  document.getElementById('set-btn').addEventListener('click',
+    function () {
+    this.classList.toggle('pressed');
+    this.nextElementSibling.classList.toggle('hidden');
+  });
+
+  // change length filter
+  var btn = document.getElementById('len-filt');
+  btn.value = mo.view.filter.len;
+  btn.addEventListener('blur', function () {
+    var val = parseInt(this.value);
+    if (val !== mo.view.filter.len) {
+      mo.view.filter.len = val;
+      toastMsg('Changed contig length threshold to ' + val + '.', mo.stat);
+    }
+  });
+
+  // change coverage filter
+  var btn = document.getElementById('cov-filt');
+  btn.value = mo.view.filter.cov;
+  btn.addEventListener('blur', function () {
+    var val = parseFloat(this.value);
+    if (val != mo.view.filter.cov) {
+      mo.view.filter.cov = val;
+      toastMsg('Changed contig coverage threshold to ' + val + '.', mo.stat);
+    }
+  });
+
   // show/hide grid
   document.getElementById('grid-chk').addEventListener('change', function () {
     view.grid = this.checked;
