@@ -226,11 +226,13 @@ function initControls(mo) {
   // generic list select table
   document.getElementById('list-options').addEventListener('click',
     function (e) {
-    for (var i = 0; i < this.rows.length; i++) {
-      if (this.rows[i].contains(e.target)) {
+    var rows = this.rows;
+    var n = rows.length;
+    for (var i = 0; i < n; i++) {
+      if (rows[i].contains(e.target)) {
         var target =
           document.getElementById(this.getAttribute('data-target-id'));
-        target.value = this.rows[i].cells[0].textContent;
+        target.value = rows[i].cells[0].textContent;
         target.focus();
         this.parentElement.classList.add('hidden');
         break;
@@ -695,6 +697,27 @@ function initControls(mo) {
    * @summary Bin panel tool bar
    */
 
+  // let user choose a categorical field
+  document.getElementById('load-bin-btn').addEventListener('click',
+    function () {
+    listSelect(this, Object.keys(view.categories).sort());
+  });
+
+  // load bins from a categorical field
+  document.getElementById('load-bin-btn').addEventListener('focus',
+    function () {
+    if (this.value !== '') {
+      var idx = mo.data.cols.indexOf(this.value);
+      mo.bins = loadBins(mo.data.df, idx);
+      updateBinTable(mo);
+      updateBinToolbar(mo);
+      toastMsg('Loaded ' + Object.keys(mo.bins).length + ' bins from "' +
+        this.value + '".', stat);
+      this.value = '';
+    }
+  });
+
+  // create a new bin
   document.getElementById('new-bin-btn').addEventListener('click',
     function () {
     var name = createBin(mo.bins);
@@ -713,6 +736,7 @@ function initControls(mo) {
       + ' contig(s)': '') + '.', stat);
   });
 
+  // add selected contigs to current bin
   document.getElementById('add-to-bin-btn').addEventListener('click',
     function () {
     var table = document.getElementById('bin-tbody');
@@ -724,6 +748,7 @@ function initControls(mo) {
     toastMsg('Added ' + n + ' contig(s) to "' + x[1] + '".', stat);
   });
 
+  // remove selected contigs from current bin
   document.getElementById('remove-from-bin-btn').addEventListener('click',
     function () {
     var table = document.getElementById('bin-tbody');
@@ -736,6 +761,7 @@ function initControls(mo) {
     toastMsg('Removed ' + n + ' contig(s) from "' + x[1] + '".', stat);
   });
 
+  // delete current bin
   document.getElementById('delete-bin-btn').addEventListener('click',
     function () {
     var table = document.getElementById('bin-tbody');
@@ -746,6 +772,7 @@ function initControls(mo) {
     else toastMsg('Deleted ' + n + ' bins.', stat);
   });
 
+  // merge currently selected bins
   document.getElementById('merge-bin-btn').addEventListener('click',
     function () {
     var table = document.getElementById('bin-tbody');
@@ -761,11 +788,13 @@ function initControls(mo) {
     else toastMsg('Merged ' + n + ' bins into "' + name + '".', stat, 2000);
   });
 
+  // export current binning plan
   document.getElementById('save-bin-btn').addEventListener('click',
     function () {
     exportBins(mo.bins, mo.data);
   });
 
+  // clear current binning plan
   document.getElementById('clear-bin-btn').addEventListener('click',
     function () {
     mo.bins = {};
@@ -773,43 +802,16 @@ function initControls(mo) {
     updateBinToolbar(mo);
   });
 
-  document.getElementById('silhouette-btn').addEventListener('click',
+  // calculate silhouette coefficients
+  document.getElementById('silh-btn').addEventListener('click',
     function () {
     calcSilhouette(mo);
   });
 
-  // let user choose a categorical field
-  document.getElementById('load-bin-btn').addEventListener('click',
+  // calculate adjusted Rand index
+  document.getElementById('ari-btn').addEventListener('click',
     function () {
-    var div = document.getElementById('list-select');
-    div.classList.add('hidden');
-    var rect = this.getBoundingClientRect();
-    div.style.top = rect.bottom + 'px';
-    div.style.left = rect.left + 'px';
-    div.style.width = (rect.right - rect.left) + 'px';
-    var table = document.getElementById('list-options');
-    table.setAttribute('data-target-id', this.id);
-    table.innerHTML = '';
-    Object.keys(view.categories).sort().forEach(function (itm) {
-      var row = table.insertRow(-1);
-      var cell = row.insertCell(-1);
-      cell.innerHTML = itm;
-    });
-    div.classList.remove('hidden');
-  });
-
-  // load bins from a categorical field
-  document.getElementById('load-bin-btn').addEventListener('focus',
-    function () {
-    if (this.value !== '') {
-      var idx = mo.data.cols.indexOf(this.value);
-      mo.bins = loadBins(mo.data.df, idx);
-      updateBinTable(mo);
-      updateBinToolbar(mo);
-      toastMsg('Loaded ' + Object.keys(mo.bins).length + ' bins from "' +
-        this.value + '".', stat);
-      this.value = '';
-    }
+    listSelect(this, Object.keys(view.categories).sort());
   });
 
 
@@ -1204,6 +1206,31 @@ function initCloseBtns() {
 
 
 /**
+ * Let user select from a list displayed in a dropdown menu.
+ * @function listSelect
+ * @param {Object} src - source DOM
+ * @param {Array.<string>} lst - list of options
+ */
+ function listSelect(src, lst) {
+  var div = document.getElementById('list-select');
+  div.classList.add('hidden');
+  var rect = src.getBoundingClientRect();
+  div.style.top = rect.bottom + 'px';
+  div.style.left = rect.left + 'px';
+  div.style.width = (rect.right - rect.left) + 'px';
+  var table = document.getElementById('list-options');
+  table.setAttribute('data-target-id', src.id);
+  table.innerHTML = '';
+  lst.forEach(function (itm) {
+    var row = table.insertRow(-1);
+    var cell = row.insertCell(-1);
+    cell.innerHTML = itm;
+  });
+  div.classList.remove('hidden');
+}
+
+
+/**
  * Get HTML code for scale code
  * @function scale2HTML
  * @param {string} scale - scale code
@@ -1266,24 +1293,16 @@ function autoComplete(inp, arr) {
   inp.addEventListener('input', function () {
     var val = this.value;
     if (!val) return false;
-    var div = document.getElementById('list-select');
-    div.classList.add('hidden');
-    var rect = this.getBoundingClientRect();
-    div.style.top = rect.bottom + 'px';
-    div.style.left = rect.left + 'px';
-    div.style.width = (rect.right - rect.left) + 'px';
-    var table = document.getElementById('list-options');
-    table.setAttribute('data-target-id', inp.id);
-    table.innerHTML = '';
+    var VAL = val.toUpperCase();
+    var l = val.length;
+    var lst = [];
     arr.forEach(function (itm) {
-      var prefix = itm.substr(0, val.length);
-      if (prefix.toUpperCase() === val.toUpperCase()) {
-        var row = table.insertRow(-1);
-        var cell = row.insertCell(-1);
-        cell.innerHTML = '<strong>' + prefix + '</strong>' + itm.substr(val.length);
+      var prefix = itm.substr(0, l);
+      if (prefix.toUpperCase() === VAL) {
+        lst.push('<strong>' + prefix + '</strong>' + itm.substr(l));
       }
     });
-    div.classList.remove('hidden');
+    listSelect(inp, lst);
     focus = -1;
   });
 

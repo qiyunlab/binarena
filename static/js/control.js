@@ -787,6 +787,8 @@ function updateBinToolbar(mo) {
     .innerHTML = 'Bins: ' + n;
   document.getElementById('save-bin-btn').classList.toggle('hidden', !n);
   document.getElementById('clear-bin-btn').classList.toggle('hidden', !n);
+  document.getElementById('silh-btn').classList.toggle('hidden', !n);
+  document.getElementById('ari-btn').classList.toggle('hidden', !n);
   document.getElementById('bin-thead').classList.toggle('hidden', !n);
   var m = 0;
   var table = document.getElementById('bin-tbody');
