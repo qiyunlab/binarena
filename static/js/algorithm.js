@@ -73,28 +73,29 @@ function pnpoly(x, y, polygon) {
  * @see {@link https://en.wikipedia.org/wiki/Silhouette_(clustering)}
  */
 function silhouetteSample(x, label) {
-  let l = x.length;
+  let n = x.length;
   let count = bincount(label);
   let c = count.length;
   let dist = pdist(x);
-  let intraDist = Array(l).fill(0);
-  let interDist = Array(l).fill().map(() => Array(c).fill(0));
-  let res = Array(l).fill();
-  for (let i = 0; i < l; i++) {
-    if (count[label[i]] === 1) {
+  let intraDist = Array(n).fill(0);
+  let interDist = Array(n).fill().map(() => Array(c).fill(0));
+  let res = Array(n).fill();
+  for (var i = 0; i < n; i++) {
+    var li = label[i];
+    if (count[li] === 1) {
       res[i] = 0;
     } else {
-      for (let j = 0; j < l; j++) {
-        if (label[i] == label[j]) {
+      for (var j = 0; j < n; j++) {
+        if (li == label[j]) {
           intraDist[i] += dist[i][j];
         } else {
           interDist[i][label[j]] += dist[i][j];
         }  
       }
-      for (let j = 0; j < c; j++) { // for each bin
+      for (var j = 0; j < c; j++) { // for each bin
         interDist[i][j] /= count[j];
       }
-      intraDist[i] /= (count[label[i]] - 1);
+      intraDist[i] /= (count[li] - 1);
       interDist[i] = Math.min.apply(null, interDist[i].filter(Boolean));
       res[i] = (interDist[i] - intraDist[i]) / Math.max(interDist[i], intraDist[i]);
     }

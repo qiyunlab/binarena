@@ -103,12 +103,6 @@ gaussian.prototype.pdf = function(x) {
 };
 
 
-// var g = new gaussian([1,2], [[1,0],[0,1]]);
-// console.log(g.pdf([0,1]));
-// var h = new gaussian(2.5, 0.5);
-// console.log(h.pdf(1));
-
-
 /*
  * Representation of a single Gaussian Mixture Model.
  * @class gmm
