@@ -40,7 +40,8 @@ function objMinMax(obj) {
   var val = obj[key];
   var min = [key, val];
   var max = [key, val];
-  for (var i = 1; i < arr.length; i++) {
+  var n = arr.length;
+  for (var i = 1; i < n; i++) {
     key = arr[i];
     val = obj[key];
     min = (val < min[1]) ? [key, val] : min;
@@ -155,8 +156,8 @@ function euclidean(x, y) {
     return 0;
   }
   var sum = 0;
-  var l = x.length;
-  for (var i = 0; i < l; i++) {
+  var n = x.length;
+  for (var i = 0; i < n; i++) {
     sum += (x[i] - y[i]) ** 2;
   }
   return Math.sqrt(sum);

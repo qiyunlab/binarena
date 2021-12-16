@@ -894,6 +894,15 @@ function initControls(mo) {
     function () {
       document.getElementById('open-file').click();
   });
+
+
+  /** 
+   * @summary Toast events
+   */
+   document.getElementById('toast-close-btn').addEventListener('click',
+   function () {
+     document.getElementById('toast').classList.add('hidden');
+ });
 }
 
 
@@ -1189,18 +1198,25 @@ function scale2HTML(scale) {
  * @function toastMsg
  * @param {string} msg - message to display
  * @param {Object} stat - status object
- * @param {number} duration - milliseconds to keep toast visible
+ * @param {number} duration - milliseconds to keep toast visible; if omitted,
+ * the default time is 1 sec; set 0 to keep it visible for ever until the user
+ * clicks the "close" button.
  */
 function toastMsg(msg, stat, duration) {
-  duration = duration || 1000;
+  if (duration === undefined) {
+    duration = 1000;
+  }
   var toast = document.getElementById('toast');
-  toast.innerHTML = msg;
+  toast.firstElementChild.innerHTML = msg;
+  toast.lastElementChild.classList.toggle('hidden', duration);
   toast.classList.remove('hidden');
-  clearTimeout(stat.toasting);
-  stat.toasting = setTimeout(function () {
-    toast.classList.add('hidden');
-    toast.innerHTML = '';
-  }, duration);
+  if (duration) {
+    clearTimeout(stat.toasting);
+    stat.toasting = setTimeout(function () {
+      toast.classList.add('hidden');
+      toast.firstElementChild.innerHTML = '';
+    }, duration);
+  }
 }
 
 
@@ -1546,6 +1562,6 @@ function calcSilhouette(mo) {
   scores = scores.filter(function (score) {
     return score !== null;
   })
-  toastMsg('Mean silhouette score of contigs under ' + n + ' bins: '
-    + arrMean(scores).toFixed(3) + '.', mo.stat, 3000);
+  toastMsg('Mean silhouette score of contigs of ' + n + ' bins: '
+    + arrMean(scores).toFixed(3) + '.', mo.stat, 0);
 }
