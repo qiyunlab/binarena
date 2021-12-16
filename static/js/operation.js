@@ -18,6 +18,7 @@
  * @function updateDataFromText
  * @param {String} text - imported text
  * @param {Object} data - data object
+ * @param {Object} filter - data filter
  * @returns {Array.<Object, Object, Object>} - decimals, categories, features
  * @todo let user specify minimum contig length threshold
  *
@@ -27,7 +28,7 @@
  * 1.2. TSV format.
  * 2. Assembly file (i.e., contig sequences).
  */
-function updateDataFromText(text, data) {
+function updateDataFromText(text, data, filter) {
   // try to parse as JSON
   try {
     var obj = JSON.parse(text);
@@ -36,7 +37,7 @@ function updateDataFromText(text, data) {
   catch (err) {
     // parse as an assembly
     if (text.charAt() === '>') {
-      return parseAssembly(text, data, 1000);
+      return parseAssembly(text, data, filter);
     }
     // parse as a table
     else {
@@ -129,15 +130,19 @@ function parseTable(text, data) {
  * @function parseAssembly
  * @param {String} text - assembly file content (multi-line string)
  * @param {Object} data - data object
- * @param {Integer} minLen - minimum contig length threshold (bp)
+ * @param {Object} filter - data filter (minimum length and coverage)
+ * @param {Integer} minCov - minimum contig coverage threshold
  * @returns {Array.<Object, Object, Object>} - decimals, categories, features
  * @throws if no contig reaches length threshold
  * @see formatData
  * @todo think twice about the hard-coded decimal places
  */
-function parseAssembly(text, data, minLen) {
+function parseAssembly(text, data, filter) {
   var lines = splitLines(text);
   var format = getAssemblyFormat(text); // infer assembly file format
+
+  var minLen = filter.len;
+  var minCov = filter.cov;
 
   var df = [];
   var id = null;
@@ -147,12 +152,13 @@ function parseAssembly(text, data, minLen) {
 
   // append dataframe with current contig information
   function appendContig() {
-    if (id !== null && length >= minLen) {
+    if (id !== null && length >= minLen && coverage >= minCov) {
       df.push([id, length, roundNum(100 * gc / length, 3), coverage]);
     }
   }
 
-  for (var i = 0; i < lines.length; i++) {
+  var n = lines.length;
+  for (var i = 0; i < n; i++) {
     var line = lines[i];
     if (line.charAt() === '>') { // check if the current line is a contig title
       appendContig(); // append previous contig
