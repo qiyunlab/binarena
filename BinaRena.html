@@ -93,7 +93,7 @@
     <!-- start panel -->
     <div id="start-panel">
       <button id="dash-btn" title="Show dashboard" style="float: right;"></button>
-      <button id="menu-btn" title="Show main menu">BinaRena</button>
+      <button id="menu-btn" class="dropdown" title="Show main menu">BinaRena</button>
     </div>
 
     <!-- dash panel -->
@@ -306,7 +306,15 @@
       <button id="polygon-btn" title="Draw polygon with mouse clicks to contain multiple contigs (Enter)" data-title="Finish polygon selection (Enter)"><i class="fa fa-pencil fa-lg"></i></button>
       <button id="selmode-btn" title="Current selection mode: new selection"><i class="fa fa-asterisk"></i></button>
       <button id="masking-btn" title="Masking mode: directly add selected contigs to mask (M)"><i class="fa fa-eye-slash fa-lg"></i></button>
-      <!--&#9974;-->
+    </div>
+
+    <!-- calculation panel -->
+    <div id="calc-panel">
+      <button id="calc-btn" class="dropdown" title="Advanced calculations"><i class="fa fa-calculator fa-lg"></i></button>
+      <div id="calc-menu" class="menu active hidden">
+        <a id="silhouet-a" title="Calculate silhouette coefficients of contigs in the current binning plan">Silhouette score</a>
+        <a id="adj-rand-a" class="dropdown" title="Calculate adjusted Rand index of the current vs. an existing binning plan">Adj. Rand index</a>
+      </div>
     </div>
 
     <!-- navigation panel -->
@@ -354,10 +362,7 @@
         --><button class="square hidden" id="merge-bin-btn" title="Merge bins"><i class="fa fa-compress fa-lg"></i></button><!--
         --><span class="spacer"></span><!--
         --><button id="save-bin-btn" class="square" title="Export current binning plan"><i class="fa fa-floppy-o fa-lg"></i></button><!--
-        --><button id="clear-bin-btn" class="square" title="Clear current binning plan"><i class="fa fa-recycle fa-lg"></i></button><!--
-        --><span class="spacer"></span><!--
-        --><button id="silh-btn" class="square hidden" title="Calculate silhouette scores based on current binning plan"><i class="fa fa-user-circle-o fa-lg"></i></button><!--
-        --><button id="ari-btn" class="square hidden dropdown" title="Calculate adjusted Rand index between current and another binning plan"><i class="fa fa-calculator fa-lg"></i></button>
+        --><button id="clear-bin-btn" class="square" title="Clear current binning plan"><i class="fa fa-recycle fa-lg"></i></button>
       </div>
 
       <!-- bin table -->
@@ -409,16 +414,16 @@
   <!--
     context menu
   -->
-  <div id="context-menu" style="z-index: 2;" class="hidden">
-    <a id="load-data-a" href="#">Load data</a>
-    <a id="show-data-a" href="#">Show data</a>
-    <a id="close-data-a" href="#">Close data</a>
+  <div id="context-menu" style="z-index: 2;" class="menu hidden">
+    <a id="load-data-a">Load data</a>
+    <a id="show-data-a">Show data</a>
+    <a id="close-data-a">Close data</a>
     <hr>
-    <a id="export-bins-a" href="#">Export bins</a>
-    <a id="export-data-a" href="#">Export data</a>
-    <a id="export-image-a" href="#">Export image</a>
+    <a id="export-bins-a">Export bins</a>
+    <a id="export-data-a">Export data</a>
+    <a id="export-image-a">Export image</a>
     <hr>
-    <a id="help-a" href="#">Help</a>
+    <a id="help-a">Help</a>
   </div>
 
 
