@@ -77,6 +77,15 @@
     expect(bincount([2, 0])).toEqual([1, 0, 1]);
   });
 
+  it('histogram', function() {
+    expect(histogram([1, 2, 1], 2)).toEqual([[2, 1], [1, 1.5, 2]]);
+    expect(histogram(
+      [1, 2, 3, 4, 5, 4, 3, 2, 4, 3, 5, 1, 1, 4, 3, 4, 5, 3, 2, 3, 2, 2,
+        3, 6])).toEqual([
+      [3, 0, 5, 0, 7, 0, 5, 0, 3, 1],
+      [1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6]]);
+  });
+
   it('unique', function() {
     expect(unique([0, 2, 0, 1, 2])).toEqual([0, 2, 1]);
     expect(unique([0, 2, 0, 1, 2], true)).toEqual([[0, 2, 1], [0, 1, 0, 2, 1]]);

@@ -13,17 +13,17 @@
  * features.
  *
  * @module main
- * @file Definition and initiation of the master object.
+ * @file Definition and initiation of the main object.
  * @description The whole program has only one top-level entry: the window load
- * event. It initializes the master object and passes it to functions. There is
+ * event. It initializes the main object and passes it to functions. There is
  * no global variable.
  */
 
 
 /**
- * Master object.
+ * main object.
  * @class
- * @function masterObj
+ * @function mainObj
  * @property {Object} data - contig data and metadata
  * @property {Object} view - current view
  * @property {Object} stat - transient status
@@ -34,7 +34,7 @@
  * @property {Object} oray - overlay canvas DOM
  * @property {Object} palettes - available palettes
  */
-function masterObj() {
+function mainObj() {
 
   /**
    * Data object.
@@ -185,8 +185,8 @@ function masterObj() {
  */
 window.addEventListener('load', function () {
 
-  // single global master object
-  var mo = new masterObj();
+  // single global main object
+  var mo = new mainObj();
 
   // load demo data, if available
   if (typeof dataPath !== 'undefined') {

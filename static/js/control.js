@@ -5,15 +5,18 @@
  * @file Control functions. They allow the user to work on the content through
  * the interface.
  * @description They may directly access the "document" object. They may access
- * the master object that is passed to them.
+ * the main object that is passed to them.
+ * 
  * @summary Table of content
- * - File functions
- * - View functions
- * - Select functions
- * - Bin functions
- * - Info table functions
- * - Export functions
- * - Data table functions
+ * - File system operations
+ * - Assembly display
+ * - Contig selection
+ * - Binning utilities
+ * - Bin information
+ * - Data export
+ * - Data table
+ * - Variable plotting
+ * - Advanced calculation
  */
 
 
@@ -25,7 +28,7 @@
  * Import data from a text file.
  * @function uploadFile
  * @param {File} file - user upload file
- * @param {Object} mo - master object
+ * @param {Object} mo - main object
  * @description It uses the FileReader object, available since IE 10.
  */
 function uploadFile(file, mo) {
@@ -43,7 +46,7 @@ function uploadFile(file, mo) {
  * Import data from a remote location
  * @function updateDataFromRemote
  * @param {string} path - remote path to data file
- * @param {Object} mo - master object
+ * @param {Object} mo - main object
  * @description It uses XMLHttpRequest, which has to be run on a server.
  */
 function updateDataFromRemote(path, mo) {
@@ -64,13 +67,13 @@ function updateDataFromRemote(path, mo) {
 
 
 /**
- * @summary View functions
+ * @summary Assembly display
  */
 
 /**
  * Update view given current view parameters.
  * @function updateView
- * @param {Object} mo - master object
+ * @param {Object} mo - main object
  */
 function updateView(mo) {
   renderArena(mo);
@@ -175,7 +178,7 @@ function updateCtrlByData(data, view) {
 /**
  * Update color map based on selected field and palette.
  * @function updateColorMap
- * @param {Object} mo - master object
+ * @param {Object} mo - main object
  * @todo add feature (treat as number)
  */
 function updateColorMap(mo) {
@@ -213,7 +216,7 @@ function updateColorMap(mo) {
 /**
  * Initiate or restore default view given data.
  * @function resetView
- * @param {Object} mo - master object
+ * @param {Object} mo - main object
  * @param {boolean} [keep=false] - whether keep selection and masked
  */
 function resetView(mo, keep) {
@@ -247,7 +250,7 @@ function resetView(mo, keep) {
 /**
  * Calculate min and max of display items
  * @function calcDispMinMax
- * @param {Object} mo - master object
+ * @param {Object} mo - main object
  * @param {Array.<string>} [items] - display items to calculate
  */
 function calcDispMinMax(mo, items) {
@@ -287,7 +290,7 @@ function calcDispMinMax(mo, items) {
 /**
  * Update view based on data.
  * @function updateViewByData
- * @param {Object} mo - master object
+ * @param {Object} mo - main object
  * @param {Array.<Object, Object, Object>} [cache=] - decimals, categories and
  * features
  * @description Singling out cache is for performance consideration.
@@ -352,7 +355,7 @@ function updateViewByData(mo, cache) {
  * @param {Object} item - display variable
  * @param {Object} i - field index
  * @param {Object} scale - scaling factor
- * @param {Object} mo - master object
+ * @param {Object} mo - main object
  * @todo throw if max === min
  */
 function displayItemChange(item, i, scale, mo) {
@@ -378,13 +381,13 @@ function displayItemChange(item, i, scale, mo) {
 
 
 /**
- * @summary Select functions
+ * @summary Contig selection
  */
 
 /**
  * Update selection.
  * @function updateSelection
- * @param {Object} mo - master object
+ * @param {Object} mo - main object
  */
 function updateSelection(mo) {
   renderSelection(mo);
@@ -398,7 +401,7 @@ function updateSelection(mo) {
 /**
  * Update selected toolbar.
  * @function updateSelectToolbar
- * @param {Object} mo - master object
+ * @param {Object} mo - main object
  */
 function updateSelectToolbar(mo) {
   var keys = Object.keys(mo.pick);
@@ -413,7 +416,7 @@ function updateSelectToolbar(mo) {
 /**
  * Update masked toolbar.
  * @function updateMaskToolbar
- * @param {Object} mo - master object
+ * @param {Object} mo - main object
  */
 function updateMaskToolbar(mo) {
   var keys = Object.keys(mo.mask);
@@ -428,7 +431,7 @@ function updateMaskToolbar(mo) {
 /**
  * Update information of selected contigs.
  * @function updateSelectionInfo
- * @param {Object} mo - master object
+ * @param {Object} mo - main object
  */
 function updateSelectionInfo(mo) {
   var table = document.getElementById('info-table');
@@ -468,7 +471,7 @@ function updateSelectionInfo(mo) {
  * Update information of selected contigs.
  * @function updateInfoRow
  * @param {Object} row - information table row DOM
- * @param {Object} mo - master object
+ * @param {Object} mo - main object
  * @param {Array} [arr] - data column
  * @param {Array} [refarr] - reference column
  */
@@ -557,7 +560,7 @@ function selectFieldChange(e, data, view) {
 /**
  * Select contigs by criteria.
  * @function selectByCriteria
- * @param {Object} mo - master object
+ * @param {Object} mo - main object
  * @returns {boolean} whether selection is successful
  */
 function selectByCriteria(mo) {
@@ -661,7 +664,7 @@ function selectByCriteria(mo) {
  * @param {number[]} indices - indices of contigs to be selected / excluded
  * @param {string} [selmode='new'] - selection mode (new, add, remove)
  * @param {boolean} [masking=false] - masking mode on/off
- * @param {Object} mo - master object
+ * @param {Object} mo - main object
  */
 function treatSelection(indices, selmode, masking, mo) {
   if (typeof masking === 'undefined') masking = false;
@@ -725,7 +728,7 @@ function treatSelection(indices, selmode, masking, mo) {
 /**
  * Let user draw polygon to select a region of data points.
  * @function polygonSelect
- * @param {Object} mo - master object
+ * @param {Object} mo - main object
  */
 function polygonSelect(mo) {
   var data = mo.data;
@@ -773,13 +776,13 @@ function polygonSelect(mo) {
 
 
 /**
- * @summary Bin functions
+ * @summary Binning utilities
  */
 
 /**
  * Update bins toolbar.
  * @function updateBinToolbar
- * @param {Object} mo - master object
+ * @param {Object} mo - main object
  */
 function updateBinToolbar(mo) {
   var n = Object.keys(mo.bins).length;
@@ -804,9 +807,9 @@ function updateBinToolbar(mo) {
 
 
 /**
- * Update bin table.
+ * Update bins table.
  * @function updateBinTable
- * @param {Object} mo - master object
+ * @param {Object} mo - main object
  */
 function updateBinTable(mo) {
   var view = mo.view;
@@ -909,7 +912,7 @@ function binNameKeyUp(e, stat, bins) {
 
 
 /**
- * @summary Information table functions
+ * @summary Bin information
  */
 
 /**
@@ -1010,7 +1013,7 @@ function initInfoTable(data, lencol, pick) {
 
 
 /**
- * @summary Export functions
+ * @summary Data export
  */
 
 /**
@@ -1074,7 +1077,7 @@ function exportBins(bins, data) {
 
 
 /**
- * @summary Data table functions
+ * @summary Data table
  */
 
 /**
@@ -1113,4 +1116,162 @@ function fillDataTable(data, n) {
       cell.innerHTML = value2Str(data.df[i][j], data.types[j]);
     }
   }
+}
+
+
+/**
+ * @summary Variable plotting
+ */
+
+/**
+ * Plot a variable of selection.
+ * @function plotMini
+ * @param {Object} row - information table row DOM
+ * @param {Object} mo - main object
+ */
+ function plotMini(row, mo) {
+  var df = mo.data.df;
+  var idx = row.getAttribute('data-index');
+  var data = Object.keys(mo.pick).sort()
+    .map(function (i) { return df[i][idx]; });
+  var bins = 10;
+  var [hist, edge] = histogram(data, bins);
+  var canvas = document.getElementById('mini-canvas');
+  var pw = canvas.width;
+  var ph = canvas.height;
+  var scale = (ph - 20) / Math.max.apply(null, hist);
+  var hista = hist.map(function (e) { return e * scale; });
+  var intvl = (pw - 20) / bins;
+  var barw = Math.floor(intvl - 2);
+
+  var ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, pw, ph);
+
+  ctx.beginPath();
+  ctx.rect(5, 5, pw - 10, ph - 10);
+  ctx.lineWidth = 0.5;
+  // ctx.strokeStyle = 'black';
+  ctx.stroke();
+
+  ctx.fillStyle = 'darkgrey';
+  for (var i = 0; i < bins; i++) {
+    ctx.fillRect(11 + intvl * i, ph - 10 - hista[i], barw, hista[i]);
+  }
+}
+
+
+/**
+ * @summary Advanced calculation
+ */
+
+/**
+ * Calculate silhouette scores based on current binning plan.
+ * @function calcSilhouette
+ * @param {Object} mo - main object
+ */
+ function calcSilhouette(mo) {
+  var data = mo.data;
+  var view = mo.view;
+  var bins = mo.bins;
+
+  // validate binning plan
+  var names = Object.keys(bins);
+  var n = names.length;
+  if (n === 0) {
+    toastMsg('Must define at least one bin.', mo.stat);
+    return;
+  }
+
+  // get bin labels
+  var labels = Array(data.df.length).fill(0);
+  names.forEach(function (name, i) {
+    Object.keys(bins[name]).forEach(function (idx) {
+      labels[idx] = i + 1;
+    });
+  });
+
+  // get contig positions
+  var xi = view.x.i;
+  var yi = view.y.i;
+  var vals = data.df.map(function (datum) {
+    return [datum[xi], datum[yi]];
+  });
+
+  // calculate silhouette scores
+  var scores = silhouetteSample(vals, labels);
+
+  // remove unbinned contigs
+  scores = scores.map(function (score, i) {
+    return labels[i] ? score : null;
+  });
+
+  // add scores to data table
+  var col = data.cols.indexOf('silhouette');
+  if (col === -1) {
+
+    // append new column and modify controls
+    scores.forEach(function (score, i) {
+      data.df[i].push(score);
+    });
+    col = data.cols.length;
+    data.cols.push('silhouette');
+    data.types.push('number');
+    updateCtrlByData(data, view);
+    initInfoTable(data, view.spcols.len, mo.pick);
+  } else {
+
+    // update existing column
+    scores.forEach(function (score, i) {
+      data.df[i][col] = score;
+    });
+  }
+
+  // color contigs by score
+  var sel = document.getElementById('color-field-sel');
+  sel.value = col;
+  sel.dispatchEvent(new Event('change'));
+
+  // summarize scores
+  scores = scores.filter(function (score) {
+    return score !== null;
+  })
+  toastMsg('Mean silhouette score of contigs of ' + n + ' bins: '
+    + arrMean(scores).toFixed(3) + '.', mo.stat, 0);
+}
+
+
+/**
+ * Calculate adjusted Rand index between current and reference binning plans.
+ * @function calcAdjRand
+ * @param {Object} mo - main object
+ * @param {string} field - categorical field to serve as reference
+ */
+function calcAdjRand(mo, field) {
+  var df = mo.data.df;
+  var n = df.length;
+
+  // current labels
+  var cur = Array(n).fill(0);
+  var bins = mo.bins;
+  for (var bin in bins) {
+    for (var i in bins[bin]) {
+      cur[i] = bin;
+    }
+  }
+
+  // reference labels
+  var ref = Array(n).fill(0);
+  var idx = mo.data.cols.indexOf(field);
+  for (var i = 0; i < n; i++) {
+    var val = df[i][idx];
+    if (val !== null) {
+      ref[i] = val[0];
+    }
+  }
+
+  // calculation
+  var ari = adjustedRandScore(ref, cur);
+
+  toastMsg('Adjusted Rand index between current binning plan and "' + field +
+    '": ' + ari.toFixed(3) + '.', mo.stat, 0);
 }

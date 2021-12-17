@@ -3,7 +3,7 @@
 /**!
  * @module render
  * @file Rendering functions.
- * @description They may read the master object that is passed to them, but
+ * @description They may read the main object that is passed to them, but
  * they DO not modify its content. They do NOT directly access the "document"
  * object.
  */
@@ -53,7 +53,7 @@ function resizeArena(rena, oray) {
 /**
  * Render arena given current data and view.
  * @function renderArena
- * @param {Object} mo - master object
+ * @param {Object} mo - main object
  * @todo {@link https://stackoverflow.com/questions/21089959/}
  * @todo round floats into integers should improve performance, but may cause
  * problem when zoomin scale is large, needs further thought
@@ -219,7 +219,7 @@ function renderArena(mo) {
 /**
  * Render shadows around selected contigs.
  * @function renderSelection
- * @param {Object} mo - master object
+ * @param {Object} mo - main object
  * @see renderArena
  */
 function renderSelection(mo) {
@@ -291,7 +291,7 @@ function renderSelection(mo) {
 /**
  * Render polygon drawn by user.
  * @function drawPolygon
- * @param {Object} master - master object
+ * @param {Object} mo - main object
  * @see renderArena
  */
 function drawPolygon(mo) {
