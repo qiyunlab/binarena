@@ -530,7 +530,8 @@ function selectBin(table, name) {
  */
 function loadBins(df, idx) {
   var bins = {};
-  for (var i = 0; i < df.length; i++) {
+  var n = df.length;
+  for (var i = 0; i < n; i++) {
     var val = df[i][idx];
     if (val !== null) {
       var cat = val[0];

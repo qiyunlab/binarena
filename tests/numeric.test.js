@@ -67,9 +67,8 @@
   });
 
   it('pdist', function() {
-    expect(pdist([[0, 0], [0, 0]])).toEqual([[0, 0], [0, 0]]);
-    expect(pdist([[0, 0], [0, 1], [1, 0]]))
-      .toEqual([[0, 1, 1,], [1, 0, Math.sqrt(2)], [1, Math.sqrt(2), 0]]);
+    expect(pdist([[0, 0], [0, 0]])).toEqual([0]);
+    expect(pdist([[0, 0], [0, 1], [1, 0]])).toEqual([1, 1, Math.sqrt(2)]);
   });
 
   it('bincount', function() {

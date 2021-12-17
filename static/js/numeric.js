@@ -168,22 +168,18 @@ function euclidean(x, y) {
  * Return the pairwise distance matrix of each point in the input data array.
  * @function pdist
  * @param {number[]} x - the input data array
- * @return {number[]} distance matrix of the given data
+ * @return {number[]} condensed distance matrix of the given data
  * @see scipy.spatial.distance.pdist
  * @todo add metrics='euclidean'
  */
- function pdist(arr) {
+function pdist(arr) {
   var n = arr.length;
-  var d = Array(n).fill().map(() => Array(n).fill());
+  var d = Array(n * (n - 1) / 2).fill(0);
+  var idx = 0;
   for (var i = 0; i < n; i++) {
-    for (var j = 0; j < n; j++) {
-      if (j === i) {
-        d[i][j] = 0;
-      } else if (j < i) {
-        d[i][j] = d[j][i];
-      } else {
-        d[i][j] = euclidean(arr[i], arr[j]);
-      }
+    idx = n * i - i * (i + 3) / 2 - 1;
+    for (var j = i + 1; j < n; j++) {
+      d[idx + j] = euclidean(arr[i], arr[j]);
     }
   }
   return d;

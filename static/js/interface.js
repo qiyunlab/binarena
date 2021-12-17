@@ -52,11 +52,8 @@ function initControls(mo) {
   // window click event
   // hide popup elements (context menu, dropdown selection, etc.)
   window.addEventListener('click', function (e) {
-    if (e.button == 0) {
-      // main context menu
-      if (!(document.getElementById('menu-btn').contains(e.target))) {
-        document.getElementById('context-menu').classList.add('hidden');
-      }
+    if (e.button === 0) { // left button
+
       // hide dropdown divs if event target is not marked as "dropdown"
       var hideDropdown = true;
       var dds = document.getElementsByClassName('dropdown');
@@ -67,7 +64,7 @@ function initControls(mo) {
         }
       }
       if (hideDropdown) {
-        document.querySelectorAll('.popup').forEach(function (div) {
+        document.querySelectorAll('div.popup, div.menu').forEach(function (div) {
           div.classList.add('hidden');
         })
       }
@@ -127,6 +124,9 @@ function initControls(mo) {
   document.getElementById('close-data-a').addEventListener('click',
     function () {
     mo.data = { cols: [], types: [], dicts: {}, df: [] };
+    mo.pick = {};
+    mo.mask = {};
+    mo.bins = {};
     updateViewByData(mo);
   });
 
@@ -151,35 +151,7 @@ function initControls(mo) {
 
 
   /**
-   * @summary Widget panel buttons
-   */
-
-  document.getElementById('polygon-btn').addEventListener('click',
-    function () {
-    polygonSelect(mo);
-  });
-
-  document.getElementById('selmode-btn').addEventListener('click',
-    function () {
-    var modes = ['new', 'add', 'remove'];
-    var icons = ['asterisk', 'plus', 'minus'];
-    var titles = ['new', 'add to', 'remove from'];
-    var i = (modes.indexOf(stat.selmode) + 1) % 3;
-    stat.selmode = modes[i];
-    this.innerHTML = '<i class="fa fa-' + icons[i] + '"></i>';
-    this.title = 'Current selection mode: ' + titles[i] + ' selection';
-  });
-
-  document.getElementById('masking-btn').addEventListener('click',
-    function () {
-    this.classList.toggle('pressed');
-    stat.masking = this.classList.contains('pressed');
-  });
-
-
-
-  /**
-   * @summary Shared
+   * @summary Shared DOMs
    */
 
   // panel header click (show/hide panel)
@@ -226,12 +198,18 @@ function initControls(mo) {
   // generic list select table
   document.getElementById('list-options').addEventListener('click',
     function (e) {
-    for (var i = 0; i < this.rows.length; i++) {
-      if (this.rows[i].contains(e.target)) {
+    var rows = this.rows;
+    var n = rows.length;
+    for (var i = 0; i < n; i++) {
+      if (rows[i].contains(e.target)) {
         var target =
           document.getElementById(this.getAttribute('data-target-id'));
-        target.value = this.rows[i].cells[0].textContent;
-        target.focus();
+        target.value = rows[i].cells[0].textContent;
+        if (target.nodeName.toLowerCase() == 'input') {
+          target.focus(); // for text box etc.
+        } else {
+          target.click(); // for button, menu item, etc.
+        }
         this.parentElement.classList.add('hidden');
         break;
       }
@@ -354,6 +332,37 @@ function initControls(mo) {
       !this.checked);
   });
 
+
+
+  /**
+   * @summary Widget panel buttons
+   */
+
+  // draw polygon to select contigs
+  document.getElementById('polygon-btn').addEventListener('click',
+    function () {
+    polygonSelect(mo);
+  });
+
+  // toggle selection mode
+  document.getElementById('selmode-btn').addEventListener('click',
+    function () {
+    var modes = ['new', 'add', 'remove'];
+    var icons = ['asterisk', 'plus', 'minus'];
+    var titles = ['new', 'add to', 'remove from'];
+    var i = (modes.indexOf(stat.selmode) + 1) % 3;
+    stat.selmode = modes[i];
+    this.innerHTML = '<i class="fa fa-' + icons[i] + '"></i>';
+    this.title = 'Current selection mode: ' + titles[i] + ' selection';
+  });
+
+  // toggle selecting or masking
+  document.getElementById('masking-btn').addEventListener('click',
+    function () {
+    this.classList.toggle('pressed');
+    stat.masking = this.classList.contains('pressed');
+  });
+
   // take screenshot
   document.getElementById('screenshot-btn').addEventListener('click',
     function () {
@@ -399,6 +408,42 @@ function initControls(mo) {
   document.getElementById('down-btn').addEventListener('click', function () {
     view.pos.y += 15;
     updateView(mo);
+  });
+
+
+  /**
+   * @summary Calculations
+   */
+
+  // show calculation menu
+  document.getElementById('calc-btn').addEventListener('click', function () {
+    var menu = document.getElementById('calc-menu');
+    if (menu.classList.contains('hidden')) {
+      var n = Object.keys(mo.bins).length;
+      document.getElementById('silhouet-a').classList.toggle('disabled', !n);
+      document.getElementById('adj-rand-a').classList.toggle('disabled', !n)
+      menu.classList.remove('hidden');
+    } else {
+      menu.classList.add('hidden');
+    }
+  });
+
+  // calculate silhouette coefficients
+  document.getElementById('silhouet-a').addEventListener('click', function () {
+    if (this.classList.contains('disabled')) return;
+    calcSilhouette(mo);
+  });
+
+  // calculate adjusted Rand index
+  document.getElementById('adj-rand-a').addEventListener('click', function () {
+    if (this.classList.contains('disabled')) return;
+    if (!this.value) {
+      listSelect(Object.keys(mo.view.categories).sort(), this, 'right');
+    } else {
+      calcAdjRand(mo, this.value);
+      this.value = null;
+      this.parentElement.classList.add('hidden');      
+    }
   });
 
 
@@ -695,6 +740,23 @@ function initControls(mo) {
    * @summary Bin panel tool bar
    */
 
+  // load bins from a categorical field
+  document.getElementById('load-bin-btn').addEventListener('click',
+    function () {
+    if (!this.value) {
+      listSelect(Object.keys(view.categories).sort(), this, 'down');
+    } else {
+      var idx = mo.data.cols.indexOf(this.value);
+      mo.bins = loadBins(mo.data.df, idx);
+      updateBinTable(mo);
+      updateBinToolbar(mo);
+      toastMsg('Loaded ' + Object.keys(mo.bins).length + ' bins from "' +
+        this.value + '".', stat);
+      this.value = '';
+    }
+  });
+
+  // create a new bin
   document.getElementById('new-bin-btn').addEventListener('click',
     function () {
     var name = createBin(mo.bins);
@@ -713,6 +775,7 @@ function initControls(mo) {
       + ' contig(s)': '') + '.', stat);
   });
 
+  // add selected contigs to current bin
   document.getElementById('add-to-bin-btn').addEventListener('click',
     function () {
     var table = document.getElementById('bin-tbody');
@@ -724,6 +787,7 @@ function initControls(mo) {
     toastMsg('Added ' + n + ' contig(s) to "' + x[1] + '".', stat);
   });
 
+  // remove selected contigs from current bin
   document.getElementById('remove-from-bin-btn').addEventListener('click',
     function () {
     var table = document.getElementById('bin-tbody');
@@ -736,6 +800,7 @@ function initControls(mo) {
     toastMsg('Removed ' + n + ' contig(s) from "' + x[1] + '".', stat);
   });
 
+  // delete current bin
   document.getElementById('delete-bin-btn').addEventListener('click',
     function () {
     var table = document.getElementById('bin-tbody');
@@ -746,6 +811,7 @@ function initControls(mo) {
     else toastMsg('Deleted ' + n + ' bins.', stat);
   });
 
+  // merge currently selected bins
   document.getElementById('merge-bin-btn').addEventListener('click',
     function () {
     var table = document.getElementById('bin-tbody');
@@ -761,55 +827,18 @@ function initControls(mo) {
     else toastMsg('Merged ' + n + ' bins into "' + name + '".', stat, 2000);
   });
 
+  // export current binning plan
   document.getElementById('save-bin-btn').addEventListener('click',
     function () {
     exportBins(mo.bins, mo.data);
   });
 
+  // clear current binning plan
   document.getElementById('clear-bin-btn').addEventListener('click',
     function () {
     mo.bins = {};
     updateBinTable(mo);
     updateBinToolbar(mo);
-  });
-
-  document.getElementById('silhouette-btn').addEventListener('click',
-    function () {
-    calcSilhouette(mo);
-  });
-
-  // let user choose a categorical field
-  document.getElementById('load-bin-btn').addEventListener('click',
-    function () {
-    var div = document.getElementById('list-select');
-    div.classList.add('hidden');
-    var rect = this.getBoundingClientRect();
-    div.style.top = rect.bottom + 'px';
-    div.style.left = rect.left + 'px';
-    div.style.width = (rect.right - rect.left) + 'px';
-    var table = document.getElementById('list-options');
-    table.setAttribute('data-target-id', this.id);
-    table.innerHTML = '';
-    Object.keys(view.categories).sort().forEach(function (itm) {
-      var row = table.insertRow(-1);
-      var cell = row.insertCell(-1);
-      cell.innerHTML = itm;
-    });
-    div.classList.remove('hidden');
-  });
-
-  // load bins from a categorical field
-  document.getElementById('load-bin-btn').addEventListener('focus',
-    function () {
-    if (this.value !== '') {
-      var idx = mo.data.cols.indexOf(this.value);
-      mo.bins = loadBins(mo.data.df, idx);
-      updateBinTable(mo);
-      updateBinToolbar(mo);
-      toastMsg('Loaded ' + Object.keys(mo.bins).length + ' bins from "' +
-        this.value + '".', stat);
-      this.value = '';
-    }
   });
 
 
@@ -823,9 +852,11 @@ function initControls(mo) {
     this.onselectstart = function () {
       return false;
     }
+    var rows = this.rows;
+    var n = rows.length;
     var selected;
-    for (var i = 0; i < this.rows.length; i++) {
-      var row = this.rows[i];
+    for (var i = 0; i < n; i++) {
+      var row = rows[i];
       var label = row.cells[0].firstElementChild;
       var text = row.cells[0].lastElementChild;
       if (row.contains(e.target)) { // bin being clicked
@@ -1204,6 +1235,72 @@ function initCloseBtns() {
 
 
 /**
+ * Determine the most appropriate position of a popup.
+ * @function popupPos
+ * @param {Object} source - source DOM
+ * @param {Object} target - target DOM
+ * @param {string} direc - direction of popup
+ * @param {boolean} same - keep same dimension
+ */
+function popupPos(source, target, direc, same) {
+  var th = 0.8;
+  var vw = window.innerWidth;
+  var vh = window.innerHeight;
+  var ts = target.style;
+  var rect = source.getBoundingClientRect();
+  if (direc === 'right') {
+    ts.left = rect.right + 'px';
+    ts.right = '';
+    if (same) {
+      ts.top = rect.top + 'px';
+      ts.height = (rect.top - rect.bottom) + 'px';
+    } else if (rect.top <= vh * th) {
+      ts.top = rect.top + 'px';
+      ts.bottom = '';
+    } else {
+      ts.top = '';
+      ts.bottom = (vh - rect.bottom) + 'px';
+    }
+  } else if (direc === 'down') {
+    ts.top = rect.bottom + 'px';
+    ts.bottom = '';
+    if (same) {
+      ts.left = rect.left + 'px';
+      ts.width = (rect.right - rect.left) + 'px';
+    } else if (rect.left <= vw * th) {
+      ts.left = rect.left + 'px';
+      ts.right = '';
+    } else {
+      ts.left = '';
+      ts.right = (vw - rect.right) + 'px';
+    }
+  }
+}
+
+
+/**
+ * Let user select from a list displayed in a dropdown menu.
+ * @function listSelect
+ * @param {Object} src - source DOM
+ * @param {string[]} lst - list of options
+ */
+function listSelect(lst, src, direc, same) {
+  var div = document.getElementById('list-select');
+  div.classList.add('hidden');
+  popupPos(src, div, direc, same);
+  var table = document.getElementById('list-options');
+  table.setAttribute('data-target-id', src.id);
+  table.innerHTML = '';
+  lst.forEach(function (itm) {
+    var row = table.insertRow(-1);
+    var cell = row.insertCell(-1);
+    cell.innerHTML = itm;
+  });
+  div.classList.remove('hidden');
+}
+
+
+/**
  * Get HTML code for scale code
  * @function scale2HTML
  * @param {string} scale - scale code
@@ -1266,24 +1363,16 @@ function autoComplete(inp, arr) {
   inp.addEventListener('input', function () {
     var val = this.value;
     if (!val) return false;
-    var div = document.getElementById('list-select');
-    div.classList.add('hidden');
-    var rect = this.getBoundingClientRect();
-    div.style.top = rect.bottom + 'px';
-    div.style.left = rect.left + 'px';
-    div.style.width = (rect.right - rect.left) + 'px';
-    var table = document.getElementById('list-options');
-    table.setAttribute('data-target-id', inp.id);
-    table.innerHTML = '';
+    var VAL = val.toUpperCase();
+    var l = val.length;
+    var lst = [];
     arr.forEach(function (itm) {
-      var prefix = itm.substr(0, val.length);
-      if (prefix.toUpperCase() === val.toUpperCase()) {
-        var row = table.insertRow(-1);
-        var cell = row.insertCell(-1);
-        cell.innerHTML = '<strong>' + prefix + '</strong>' + itm.substr(val.length);
+      var prefix = itm.substr(0, l);
+      if (prefix.toUpperCase() === VAL) {
+        lst.push('<strong>' + prefix + '</strong>' + itm.substr(l));
       }
     });
-    div.classList.remove('hidden');
+    listSelect(lst, inp, 'down', true);
     focus = -1;
   });
 
@@ -1593,4 +1682,41 @@ function calcSilhouette(mo) {
   })
   toastMsg('Mean silhouette score of contigs of ' + n + ' bins: '
     + arrMean(scores).toFixed(3) + '.', mo.stat, 0);
+}
+
+
+/**
+ * Calculate adjusted Rand index between current and reference binning plans.
+ * @function calcAdjRand
+ * @param {Object} mo - master object
+ * @param {string} field - categorical field to serve as reference
+ */
+function calcAdjRand(mo, field) {
+  var df = mo.data.df;
+  var n = df.length;
+
+  // current labels
+  var cur = Array(n).fill(0);
+  var bins = mo.bins;
+  for (var bin in bins) {
+    for (var i in bins[bin]) {
+      cur[i] = bin;
+    }
+  }
+
+  // reference labels
+  var ref = Array(n).fill(0);
+  var idx = mo.data.cols.indexOf(field);
+  for (var i = 0; i < n; i++) {
+    var val = df[i][idx];
+    if (val !== null) {
+      ref[i] = val[0];
+    }
+  }
+
+  // calculation
+  var ari = adjustedRandScore(ref, cur);
+
+  toastMsg('Adjusted Rand index between current binning plan and "' + field +
+    '": ' + ari.toFixed(3) + '.', mo.stat, 0);
 }
