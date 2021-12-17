@@ -4,7 +4,7 @@
  * @module util
  * @file Utilities - functions for general purposes.
  * They only operate on the parameters that are explicitly passed to them.
- * They do NOT directly access the master object OR the "document" object.
+ * They do NOT directly access the main object OR the "document" object.
  * They are not related to any visual elements.
  */
 

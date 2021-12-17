@@ -6,14 +6,14 @@
  * predefined in the HTML file (rather than dynamically generated DOMs), and
  * enable pure interface-related actions (not relevant to the content).
  * @description They may directly access the "document" object. They may access
- * the master object that is passed to them.
+ * the main object that is passed to them.
  */
 
 
 /**
  * Initialize controls.
  * @function initControls
- * @params {Object} mo - master object
+ * @params {Object} mo - main object
  * @description This is a very long function. It adds event listeners to DOMs
  * except for canvases.
  */
@@ -540,6 +540,14 @@ function initControls(mo) {
 
 
   /**
+   * @summary Plot panel
+   */
+  // resize mini plot to 4:3
+  var canvas = document.getElementById('mini-canvas');
+  canvas.height = canvas.width * 0.75;
+
+
+  /**
    * @summary Legends
    */
 
@@ -904,6 +912,7 @@ function initControls(mo) {
     }
   });
 
+  // metric (sum or mean)
   document.getElementById('info-metric-btn').addEventListener('click',
     function () {
     var row = document.getElementById('info-table').rows[this.parentElement
@@ -919,6 +928,7 @@ function initControls(mo) {
     updateInfoRow(row, mo);
   });
 
+  // weight variable by reference
   document.getElementById('info-ref-sel').addEventListener('change',
     function () {
     var row = document.getElementById('info-table').rows[this.parentElement
@@ -927,6 +937,18 @@ function initControls(mo) {
     updateInfoRow(row, mo);
   });
 
+  // plot variable
+  document.getElementById('info-plot-btn').addEventListener('click',
+    function () {
+    var div = this.parentElement;
+    var row = document.getElementById('info-table').rows[div
+      .getAttribute('data-row')];
+    plotMini(row, mo);
+    var div = document.getElementById('mini-canvas').parentElement;
+    div.classList.remove('hidden');
+  });
+
+  // hide variable
   document.getElementById('info-hide-btn').addEventListener('click',
     function () {
     var div = this.parentElement;
@@ -969,7 +991,7 @@ function initControls(mo) {
 /**
  * Initiate canvas.
  * @function initCanvas
- * @params {Object} mo - master object
+ * @params {Object} mo - main object
  */
 function initCanvas(mo) {
   var view = mo.view;
@@ -1091,7 +1113,7 @@ function initCanvas(mo) {
  * Canvas mouse click event.
  * @function canvasMouseClick
  * @param {Object} e - event object
- * @param {Object} mo - master object
+ * @param {Object} mo - main object
  */
 function canvasMouseClick(e, mo) {
   var data = mo.data;
@@ -1150,7 +1172,7 @@ function canvasMouseClick(e, mo) {
 /**
  * Window resize event
  * @function resizeWindow
- * @param {Object} mo - master object
+ * @param {Object} mo - main object
  * @description also manually triggered when user resizes main frame
  */
 function resizeWindow(mo) {
@@ -1170,7 +1192,7 @@ function resizeWindow(mo) {
  * Canvas mouse move event.
  * @function canvasMouseMove
  * @param {Object} e - event object
- * @param {Object} mo - master object
+ * @param {Object} mo - main object
  */
 function canvasMouseMove(e, mo) {
   var view = mo.view;
@@ -1410,7 +1432,7 @@ function autoComplete(inp, arr) {
 /**
  * Update legends.
  * @function updateLegends
- * @param {Object} mo - master object
+ * @param {Object} mo - main object
  * @param {Array.<string>} [items] - display items to update
  * @todo other items
  */
@@ -1479,7 +1501,7 @@ function updateLegends(mo, items) {
 /**
  * Update gradient in size legend.
  * @function updateSizeGradient
- * @param {Object} mo - master object
+ * @param {Object} mo - main object
  * @description The ladder-shaped gradient is achieved by css borders, which,
  * cannot accept percentage, thus need to be adjusted specifically.d
  */
@@ -1497,7 +1519,7 @@ function updateSizeGradient(mo) {
 /**
  * Update gradient in continuous color legend.
  * @function updateColorGradient
- * @param {Object} mo - master object
+ * @param {Object} mo - main object
  */
 function updateColorGradient(mo) {
   var ci = mo.view.color.i;
@@ -1512,7 +1534,7 @@ function updateColorGradient(mo) {
 /**
  * Update table in discrete color legend.
  * @function updateColorTable
- * @param {Object} mo - master object
+ * @param {Object} mo - main object
  */
 function updateColorTable(mo) {
   var table = document.getElementById('color-table');
@@ -1594,7 +1616,7 @@ function populatePaletteSelect() {
  * @param {number} icol - column index
  * @param {number} digits - number of digits to keep
  * @param {boolean} unit - whether to keep unit if available
- * @param {Object} mo - master object
+ * @param {Object} mo - main object
  */
 function formatValueLabel(value, icol, digits, unit, mo) {
   var ilen = mo.view.spcols.len;
@@ -1606,117 +1628,4 @@ function formatValueLabel(value, icol, digits, unit, mo) {
   } else {
     return formatNum(value, digits);
   }
-}
-
-
-/**
- * Calculate silhouette scores based on current binning plan.
- * @function calcSilhouette
- * @param {Object} mo - master object
- */
-function calcSilhouette(mo) {
-  var data = mo.data;
-  var view = mo.view;
-  var bins = mo.bins;
-
-  // validate binning plan
-  var names = Object.keys(bins);
-  var n = names.length;
-  if (n === 0) {
-    toastMsg('Must define at least one bin.', mo.stat);
-    return;
-  }
-
-  // get bin labels
-  var labels = Array(data.df.length).fill(0);
-  names.forEach(function (name, i) {
-    Object.keys(bins[name]).forEach(function (idx) {
-      labels[idx] = i + 1;
-    });
-  });
-
-  // get contig positions
-  var xi = view.x.i;
-  var yi = view.y.i;
-  var vals = data.df.map(function (datum) {
-    return [datum[xi], datum[yi]];
-  });
-
-  // calculate silhouette scores
-  var scores = silhouetteSample(vals, labels);
-
-  // remove unbinned contigs
-  scores = scores.map(function (score, i) {
-    return labels[i] ? score : null;
-  });
-
-  // add scores to data table
-  var col = data.cols.indexOf('silhouette');
-  if (col === -1) {
-
-    // append new column and modify controls
-    scores.forEach(function (score, i) {
-      data.df[i].push(score);
-    });
-    col = data.cols.length;
-    data.cols.push('silhouette');
-    data.types.push('number');
-    updateCtrlByData(data, view);
-    initInfoTable(data, view.spcols.len, mo.pick);
-  } else {
-
-    // update existing column
-    scores.forEach(function (score, i) {
-      data.df[i][col] = score;
-    });
-  }
-
-  // color contigs by score
-  var sel = document.getElementById('color-field-sel');
-  sel.value = col;
-  sel.dispatchEvent(new Event('change'));
-
-  // summarize scores
-  scores = scores.filter(function (score) {
-    return score !== null;
-  })
-  toastMsg('Mean silhouette score of contigs of ' + n + ' bins: '
-    + arrMean(scores).toFixed(3) + '.', mo.stat, 0);
-}
-
-
-/**
- * Calculate adjusted Rand index between current and reference binning plans.
- * @function calcAdjRand
- * @param {Object} mo - master object
- * @param {string} field - categorical field to serve as reference
- */
-function calcAdjRand(mo, field) {
-  var df = mo.data.df;
-  var n = df.length;
-
-  // current labels
-  var cur = Array(n).fill(0);
-  var bins = mo.bins;
-  for (var bin in bins) {
-    for (var i in bins[bin]) {
-      cur[i] = bin;
-    }
-  }
-
-  // reference labels
-  var ref = Array(n).fill(0);
-  var idx = mo.data.cols.indexOf(field);
-  for (var i = 0; i < n; i++) {
-    var val = df[i][idx];
-    if (val !== null) {
-      ref[i] = val[0];
-    }
-  }
-
-  // calculation
-  var ari = adjustedRandScore(ref, cur);
-
-  toastMsg('Adjusted Rand index between current binning plan and "' + field +
-    '": ' + ari.toFixed(3) + '.', mo.stat, 0);
 }

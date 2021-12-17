@@ -3,9 +3,14 @@
 /**!
  * @module operation
  * @file Operative functions.
- * They do NOT directly access the master object OR the "document" object.
+ * They do NOT directly access the main object OR the "document" object.
  * They may access the "data" object and DOMs that are explicitly passed to
  * them.
+ * 
+ * @summary Table of content
+ * - Data operations
+ * - Binning operations
+ * - Information operations
  */
 
 

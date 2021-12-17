@@ -673,10 +673,13 @@ div.dash-content > table tr td:last-child > span button:hover {
 }
 
 
-/* 
-div.dash-content table tr td:nth-child(2) select {
+/**
+ * mini plot
+ */
+
+#mini-canvas {
   width: 100%;
-} */
+}
 
 
 /**

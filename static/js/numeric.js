@@ -204,6 +204,31 @@ function bincount(x) {
 
 
 /**
+ * Bin data points into even intervals, i.e., a histogram
+ * @function histogram
+ * @param {number[]} x - input data
+ * @param {number[]} n - number of bins
+ * @return {[number[], number[]]} bins and edges
+ * @see numpy.histogram
+ */
+function histogram(x, n) {
+  n = n || 10;
+  var [min, max] = arrMinMax(x);
+  var size = (max - min) / n;
+  var hist = Array(n).fill(0);
+  var l = x.length;
+  for (var i = 0; i < l; i++) {
+    hist[Math.min(((x[i] - min) / size) >> 0, n - 1)]++;
+  }
+  var edge = Array(n + 1).fill(0);
+  for (var i = 0; i < n + 1; i++) {
+    edge[i] = min + size * i;
+  }
+  return [hist, edge];
+}
+
+
+/**
  * Return array of unique elements from the input array.
  * @function unique
  * @param {number[]} arr - the input array

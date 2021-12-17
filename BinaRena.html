@@ -34,6 +34,7 @@
         search-panel
         display-panel
           individual display items have legends
+        plot-panel
     side-frame: right side (toggled by show-side-btn)
       bins-panel (contains hide-side-btn)
       info-panel (for selected)
@@ -267,6 +268,14 @@
             </td>
           </tr>
         </table>
+      </div>
+
+      <!-- plot panel -->
+      <div id="plot-head" class="panel-head">
+        <span><button title="Show/hide plot panel">Plot</button></span>
+      </div>
+      <div class="dash-content hidden">
+        <canvas id="mini-canvas" style="z-index: 2;"></canvas>
       </div>
 
       <!-- tooltip for legend -->
