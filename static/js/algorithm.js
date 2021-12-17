@@ -66,40 +66,74 @@ function pnpoly(x, y, polygon) {
  * Compute the silhouette coefficient for each contig.
  * @function silhouetteSample
  * @param {number[]} x - the input data array
- * @param {number[]} label - the label of input data
+ * @param {number[]} label - the label of input data (must be 0, 1, 2...)
  * @return {number[]} silhouette coefficient of each contig
  * @description The silhouette coefficient measures how similar a contig is to
  * other contigs in the same bin, as in contrast to contigs in other bins.
  * @see {@link https://en.wikipedia.org/wiki/Silhouette_(clustering)}
  */
 function silhouetteSample(x, label) {
-  let n = x.length;
-  let count = bincount(label);
-  let c = count.length;
-  let dist = pdist(x);
-  let intraDist = Array(n).fill(0);
-  let interDist = Array(n).fill().map(() => Array(c).fill(0));
-  let res = Array(n).fill();
+  var t0 = performance.now();
+  var n = x.length;
+
+  var count = bincount(label); // bin sizes
+  var c = count.length;
+
+  var dist = pdist(x);  // pairwise distances of all contigs
+
+  var distIn;  // intra-bin distance
+  var distOut; // inter-bin distances
+  var li;      // contig label
+  var ii;      // index cache (to accelerate calculation)
+  var idx;     // distance index
+
+  // calculate silhouette for each contig
+  var res = Array(n).fill();
   for (var i = 0; i < n; i++) {
-    var li = label[i];
-    if (count[li] === 1) {
-      res[i] = 0;
-    } else {
+    li = label[i];
+    if (count[li] > 1) {
+      distIn = 0;
+      distOut = Array(c).fill(0);
+      ii = n * i - i * (i + 3) / 2 - 1;
       for (var j = 0; j < n; j++) {
-        if (li == label[j]) {
-          intraDist[i] += dist[i][j];
+
+        // determine index in condensed distance matrix
+        if (i < j) {
+          idx = ii + j;
+        } else if (i > j) {
+          idx = n * j - j * (j + 3) / 2 + i - 1;
         } else {
-          interDist[i][label[j]] += dist[i][j];
-        }  
+          continue;
+        }
+
+        // determine intra- or inter-bin distance
+        if (li == label[j]) {
+          distIn += dist[idx];
+        } else {
+          distOut[label[j]] += dist[idx];
+        }
       }
-      for (var j = 0; j < c; j++) { // for each bin
-        interDist[i][j] /= count[j];
+
+      // mean inter-bin distance for each other bin
+      for (var k = 0; k < c; k++) {
+        distOut[k] /= count[k];
       }
-      intraDist[i] /= (count[li] - 1);
-      interDist[i] = Math.min.apply(null, interDist[i].filter(Boolean));
-      res[i] = (interDist[i] - intraDist[i]) / Math.max(interDist[i], intraDist[i]);
+
+      // minimum inter-bin distance
+      distOut = Math.min.apply(null, distOut.filter(Boolean));
+
+      // mean intra-bin distance
+      distIn /= (count[li] - 1);
+
+      // silhouette coefficient
+      res[i] = (distOut - distIn) / Math.max(distOut, distIn);
+
+    } else { // only one contig
+      res[i] = 0;
     }
   } // end for i
+  var t1 = performance.now();
+  console.log(t1 - t0);
   return res;
 }
 

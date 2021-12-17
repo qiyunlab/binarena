@@ -124,6 +124,9 @@ function initControls(mo) {
   document.getElementById('close-data-a').addEventListener('click',
     function () {
     mo.data = { cols: [], types: [], dicts: {}, df: [] };
+    mo.pick = {};
+    mo.mask = {};
+    mo.bins = {};
     updateViewByData(mo);
   });
 
