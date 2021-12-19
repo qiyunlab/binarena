@@ -62,7 +62,11 @@ BinaRena implements several algorithms to calculate binning-related metrics. The
 
 ### Silhouette score
 
+The [silhouette coefficient](https://en.wikipedia.org/wiki/Silhouette_(clustering)) measures how similar a contig is to other contigs in the same bin, as in contrast to contigs in other bins. It ranges from -1 (worse) to 1 (best). The silhouette score, i.e., the mean silhouette coefficient of all contigs, evaluates the quality of a binning plan.
+
 ### Adjusted Rand index
+
+The [adjusted Rand index](https://en.wikipedia.org/wiki/Rand_index) (ARI) measures the consistency between two binning plans. Higher is better. Two identical plans have ARI = 1. Two random plans will have an ARI close to 0.
 
 
 ## Contact

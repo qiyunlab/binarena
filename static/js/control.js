@@ -1333,48 +1333,60 @@ function fillDataTable(data, n) {
     return [datum[xi], datum[yi]];
   });
 
-  // calculate silhouette scores
-  var scores = silhouetteSample(vals, labels);
+  // This is a heavy calculation so a progress bar is displayed prior to
+  // starting the calculation. This can only be achieved through an async
+  // operation. There is no good sync way to force the browser to "flush".
+  // See: https://stackoverflow.com/questions/16876394/
+  toastMsg('Calculating silhouette coefficients.', mo.stat, 0, true);
+  setTimeout(function () {
 
-  // remove unbinned contigs
-  scores = scores.map(function (score, i) {
-    return labels[i] ? score : null;
-  });
+    // calculate pairwise distance if not already
+    if (mo.dist === null) mo.dist = pdist(vals);
 
-  // add scores to data table
-  var col = data.cols.indexOf('silhouette');
-  
-  // append new column and modify controls
-  if (col === -1) {
-    scores.forEach(function (score, i) {
-      data.df[i].push(score);
+    // calculate silhouette scores
+    var scores = silhouetteSample(vals, labels, mo.dist);
+
+    // remove unbinned contigs
+    scores = scores.map(function (score, i) {
+      return labels[i] ? score : null;
     });
-    col = data.cols.length;
-    data.cols.push('silhouette');
-    data.types.push('number');
-    updateCtrlByData(data, view);
-    initInfoTable(data, view.spcols.len, mo.pick);
-  }
 
-  // update existing column  
-  else {
-    scores.forEach(function (score, i) {
-      data.df[i][col] = score;
-    });
-  }
+    // add scores to data table
+    var col = data.cols.indexOf('silhouette');
 
-  // color contigs by score
-  mo.view['color'].zero = false; // silhouettes can be negative
-  var sel = byId('color-field-sel');
-  sel.value = col;
-  sel.dispatchEvent(new Event('change'));
+    // append new column and modify controls
+    if (col === -1) {
+      scores.forEach(function (score, i) {
+        data.df[i].push(score);
+      });
+      col = data.cols.length;
+      data.cols.push('silhouette');
+      data.types.push('number');
+      updateCtrlByData(data, view);
+      initInfoTable(data, view.spcols.len, mo.pick);
+    }
 
-  // summarize scores
-  scores = scores.filter(function (score) {
-    return score !== null;
-  })
-  toastMsg('Mean silhouette score of contigs of ' + n + ' bins: '
-    + arrMean(scores).toFixed(3) + '.', mo.stat, 0);
+    // update existing column
+    else {
+      scores.forEach(function (score, i) {
+        data.df[i][col] = score;
+      });
+    }
+
+    // color contigs by score
+    mo.view['color'].zero = false; // silhouettes can be negative
+    var sel = byId('color-field-sel');
+    sel.value = col;
+    sel.dispatchEvent(new Event('change'));
+
+    // summarize scores
+    scores = scores.filter(function (score) {
+      return score !== null;
+    })
+    toastMsg('Mean silhouette score of contigs of ' + n + ' bins: '
+      + arrMean(scores).toFixed(3) + '.', mo.stat, 0, false, true);
+
+  }, 0);
 }
 
 
@@ -1411,5 +1423,5 @@ function calcAdjRand(mo, field) {
   var ari = adjustedRandScore(ref, cur);
 
   toastMsg('Adjusted Rand index between current binning plan and "' + field +
-    '": ' + ari.toFixed(3) + '.', mo.stat, 0);
+    '": ' + ari.toFixed(3) + '.', mo.stat, 0, false, true);
 }

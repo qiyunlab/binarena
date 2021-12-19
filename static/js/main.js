@@ -33,6 +33,7 @@
  * @property {Object} rena - arena canvas DOM
  * @property {Object} oray - overlay canvas DOM
  * @property {Object} mini - mini plot
+ * @property {number[]} dist - pairwise distances among all contigs 
  * @property {Object} palettes - available palettes
  */
 function mainObj() {
@@ -186,19 +187,32 @@ function mainObj() {
    * @property {number} field - field index of data to plot
    * @property {boolean} log - whether log-transform data
    * @property {number} nbin - number of bins in histogram
-   * @property {number} cbin - index of current bin (null if none)
+   * @property {number[]} hist - saved bin sizes
+   * @property {number[]} edges - saved bin edges
+   * @property {number} bin0 - first bin in selection range
+   * @property {number} bin0 - last bin in selection range
+   * @property {number} drag - mouse dragging starting position
    */
   this.mini = {
     canvas: null,
-    field: null,
-    log: false,
-    nbin: 10,
-    hist: null,
-    edges: null,
-    bin0: null, // first bin
-    bin1: null, // last bin
-    drag: null,
+    field:  null,
+    log:   false,
+    nbin:     10,
+    hist:   null,
+    edges:  null,
+    bin0:   null,
+    bin1:   null,
+    drag:   null,
   }
+
+  /**
+   * Pairwise distances
+   * @member {Array} dist
+   * @description Pairwise distances among all contigs, stored as a condensed
+   * distance matrix (a 1D array). Calculating such a matrix is expensive,
+   * therefore it is cached here to avoid duplicated calculations.
+   */
+  this.dist = null;
 }
 
 
