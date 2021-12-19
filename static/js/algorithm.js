@@ -71,16 +71,21 @@ function pnpoly(x, y, polygon) {
  * @description The silhouette coefficient measures how similar a contig is to
  * other contigs in the same bin, as in contrast to contigs in other bins.
  * @see {@link https://en.wikipedia.org/wiki/Silhouette_(clustering)}
+ * @description It requires calculation of a distance matrix of all contigs,
+ * which is expensive. The distance matrix should be cached to avoid repeated
+ * calculations
  */
 function silhouetteSample(x, label) {
-  var t0 = performance.now();
   var n = x.length;
-
   var count = bincount(label); // bin sizes
   var c = count.length;
 
+  // var t0 = performance.now();
   var dist = pdist(x);  // pairwise distances of all contigs
+  // var t1 = performance.now();
+  // console.log(t1 - t0);
 
+  // intermediates
   var distIn;  // intra-bin distance
   var distOut; // inter-bin distances
   var li;      // contig label
@@ -132,8 +137,6 @@ function silhouetteSample(x, label) {
       res[i] = 0;
     }
   } // end for i
-  var t1 = performance.now();
-  console.log(t1 - t0);
   return res;
 }
 

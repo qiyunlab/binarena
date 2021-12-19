@@ -32,6 +32,7 @@
  * @property {Object.<string, Object.<number, null>>} bins - binning plan
  * @property {Object} rena - arena canvas DOM
  * @property {Object} oray - overlay canvas DOM
+ * @property {Object} mini - mini plot
  * @property {Object} palettes - available palettes
  */
 function mainObj() {
@@ -177,7 +178,34 @@ function mainObj() {
   /** Main canvases for rendering. */
   this.rena = null;
   this.oray = null;
+
+  /**
+   * Mini object
+   * @member {Object} mini
+   * @property {number} canvas - mini canvas to plot data
+   * @property {number} field - field index of data to plot
+   * @property {boolean} log - whether log-transform data
+   * @property {number} nbin - number of bins in histogram
+   * @property {number} cbin - index of current bin (null if none)
+   */
+  this.mini = {
+    canvas: null,
+    field: null,
+    log: false,
+    nbin: 10,
+    hist: null,
+    edges: null,
+    bin0: null, // first bin
+    bin1: null, // last bin
+    drag: null,
+  }
 }
+
+
+/**
+ * Shorthand for DOM selection.
+ */
+var byId = function (id) { return document.getElementById(id); };
 
 
 /**
@@ -194,8 +222,11 @@ window.addEventListener('load', function () {
   }
 
   // the two main canvases that render the graphs
-  mo.rena = document.getElementById('arena-canvas');
-  mo.oray = document.getElementById('overlay-canvas');
+  mo.rena = byId('arena-canvas');
+  mo.oray = byId('overlay-canvas');
+
+  // the mini plot canvas
+  mo.mini.canvas = byId('mini-canvas');
 
   // initiate color palette object
   mo.palettes = new PaletteObj();

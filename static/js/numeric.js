@@ -122,6 +122,48 @@ function arrEqual(arr1, arr2) {
 
 
 /**
+ * Log-transform numbers in an array.
+ * @function arrLog
+ * @param {number[]} arr - input array
+ * @param {boolean} clip - clip or mask non-positive values
+ * @return {number[]} log-transformed array
+ * @description The challenge is the non-positive values. If directly applying
+ * Math.log, they become -Inf (for 0) or NaN (for negative numbers). One needs
+ * to deal with them.
+ * @see matplotlib.scale.LogScale
+ */
+ function arrLog(arr, clip) {
+  var n = arr.length;
+  var x;
+
+  // mask non-positive numbers (i.e., drop them from array)
+  if (!clip) {
+    var res = [];
+    for (var i = 0; i < n; i++) {
+      x = arr[i];
+      if (x > 0) {
+        res.push(Math.log(x));
+      }
+    }
+    return res;
+  }
+
+  // clip non-positive numbers (i.e., return a very small number)
+  // this number is -1000, to be consistent with matplotlib:
+  // https://github.com/matplotlib/matplotlib/blob/v3.5.1/lib/matplotlib/
+  // scale.py#L236
+  else {
+    var res = Array(n).fill();
+    for (var i = 0; i < n; i++) {
+      x = arr[i];
+      res[i] = (x > 0) ? Math.log(x) : -1000;
+    }
+    return res;
+  }
+}
+
+
+/**
  * Transpose a 2D array.
  * @function transpose
  * @param {Array.<Array>} df - input 2D array
@@ -165,24 +207,51 @@ function euclidean(x, y) {
 
 
 /**
- * Return the pairwise distance matrix of each point in the input data array.
+ * Calculate pairwise distances of all data points
  * @function pdist
- * @param {number[]} x - the input data array
- * @return {number[]} condensed distance matrix of the given data
+ * @param {number[][]} arr - input data
+ * @return {number[]} condensed distance matrix
  * @see scipy.spatial.distance.pdist
- * @todo add metrics='euclidean'
+ * @description This is a deep-optimized, less flexible implementation. It uses
+ * a condensed distance matrix, inline Euclidean distance calculation, etc. to
+ * accelerate computation. It is beneficial because this is one of the most
+ * expensive computations in the analysis.
  */
 function pdist(arr) {
   var n = arr.length;
-  var d = Array(n * (n - 1) / 2).fill(0);
-  var idx = 0;
+  var m = arr[0].length;
+
+  // initiate condensed distance matrix
+  var res = Array(n * (n - 1) / 2).fill();
+
+  // intermediates
+  var ii;  // part of index
+  var xi;  // left data point
+  var xj;  // right data point
+  var sum; // sum of square distances
+
   for (var i = 0; i < n; i++) {
-    idx = n * i - i * (i + 3) / 2 - 1;
+    xi = arr[i];
+
+    // convert square matrix index to condensed matrix index
+    // no more expansion so to avoid half-number arithmetic errors
+    ii = n * i - i * (i + 3) / 2 - 1;
+
+    // only calculate upper triangle
     for (var j = i + 1; j < n; j++) {
-      d[idx + j] = euclidean(arr[i], arr[j]);
+      xj = arr[j];
+
+      // calculate Euclidean distance
+      // written so to avoid expensive function calls, otherwise it can be:
+      // res[ii + j] = euclidean(xi, xj);
+      sum = 0;
+      for (var k = 0; k < m; k++) {
+        sum += (xi[k] - xj[k]) ** 2
+      }
+      res[ii + j] = Math.sqrt(sum);
     }
   }
-  return d;
+  return res;
 }
 
 

@@ -34,7 +34,7 @@
         search-panel
         display-panel
           individual display items have legends
-        plot-panel
+        mini-panel
     side-frame: right side (toggled by show-side-btn)
       bins-panel (contains hide-side-btn)
       info-panel (for selected)
@@ -194,9 +194,9 @@
           <tr class="hidden">
             <td colspan="3">
               <div id="size-legend" class="legend" data-item="size" data-ranging="none">
-                <label class="min" data-value="">Hi</label>
+                <label class="min" data-value=""> </label>
                 <div id="size-gradient" class="gradient"> </div>
-                <label class="max" data-value="">All</label>
+                <label class="max" data-value=""> </label>
                 <div class="clip lower"></div>
                 <div class="clip upper"></div>
                 <div class="range lower" data-tick="0"></div>
@@ -270,12 +270,20 @@
         </table>
       </div>
 
-      <!-- plot panel -->
-      <div id="plot-head" class="panel-head">
+      <!-- mini plot panel -->
+      <div id="mini-head" class="panel-head">
         <span><button title="Show/hide plot panel">Plot</button></span>
       </div>
-      <div class="dash-content hidden">
-        <canvas id="mini-canvas" style="z-index: 2;"></canvas>
+      <div id="mini-content" class="dash-content hidden" style="position: relative">
+        <canvas id="mini-canvas"></canvas>
+        <div id="mini-title">
+          <select id="mini-field-sel" title="Plot a numeric variable"></select>
+        </div>
+        <div id="mini-ctrl">
+          <button id="mini-log-btn" class="square" style="letter-spacing: -0.1em;">log</button><!--
+          --><br><button id="mini-plus-btn" class="square" title="Increase resolution"><i class="fa fa-plus"></i></button><!--
+          --><br><button id="mini-minus-btn" class="square" title="Decrease resolution"><i class="fa fa-minus"></i></button>
+        </div>
       </div>
 
       <!-- tooltip for legend -->

@@ -46,8 +46,7 @@ function initControls(mo) {
       }
     }
   });
-  observer.observe(document.getElementById('main-frame'),
-    { attributes: true });
+  observer.observe(byId('main-frame'), { attributes: true });
 
   // window click event
   // hide popup elements (context menu, dropdown selection, etc.)
@@ -76,16 +75,16 @@ function initControls(mo) {
    * @summary Context menu
    */
 
-  document.getElementById('dash-btn').addEventListener('click', function () {
+  byId('dash-btn').addEventListener('click', function () {
     this.classList.toggle('active');
-    document.getElementById('dash-panel').classList.toggle('hidden');
-    document.getElementById('dash-frame').classList.toggle('active');
+    byId('dash-panel').classList.toggle('hidden');
+    byId('dash-frame').classList.toggle('active');
     // dashFrameToggleActive();
   });
 
   // function dashFrameToggleActive() {
-  //   document.getElementById('dash-frame').classList.toggle('active',
-  //     !(document.getElementById('dash-panel').classList.contains('hidden')) &&
+  //   byId('dash-frame').classList.toggle('active',
+  //     !(byId('dash-panel').classList.contains('hidden')) &&
   //     document.querySelector('.dash-content:not(.hidden)'));
   // }
 
@@ -95,9 +94,9 @@ function initControls(mo) {
    */
 
   // context menu button click
-  document.getElementById('menu-btn').addEventListener('click', function () {
-    var rect = document.getElementById('menu-btn').getBoundingClientRect();
-    var menu = document.getElementById('context-menu');
+  byId('menu-btn').addEventListener('click', function () {
+    var rect = byId('menu-btn').getBoundingClientRect();
+    var menu = byId('context-menu');
     // menu.style.right = 0;
     menu.style.top = rect.bottom + 'px';
     menu.style.left = rect.left + 'px';
@@ -105,24 +104,20 @@ function initControls(mo) {
   });
 
   // open file (a hidden element)
-  document.getElementById('open-file').addEventListener('change',
-    function (e) {
+  byId('open-file').addEventListener('change', function (e) {
     uploadFile(e.target.files[0], mo);
   });
 
   // load data
-  document.getElementById('load-data-a').addEventListener('click',
-    function () {
-    document.getElementById('open-file').click();
+  byId('load-data-a').addEventListener('click', function () {
+    byId('open-file').click();
   });
 
-  document.getElementById('show-data-a').addEventListener('click',
-    function () {
-    document.getElementById('data-table-modal').classList.remove('hidden');
+  byId('show-data-a').addEventListener('click', function () {
+    byId('data-table-modal').classList.remove('hidden');
   });
 
-  document.getElementById('close-data-a').addEventListener('click',
-    function () {
+  byId('close-data-a').addEventListener('click', function () {
     mo.data = { cols: [], types: [], dicts: {}, df: [] };
     mo.pick = {};
     mo.mask = {};
@@ -130,23 +125,20 @@ function initControls(mo) {
     updateViewByData(mo);
   });
 
-  document.getElementById('export-bins-a').addEventListener('click',
-    function () {
+  byId('export-bins-a').addEventListener('click', function () {
     exportBins(mo.bins, mo.data);
   });
 
-  document.getElementById('export-data-a').addEventListener('click',
-    function () {
+  byId('export-data-a').addEventListener('click', function () {
     exportJSON(mo.data);
   });
 
-  document.getElementById('export-image-a').addEventListener('click',
-    function () {
+  byId('export-image-a').addEventListener('click', function () {
     exportPNG(mo.rena);
   });
 
-  document.getElementById('help-a').addEventListener('click', function () {
-    document.getElementById('help-modal').classList.remove('hidden');
+  byId('help-a').addEventListener('click', function () {
+    byId('help-modal').classList.remove('hidden');
   });
 
 
@@ -164,22 +156,20 @@ function initControls(mo) {
   });
 
   // show/hide side frame
-  document.getElementById('hide-side-btn').addEventListener('click',
-    function () {
-    document.getElementById('side-frame').classList.add('hidden');
-    document.getElementById('show-frame').classList.remove('hidden');
-    var mf = document.getElementById('main-frame');
+  byId('hide-side-btn').addEventListener('click', function () {
+    byId('side-frame').classList.add('hidden');
+    byId('show-frame').classList.remove('hidden');
+    var mf = byId('main-frame');
     mf.style.resize = 'none';
     mf.style.width = '100%';
     resizeArena(mo.rena, mo.oray);
     updateView(mo);
   });
 
-  document.getElementById('show-side-btn').addEventListener('click',
-    function () {
-    document.getElementById('show-frame').classList.add('hidden');
-    document.getElementById('side-frame').classList.remove('hidden');
-    var mf = document.getElementById('main-frame');
+  byId('show-side-btn').addEventListener('click', function () {
+    byId('show-frame').classList.add('hidden');
+    byId('side-frame').classList.remove('hidden');
+    var mf = byId('main-frame');
     mf.style.resize = 'horizontal';
     var w = mf.getAttribute('data-width');
     if (w) mf.style.width = w;
@@ -196,19 +186,20 @@ function initControls(mo) {
 
 
   // generic list select table
-  document.getElementById('list-options').addEventListener('click',
-    function (e) {
+  // The list select table is like a dropdown menu. It is launched by a source
+  // DOM. The user clicks an item, and this code will transfer the selection
+  // back to the source DOM and trigger an event of it.
+  byId('list-options').addEventListener('click', function (e) {
     var rows = this.rows;
     var n = rows.length;
     for (var i = 0; i < n; i++) {
       if (rows[i].contains(e.target)) {
-        var target =
-          document.getElementById(this.getAttribute('data-target-id'));
-        target.value = rows[i].cells[0].textContent;
-        if (target.nodeName.toLowerCase() == 'input') {
-          target.focus(); // for text box etc.
+        var src = byId(this.getAttribute('data-target-id'));
+        src.value = rows[i].cells[0].textContent;
+        if (src.nodeName.toLowerCase() == 'input') {
+          src.focus(); // for text box etc.
         } else {
-          target.click(); // for button, menu item, etc.
+          src.click(); // for button, menu item, etc.
         }
         this.parentElement.classList.add('hidden');
         break;
@@ -217,11 +208,11 @@ function initControls(mo) {
   });
 
   // scale select buttons
-  var list = document.getElementById('scale-select');
+  // It is a dropdown menu of various scaling methods.
+  var list = byId('scale-select');
   document.querySelectorAll('button.scale-btn').forEach(function (btn) {
     btn.addEventListener('click', function () {
-      document.getElementById('current-scale').innerHTML =
-        this.getAttribute('data-scale');
+      byId('current-scale').innerHTML = this.getAttribute('data-scale');
       list.setAttribute('data-target-id', this.id);
       var rect = this.getBoundingClientRect();
       list.style.top = rect.bottom + 'px';
@@ -231,36 +222,35 @@ function initControls(mo) {
   });
 
   // scale select options
-  var table = document.getElementById('scale-options');
+  var table = byId('scale-options');
   for (var i = 0; i < table.rows.length; i++) {
     for (var j = 0; j < table.rows[i].cells.length; j++) {
       var cell = table.rows[i].cells[j];
 
       // mouse over to show scale name
       cell.addEventListener('mouseover', function () {
-        document.getElementById('current-scale').innerHTML = this.title;
+        byId('current-scale').innerHTML = this.title;
       });
 
       // click to select a scale
       cell.addEventListener('click', function () {
-        var src = document.getElementById(document
-          .getElementById('scale-select').getAttribute('data-target-id'));
+        var src = byId(byId('scale-select').getAttribute('data-target-id'));
         if (src.innerHTML !== this.innerHTML) {
           src.innerHTML = this.innerHTML;
           src.setAttribute('data-scale', this.title);
           var item = src.id.split('-')[0];
-          displayItemChange(item, document.getElementById(item +
-            '-field-sel').value, this.title, mo);
+          displayItemChange(item, byId(item + '-field-sel').value,
+            this.title, mo);
         }
       });
     }
   }
 
   // color palette select button
-  document.getElementById('palette-btn').addEventListener('click', function () {
-    var list = document.getElementById('palette-select');
+  byId('palette-btn').addEventListener('click', function () {
+    var list = byId('palette-select');
     if (list.classList.contains('hidden')) {
-      var val = document.getElementById('color-field-sel').value;
+      var val = byId('color-field-sel').value;
       if (!val) return;
       var isNum = (mo.data.types[val] === 'number');
       list.querySelectorAll('.disc').forEach(function (div) {
@@ -284,14 +274,13 @@ function initControls(mo) {
    */
 
   // display settings
-  document.getElementById('set-btn').addEventListener('click',
-    function () {
+  byId('set-btn').addEventListener('click', function () {
     this.classList.toggle('pressed');
     this.nextElementSibling.classList.toggle('hidden');
   });
 
   // change length filter
-  var btn = document.getElementById('len-filt');
+  var btn = byId('len-filt');
   btn.value = mo.view.filter.len;
   btn.addEventListener('blur', function () {
     var val = parseInt(this.value);
@@ -302,7 +291,7 @@ function initControls(mo) {
   });
 
   // change coverage filter
-  var btn = document.getElementById('cov-filt');
+  var btn = byId('cov-filt');
   btn.value = mo.view.filter.cov;
   btn.addEventListener('blur', function () {
     var val = parseFloat(this.value);
@@ -313,22 +302,22 @@ function initControls(mo) {
   });
 
   // show/hide grid
-  document.getElementById('grid-chk').addEventListener('change', function () {
+  byId('grid-chk').addEventListener('change', function () {
     view.grid = this.checked;
-    document.getElementById('coords-label').classList.toggle('hidden',
+    byId('coords-label').classList.toggle('hidden',
       !this.checked);
     renderArena(mo);
   });
 
   // show/hide navigation controls
-  document.getElementById('nav-chk').addEventListener('change', function () {
-    document.getElementById('nav-panel').classList.toggle('hidden',
+  byId('nav-chk').addEventListener('change', function () {
+    byId('nav-panel').classList.toggle('hidden',
       !this.checked);
   });
 
   // show/hide frequent buttons
-  document.getElementById('freq-chk').addEventListener('change', function () {
-    document.getElementById('freq-panel').classList.toggle('hidden',
+  byId('freq-chk').addEventListener('change', function () {
+    byId('freq-panel').classList.toggle('hidden',
       !this.checked);
   });
 
@@ -339,14 +328,12 @@ function initControls(mo) {
    */
 
   // draw polygon to select contigs
-  document.getElementById('polygon-btn').addEventListener('click',
-    function () {
+  byId('polygon-btn').addEventListener('click', function () {
     polygonSelect(mo);
   });
 
   // toggle selection mode
-  document.getElementById('selmode-btn').addEventListener('click',
-    function () {
+  byId('selmode-btn').addEventListener('click', function () {
     var modes = ['new', 'add', 'remove'];
     var icons = ['asterisk', 'plus', 'minus'];
     var titles = ['new', 'add to', 'remove from'];
@@ -357,15 +344,13 @@ function initControls(mo) {
   });
 
   // toggle selecting or masking
-  document.getElementById('masking-btn').addEventListener('click',
-    function () {
+  byId('masking-btn').addEventListener('click', function () {
     this.classList.toggle('pressed');
     stat.masking = this.classList.contains('pressed');
   });
 
   // take screenshot
-  document.getElementById('screenshot-btn').addEventListener('click',
-    function () {
+  byId('screenshot-btn').addEventListener('click', function () {
     exportPNG(mo.rena);
   });
 
@@ -375,37 +360,36 @@ function initControls(mo) {
    */
 
   // reset graph
-  document.getElementById('reset-btn').addEventListener('click',
-    function () {
+  byId('reset-btn').addEventListener('click', function () {
     resetView(mo);
   });
 
-  document.getElementById('zoomin-btn').addEventListener('click', function () {
+  byId('zoomin-btn').addEventListener('click', function () {
     view.scale /= 0.75;
     updateView(mo);
   });
 
-  document.getElementById('zoomout-btn').addEventListener('click', function () {
+  byId('zoomout-btn').addEventListener('click', function () {
     view.scale *= 0.75;
     updateView(mo);
   });
 
-  document.getElementById('left-btn').addEventListener('click', function () {
+  byId('left-btn').addEventListener('click', function () {
     view.pos.x -= 15;
     updateView(mo);
   });
 
-  document.getElementById('up-btn').addEventListener('click', function () {
+  byId('up-btn').addEventListener('click', function () {
     view.pos.y -= 15;
     updateView(mo);
   });
 
-  document.getElementById('right-btn').addEventListener('click', function () {
+  byId('right-btn').addEventListener('click', function () {
     view.pos.x += 15;
     updateView(mo);
   });
 
-  document.getElementById('down-btn').addEventListener('click', function () {
+  byId('down-btn').addEventListener('click', function () {
     view.pos.y += 15;
     updateView(mo);
   });
@@ -416,12 +400,12 @@ function initControls(mo) {
    */
 
   // show calculation menu
-  document.getElementById('calc-btn').addEventListener('click', function () {
-    var menu = document.getElementById('calc-menu');
+  byId('calc-btn').addEventListener('click', function () {
+    var menu = byId('calc-menu');
     if (menu.classList.contains('hidden')) {
       var n = Object.keys(mo.bins).length;
-      document.getElementById('silhouet-a').classList.toggle('disabled', !n);
-      document.getElementById('adj-rand-a').classList.toggle('disabled', !n)
+      byId('silhouet-a').classList.toggle('disabled', !n);
+      byId('adj-rand-a').classList.toggle('disabled', !n)
       menu.classList.remove('hidden');
     } else {
       menu.classList.add('hidden');
@@ -429,13 +413,13 @@ function initControls(mo) {
   });
 
   // calculate silhouette coefficients
-  document.getElementById('silhouet-a').addEventListener('click', function () {
+  byId('silhouet-a').addEventListener('click', function () {
     if (this.classList.contains('disabled')) return;
     calcSilhouette(mo);
   });
 
   // calculate adjusted Rand index
-  document.getElementById('adj-rand-a').addEventListener('click', function () {
+  byId('adj-rand-a').addEventListener('click', function () {
     if (this.classList.contains('disabled')) return;
     if (!this.value) {
       listSelect(Object.keys(mo.view.categories).sort(), this, 'right');
@@ -467,12 +451,10 @@ function initControls(mo) {
 
   // change display item
   ['x', 'y', 'size', 'opacity', 'color'].forEach(function (key) {
-    document.getElementById(key + '-field-sel').addEventListener('change',
-      function () {
-      document.getElementById(key + '-param-span').classList.toggle('hidden',
-        !this.value);
+    byId(key + '-field-sel').addEventListener('change', function () {
+      byId(key + '-param-span').classList.toggle('hidden', !this.value);
       if (!this.value) {
-        var div = document.getElementById(key + '-legend');
+        var div = byId(key + '-legend');
         if (div) div.parentElement.parentElement.classList.add('hidden');
       }
       displayItemChange(key, this.value, view[key].scale, mo);
@@ -499,7 +481,7 @@ function initControls(mo) {
   mo.view.color.contmap = palette11to101(PALETTES[mo.view.contpal]);
 
   // select palette
-  document.getElementById('palette-select').querySelectorAll('table').forEach(
+  byId('palette-select').querySelectorAll('table').forEach(
     function (table) {
     for (var i = 0; i < table.rows.length; i++) {
       table.rows[i].addEventListener('click', function () {
@@ -519,14 +501,12 @@ function initControls(mo) {
   });
 
   // add/remove discrete color
-  document.getElementById('add-color-btn').addEventListener('click',
-    function () {
+  byId('add-color-btn').addEventListener('click', function () {
     mo.view.ncolor += 1;
     updateColorNum();
   });
 
-  document.getElementById('remove-color-btn').addEventListener('click',
-    function () {
+  byId('remove-color-btn').addEventListener('click', function () {
     if (mo.view.ncolor === 1) return;
     mo.view.ncolor -= 1;
     updateColorNum();
@@ -542,13 +522,67 @@ function initControls(mo) {
   /**
    * @summary Plot panel
    */
-  // resize mini plot to 4:3
-  var canvas = document.getElementById('mini-canvas');
-  canvas.height = canvas.width * 0.75;
+
+  // mini plot aspect: 16:9
+  var cav = byId('mini-canvas');
+  cav.height = cav.width * 0.5625;
+
+  cav.addEventListener('mousedown', function (e) {
+    var rect = this.getBoundingClientRect();
+    mo.mini.drag = (e.clientX - rect.left) / (rect.right - rect.left)
+      * cav.width;
+  });
+
+  cav.addEventListener('mouseup', function () {
+    byId('legend-tip').classList.add('hidden');
+    if (mo.mini.drag !== null) miniPlotSelect(mo);
+  });
+
+  cav.addEventListener('mousemove', function (e) {
+    miniPlotMouseMove(e, mo);
+  });
+
+  cav.addEventListener('mouseleave', function () {
+    if (mo.mini.bin0 !== null) {
+      mo.mini.bin0 = null;
+      mo.mini.bin1 = null;
+      updateMiniPlot(mo);
+      byId('legend-tip').classList.add('hidden');
+    }
+  });
+
+  // plot selected variable
+  byId('mini-field-sel').addEventListener('change', function () {
+    mo.mini.field = (this.value === '') ? null : this.value;
+    updateMiniPlot(mo);
+  });
+
+  // log-transform variable
+  byId('mini-log-btn').addEventListener('click', function () {
+    this.classList.toggle('pressed');
+    mo.mini.log = this.classList.contains('pressed');
+    updateMiniPlot(mo);
+  });
+
+  // increase resolution
+  byId('mini-plus-btn').addEventListener('click', function () {
+    if (mo.mini.nbin < 50) {
+      mo.mini.nbin++;
+      updateMiniPlot(mo);
+    }
+  });
+
+  // decrease resolution
+  byId('mini-minus-btn').addEventListener('click', function () {
+    if (mo.mini.nbin > 0) {
+      mo.mini.nbin--;
+      updateMiniPlot(mo);
+    }
+  });
 
 
   /**
-   * @summary Legends
+   * @summary Legends (in the display panel)
    */
 
   document.querySelectorAll('.legend').forEach(function (leg) {
@@ -588,7 +622,7 @@ function initControls(mo) {
           .getAttribute('data-tick') * step) return;
 
         // specify tip position
-        var tip = document.getElementById('legend-tip');
+        var tip = byId('legend-tip');
         tip.style.left = e.clientX + 'px';
         tip.style.top = Math.round(rect.bottom) + 'px';
 
@@ -596,11 +630,12 @@ function initControls(mo) {
         var vmin = v.zero ? 0 : v.min;
         var value = scaleNum(vmin + offset / width * (v.max - vmin),
           unscale(v.scale));
-        document.getElementById('legend-value').innerHTML = formatValueLabel(
+        byId('legend-value').innerHTML = formatValueLabel(
           value, mo.view[item].i, 3, true, mo);
 
         // item-specific operations
-        var circle = document.getElementById('legend-circle');
+        var circle = byId('legend-circle');
+        circle.classList.remove('hidden');
         if (item === 'size') {
           circle.style.backgroundColor = 'black';
           var diameter = Math.ceil(mo.view.rbase * 2 * offset / width);
@@ -639,18 +674,18 @@ function initControls(mo) {
 
     grad.addEventListener('mouseenter', function () {
       if (this.parentElement.getAttribute('data-ranging') === 'none') {
-        document.getElementById('legend-tip').classList.remove('hidden');
+        byId('legend-tip').classList.remove('hidden');
       }
     });
 
     grad.addEventListener('mouseleave', function () {
-      document.getElementById('legend-tip').classList.add('hidden');
+      byId('legend-tip').classList.add('hidden');
     });
 
     grad.addEventListener('mouseup', function () {
       var ranging = this.parentElement.getAttribute('data-ranging');
       if (ranging === 'none') {
-        document.getElementById('legend-tip').classList.add('hidden');
+        byId('legend-tip').classList.add('hidden');
       } else {
         this.parentElement.setAttribute('data-ranging', 'none');
         var item = this.parentElement.getAttribute('data-item');
@@ -700,12 +735,11 @@ function initControls(mo) {
    * @summary Select panel body
    */
 
-  document.getElementById('field-list').addEventListener('change',
-    function (e) {
+  byId('field-list').addEventListener('change', function (e) {
     selectFieldChange(e, mo.data, view);
   });
 
-  document.getElementById('min-btn').addEventListener('click', function () {
+  byId('min-btn').addEventListener('click', function () {
     if (this.innerHTML === '[') {
       this.innerHTML = '(';
       this.title = 'Lower bound excluded';
@@ -715,7 +749,7 @@ function initControls(mo) {
     }
   });
 
-  document.getElementById('max-btn').addEventListener('click', function () {
+  byId('max-btn').addEventListener('click', function () {
     if (this.innerHTML === ']') {
       this.innerHTML = ')';
       this.title = 'Upper bound excluded';
@@ -726,20 +760,19 @@ function initControls(mo) {
   });
 
   ['case-btn', 'whole-btn'].forEach(function (id) {
-    document.getElementById(id).addEventListener('click', function () {
+    byId(id).addEventListener('click', function () {
       this.classList.toggle('pressed');
     });
   });
 
   ['min-txt', 'max-txt', 'cat-sel-txt', 'fea-sel-txt', 'des-sel-txt']
     .forEach(function (id) {
-    document.getElementById(id).addEventListener('keyup', function (e) {
-      if (e.keyCode === 13) document.getElementById('search-btn').click();
+    byId(id).addEventListener('keyup', function (e) {
+      if (e.keyCode === 13) byId('search-btn').click();
     });
   })
 
-  document.getElementById('search-btn').addEventListener('click',
-    function () {
+  byId('search-btn').addEventListener('click', function () {
     selectByCriteria(mo);
   });
 
@@ -749,8 +782,7 @@ function initControls(mo) {
    */
 
   // load bins from a categorical field
-  document.getElementById('load-bin-btn').addEventListener('click',
-    function () {
+  byId('load-bin-btn').addEventListener('click', function () {
     if (!this.value) {
       listSelect(Object.keys(view.categories).sort(), this, 'down');
     } else {
@@ -765,8 +797,7 @@ function initControls(mo) {
   });
 
   // create a new bin
-  document.getElementById('new-bin-btn').addEventListener('click',
-    function () {
+  byId('new-bin-btn').addEventListener('click', function () {
     var name = createBin(mo.bins);
     var ctgs = Object.keys(mo.pick);
     var n = ctgs.length;
@@ -777,16 +808,15 @@ function initControls(mo) {
     }
     updateBinTable(mo);
     updateBinToolbar(mo);
-    var table = document.getElementById('bin-tbody');
+    var table = byId('bin-tbody');
     selectBin(table, name);
     toastMsg('Created "' + name + '"' + (n ? ' with ' + n
       + ' contig(s)': '') + '.', stat);
   });
 
   // add selected contigs to current bin
-  document.getElementById('add-to-bin-btn').addEventListener('click',
-    function () {
-    var table = document.getElementById('bin-tbody');
+  byId('add-to-bin-btn').addEventListener('click', function () {
+    var table = byId('bin-tbody');
     var x = currentBin(table);
     var added = addToBin(Object.keys(mo.pick), mo.bins[x[1]]);
     var n = added.length;
@@ -796,9 +826,8 @@ function initControls(mo) {
   });
 
   // remove selected contigs from current bin
-  document.getElementById('remove-from-bin-btn').addEventListener('click',
-    function () {
-    var table = document.getElementById('bin-tbody');
+  byId('remove-from-bin-btn').addEventListener('click', function () {
+    var table = byId('bin-tbody');
     var x = currentBin(table);
     var removed = removeFromBin(Object.keys(mo.pick), mo.bins[x[1]]);
     updateBinToolbar(mo);
@@ -809,9 +838,8 @@ function initControls(mo) {
   });
 
   // delete current bin
-  document.getElementById('delete-bin-btn').addEventListener('click',
-    function () {
-    var table = document.getElementById('bin-tbody');
+  byId('delete-bin-btn').addEventListener('click', function () {
+    var table = byId('bin-tbody');
     var deleted = deleteBins(table, mo.bins)[0];
     updateBinToolbar(mo);
     var n = deleted.length;
@@ -820,9 +848,8 @@ function initControls(mo) {
   });
 
   // merge currently selected bins
-  document.getElementById('merge-bin-btn').addEventListener('click',
-    function () {
-    var table = document.getElementById('bin-tbody');
+  byId('merge-bin-btn').addEventListener('click', function () {
+    var table = byId('bin-tbody');
     var x = deleteBins(table, mo.bins);
     var name = createBin(mo.bins);
     addToBin(x[1], mo.bins[name]);
@@ -836,14 +863,12 @@ function initControls(mo) {
   });
 
   // export current binning plan
-  document.getElementById('save-bin-btn').addEventListener('click',
-    function () {
+  byId('save-bin-btn').addEventListener('click', function () {
     exportBins(mo.bins, mo.data);
   });
 
   // clear current binning plan
-  document.getElementById('clear-bin-btn').addEventListener('click',
-    function () {
+  byId('clear-bin-btn').addEventListener('click', function () {
     mo.bins = {};
     updateBinTable(mo);
     updateBinToolbar(mo);
@@ -854,8 +879,7 @@ function initControls(mo) {
    * @summary Bin table events
    */
 
-  document.getElementById('bin-tbody').addEventListener('click',
-    function (e) {
+  byId('bin-tbody').addEventListener('click', function (e) {
     // prevent table text from being selected
     this.onselectstart = function () {
       return false;
@@ -904,7 +928,7 @@ function initControls(mo) {
    * @summary Information table events
    */
 
-  document.getElementById('mask-btn').addEventListener('click', function () {
+  byId('mask-btn').addEventListener('click', function () {
     var indices = Object.keys(mo.pick);
     if (indices.length > 0) {
       // switch to "add" mode, then treat deletion
@@ -913,9 +937,8 @@ function initControls(mo) {
   });
 
   // metric (sum or mean)
-  document.getElementById('info-metric-btn').addEventListener('click',
-    function () {
-    var row = document.getElementById('info-table').rows[this.parentElement
+  byId('info-metric-btn').addEventListener('click', function () {
+    var row = byId('info-table').rows[this.parentElement
       .getAttribute('data-row')];
     if (row.getAttribute('data-metric') === 'sum') {
       row.setAttribute('data-metric', 'mean');
@@ -929,62 +952,58 @@ function initControls(mo) {
   });
 
   // weight variable by reference
-  document.getElementById('info-ref-sel').addEventListener('change',
-    function () {
-    var row = document.getElementById('info-table').rows[this.parentElement
+  byId('info-ref-sel').addEventListener('change', function () {
+    var row = byId('info-table').rows[this.parentElement
       .parentElement.getAttribute('data-row')];
     row.setAttribute('data-refcol', this.value);
     updateInfoRow(row, mo);
   });
 
   // plot variable
-  document.getElementById('info-plot-btn').addEventListener('click',
-    function () {
+  byId('info-plot-btn').addEventListener('click', function () {
     var div = this.parentElement;
-    var row = document.getElementById('info-table').rows[div
-      .getAttribute('data-row')];
-    plotMini(row, mo);
-    var div = document.getElementById('mini-canvas').parentElement;
+    var idx = byId('info-table').rows[div
+      .getAttribute('data-row')].getAttribute('data-index');
+    mo.mini.field = idx;
+    byId('mini-field-sel').value = idx;
+    updateMiniPlot(mo);
+    var div = byId('mini-canvas').parentElement;
     div.classList.remove('hidden');
   });
 
   // hide variable
-  document.getElementById('info-hide-btn').addEventListener('click',
-    function () {
+  byId('info-hide-btn').addEventListener('click', function () {
     var div = this.parentElement;
-    var row = document.getElementById('info-table').rows[div
+    var row = byId('info-table').rows[div
       .getAttribute('data-row')];
     div.classList.add('hidden');
-    document.getElementById('info-table').deleteRow(row.rowIndex);
+    byId('info-table').deleteRow(row.rowIndex);
   });
 
 
   /**
    * @summary Mask panel events
    */
-  document.getElementById('clear-mask-btn').addEventListener('click',
-    function () {
-      mo.mask = {};
-      updateView(mo);
+  byId('clear-mask-btn').addEventListener('click', function () {
+    mo.mask = {};
+    updateView(mo);
   });
 
 
   /** 
    * @summary Data table events
    */
-  document.getElementById('load-data-btn').addEventListener('click',
-    function () {
-      document.getElementById('open-file').click();
+  byId('load-data-btn').addEventListener('click', function () {
+    byId('open-file').click();
   });
 
 
   /** 
    * @summary Toast events
    */
-   document.getElementById('toast-close-btn').addEventListener('click',
-   function () {
-     document.getElementById('toast').classList.add('hidden');
- });
+  byId('toast-close-btn').addEventListener('click', function () {
+    byId('toast').classList.add('hidden');
+  });
 }
 
 
@@ -1037,7 +1056,7 @@ function initCanvas(mo) {
 
   rena.addEventListener('contextmenu', function (e) {
     e.preventDefault();
-    var menu = document.getElementById('context-menu');
+    var menu = byId('context-menu');
     menu.style.top = e.clientY + 'px';
     menu.style.left = e.clientX + 'px';
     menu.classList.remove('hidden');
@@ -1067,37 +1086,37 @@ function initCanvas(mo) {
     // var t0 = performance.now();
     switch (e.keyCode) {
       case 37: // Left
-        document.getElementById('left-btn').click();
+        byId('left-btn').click();
         break;
       case 38: // Up
-        document.getElementById('up-btn').click();
+        byId('up-btn').click();
         break;
       case 39: // Right
-        document.getElementById('right-btn').click();
+        byId('right-btn').click();
         break;
       case 40: // Down
-        document.getElementById('down-btn').click();
+        byId('down-btn').click();
         break;
       case 173: // - (Firefox)
       case 189: // - (others)
-        document.getElementById('zoomout-btn').click();
+        byId('zoomout-btn').click();
         break;
       case 61: // = (Firefox)
       case 187: // = (others)
-        document.getElementById('zoomin-btn').click();
+        byId('zoomin-btn').click();
         break;
       case 48: // 0 (zero)
-        document.getElementById('reset-btn').click();
+        byId('reset-btn').click();
         break;
       case 80: // P
-        document.getElementById('screenshot-btn').click();
+        byId('screenshot-btn').click();
         break;
       case 77: // M
-        document.getElementById('masking-btn').click();
+        byId('masking-btn').click();
         break;
       case 46: // Delete
       case 8: // Backspace
-        document.getElementById('mask-btn').click();
+        byId('mask-btn').click();
         break;
       case 13: // Enter
         polygonSelect(mo);
@@ -1120,9 +1139,14 @@ function canvasMouseClick(e, mo) {
   var view = mo.view;
   var stat = mo.stat;
   var rena = mo.rena;
+
+  // mouse up after dragging
   if (stat.mousemove) {
     stat.mousemove = false;
-  } else if (stat.drawing) {
+  }
+  
+  // keep drawing polygon
+  else if (stat.drawing) {
     var x = (e.offsetX - view.pos.x) / view.scale;
     var y = (e.offsetY - view.pos.y) / view.scale;
     stat.polygon.push({
@@ -1130,27 +1154,41 @@ function canvasMouseClick(e, mo) {
       y: y
     })
     drawPolygon(mo);
-  } else {
+  }
+
+  // determine which contigs are clicked
+  else {
     var arr = [];
     var x0 = (e.offsetX - view.pos.x) / view.scale;
     var y0 = (e.offsetY - view.pos.y) / view.scale;
     var masking = (Object.keys(mo.mask).length > 0) ? true : false;
-    for (var i = 0; i < data.df.length; i++) {
+    var df = data.df;
+    var n = df.length;
+    var datum,
+        idx,
+        radius,
+        r2,
+        x,
+        y,
+        dx,
+        dy,
+        x2y2;
+    for (var i = 0; i < n; i++) {
       if (masking && i in mo.mask) continue;
-      var datum = data.df[i];
-      var idx = view.size.i;
-      var radius = idx ? scaleNum(datum[idx], view.size.scale) * view.rbase
+      datum = df[i];
+      idx = view.size.i;
+      radius = idx ? scaleNum(datum[idx], view.size.scale) * view.rbase
         / view.size.max : view.rbase;
       // var ratio = scaleNum(datum[view.size.i], view.size.scale) *
       //   view.rbase / view.size.max;
-      var r2 = radius * radius; // this is faster than Math.pow(x, 2)
-      var x = ((scaleNum(datum[view.x.i], view.x.scale) - view.x.min) /
+      r2 = radius * radius; // this is faster than Math.pow(x, 2)
+      x = ((scaleNum(datum[view.x.i], view.x.scale) - view.x.min) /
         (view.x.max - view.x.min) - 0.5) * rena.width;
-      var y = ((view.y.max - scaleNum(datum[view.y.i], view.y.scale)) /
+      y = ((view.y.max - scaleNum(datum[view.y.i], view.y.scale)) /
         (view.y.max - view.y.min) - 0.5) * rena.height;
-      var dx = x - x0;
-      var dy = y - y0;
-      var x2y2 = dx * dx + dy * dy;
+      dx = x - x0;
+      dy = y - y0;
+      x2y2 = dx * dx + dy * dy;
       // var x2y2 = Math.pow(x - x0, 2) + Math.pow(y - y0, 2);
       if (x2y2 <= r2) arr.push([i, x2y2]);
     }
@@ -1160,7 +1198,7 @@ function canvasMouseClick(e, mo) {
         return (a[1] - b[1]);
       });
       // if already selected, remove; else, add to selection
-      var i = arr[0][0];
+      i = arr[0][0];
       if (i in mo.pick) delete mo.pick[i];
       else mo.pick[i] = null;
     }
@@ -1208,8 +1246,7 @@ function canvasMouseMove(e, mo) {
       (view.x.max - view.x.min) + view.x.min;
     var y = view.y.max - ((e.offsetY - view.pos.y) / view.scale /
       rena.height + 0.5) * (view.y.max - view.y.min);
-    document.getElementById('coords-label').innerHTML = x.toFixed(3) + ',' +
-      y.toFixed(3);
+    byId('coords-label').innerHTML = x.toFixed(3) + ',' + y.toFixed(3);
   }
 }
 
@@ -1263,6 +1300,9 @@ function initCloseBtns() {
  * @param {Object} target - target DOM
  * @param {string} direc - direction of popup
  * @param {boolean} same - keep same dimension
+ * @description By default it pops up toward bottom and right. But if the
+ * current position is too close to the right or bottom edge of the browser,
+ * it will pop up toward top and/or left.
  */
 function popupPos(source, target, direc, same) {
   var th = 0.8;
@@ -1307,10 +1347,10 @@ function popupPos(source, target, direc, same) {
  * @param {string[]} lst - list of options
  */
 function listSelect(lst, src, direc, same) {
-  var div = document.getElementById('list-select');
+  var div = byId('list-select');
   div.classList.add('hidden');
   popupPos(src, div, direc, same);
-  var table = document.getElementById('list-options');
+  var table = byId('list-options');
   table.setAttribute('data-target-id', src.id);
   table.innerHTML = '';
   lst.forEach(function (itm) {
@@ -1329,7 +1369,7 @@ function listSelect(lst, src, direc, same) {
  * @returns {string} - HTML code
  */
 function scale2HTML(scale) {
-  var table = document.getElementById('scale-options');
+  var table = byId('scale-options');
   for (var i = 0; i < table.rows.length; i++) {
     for (var j = 0; j < table.rows[i].cells.length; j++) {
       var cell = table.rows[i].cells[j];
@@ -1354,7 +1394,7 @@ function toastMsg(msg, stat, duration) {
   if (duration === undefined) {
     duration = 1000;
   }
-  var toast = document.getElementById('toast');
+  var toast = byId('toast');
   toast.firstElementChild.innerHTML = msg;
   toast.lastElementChild.classList.toggle('hidden', duration);
   toast.classList.remove('hidden');
@@ -1399,7 +1439,7 @@ function autoComplete(inp, arr) {
   });
 
   inp.addEventListener('keydown', function (e) {
-    var table = document.getElementById('list-options');
+    var table = byId('list-options');
     if (e.keyCode == 40) { // Down key
       focus ++;
       addActive(table);
@@ -1447,10 +1487,8 @@ function updateLegends(mo, items) {
     // discrete colors
     if (item === 'color') {
       var isCat = (mo.data.types[icol] === 'category');
-      document.getElementById('color-legend').classList.toggle('hidden',
-        isCat);
-      document.getElementById('color-legend-2').classList.toggle('hidden',
-        !isCat);
+      byId('color-legend').classList.toggle('hidden', isCat);
+      byId('color-legend-2').classList.toggle('hidden', !isCat);
       if (isCat) {
         updateColorTable(mo);
         continue;
@@ -1459,7 +1497,7 @@ function updateLegends(mo, items) {
 
     // continuous data
     var scale = unscale(mo.view[item].scale);
-    var legend = document.getElementById(item + '-legend');
+    var legend = byId(item + '-legend');
     var grad = legend.querySelector('.gradient');
     if (grad === null) continue;
   
@@ -1503,11 +1541,11 @@ function updateLegends(mo, items) {
  * @function updateSizeGradient
  * @param {Object} mo - main object
  * @description The ladder-shaped gradient is achieved by css borders, which,
- * cannot accept percentage, thus need to be adjusted specifically.d
+ * cannot accept percentage, thus need to be adjusted specifically.
  */
 function updateSizeGradient(mo) {
   var rbase = mo.view.rbase;
-  var grad = document.getElementById('size-gradient');
+  var grad = byId('size-gradient');
   grad.style.height = rbase + 'px';
   grad.style.borderTopWidth = rbase + 'px';
   var rect = grad.getBoundingClientRect();
@@ -1525,7 +1563,7 @@ function updateColorGradient(mo) {
   var ci = mo.view.color.i;
   if (!ci) return;
   if (mo.data.types[ci] === 'category') return;
-  document.getElementById('color-gradient').style.backgroundImage
+  byId('color-gradient').style.backgroundImage
     = 'linear-gradient(to right, ' + PALETTES[mo.view.contpal].map(
     function (e) {return '#' + e}).join(', ') + ')';
 }
@@ -1537,7 +1575,7 @@ function updateColorGradient(mo) {
  * @param {Object} mo - main object
  */
 function updateColorTable(mo) {
-  var table = document.getElementById('color-table');
+  var table = byId('color-table');
   table.innerHTML = '';
   var cmap = mo.view.color.discmap;
   var row, cell, div;
@@ -1571,7 +1609,7 @@ function updateColorTable(mo) {
  * @function populatePaletteSelect
  */
 function populatePaletteSelect() {
-  var popup = document.getElementById('palette-select');
+  var popup = byId('palette-select');
   popup.querySelectorAll('div').forEach(function (div) {
     var table = document.createElement('table');
     var pals = div.classList.contains('sequ') ? SEQUENTIAL_PALETTES

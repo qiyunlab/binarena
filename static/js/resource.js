@@ -1,5 +1,12 @@
 "use strict;"
 
+
+/**!
+ * @module resource
+ * @file Resources that are used by the program, such as color palettes.
+ */
+
+
 /**
  * Texts
  */

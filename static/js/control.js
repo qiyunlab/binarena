@@ -13,9 +13,9 @@
  * - Contig selection
  * - Binning utilities
  * - Bin information
+ * - Mini plot
  * - Data export
  * - Data table
- * - Variable plotting
  * - Advanced calculation
  */
 
@@ -109,7 +109,7 @@ function initDisplayItems(data, view) {
 function updateCtrlByData(data, view) {
 
   // update field list in filtering
-  var fl = document.getElementById('field-list');
+  var fl = byId('field-list');
   fl.innerHTML = '';
   var opt = document.createElement('option');
   fl.add(opt);
@@ -122,7 +122,7 @@ function updateCtrlByData(data, view) {
     }
   }
 
-  // update field list in display items
+  // identify numeric and categorical fields
   var numFields = [],
     catFields = [];
   for (var i = 0; i < data.cols.length; i++) {
@@ -135,8 +135,9 @@ function updateCtrlByData(data, view) {
     }
   }
 
-  ['x', 'y', 'size', 'opacity', 'color'].forEach(function (item) {
-    var sel = document.getElementById(item + '-field-sel');
+  // update field list in display items
+  ['x', 'y', 'size', 'opacity', 'color', 'mini'].forEach(function (item) {
+    var sel = byId(item + '-field-sel');
     sel.innerHTML = '';
     sel.add(document.createElement('option'));
 
@@ -157,17 +158,18 @@ function updateCtrlByData(data, view) {
       opt.value = numFields[j][0];
       sel.add(opt);
     }
+    if (item === 'mini') return;
 
     // pre-defined index
     var idx = view[item].i;
     if (idx) sel.value = idx;
-    var span = document.getElementById(item + '-param-span');
+    var span = byId(item + '-param-span');
     if (idx) span.classList.remove('hidden');
     else span.classList.add('hidden');
 
     // pre-defined scale
     var scale = view[item].scale;
-    var btn = document.getElementById(item + '-scale-btn');
+    var btn = byId(item + '-scale-btn');
     btn.setAttribute('data-scale', scale);
     btn.title = 'Scale: ' + scale;
     btn.innerHTML = scale2HTML(scale);
@@ -303,17 +305,17 @@ function updateViewByData(mo, cache) {
 
   // close or open data
   if (n === 0) {
-    document.getElementById('hide-side-btn').click();
-    document.getElementById('show-side-btn').disabled = true;
-    document.getElementById('drop-sign').classList.remove('hidden');
-    var btn = document.getElementById('dash-btn');
+    byId('hide-side-btn').click();
+    byId('show-side-btn').disabled = true;
+    byId('drop-sign').classList.remove('hidden');
+    var btn = byId('dash-btn');
     if (btn.classList.contains('active')) btn.click();
-    document.getElementById('dash-panel').classList.add('hidden');
+    byId('dash-panel').classList.add('hidden');
   } else {
-    document.getElementById('show-side-btn').disabled = false;
-    document.getElementById('show-side-btn').click();
-    document.getElementById('drop-sign').classList.add('hidden');
-    var btn = document.getElementById('dash-btn');
+    byId('show-side-btn').disabled = false;
+    byId('show-side-btn').click();
+    byId('drop-sign').classList.add('hidden');
+    var btn = byId('dash-btn');
     if (!btn.classList.contains('active')) btn.click();
   }
 
@@ -342,7 +344,7 @@ function updateViewByData(mo, cache) {
   initInfoTable(mo.data, mo.view.spcols.len, mo.pick);
   initDataTable(mo.data.cols, mo.data.types);
   fillDataTable(data, data.df.length);
-  document.getElementById('bin-tbody').innerHTML = '';
+  byId('bin-tbody').innerHTML = '';
 
   // reset view
   resetView(mo);
@@ -385,12 +387,13 @@ function displayItemChange(item, i, scale, mo) {
  */
 
 /**
- * Update selection.
+ * Update contig selection.
  * @function updateSelection
  * @param {Object} mo - main object
  */
 function updateSelection(mo) {
   renderSelection(mo);
+  updateMiniPlot(mo);
   updateBinToolbar(mo);
   updateSelectToolbar(mo);
   updateSelectionInfo(mo);
@@ -408,8 +411,7 @@ function updateSelectToolbar(mo) {
   var n = keys.length;
   var str = 'Selected: ' + n;
   if (n === 1) str += ' (ID: ' + mo.data.df[keys[0]][0] + ')';
-  document.getElementById('info-head').lastElementChild.firstElementChild
-    .innerHTML = str;
+  byId('info-head').lastElementChild.firstElementChild.innerHTML = str;
 }
 
 
@@ -423,8 +425,7 @@ function updateMaskToolbar(mo) {
   var n = keys.length;
   var str = 'Masked: ' + n;
   if (n === 1) str += ' (ID: ' +  mo.data.df[keys[0]][0] + ')';
-  document.getElementById('mask-head').lastElementChild.firstElementChild
-    .innerHTML = str;
+  byId('mask-head').lastElementChild.firstElementChild.innerHTML = str;
 }
 
 
@@ -434,7 +435,7 @@ function updateMaskToolbar(mo) {
  * @param {Object} mo - main object
  */
 function updateSelectionInfo(mo) {
-  var table = document.getElementById('info-table');
+  var table = byId('info-table');
   var indices = Object.keys(mo.pick);
   if (indices.length === 0) { // no contig is selected
     table.classList.add('hidden');
@@ -512,10 +513,10 @@ function updateInfoRow(row, mo, arr, refarr) {
  */
 function selectFieldChange(e, data, view) {
   ['num-sel-p', 'cat-sel-p', 'fea-sel-p', 'des-sel-p'].forEach(function (id) {
-    document.getElementById(id).classList.add('hidden');
+    byId(id).classList.add('hidden');
   });
-  document.getElementById('search-btn').style.visibility = 'hidden';
-  var span = document.getElementById('str-match-span');
+  byId('search-btn').style.visibility = 'hidden';
+  var span = byId('str-match-span');
   span.classList.add('hidden');
 
   // show controls by field type
@@ -524,35 +525,35 @@ function selectFieldChange(e, data, view) {
     i = parseInt(i);
     switch (data.types[i]) {
       case 'number':
-        document.getElementById('num-sel-p').classList.remove('hidden');
+        byId('num-sel-p').classList.remove('hidden');
         break;
       case 'category':
-        var p = document.getElementById('cat-sel-p');
+        var p = byId('cat-sel-p');
         p.lastElementChild.appendChild(span);
         // p.appendChild(span);
         span.classList.remove('hidden');
         p.classList.remove('hidden');
-        autoComplete(document.getElementById('cat-sel-txt'),
+        autoComplete(byId('cat-sel-txt'),
           Object.keys(view.categories[data.cols[i]]).sort());
         break;
       case 'feature':
-        var p = document.getElementById('fea-sel-p');
+        var p = byId('fea-sel-p');
         p.lastElementChild.appendChild(span);
         // p.appendChild(span);
         span.classList.remove('hidden');
         p.classList.remove('hidden');
-        autoComplete(document.getElementById('fea-sel-txt'),
+        autoComplete(byId('fea-sel-txt'),
           Object.keys(view.features[data.cols[i]]).sort());
         break;
       case 'description':
-        var p = document.getElementById('des-sel-p');
+        var p = byId('des-sel-p');
         p.lastElementChild.appendChild(span);
         // p.appendChild(span);
         span.classList.remove('hidden');
         p.classList.remove('hidden');
         break;
     }
-    document.getElementById('search-btn').style.visibility = 'visible';
+    byId('search-btn').style.visibility = 'visible';
   }
 }
 
@@ -566,7 +567,7 @@ function selectFieldChange(e, data, view) {
 function selectByCriteria(mo) {
   var data = mo.data;
   var mask = mo.mask;
-  var f = document.getElementById('field-list').value;
+  var f = byId('field-list').value;
   if (f === '') {
     toastMsg('No search criterium was specified.', mo.stat);
     return false;
@@ -577,13 +578,14 @@ function selectByCriteria(mo) {
   // filter contigs by currently specified criteria
   var indices = [];
   var hasMask = (Object.keys(mask).length > 0);
+  var n = data.df.length;
 
   // search by threshold
   if (type === 'number') {
 
     // validate minimum and maximum thresholds
-    var min = document.getElementById('min-txt').value;
-    var max = document.getElementById('max-txt').value;
+    var min = byId('min-txt').value;
+    var max = byId('max-txt').value;
     if (min === '' && max === '') {
       toastMsg('Must specify minimum and/or maximum thresholds.', mo.stat);
       return false;
@@ -600,11 +602,11 @@ function selectByCriteria(mo) {
     } else max = Number(max);
 
     // whether to include lower and upper bounds
-    var minIn = (document.getElementById('min-btn').innerHTML === '[');
-    var maxIn = (document.getElementById('max-btn').innerHTML === '[');
+    var minIn = (byId('min-btn').innerHTML === '[');
+    var maxIn = (byId('max-btn').innerHTML === '[');
 
     // compare values to threshold(s)
-    for (var i = 0; i < data.df.length; i++) {
+    for (var i = 0; i < n; i++) {
       if (hasMask && i in mask) continue;
       var val = data.df[i][f];
       if ((val !== null) &&
@@ -617,18 +619,18 @@ function selectByCriteria(mo) {
 
   // search by keyword
   else {
-    var text = document.getElementById(type.substr(0, 3) + '-sel-txt')
+    var text = byId(type.substr(0, 3) + '-sel-txt')
       .value;
     if (text === '') {
       toastMsg('Must specify a keyword.', mo.stat);
       return false;
     }
-    var mcase = document.getElementById('case-btn').classList
+    var mcase = byId('case-btn').classList
       .contains('pressed');
     if (!mcase) text = text.toUpperCase();
-    var mwhole = document.getElementById('whole-btn').classList
+    var mwhole = byId('whole-btn').classList
       .contains('pressed');
-    for (var i = 0; i < data.df.length; i++) {
+    for (var i = 0; i < n; i++) {
       if (hasMask && i in mask) continue;
       var val = data.df[i][f];
       if (val === null) continue;
@@ -738,7 +740,7 @@ function polygonSelect(mo) {
   var oray = mo.oray;
 
   // change button appearance
-  var btn = document.getElementById('polygon-btn');
+  var btn = byId('polygon-btn');
   var title = btn.title;
   btn.title = btn.getAttribute('data-title');
   btn.setAttribute('data-title', title);
@@ -786,22 +788,22 @@ function polygonSelect(mo) {
  */
 function updateBinToolbar(mo) {
   var n = Object.keys(mo.bins).length;
-  document.getElementById('bins-head').lastElementChild.firstElementChild
+  byId('bins-head').lastElementChild.firstElementChild
     .innerHTML = 'Bins: ' + n;
-  document.getElementById('save-bin-btn').classList.toggle('hidden', !n);
-  document.getElementById('clear-bin-btn').classList.toggle('hidden', !n);
-  document.getElementById('bin-thead').classList.toggle('hidden', !n);
+  byId('save-bin-btn').classList.toggle('hidden', !n);
+  byId('clear-bin-btn').classList.toggle('hidden', !n);
+  byId('bin-thead').classList.toggle('hidden', !n);
   var m = 0;
-  var table = document.getElementById('bin-tbody');
+  var table = byId('bin-tbody');
   for (var i = 0; i < table.rows.length; i++) {
     if (table.rows[i].classList.contains('selected')) m ++;
   }
-  document.getElementById('delete-bin-btn').classList.toggle('hidden', !m);
-  document.getElementById('merge-bin-btn').classList.toggle('hidden', (m < 2));
+  byId('delete-bin-btn').classList.toggle('hidden', !m);
+  byId('merge-bin-btn').classList.toggle('hidden', (m < 2));
   var k = Object.keys(mo.pick).length;
-  document.getElementById('add-to-bin-btn').classList.toggle('hidden',
+  byId('add-to-bin-btn').classList.toggle('hidden',
     !(m === 1 && k));
-  document.getElementById('remove-from-bin-btn').classList.toggle('hidden',
+  byId('remove-from-bin-btn').classList.toggle('hidden',
     !(m === 1 && k));
 }
 
@@ -815,7 +817,7 @@ function updateBinTable(mo) {
   var view = mo.view;
   var data = mo.data;
   var bins = mo.bins;
-  var table = document.getElementById('bin-tbody');
+  var table = byId('bin-tbody');
   table.innerHTML = '';
 
   // cache length and coverage data
@@ -926,14 +928,14 @@ function binNameKeyUp(e, stat, bins) {
  */
 function initInfoTable(data, lencol, pick) {
   lencol = lencol || '';
-  var table = document.getElementById('info-table');
+  var table = byId('info-table');
 
   // temporarily move control span
-  var div = document.getElementById('info-ctrl');
+  var div = byId('info-ctrl');
   div.classList.add('hidden');
 
   // weight-by selection - clear
-  var sel = document.getElementById('info-ref-sel');
+  var sel = byId('info-ref-sel');
   sel.innerHTML = '';
   sel.add(document.createElement('option'));
 
@@ -960,9 +962,9 @@ function initInfoTable(data, lencol, pick) {
 
       // three buttons: metric (sum or mean), plot entry, weight-by selection
       // the 4th and permanent button is "hide"
-      var mbtn = document.getElementById('info-metric-btn');
-      var pbtn = document.getElementById('info-plot-btn');
-      var rspan = document.getElementById('info-ref-span');
+      var mbtn = byId('info-metric-btn');
+      var pbtn = byId('info-plot-btn');
+      var rspan = byId('info-ref-span');
 
       // only one contig is selected, then no need for controls
       if (Object.keys(pick).length === 1 ||
@@ -976,7 +978,7 @@ function initInfoTable(data, lencol, pick) {
       else {
         var met = this.getAttribute('data-metric');
         mbtn.title = 'Metric: ' + met;
-        sel.value = this.getAttribute('data-refcol');;
+        sel.value = this.getAttribute('data-refcol');
         mbtn.innerHTML = (met === 'sum') ? '&Sigma;<i>x</i>' :
           '<span style="text-decoration: overline;"><i>x</i></span>';
         mbtn.classList.remove('hidden');
@@ -1013,6 +1015,199 @@ function initInfoTable(data, lencol, pick) {
 
 
 /**
+ * @summary Mini plot
+ */
+
+
+/**
+ * Mini plot mouse move event
+ * @function miniPlotMouseMove
+ * @param {Object} e - event
+ * @param {Object} mo - main object
+ * @description There are three scenarios:
+ * 1. No mini plot is displayed. Nothing happens.
+ * 2. The user is moving the mouse over the mini plot without clicking. The bar
+ * in the histogram being hovered will be highlighted.
+ * 3. The user presses the left button of the mouse, holds it and moves around.
+ * The bars within the range will be highlighted.
+ */
+function miniPlotMouseMove(e, mo) {
+
+  // skip if no mini plot is displayed
+  if (mo.mini.field === null) return;
+  if (mo.mini.hist === null) return;
+  if ((Object.keys(mo.pick)).length === 0) return;
+
+  // find mouse position in mini plot
+  var canvas = mo.mini.canvas;
+  var rect = canvas.getBoundingClientRect();
+  var w = canvas.width,
+      h = canvas.height;
+  var x = (e.clientX - rect.left) / (rect.right - rect.left) * w,
+      y = (e.clientY - rect.top)  / (rect.bottom - rect.top) * h;
+
+  // first and last bin indices
+  var bin0,
+      bin1;
+
+  // determine which bin the mouse is over
+  var nbin = mo.mini.nbin;
+  var i = Math.floor((x - 10) / (w - 20) * nbin);
+
+  // mouse over to display info of single bin
+  if (e.buttons !== 1) {
+
+    // if before first bin or after last bin, ignore
+    if ((i < 0) || (i >= nbin)) i = null;
+    
+    // if same as saved bin status, skip
+    if ((i === mo.mini.bin0) && (i === mo.mini.bin1)) return;
+
+    // save bin status
+    bin0 = bin1 = i;
+    mo.mini.bin0 = i;
+    mo.mini.bin1 = i;
+
+    // update mini plot to highlight this bin
+    updateMiniPlot(mo, true);
+  }
+
+  // hold mouse key to select a range of bins
+  else {
+
+    // determine the other bin
+    var j = Math.floor((mo.mini.drag - 10) / (w - 20) * nbin);
+
+    // determine first and last bins
+    bin0 = Math.max(Math.min(i, j), 0);
+    bin1 = Math.min(Math.max(i, j), nbin - 1);
+
+    // if same as saved bin status, still update plot but keep tooltip
+    var skip = ((bin0 === mo.mini.bin0) && (bin1 === mo.mini.bin1))
+      ? true : false;
+
+    // save bin status
+    mo.mini.bin0 = bin0;
+    mo.mini.bin1 = bin1;
+
+    // update mini plot to highlight a range of bins
+    updateMiniPlot(mo, true, x);
+
+    if (skip) return;
+  }
+
+  // reset tooltip
+  var tip = byId('legend-tip');
+  tip.classList.add('hidden');
+  if (bin0 === null) return;
+  
+  // determine size of bin(s)
+  var n = 0;
+  for (var i = bin0; i <= bin1; i++) {
+    n += mo.mini.hist[i];
+  }
+
+  // determine range of bin(s)
+  var left = mo.mini.edges[bin0];
+  var right = mo.mini.edges[bin1 + 1];
+
+  // format range and size of bin(s)
+  var icol = mo.mini.field;
+  left = formatValueLabel(left, icol, 3, false, mo);
+  right = formatValueLabel(right, icol, 3, true, mo);
+  byId('legend-value').innerHTML = n + '<br><small>' + left + ' to '
+    + right + '</small>';
+
+  // determine tooltip position
+  tip.style.left = Math.round((10 + ((bin0 + bin1) / 2 + 0.5) * (w - 20)
+    / nbin) / w * (rect.right - rect.left) + rect.left) + 'px';
+  tip.style.top = Math.round(rect.bottom - 5) + 'px';
+  
+  // display bin size and range in tooltip
+  byId('legend-circle').classList.add('hidden');
+  tip.classList.remove('hidden');
+}
+
+
+/**
+ * Select a range of data in the mini plot
+ * @function miniPlotSelect
+ * @param {Object} mo - main object
+ * @description This operation is triggered when the user releases the mouse
+ * button from the mini plot (either by clicking or by holding). The contigs
+ * represented by the bars in the range of selection will be selected.
+ */
+function miniPlotSelect(mo) {
+  var col = mo.mini.field;
+
+  // determine range of selection
+  // These are lower and upper bounds of the original data. The lower bound is
+  // inclusive ("["). However the upper bound is tricky. In all but last bar,
+  // it is exclusive (")"). But in the last bar, it is inclusive ("]").
+  // To tackle this, the code removes the upper bound of the last bar.
+  var min = mo.mini.edges[mo.mini.bin0];
+  var max = (mo.mini.bin1 === mo.mini.nbin - 1)
+    ? null : mo.mini.edges[mo.mini.bin1 + 1];
+
+  // reset histogram status
+  mo.mini.hist = null;
+  mo.mini.edges = null;
+  mo.mini.bin0 = null;
+  mo.mini.bin1 = null;
+  mo.mini.drag = null;
+
+  var res = [];
+  var mask = mo.mask;
+  var hasMask = (Object.keys(mask).length > 0);
+  var df = mo.data.df;
+
+  // selection will take place within the already selected contigs
+  var picked = Object.keys(mo.pick);
+  var n = picked.length;
+  var idx,
+      val;
+
+  // find within selected contigs which ones are within the range
+  for (var i = 0; i < n; i++) {
+    idx = picked[i];
+    if (hasMask && idx in mask) continue;
+    val = df[idx][col];
+
+    // lower bound: inclusive; upper bound: exclusive
+    if (val !== null && val >= min && (max === null || val < max)) {
+      res.push(idx);
+    }
+  }
+  treatSelection(res, mo.stat.selmode, mo.stat.masking, mo);
+}
+
+
+/**
+ * @summary Data table
+ */
+
+/**
+ * Initiate data table based on data.
+ * @function initDataTable
+ */
+function initDataTable(columns, types) {
+  var table = byId('data-table');
+  table.innerHTML = '';
+  var header = table.createTHead();
+  var row = header.insertRow(-1);
+  var n = columns.length;
+  for (var i = 0; i < n; i++) {
+    var cell = row.insertCell(-1);
+    cell.setAttribute('data-index', i);
+    cell.setAttribute('data-column', columns[i]);
+    cell.setAttribute('data-type', types[i]);
+    cell.innerHTML = columns[i];
+  }
+  table.appendChild(document.createElement('tbody'));
+}
+
+
+/**
  * @summary Data export
  */
 
@@ -1021,7 +1216,7 @@ function initInfoTable(data, lencol, pick) {
  * @function exportPNG
  * @param {Object} canvas - canvas DOM to export
  */
-function exportPNG(canvas) {
+ function exportPNG(canvas) {
   var a = document.createElement('a');
   a.href = canvas.toDataURL('image/png');
   a.download = 'image.png';
@@ -1057,8 +1252,10 @@ function exportJSON(data) {
  */
 function exportBins(bins, data) {
   var idmap = {};
-  for (var i = 0; i < data.df.length; i++) {
-    idmap[i] = data.df[i][0];
+  var df = data.df;
+  var n = df.length;
+  for (var i = 0; i < n; i++) {
+    idmap[i] = df[i][0];
   }
   var tsv = '';
   Object.keys(bins).sort().forEach(function (name) {
@@ -1081,26 +1278,6 @@ function exportBins(bins, data) {
  */
 
 /**
- * Initiate data table based on data.
- * @function initDataTable
- */
-function initDataTable(columns, types) {
-  var table = document.getElementById('data-table');
-  table.innerHTML = '';
-  var header = table.createTHead();
-  var row = header.insertRow(-1);
-  for (var i = 0; i < columns.length; i++) {
-    var cell = row.insertCell(-1);
-    cell.setAttribute('data-index', i);
-    cell.setAttribute('data-column', columns[i]);
-    cell.setAttribute('data-type', types[i]);
-    cell.innerHTML = columns[i];
-  }
-  table.appendChild(document.createElement('tbody'));
-}
-
-
-/**
  * Populate data table by data.
  * @function fillDataTable
  * @param {Object} data - data object
@@ -1108,54 +1285,13 @@ function initDataTable(columns, types) {
  */
 function fillDataTable(data, n) {
   n = n || 100;
-  var table = document.getElementById('data-table');
+  var table = byId('data-table');
   for (var i = 0; i < n; i++) {
     var row = table.tBodies[0].insertRow(-1);
     for (var j = 0; j < data.cols.length; j++) {
       var cell = row.insertCell(-1);
       cell.innerHTML = value2Str(data.df[i][j], data.types[j]);
     }
-  }
-}
-
-
-/**
- * @summary Variable plotting
- */
-
-/**
- * Plot a variable of selection.
- * @function plotMini
- * @param {Object} row - information table row DOM
- * @param {Object} mo - main object
- */
- function plotMini(row, mo) {
-  var df = mo.data.df;
-  var idx = row.getAttribute('data-index');
-  var data = Object.keys(mo.pick).sort()
-    .map(function (i) { return df[i][idx]; });
-  var bins = 10;
-  var [hist, edge] = histogram(data, bins);
-  var canvas = document.getElementById('mini-canvas');
-  var pw = canvas.width;
-  var ph = canvas.height;
-  var scale = (ph - 20) / Math.max.apply(null, hist);
-  var hista = hist.map(function (e) { return e * scale; });
-  var intvl = (pw - 20) / bins;
-  var barw = Math.floor(intvl - 2);
-
-  var ctx = canvas.getContext('2d');
-  ctx.clearRect(0, 0, pw, ph);
-
-  ctx.beginPath();
-  ctx.rect(5, 5, pw - 10, ph - 10);
-  ctx.lineWidth = 0.5;
-  // ctx.strokeStyle = 'black';
-  ctx.stroke();
-
-  ctx.fillStyle = 'darkgrey';
-  for (var i = 0; i < bins; i++) {
-    ctx.fillRect(11 + intvl * i, ph - 10 - hista[i], barw, hista[i]);
   }
 }
 
@@ -1207,9 +1343,9 @@ function fillDataTable(data, n) {
 
   // add scores to data table
   var col = data.cols.indexOf('silhouette');
+  
+  // append new column and modify controls
   if (col === -1) {
-
-    // append new column and modify controls
     scores.forEach(function (score, i) {
       data.df[i].push(score);
     });
@@ -1218,16 +1354,18 @@ function fillDataTable(data, n) {
     data.types.push('number');
     updateCtrlByData(data, view);
     initInfoTable(data, view.spcols.len, mo.pick);
-  } else {
+  }
 
-    // update existing column
+  // update existing column  
+  else {
     scores.forEach(function (score, i) {
       data.df[i][col] = score;
     });
   }
 
   // color contigs by score
-  var sel = document.getElementById('color-field-sel');
+  mo.view['color'].zero = false; // silhouettes can be negative
+  var sel = byId('color-field-sel');
   sel.value = col;
   sel.dispatchEvent(new Event('change'));
 
