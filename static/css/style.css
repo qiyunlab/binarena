@@ -502,8 +502,9 @@ canvas.main-plot {
 
 #coords-label {
   position: absolute;
-  left: 20px;
+  left: 50%;
   top: 20px;
+  transform: translate(-50%, 0);
   color:dimgray;
   font-family: monospace;
   background: white;
@@ -679,6 +680,35 @@ div.dash-content > table tr td:last-child > span button:hover {
 
 #mini-canvas {
   width: 100%;
+}
+
+#mini-title {
+  position: absolute;
+  top: 15px;
+  left: 50%;
+  transform: translate(-50%, 0);
+}
+
+#mini-field-sel {
+  max-width: 160px;
+  text-align: center;
+  border-bottom: none;
+}
+
+#mini-field-sel:hover {
+  border-bottom: 1px solid dimgray;
+}
+
+#mini-ctrl {
+  display: none;
+  position: absolute;
+  top: 5px;
+  right: 5px;
+}
+
+#mini-content:hover #mini-ctrl {
+  display: flex;
+  flex-direction: column;
 }
 
 

@@ -4,7 +4,7 @@
  * @module render
  * @file Rendering functions.
  * @description They may read the main object that is passed to them, but
- * they DO not modify its content. They do NOT directly access the "document"
+ * they do NOT modify its content. They do NOT directly access the "document"
  * object.
  */
 
@@ -133,9 +133,11 @@ function renderArena(mo) {
   var paths = {};
 
   // determine appearance of contig
-  for (var i = 0; i < data.df.length; i++) {
+  var df = data.df;
+  var n = df.length;
+  for (var i = 0; i < n; i++) {
     if (masking && i in mo.mask) continue;
-    var datum = data.df[i];
+    var datum = df[i];
 
     // determine radius (size)
     // var radius = si ? scaleNum(datum[si], sscale) * rbase / smax : rbase;
@@ -187,7 +189,7 @@ function renderArena(mo) {
     else {
       paths[fs]['circle'].push([x, y, Math.round(radius)]);
     }
-  }
+  } // end for i
 
   // render contigs
   // note: minimizing changes of fill style can improve performance
@@ -228,7 +230,7 @@ function renderSelection(mo) {
   var oray = mo.oray;
 
   // get shadow color
-  var color = getComputedStyle(document.getElementById('hilite-color')).color;
+  var color = getComputedStyle(byId('hilite-color')).color;
 
   // clear canvas
   var ctx = oray.getContext('2d');
@@ -301,7 +303,7 @@ function drawPolygon(mo) {
   var vertices = stat.polygon;
   var pi2 = Math.PI * 2;
   var radius = 3 / view.scale;
-  var color = getComputedStyle(document.getElementById('polygon-color')).color;
+  var color = getComputedStyle(byId('polygon-color')).color;
   var ctx = oray.getContext('2d');
   ctx.clearRect(0, 0, oray.width, oray.height);
   ctx.save();
@@ -309,15 +311,20 @@ function drawPolygon(mo) {
   ctx.scale(view.scale, view.scale);
   ctx.fillStyle = color;
   ctx.strokeStyle = color;
-  for (var i = 0; i < vertices.length; i++) {
+  var n = vertices.length;
+  var vertex;
+  var j;
+  for (var i = 0; i < n; i++) {
+    vertex = vertices[i];
     ctx.beginPath();
-    ctx.arc(vertices[i].x, vertices[i].y, radius, 0, pi2, true);
+    ctx.arc(vertex.x, vertex.y, radius, 0, pi2, true);
     ctx.closePath();
     ctx.lineWidth = 1 / view.scale;
-    ctx.moveTo(vertices[i].x, vertices[i].y);
-    var j = i + 1;
-    if (j == vertices.length) j = 0;
-    ctx.lineTo(vertices[j].x, vertices[j].y);
+    ctx.moveTo(vertex.x, vertex.y);
+    j = i + 1;
+    if (j == n) j = 0;
+    vertex = vertices[j];
+    ctx.lineTo(vertex.x, vertex.y);
     ctx.stroke();
   }
   ctx.restore();
@@ -359,4 +366,178 @@ function drawGrid(rena, view) {
   }
   ctx.strokeStyle = 'lightgray';
   ctx.stroke();
+}
+
+
+/**
+ * @summary Mini plot
+ */
+
+/**
+ * Draw a mini plot.
+ * @function updateMiniPlot
+ * @param {Object} mo - main object
+ * @param {boolean} keep - use pre-calculated histogram if available
+ * @param {number} x1 - draw selection range from the start position (defined
+ * by mo.mini.drag) to this position
+ * @description It (re-)draws the entire mini plot. Three things are performed:
+ * 1. Draw a histogram of a designated numeric field of selection contigs.
+ * 2. Highlight one or multiple bins (bars) in the histogram.
+ * 3. Draw a selection range, if the user is holding and moving the mouse.
+ */
+function updateMiniPlot(mo, keep, x1) {
+  var canvas = mo.mini.canvas;
+  var w = canvas.width,
+      h = canvas.height;
+  var ctx = canvas.getContext('2d');
+
+  // clear canvas
+  ctx.clearRect(0, 0, w, h);
+
+  // selected variable
+  var col = mo.mini.field;
+  if (!col) return;
+
+  // selected contigs
+  var rows = Object.keys(mo.pick).sort();
+  var n = rows.length;
+  if (n <= 1) return;
+
+  // draw mouse range
+  var x0 = mo.mini.drag;
+  if (x0 !== null) drawMouseRange(ctx, x0, x1, w, h);
+
+  // calculate histogram if not already
+  var hist = mo.mini.hist;
+  if (!keep || (hist === null)) {
+
+    // variable values
+    var df = mo.data.df;
+    var data = Array(n).fill();
+    for (var i = 0; i < n; i++) {
+      data[i] = df[rows[i]][col];
+    }
+
+    // log transformation
+    if (mo.mini.log) data = arrLog(data);
+
+    // calculate 
+    var edges;
+    [hist, edges] = histogram(data, mo.mini.nbin);
+
+    // save (and reverse transform) result
+    mo.mini.hist = hist;
+    if (mo.mini.log) edges = edges.map(Math.exp);
+    mo.mini.edges = edges;
+  }
+
+  // draw frame
+  ctx.strokeStyle = 'grey';
+  drawFrame(ctx, w, h);
+
+  // draw histogram
+  var high = [mo.mini.bin0, mo.mini.bin1];
+  drawHistogram(ctx, hist, w, h, high);
+}
+
+
+/**
+ * Draw mouse selection range
+ * @function drawMouseRange
+ * @param {Object} ctx - canvas context
+ * @param {number} x0 - begin position
+ * @param {number} x1 - end position
+ * @param {number} w - canvas width
+ * @param {number} h - canvas height
+ */
+ function drawMouseRange(ctx, x0, x1, w, h) {
+  w = w || ctx.canvas.width;
+  h = h || ctx.canvas.height;
+
+  // determine begin and end positions
+  var beg = Math.max(Math.min(x0, x1), 5);
+  var end = Math.min(Math.max(x0, x1), w - 5);
+  if (beg === end) return;
+
+  // drawing style
+  ctx.save();
+  ctx.strokeStyle = 'dodgerblue';
+  ctx.fillStyle = 'lightcyan';
+  ctx.lineWidth = 2;
+  
+  // draw begin line
+  ctx.beginPath();
+  ctx.moveTo(beg, 5);
+  ctx.lineTo(beg, h - 5);
+  ctx.stroke();
+
+  // draw end line
+  ctx.beginPath();
+  ctx.moveTo(end, 5);
+  ctx.lineTo(end, h - 5);
+  ctx.stroke();
+
+  // fill range
+  ctx.fillRect(beg, 5, end - beg, h - 10);
+  ctx.restore();
+}
+
+
+/**
+ * Draw a frame of plot
+ * @function drawFrame
+ * @param {Object} ctx - canvas context
+ * @param {number} w - canvas width
+ * @param {number} h - canvas height
+ */
+function drawFrame(ctx, w, h) {
+  w = w || ctx.canvas.width;
+  h = h || ctx.canvas.height;
+  ctx.beginPath();
+  ctx.rect(5.5, 5.5, w - 10, h - 10);
+  ctx.stroke();
+}
+
+
+/**
+ * Draw a histogram of data
+ * @function drawHistogram
+ * @param {Object} ctx - canvas context
+ * @param {number[]} hist - binned data
+ * @param {number} w - canvas width
+ * @param {number} h - canvas height
+ * @param {number[]} high - bins to highlight
+ */
+function drawHistogram(ctx, hist, w, h, high) {
+  w = w || ctx.canvas.width;
+  h = h || ctx.canvas.height;
+  var recol = 'lightgrey';  // regular color
+  var hicol = 'royalblue'; // highlight color
+  var n = hist.length;
+  var scale = (h - 20) / Math.max.apply(null, hist); // yscale
+  var hista = hist.map(function (e) { return e * scale; });
+  var intvl = (w - 20) / n; // interval
+  var barw = (intvl - 2) >> 0; // bar width
+  ctx.fillStyle = recol;
+
+  // no highlight
+  if ((high === undefined) || (high[0] === null)) {
+    for (var i = 0; i < n; i++) {
+      ctx.fillRect(11 + intvl * i, h - 10 - hista[i], barw, hista[i]);
+    }
+  }
+
+  // highlight a range of bars
+  else {
+    for (var i = 0; i < high[0]; i++) {
+      ctx.fillRect(11 + intvl * i, h - 10 - hista[i], barw, hista[i]);
+    }
+    for (var i = high[1] + 1; i <= n; i++) {
+      ctx.fillRect(11 + intvl * i, h - 10 - hista[i], barw, hista[i]);
+    }
+    ctx.fillStyle = hicol;
+    for (var i = high[0]; i <= high[1]; i++) {
+      ctx.fillRect(11 + intvl * i, h - 10 - hista[i], barw, hista[i]);
+    }
+  }
 }
