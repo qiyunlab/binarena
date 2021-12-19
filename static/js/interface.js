@@ -1125,7 +1125,7 @@ function initCanvas(mo) {
     // var t1 = performance.now();
     // console.log(t1 - t0);
   });
-}
+} // end initializing controls
 
 
 /**
@@ -1387,16 +1387,16 @@ function scale2HTML(scale) {
  * @param {string} msg - message to display
  * @param {Object} stat - status object
  * @param {number} duration - milliseconds to keep toast visible; if omitted,
- * the default time is 1 sec; set 0 to keep it visible for ever until the user
- * clicks the "close" button.
+ * the default time is 1 sec; set 0 to keep it visible for ever
+ * @param {boolean} loading - display loading dots
+ * @param {boolean} toclose - display a close button
  */
-function toastMsg(msg, stat, duration) {
-  if (duration === undefined) {
-    duration = 1000;
-  }
+function toastMsg(msg, stat, duration, loading, toclose) {
+  if (duration === undefined) duration = 1000;
   var toast = byId('toast');
   toast.firstElementChild.innerHTML = msg;
-  toast.lastElementChild.classList.toggle('hidden', duration);
+  byId('loading-dots').classList.toggle('hidden', !loading);
+  byId('toast-close-btn').classList.toggle('hidden', !toclose);
   toast.classList.remove('hidden');
   if (duration) {
     clearTimeout(stat.toasting);

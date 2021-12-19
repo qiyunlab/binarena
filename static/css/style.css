@@ -324,6 +324,14 @@ div.toolbar span.spacer {
   background-color: lightgray;
 }
 
+/* loading dots */
+#loading-dots { margin-right: 10px;}
+#loading-dots > span { animation: blinking 1.2s linear infinite; }
+#loading-dots > span:nth-child(1) { animation-delay: 0.4s; }
+#loading-dots > span:nth-child(2) { animation-delay: 0.8s; }
+#loading-dots > span:nth-child(3) { animation-delay: 1.2s; }
+@keyframes blinking { from { opacity: 0; } to { opacity: 1; } }
+
 
 /** modal */
 

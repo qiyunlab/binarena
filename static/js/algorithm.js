@@ -65,25 +65,21 @@ function pnpoly(x, y, polygon) {
 /**
  * Compute the silhouette coefficient for each contig.
  * @function silhouetteSample
- * @param {number[]} x - the input data array
- * @param {number[]} label - the label of input data (must be 0, 1, 2...)
+ * @param {number[]} x - input data
+ * @param {number[]} label - labels of input data
+ * @param {number[]} dist - pairwise distances among input data
  * @return {number[]} silhouette coefficient of each contig
  * @description The silhouette coefficient measures how similar a contig is to
  * other contigs in the same bin, as in contrast to contigs in other bins.
  * @see {@link https://en.wikipedia.org/wiki/Silhouette_(clustering)}
  * @description It requires calculation of a distance matrix of all contigs,
- * which is expensive. The distance matrix should be cached to avoid repeated
- * calculations
+ * which is expensive. Therefore it is pre-calculated, stored, and fed to the
+ * current function.
  */
-function silhouetteSample(x, label) {
+function silhouetteSample(x, label, dist) {
   var n = x.length;
   var count = bincount(label); // bin sizes
   var c = count.length;
-
-  // var t0 = performance.now();
-  var dist = pdist(x);  // pairwise distances of all contigs
-  // var t1 = performance.now();
-  // console.log(t1 - t0);
 
   // intermediates
   var distIn;  // intra-bin distance
@@ -158,7 +154,7 @@ function silhouetteScore(x, label) {
 /**
  * @summary Adjusted Rand index (ARI)
  * @description The adjusted Rand index (ARI) measures the similarity between
- * binning plans (sets of bins).
+ * two binning plans (sets of bins).
  * @see {@link https://en.wikipedia.org/wiki/Rand_index}
  */
 
