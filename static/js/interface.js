@@ -1043,6 +1043,19 @@ function initControls(mo) {
     toastMsg('Removed ' + n + ' contig(s) from "' + bin + '".', stat);
   });
 
+  byId('update-bin-btn').addEventListener('click', function () {
+    var table = byId('bin-tbody');
+    var idx, bin;
+    [idx, bin] = currentBin(table);
+    mo.bins[bin] = {};
+    var ctgs = mo.bins[bin];
+    for (var ctg in mo.pick) ctgs[ctg] = null;
+    updateBinCtrl(mo);
+    var n = Object.keys(ctgs).length;
+    table.rows[idx].cells[1].innerHTML = n;
+    toastMsg('Updated "' + bin + '" (now has ' + n + ' contig(s)).', stat);
+  });
+
 
   /** 
    * @summary Info table events

@@ -927,6 +927,7 @@ function updateBinCtrl(mo) {
   byId('as-new-bin-btn').classList.toggle('hidden', !k);
   byId('add-to-bin-btn').classList.toggle('hidden', !(m === 1 && k));
   byId('remove-from-bin-btn').classList.toggle('hidden', !(m === 1 && k));
+  byId('update-bin-btn').classList.toggle('hidden', !(m === 1 && k));
   byId('invert-btn').classList.toggle('hidden', !k);
   byId('mask-btn').classList.toggle('hidden', !k);
 }
