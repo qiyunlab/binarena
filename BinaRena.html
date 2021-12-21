@@ -385,38 +385,44 @@
       <span><button title="Show/hide bins panel">Bins</button></span>
     </div>
 
-    <div id="bins-content" class="side-content dash-content">
+    <div id="bins-content" class="side-content">
 
-      <!-- toolbar -->
-      <div class="toolbar left hidden">
-        <button id="new-bin-btn" title="New bin"><i class="fa fa-file-o fa-lg"></i></button>
-        <button id="delete-bin-btn" class="hidden" title="Delete bin"><i class="fa fa-trash fa-lg"></i></button>
-        <button id="merge-bins-btn" class="hidden" title="Merge bins"><i class="fa fa-compress fa-lg"></i></button>
-        <button id="export-plan-btn" title="Export current binning plan"><i class="fa fa-floppy-o fa-lg"></i></button>
-        <button id="clear-plan-btn" title="Clear current binning plan"><i class="fa fa-repeat fa-lg"></i></button>
-      </div>
-
-      <!-- select a binning plan -->
-      <table>
-        <tr>
-          <td>Plan</td>
-          <td><input type="text" id="plan-sel-txt" class="dropdown" title="Load a binning plan from a categorical field"></td>
-          <td><button id="save-plan-btn" title="Save current binning plan"><i class="fa fa-bookmark fa-lg"></button></td>
-        </tr>
-      </table>
-
-      <!-- bin table -->
-      <table id="bin-table" style="z-index: 1;">
-        <thead id="bin-thead" class="hidden">
+      <!-- binning plan selector -->
+      <div class="dash-content">
+        <table>
           <tr>
-            <th title="Unique bin identifier">Name</th>
-            <th title="Number of contigs">#</th>
-            <th title="Total length of contigs (kbp)">kb</th>
-            <th title="Relative abundance (%) (sum of length x coverage normalized by the entire sample)">%</th>
+            <td>Plan</td>
+            <td><input type="text" id="plan-sel-txt" class="dropdown" title="Load a binning plan from a categorical field"></td>
+            <td><button id="save-plan-btn" title="Save current binning plan"><i class="fa fa-bookmark fa-lg"></button></td>
           </tr>
-        </thead>
-        <tbody id="bin-tbody"></tbody>
-      </table>
+        </table>
+      </div>
+      <div>
+
+        <!-- toolbar -->
+        <div class="toolbar left hidden">
+          <button id="new-bin-btn" title="New bin"><i class="fa fa-file-o fa-lg"></i></button>
+          <button id="delete-bin-btn" class="hidden" title="Delete bin"><i class="fa fa-trash fa-lg"></i></button>
+          <button id="merge-bins-btn" class="hidden" title="Merge bins"><i class="fa fa-compress fa-lg"></i></button>
+          <button id="export-plan-btn" title="Export current binning plan"><i class="fa fa-floppy-o fa-lg"></i></button>
+          <button id="clear-plan-btn" title="Clear current binning plan"><i class="fa fa-repeat fa-lg"></i></button>
+        </div>
+
+        <!-- bins table -->
+        <div id="bin-table-wrap">
+          <table id="bin-table" style="z-index: 1;">
+            <thead id="bin-thead" class="hidden">
+              <tr>
+                <th title="Unique bin identifier">Name</th>
+                <th title="Number of contigs">#</th>
+                <th title="Total length of contigs (kbp)">kb</th>
+                <th title="Relative abundance (%) (sum of length x coverage normalized by the entire sample)">%</th>
+              </tr>
+            </thead>
+            <tbody id="bin-tbody"></tbody>
+          </table>
+        </div>
+      </div>
 
     </div>
 

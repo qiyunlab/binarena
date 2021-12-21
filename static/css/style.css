@@ -872,6 +872,9 @@ div.dash-content > table tr td:last-child > span button:hover {
   border-color: white white transparent transparent;
 }
 
+
+/* side panel */
+
 div.side-content {
   border-top: 0;
   resize: vertical; /* IE incompatible */
@@ -897,8 +900,18 @@ div.side-content {
 /* bins panel */
 
 /* display save plan button only when plan is new or modified */
-#save-plan-btn { visibility: hidden; }
-#bins-content:hover #save-plan-btn { visibility: visible; }
+
+#save-plan-btn {
+  visibility: hidden;
+}
+
+#bins-content:hover #save-plan-btn {
+  visibility: visible;
+}
+
+#bin-table-wrap {
+  padding: 5px;
+}
 
 #bin-table {
   width: 100%;
@@ -913,7 +926,7 @@ div.side-content {
 
 #bin-tbody {
   overflow: auto;
-  /* min-height: 100px; */
+  min-height: 100px;
 }
 
 #bin-table th,td {

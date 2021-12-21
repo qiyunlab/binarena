@@ -951,21 +951,25 @@ function updateBinTable(mo) {
   if (view.spcols.len || view.spcols.cov) {
     var ilen = view.spcols.len ? view.spcols.len : null;
     var icov = view.spcols.cov ? view.spcols.cov : null;
-    for (var i = 0; i < data.df.length; i++) {
-      if (ilen) lens[i] = data.df[i][ilen];
-      if (icov) covs[i] = data.df[i][icov];
+    var df = data.df;
+    var n = df.length;
+    for (var i = 0; i < n; i++) {
+      if (ilen) lens[i] = df[i][ilen];
+      if (icov) covs[i] = df[i][icov];
     }
   }
 
   Object.keys(bins).sort().forEach(function (name) {
     var row = table.insertRow(-1);
 
-    // 1st cell: name
+    // 1st cell: bin name
     var cell = row.insertCell(-1);
+
     // name label
     var label = document.createElement('span');
     label.title = label.innerHTML = name;
     cell.appendChild(label);
+
     // rename text box
     var text = document.createElement('input');
     text.type = 'text';
