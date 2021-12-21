@@ -106,24 +106,30 @@ function parseObj(obj, data) {
  */
 function parseTable(text, data) {
   var lines = splitLines(text);
-  if (lines.length == 1) throw 'Error: Table is empty.';
+  var n = lines.length;
+  if (n <= 1) throw 'Error: Table is empty.';
+
   // read column names and table body
   var cols = [];
   var df = [];
   var ncol = 0;
-  for (var i = 0; i < lines.length; i++) {
-    var arr = lines[i].split('\t');
+  var row;
+  for (var i = 0; i < n; i++) {
+    row = lines[i].split('\t');
+
     // parse table header
     if (i == 0) {
-      cols = arr;
+      cols = row;
       ncol = cols.length;
+    }
+
     // parse table body
-    } else {
-      if (arr.length !== ncol) {
+    else {
+      if (row.length !== ncol) {
         throw ('Error: Table has ' + ncol + ' columns but row ' + i +
-          ' has ' + arr.length + ' cells.');
+          ' has ' + row.length + ' cells.');
       }
-      df.push(arr);
+      df.push(row);
     }
   }
   return formatData(data, df, cols);
@@ -298,27 +304,31 @@ function parseContigTitle(line, format) {
  * @function formatData
  * @param {Object} data - data object
  * @param {Matrix} df - data points for available characteristices of contigs
- * @param {Object} columns - available characteristics of contigs
+ * @param {Object} cols - available characteristics of contigs
  * @returns {Array.<Object, Object, Object>} - decimals, categories, features
  */
-function formatData(data, df, columns) {
-  var deci = {};
-  var cats = {};
-  var feats = {};
+function formatData(data, df, cols) {
+  var deci = {},
+      cats = {},
+      feats = {};
 
   // identify field types and re-format data
   var types = ['id'];
-  for (var i = 1; i < columns.length; i++) {
-    var arr = [];
-    for (var j = 0; j < df.length; j++) {
-      arr.push(df[df.length - j - 1][i]);
+  var m = cols.length,
+      n = df.length;
+  var arr;
+  for (var i = 1; i < m; i++) {
+    arr = [];
+    for (var j = 0; j < n; j++) {
+      arr.push(df[j][i]);
+      // arr.push(df[n - j - 1][i]);
     }
-    var x = parseFieldType(columns[i], arr);
+    var x = guessFieldType(cols[i], arr);
     var type = x[0];
     var col = x[1];
     types.push(type); // identified type
-    columns[i] = col; // updated name
-    for (var j = 0; j < df.length; j++) {
+    cols[i] = col; // updated name
+    for (var j = 0; j < n; j++) {
       df[j][i] = arr[j];
     }
 
@@ -336,7 +346,7 @@ function formatData(data, df, columns) {
     }
   }
 
-  data.cols = columns;
+  data.cols = cols;
   data.types = types;
   data.features = [];
   data.df = df;
@@ -439,15 +449,17 @@ function renameBin(bins, oldname, newname) {
  */
 function currentBin(table) {
   var idx;
-  for (var i = 0; i < table.rows.length; i++) {
-    if (table.rows[i].classList.contains('current')) {
+  var rows = table.rows;
+  var n = rows.length;
+  for (var i = 0; i < n; i++) {
+    if (rows[i].classList.contains('current')) {
       idx = i;
       break;
     }
   }
   if (idx === undefined) throw 'Error: Current bin is not defined.';
-  var name = table.rows[idx].cells[0].firstElementChild.innerHTML;
-  return [idx, name];
+  var bin = rows[idx].cells[0].firstElementChild.innerHTML;
+  return [idx, bin];
 }
 
 
@@ -460,7 +472,10 @@ function currentBin(table) {
  */
 function addToBin(ctgs, bin) {
   var added = [];
-  for (var ctg in ctgs) {
+  var n = ctgs.length;
+  var ctg;
+  for (var i = 0; i < n; i++) {
+    ctg = ctgs[i];
     if (!(ctg in bin)) {
       bin[ctg] = null;
       added.push(ctg);
@@ -479,7 +494,10 @@ function addToBin(ctgs, bin) {
  */
 function removeFromBin(ctgs, bin) {
   var removed = [];
-  for (var ctg in ctgs) {
+  var n = ctgs.length;
+  var ctg;
+  for (var i = 0; i < n; i++) {
+    ctg = ctgs[i];
     if (ctg in bin) {
       delete bin[ctg];
       removed.push(ctg);
@@ -494,27 +512,33 @@ function removeFromBin(ctgs, bin) {
  * @function deleteBins
  * @param {Object} table - bin table
  * @param {Object} bins - bins object
- * @throws Error if no bin is selected
+ * @throws error if no bin is selected
  * @returns {[string[]], [number[]]} deleted bins and their contigs
  */
 function deleteBins(table, bins) {
-  var names = [];
-  for (var i = table.rows.length - 1; i >= 0; i--) {
-    var row = table.rows[i];
+  var i, n, row, bin, ctg;
+
+  // identify bins to delete (from bottom to top of the table)
+  var todel = [];
+  var rows = table.rows;
+  for (i = rows.length - 1; i >= 0; i--) {
+    row = rows[i];
     if (row.classList.contains('selected')) {
-      names.push(row.cells[0].firstElementChild.innerHTML);
+      todel.push(row.cells[0].firstElementChild.innerHTML);
       table.deleteRow(i);
     }
   }
+  if (todel.length === 0) throw 'Error: No bin is selected.';
+
+  // delete bins while listing affected bins and contigs
   var ctgs = {};
-  if (names.length === 0) throw 'Error: No bin is selected.';
-  names.forEach(function (name) {
-    Object.keys(bins[name]).forEach(function (idx) {
-      ctgs[idx] = null;
-    });
-    delete bins[name];
-  });
-  return [names, Object.keys(ctgs).sort()];
+  n = todel.length;
+  for (i = 0; i < n; i++) {
+    bin = todel[i];
+    for (ctg in bins[bin]) ctgs[ctg] = null;
+    delete bins[bin];
+  }
+  return [todel, Object.keys(ctgs).sort()];
 }
 
 
@@ -522,12 +546,16 @@ function deleteBins(table, bins) {
  * Programmatically select a bin in the bin table.
  * @function selectBin
  * @param {Object} table - bin table
- * @param {string} name - bin name
+ * @param {string} bin - bin name
  */
-function selectBin(table, name) {
-  for (var i = 0; i < table.rows.length; i++) {
-    if (table.rows[i].cells[0].firstElementChild.innerHTML === name) {
-      table.rows[i].click();
+function selectBin(table, bin) {
+  var row;
+  var rows = table.rows;
+  var n = rows.length;
+  for (var i = 0; i < n; i++) {
+    row = rows[i];
+    if (row.cells[0].firstElementChild.innerHTML === bin) {
+      row.click();
       break;
     }
   }
@@ -542,12 +570,13 @@ function selectBin(table, name) {
  * @returns {Object} bins object
  */
 function loadBins(df, idx) {
+  var val, cat;
   var bins = {};
   var n = df.length;
   for (var i = 0; i < n; i++) {
-    var val = df[i][idx];
+    val = df[i][idx];
     if (val !== null) {
-      var cat = val[0];
+      cat = val[0];
       if (!(cat in bins)) bins[cat] = {};
       bins[cat][i] = null;
     }

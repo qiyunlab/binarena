@@ -793,34 +793,86 @@ function initControls(mo) {
 
 
   /**
-   * @summary Bins panel toolbar
+   * @summary Bins panel controls
    */
 
   // load bins from a categorical field
   byId('plan-sel-txt').addEventListener('click', function () {
     var cols = Object.keys(view.categories).sort();
+
+    // this is a hack: use a space to force the empty row to have the same
+    // height as other rows
     listSelect(['&nbsp;'].concat(cols), this, 'down', true);
   });
 
   byId('plan-sel-txt').addEventListener('focus', function () {
     var plan = this.value
+
+    // empty option: unload any binning plan
     if (plan.match(/^\s*$/)) {
       this.value = '';
       this.setAttribute('data-col', '');
       mo.bins = {};
-    } else {
+    }
+    
+    // load an existing binning plan
+    else {
       var idx = mo.data.cols.indexOf(plan);
       if (idx === -1) return;
       if (idx === this.getAttribute('data-col')) return;
       this.setAttribute('data-col', idx);
       mo.bins = loadBins(mo.data.df, idx);
     }
+
+    // update interface
     updateBinTable(mo);
     updateBinCtrl(mo);
     byId('save-plan-btn').classList.add('hidden');
     var n = Object.keys(mo.bins).length;
     if (n === 0) return;
     toastMsg('Loaded ' + n + ' bins from "' + plan + '".', stat);
+  });
+
+  // save current binning plan
+  byId('save-plan-btn').addEventListener('click', function () {
+    var plan = byId('plan-sel-txt').value;
+    if (plan === '') return;
+
+    var df = mo.data.df;
+    var n = df.length;
+    var bin, ctg;
+
+    // generate a contig-to-bin map
+    var map = {};
+    for (bin in mo.bins) {
+      for (ctg in mo.bins[bin]) {
+        if (ctg in map) throw 'Error: Contig "' + df[ctg][0]
+          + '" is assigned to more than one bins.';
+        map[ctg] = bin;
+      }
+    }
+
+    // create a new categorical field
+    var idx = mo.data.cols.indexOf(plan);
+    if (idx === -1) {
+      mo.data.cols.push('plan');
+      mo.data.types.push('category');
+      for (var i = 0; i < n; i++) {
+        df[i].push(i in map ? [map[i], null] : null);
+      }
+      toastMsg('Saved to new binning plan "' + plan + '".', stat);
+    }
+
+    // overwrite an existing categorical field
+    else {
+      for (var i = 0; i < n; i++) {
+        df[i][idx] = (i in map ? [map[i], null] : null);
+      }
+      toastMsg('Overwritten binning plan "' + plan + '".', stat);
+    }
+
+    updateCtrlByData(mo.data, mo.view);
+    fillDataTable(mo.data, n);
   });
 
   // create an empty new bin
@@ -845,6 +897,8 @@ function initControls(mo) {
   byId('delete-bin-btn').addEventListener('click', function () {
     var table = byId('bin-tbody');
     var deleted = deleteBins(table, mo.bins)[0];
+    
+    // update interface
     updateBinCtrl(mo);
     var n = deleted.length;
     if (n === 1) toastMsg('Deleted "' + deleted[0] + '".', stat);
@@ -934,10 +988,16 @@ function initControls(mo) {
 
   // create a new bin from selected contigs
   byId('as-new-bin-btn').addEventListener('click', function () {
+  
+    // if there is no binning plan, create one
     if (Object.keys(mo.bins).length === 0) {
       byId('plan-sel-txt').value = newName(arr2obj(mo.data.cols), 'plan');
     }
+
+    // create a new bin
     var name = createBin(mo.bins);
+
+    // if one or multiple contigs are selected, add them to bin
     var ctgs = Object.keys(mo.pick);
     var n = ctgs.length;
     if (n > 0) {
@@ -956,29 +1016,31 @@ function initControls(mo) {
   // add selected contigs to current bin
   byId('add-to-bin-btn').addEventListener('click', function () {
     var table = byId('bin-tbody');
+    var idx, bin;
     try {
-      var x = currentBin(table);
+      [idx, bin] = currentBin(table);
     } catch (err) {
       byId('as-new-bin-btn').click();
       return;
     }
-    var added = addToBin(Object.keys(mo.pick), mo.bins[x[1]]);
+    var exist = mo.bins[bin];
+    var added = addToBin(Object.keys(mo.pick), exist);
     var n = added.length;
-    if (n > 0) table.rows[x[0]].cells[1].innerHTML =
-      Object.keys(mo.bins[x[1]]).length;
-    toastMsg('Added ' + n + ' contig(s) to "' + x[1] + '".', stat);
+    if (n > 0) table.rows[idx].cells[1].innerHTML = Object.keys(exist).length;
+    toastMsg('Added ' + n + ' contig(s) to "' + bin + '".', stat);
   });
 
   // remove selected contigs from current bin
   byId('remove-from-bin-btn').addEventListener('click', function () {
     var table = byId('bin-tbody');
-    var x = currentBin(table);
-    var removed = removeFromBin(Object.keys(mo.pick), mo.bins[x[1]]);
+    var idx, bin;
+    [idx, bin] = currentBin(table);
+    var exist = mo.bins[bin];
+    var removed = removeFromBin(Object.keys(mo.pick), exist);
     updateBinCtrl(mo);
     var n = removed.length;
-    if (n > 0) table.rows[x[0]].cells[1].innerHTML = Object.keys(mo.bins[x[1]])
-      .length;
-    toastMsg('Removed ' + n + ' contig(s) from "' + x[1] + '".', stat);
+    if (n > 0) table.rows[idx].cells[1].innerHTML = Object.keys(exist).length;
+    toastMsg('Removed ' + n + ' contig(s) from "' + bin + '".', stat);
   });
 
 
@@ -1060,6 +1122,7 @@ function initControls(mo) {
   /**
    * @summary Mask panel events
    */
+
   byId('clear-mask-btn').addEventListener('click', function () {
     mo.mask = {};
     updateView(mo);
@@ -1069,6 +1132,7 @@ function initControls(mo) {
   /** 
    * @summary Data table events
    */
+
   byId('load-data-btn').addEventListener('click', function () {
     byId('open-file').click();
   });
@@ -1077,6 +1141,7 @@ function initControls(mo) {
   /** 
    * @summary Toast events
    */
+
   byId('toast-close-btn').addEventListener('click', function () {
     byId('toast').classList.add('hidden');
   });
@@ -1249,15 +1314,8 @@ function canvasMouseClick(e, mo) {
     var masking = (Object.keys(mo.mask).length > 0) ? true : false;
     var df = data.df;
     var n = df.length;
-    var datum,
-        idx,
-        radius,
-        r2,
-        x,
-        y,
-        dx,
-        dy,
-        x2y2;
+
+    var datum, idx, radius, r2, x, y, dx, dy, x2y2;
     for (var i = 0; i < n; i++) {
       if (masking && i in mo.mask) continue;
       datum = df[i];
@@ -1274,14 +1332,12 @@ function canvasMouseClick(e, mo) {
       dx = x - x0;
       dy = y - y0;
       x2y2 = dx * dx + dy * dy;
-      // var x2y2 = Math.pow(x - x0, 2) + Math.pow(y - y0, 2);
       if (x2y2 <= r2) arr.push([i, x2y2]);
     }
     if (!e.shiftKey) mo.pick = {}; // clear selection
     if (arr.length > 0) {
-      arr.sort(function (a, b) {
-        return (a[1] - b[1]);
-      });
+      arr.sort(function (a, b) { return (a[1] - b[1]); });
+
       // if already selected, remove; else, add to selection
       i = arr[0][0];
       if (i in mo.pick) delete mo.pick[i];
@@ -1530,9 +1586,9 @@ function toastMsg(msg, stat, duration, loading, toclose) {
     var l = val.length;
     var lst = [];
     arr.forEach(function (itm) {
-      var prefix = itm.substr(0, l);
+      var prefix = itm.substring(0, l);
       if (prefix.toUpperCase() === VAL) {
-        lst.push('<strong>' + prefix + '</strong>' + itm.substr(l));
+        lst.push('<strong>' + prefix + '</strong>' + itm.substring(l));
       }
     });
     listSelect(lst, inp, 'down', true);

@@ -239,18 +239,19 @@ function checkClassName(element, classes) {
  */
 function palette11to101(palette) {
   var rgbs = [[], [], []];
-  for (var i = 0; i < 11; i++) {
-    for (var j = 0; j < 3; j++) {
-      rgbs[j].push(parseInt(palette[i].substr(j * 2, 2), 16))
+  var i, j, k, step, rgb;
+  for (i = 0; i < 11; i++) {
+    for (j = 0; j < 3; j++) {
+      rgbs[j].push(parseInt(palette[i].substring(j * 2, j * 2 + 2), 16))
     }
   }
   var res = [];
-  for (var i = 0; i < 10; i++) {
+  for (i = 0; i < 10; i++) {
     res.push([rgbs[0][i], rgbs[1][i], rgbs[2][i]].join());
-    var step = (rgbs[0][i + 1] - rgbs[0][i]) / 10;
-    for (var j = 0; j < 9; j++) {
-      var rgb = [];
-      for (var k = 0; k < 3; k++) {
+    step = (rgbs[0][i + 1] - rgbs[0][i]) / 10;
+    for (j = 0; j < 9; j++) {
+      rgb = [];
+      for (k = 0; k < 3; k++) {
         rgb.push(Math.round(rgbs[k][i] + step * j))
       }
       res.push(rgb.join());

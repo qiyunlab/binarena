@@ -118,6 +118,7 @@ function updateCtrlByData(data, view) {
 
   var cols = data.cols,
       types = data.types;
+
   var n = cols.length;
   for (var i = 0; i < keys.length; i++) {
     key = keys[i];
@@ -436,7 +437,7 @@ function updateMaskCtrl(mo) {
  * Initiate information table.
  * @function initInfoTable
  * @param {Object} data - data object
- * @param {Object} lencol - "length" column name
+ * @param {Object} [lencol] - "length" column name
  * @param {Object} pick - picked contigs
  * @description Fields (rows) to be displayed in the information table are
  * determined based on the type and names of data fields.
@@ -843,7 +844,7 @@ function searchByCriteria(mo) {
 
   // search by keyword
   else {
-    var text = byId(type.substr(0, 3) + '-sel-txt').value;
+    var text = byId(type.substring(0, 3) + '-sel-txt').value;
     if (text === '') {
       toastMsg('Must specify a keyword.', mo.stat);
       return false;
@@ -1307,12 +1308,18 @@ function exportBins(bins, data) {
  */
 function fillDataTable(data, n) {
   n = n || 100;
+  var df = data.df,
+      cols = data.cols,
+      types = data.types;
+  var m = cols.length;
   var table = byId('data-table');
-  for (var i = 0; i < n; i++) {
-    var row = table.tBodies[0].insertRow(-1);
-    for (var j = 0; j < data.cols.length; j++) {
-      var cell = row.insertCell(-1);
-      cell.innerHTML = value2Str(data.df[i][j], data.types[j]);
+  table.tBodies[0].innerHTML = '';
+  var i, j, row, cell;
+  for (i = 0; i < n; i++) {
+    row = table.tBodies[0].insertRow(-1);
+    for (j = 0; j < m; j++) {
+      cell = row.insertCell(-1);
+      cell.innerHTML = value2Str(df[i][j], types[j]);
     }
   }
 }

@@ -27,16 +27,16 @@ function isMissing(str) {
 
 
 /**
- * Parse field types.
+ * Guess field types.
  * This function in overly long, because it attempts to guess the data type of each field.
  * Options are: number, category, feature, description.
- * @function parseFieldType
+ * @function guessFieldType
  * @param {string} name - field name of the column
  * @param {string[]} arr - cell values of the column
  * @throws if field name is invalid
  * @returns {[string, string]} field type, updated field name
  */
-function parseFieldType(name, arr) {
+function guessFieldType(name, arr) {
 
   // look for pre-defined field type
   var code2type = {
@@ -175,6 +175,7 @@ function parseFieldType(name, arr) {
     }
   }
 }
+
 
 /**
  * Define display items based on data.
