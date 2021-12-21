@@ -384,6 +384,26 @@ function cacheData(data) {
  * @summary Binning operations
  */
 
+
+/**
+ * Create a new bin.
+ * @function createBin
+ * @param {Object} bins - current bins
+ * @param {string} [name] - bin name
+ * @throws if bin name exists
+ * @returns {string} bin name
+ */
+function createBin(bins, name) {
+  if (name === undefined) {
+    name = newName(bins, 'bin');
+  } else if (name in bins) {
+    throw 'Error: bin name "' + name + '" already exists.';
+  }
+  bins[name] = {};
+  return name;
+}
+
+
 /**
  * Rename a bin.
  * @function renameBin
@@ -400,25 +420,6 @@ function renameBin(bins, oldname, newname) {
   });
   delete bins[oldname];
   return true;
-}
-
-
-/**
- * Create a new bin.
- * @function createBin
- * @param {Object} [bins] - current bins
- * @param {string} [name] - bin name
- * @throws if bin name exists
- * @returns {string} bin name
- */
-function createBin(bins, name) {
-  if (name === undefined) {
-    name = newBinName(bins);
-  } else if (name in bins) {
-    throw 'Error: bin name "' + bin + '" exists.';
-  }
-  bins[name] = {};
-  return name;
 }
 
 
@@ -601,8 +602,8 @@ function value2Str(val, type) {
  * @function columnInfo
  * @param {Array} arr - data column to describe
  * @param {string} type - type of column
- * @param {string} [met] - metric (sum or mean)
- * @param {string} [deci] - digits after decimal point
+ * @param {string} [met='none'] - metric (sum or mean)
+ * @param {string} [deci=0] - digits after decimal point
  * @param {string} [refarr] - reference column for weighting
  */
 function columnInfo(arr, type, met, deci, refarr) {

@@ -152,6 +152,16 @@ function unscale(scale) {
 }
 
 
+
+function arr2obj(arr) {
+  var n = arr.length;
+  var res = {}
+  for (var i = 0; i < n; i++) {
+    res[arr[i]] = null;
+  }
+  return res;
+}
+
 /**
  * List categories and their frequencies from a category-type column.
  * @function listCats

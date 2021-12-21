@@ -444,18 +444,19 @@ function FormatLength(len) {
 
 
 /**
- * Generate a new bin name based on existing bin names.
- * Will read like "bin_#", in which "#" is an incremental integer.
- * @function newBinName
- * @param {Object} bins - existing bin names
- * @returns {string} new bin name
+ * Generate a new name that does not conflict with existing names.
+ * Will read like "prefix_#", in which "#" is an incremental integer.
+ * @function newName
+ * @param {Object} exists - existing names
+ * @param {string} prefix - name prefix
+ * @returns {string} new name
  */
-function newBinName(bins) {
-  var i = Object.keys(bins).length + 1;
+ function newName(exists, prefix) {
   var name;
+  var i = 1;
   while (true) {
-    name = 'bin_' + i;
-    if (name in bins) i ++;
+    name = prefix + '_' + i;
+    if (name in exists) i ++;
     else return name;
   }
 }

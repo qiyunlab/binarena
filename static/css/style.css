@@ -197,6 +197,21 @@ div.panel-head button:hover {
   background: darkgray;
 }
 
+div.panel-head select {
+  position: absolute;
+  color: white;
+  min-width: 50px;
+  max-width: 150px;
+  border-bottom: none;
+  top: 50%;
+  transform: translateY(-50%);
+  left: 25%;
+}
+
+div.panel-head select:hover {
+  border-bottom: 1px solid dimgray;
+}
+
 
 /**
  * menu
@@ -233,7 +248,7 @@ div.menu hr {
   margin-right: 10px;
 }
 
-div.menu > a:not(.disabled).dropdown:hover:after {
+div.menu a:not(.disabled).dropdown:hover:after {
   position: absolute;
   content: "";
   top: calc(50% - 5px);
@@ -251,10 +266,12 @@ div.dock {
   z-index: 2;
 }
 
+
 /**
- * toolbar
+ * classical horizontal toolbar (obsolete)
  */
 
+ /* 
 div.toolbar {
   color: dimgray;
   background-color: white;
@@ -262,7 +279,7 @@ div.toolbar {
   border-bottom: 1px solid lightgray;
   flex-shrink: 0;
   position: -webkit-sticky;
-  position: sticky; /* IE incompatible */
+  position: sticky;
   top: 0;
   display: flex;
   flex-direction: row;
@@ -287,6 +304,46 @@ div.toolbar span.spacer {
   width: 2px;
   border-left: 1px solid lightgray;
   margin-left: 2px;
+} */
+
+
+
+/**
+ * toolbar (floating, vertical)
+ */
+
+div.toolbar {
+  z-index: 2;
+  position: absolute;
+  color: dimgray;
+  background-color: white;
+  align-items: center;
+  padding: 5px;
+  display: flex;
+  flex-direction: column;
+}
+
+div.toolbar.right {
+  right: 0;
+  transform: translateX(calc(100% - 1px));
+  box-shadow: 6px 6px 6px rgba(0, 0, 0, 0.1);
+}
+
+div.toolbar.left {
+  transform: translateX(-100%);
+  box-shadow: -6px 6px 6px rgba(0, 0, 0, 0.1);
+}
+
+div.toolbar button {
+  color: dimgray;
+  background-color: transparent;
+  width: 24px;
+  height: 24px;
+}
+
+div.toolbar button:hover {
+  color: black;
+  background-color: lightgray;
 }
 
 
@@ -348,7 +405,7 @@ div.modal {
 
 div.modal-content {
   border: none;
-  box-shadow: 0px 6px 12px rgba(0,0,0,0.25);
+  box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.25);
   background: white;
   max-width: 80%;
   margin: 5% auto;
@@ -437,6 +494,7 @@ table.square td:hover {
 #list-options {
   width: 100%;
   border: none;
+  empty-cells: show;
 }
 
 #list-options td {
@@ -690,30 +748,6 @@ div.dash-content > table tr td:last-child > span button:hover {
   width: 100%;
 }
 
-#mini-title {
-  position: absolute;
-  top: 15px;
-  left: 50%;
-  transform: translate(-50%, 0);
-}
-
-#mini-field-sel {
-  max-width: 160px;
-  text-align: center;
-  border-bottom: none;
-}
-
-#mini-field-sel:hover {
-  border-bottom: 1px solid dimgray;
-}
-
-#mini-ctrl {
-  display: none;
-  position: absolute;
-  top: 5px;
-  right: 5px;
-}
-
 #mini-content:hover #mini-ctrl {
   display: flex;
   flex-direction: column;
@@ -861,6 +895,10 @@ div.side-content {
 
 
 /* bins panel */
+
+/* display save plan button only when plan is new or modified */
+#save-plan-btn { visibility: hidden; }
+#bins-content:hover #save-plan-btn { visibility: visible; }
 
 #bin-table {
   width: 100%;

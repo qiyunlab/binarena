@@ -230,7 +230,7 @@ function renderSelection(mo) {
   var oray = mo.oray;
 
   // get shadow color
-  var color = getComputedStyle(byId('hilite-color')).color;
+  var color = mo.theme.selection;
 
   // clear canvas
   var ctx = oray.getContext('2d');
@@ -303,7 +303,7 @@ function drawPolygon(mo) {
   var vertices = stat.polygon;
   var pi2 = Math.PI * 2;
   var radius = 3 / view.scale;
-  var color = getComputedStyle(byId('polygon-color')).color;
+  var color = mo.theme.polygon;
   var ctx = oray.getContext('2d');
   ctx.clearRect(0, 0, oray.width, oray.height);
   ctx.save();

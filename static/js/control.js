@@ -8,7 +8,7 @@
  * the main object that is passed to them.
  * 
  * @summary Table of content
- * - File system operations
+ * - Data import
  * - Assembly display
  * - Contig selection
  * - Binning utilities
@@ -21,7 +21,7 @@
 
 
 /**
- * @summary File system operations
+ * @summary Data import
  */
 
 /**
@@ -105,75 +105,58 @@ function initDisplayItems(data, view) {
  * @function updateCtrlByData
  * @param {Object} data - data object
  * @param {Object} view - view object
+ * @description It updates select options representing columns in the dataset.
  */
 function updateCtrlByData(data, view) {
+  var sel, opt, key, type;
 
-  // update field list in filtering
-  var fl = byId('field-list');
-  fl.innerHTML = '';
-  var opt = document.createElement('option');
-  fl.add(opt);
-  for (var i = 0; i < data.cols.length; i++) {
-    if (data.types[i] !== 'id') {
-      var opt = document.createElement('option');
-      opt.text = data.cols[i];
-      opt.value = i;
-      fl.add(opt);
-    }
-  }
+  // these are select DOMs to be updated
+  var keys = ['search', 'x', 'y', 'size', 'opacity', 'color', 'mini'];
+  
+  // these DOM can't accept categorical columns
+  var noCat = ['x', 'y', 'size', 'opacity', 'mini'];
 
-  // identify numeric and categorical fields
-  var numFields = [],
-    catFields = [];
-  for (var i = 0; i < data.cols.length; i++) {
-    var type = data.types[i],
-      field = data.cols[i];
-    if (type === 'number') {
-      numFields.push([i, field]);
-    } else if (type === 'category') {
-      catFields.push([i, field]);
-    }
-  }
-
-  // update field list in display items
-  ['x', 'y', 'size', 'opacity', 'color', 'mini'].forEach(function (item) {
-    var sel = byId(item + '-field-sel');
+  var cols = data.cols,
+      types = data.types;
+  var n = cols.length;
+  for (var i = 0; i < keys.length; i++) {
+    key = keys[i];
+    sel = byId(key + '-field-sel');
     sel.innerHTML = '';
+
+    // create an empty option
     sel.add(document.createElement('option'));
 
-    // categorical fields for color
-    if (item === 'color') {
-      catFields.forEach(function(cat) {
-        var opt = document.createElement('option');
-        opt.text = cat[1];
-        opt.value = cat[0];
-        sel.add(opt);
-      });
-    }
+    // check all columns
+    for (var j = 0; j < n; j++) {
+      type = types[j];
+      if (type === 'id') continue;
+      if (type === 'category' && noCat.indexOf(key) !== -1) continue;
+      if ((type === 'feature' || type === 'description')
+        && key !== 'search') continue;
 
-    // numerical fields for all
-    for (var j = 0; j < numFields.length; j++) {
-      var opt = document.createElement('option');
-      opt.text = numFields[j][1];
-      opt.value = numFields[j][0];
+      // create an option
+      opt = document.createElement('option');
+      opt.value = j;
+      opt.text = cols[j];
       sel.add(opt);
+      if (key === 'search' || key === 'mini') continue;
+
+      // pre-defined index
+      var idx = view[key].i;
+      if (idx) sel.value = idx;
+      var span = byId(key + '-param-span');
+      if (idx) span.classList.remove('hidden');
+      else span.classList.add('hidden');
+
+      // pre-defined scale
+      var scale = view[key].scale;
+      var btn = byId(key + '-scale-btn');
+      btn.setAttribute('data-scale', scale);
+      btn.title = 'Scale: ' + scale;
+      btn.innerHTML = scale2HTML(scale);
     }
-    if (item === 'mini') return;
-
-    // pre-defined index
-    var idx = view[item].i;
-    if (idx) sel.value = idx;
-    var span = byId(item + '-param-span');
-    if (idx) span.classList.remove('hidden');
-    else span.classList.add('hidden');
-
-    // pre-defined scale
-    var scale = view[item].scale;
-    var btn = byId(item + '-scale-btn');
-    btn.setAttribute('data-scale', scale);
-    btn.title = 'Scale: ' + scale;
-    btn.innerHTML = scale2HTML(scale);
-  });
+  }
 }
 
 
@@ -191,8 +174,11 @@ function updateColorMap(mo) {
 
   // get categories and their frequencies
   var cats = {};
-  for (var i = 0; i < mo.data.df.length; i++) {
-    var val = mo.data.df[i][icol];
+  var df = mo.data.df;
+  var n = df.length;
+  var val;
+  for (var i = 0; i < n; i++) {
+    val = df[i][icol];
     if (val === undefined || val === null) continue;
     cats[val[0]] = (cats[val[0]] || 0) + 1;
   }
@@ -257,27 +243,30 @@ function resetView(mo, keep) {
  */
 function calcDispMinMax(mo, items) {
   items = items || ['x', 'y', 'size', 'opacity', 'color'];
+  var m = items.length;
   var data = mo.data;
   var view = mo.view;
 
   var indices = [],
-    values = [];
-  for (var i = 0; i < items.length; i++) {
+      values = [];
+  for (var i = 0; i < m; i++) {
     indices.push(view[items[i]].i);
     values.push([]);
   }
 
   // exclude masked contigs
   var hasMask = (Object.keys(mo.mask).length > 0);
-  for (var i = 0; i < data.df.length; i++) {
+  var df = data.df;
+  var n = df.length;
+  for (var i = 0; i < n; i++) {
     if (hasMask && i in mo.mask) continue;
-    for (var j = 0; j < items.length; j++) {
-      values[j].push(data.df[i][indices[j]]);
+    for (var j = 0; j < m; j++) {
+      values[j].push(df[i][indices[j]]);
     }
   }
 
   // calculate min and max of display items
-  for (var i = 0; i < items.length; i++) {
+  for (var i = 0; i < m; i++) {
     var scale = view[items[i]].scale;
     var mm = arrMinMax(values[i]);
     view[items[i]].min = scaleNum(mm[0], scale);
@@ -293,17 +282,20 @@ function calcDispMinMax(mo, items) {
  * Update view based on data.
  * @function updateViewByData
  * @param {Object} mo - main object
- * @param {Array.<Object, Object, Object>} [cache=] - decimals, categories and
+ * @param {Array.<Object, Object, Object>} [cache] - decimals, categories and
  * features
  * @description Singling out cache is for performance consideration.
  * @todo to fix
  */
 function updateViewByData(mo, cache) {
+  resetControls();
+
   var data = mo.data;
   var view = mo.view;
-  var n = data.df.length;
+  var df = data.df;
+  var n = df.length;
 
-  // close or open data
+  // data is closed
   if (n === 0) {
     byId('hide-side-btn').click();
     byId('show-side-btn').disabled = true;
@@ -311,7 +303,10 @@ function updateViewByData(mo, cache) {
     var btn = byId('dash-btn');
     if (btn.classList.contains('active')) btn.click();
     byId('dash-panel').classList.add('hidden');
-  } else {
+  }
+
+  // data is open
+  else {
     byId('show-side-btn').disabled = false;
     byId('show-side-btn').click();
     byId('drop-sign').classList.add('hidden');
@@ -330,10 +325,13 @@ function updateViewByData(mo, cache) {
 
   // calculate total abundance
   if (view.spcols.len && view.spcols.cov) {
+    var len = view.spcols.len,
+        cov = view.spcols.cov;
     view.abundance = 0;
+    var row;
     for (var i = 0; i < n; i++) {
-      view.abundance += data.df[i][view.spcols.len]
-        * data.df[i][view.spcols.cov];
+      row = df[i];
+      view.abundance += row[len] * row[cov];
     }
   }
 
@@ -394,58 +392,167 @@ function displayItemChange(item, i, scale, mo) {
 function updateSelection(mo) {
   renderSelection(mo);
   updateMiniPlot(mo);
-  updateBinToolbar(mo);
-  updateSelectToolbar(mo);
-  updateSelectionInfo(mo);
-  updateMaskToolbar(mo);
+  updateBinCtrl(mo);
+  updateSelCtrl(mo);
+  updateSelInfo(mo);
+  updateMaskCtrl(mo);
 }
 
 
 /**
- * Update selected toolbar.
- * @function updateSelectToolbar
+ * Update selection controls.
+ * @function updateSelCtrl
  * @param {Object} mo - main object
  */
-function updateSelectToolbar(mo) {
-  var keys = Object.keys(mo.pick);
-  var n = keys.length;
+function updateSelCtrl(mo) {
+  var ctgs = Object.keys(mo.pick);
+  var n = ctgs.length;
   var str = 'Selected: ' + n;
-  if (n === 1) str += ' (ID: ' + mo.data.df[keys[0]][0] + ')';
-  byId('info-head').lastElementChild.firstElementChild.innerHTML = str;
+  if (n === 1) str += ' (ID: ' + mo.data.df[ctgs[0]][0] + ')';
+  byId('info-head-btn').innerHTML = str;
 }
 
 
 /**
- * Update masked toolbar.
- * @function updateMaskToolbar
+ * Update masking controls.
+ * @function updateMaskCtrl
  * @param {Object} mo - main object
  */
-function updateMaskToolbar(mo) {
-  var keys = Object.keys(mo.mask);
-  var n = keys.length;
+function updateMaskCtrl(mo) {
+  var ctgs = Object.keys(mo.mask);
+  var n = ctgs.length;
   var str = 'Masked: ' + n;
-  if (n === 1) str += ' (ID: ' +  mo.data.df[keys[0]][0] + ')';
-  byId('mask-head').lastElementChild.firstElementChild.innerHTML = str;
+  if (n === 1) str += ' (ID: ' +  mo.data.df[ctgs[0]][0] + ')';
+  byId('mask-head-btn').innerHTML = str;
+}
+
+
+
+/**
+ * @summary Information of selected contigs
+ */
+
+/**
+ * Initiate information table.
+ * @function initInfoTable
+ * @param {Object} data - data object
+ * @param {Object} lencol - "length" column name
+ * @param {Object} pick - picked contigs
+ * @description Fields (rows) to be displayed in the information table are
+ * determined based on the type and names of data fields.
+ */
+ function initInfoTable(data, lencol, pick) {
+  lencol = lencol || '';
+  var table = byId('info-table');
+
+  // temporarily move control span
+  var div = byId('info-ctrl');
+  div.classList.add('hidden');
+
+  // weight-by selection - clear
+  var sel = byId('info-ref-sel');
+  sel.innerHTML = '';
+  sel.add(document.createElement('option'));
+
+  // clear table
+  table.innerHTML = '';
+
+  // create rows
+  var cols = data.cols,
+      types = data.types;
+  var col, type, row;
+  var n = cols.length;
+  for (var i = 1; i < n; i++) {
+    col = cols[i];
+    type = types[i];
+    row = table.insertRow(-1);
+    row.setAttribute('data-index', i);
+    row.setAttribute('data-col', col);
+    row.setAttribute('data-type', type);
+    if (type === 'number') {
+      var met = guessColMetric(col);
+      row.setAttribute('data-refcol', (met.substring(met.length - 2) === 'by')
+        ? lencol : '');
+      row.setAttribute('data-metric', (met.substring(0, 3) === 'sum') ? 'sum'
+        : 'mean');
+    }
+
+    // row hover event: append control span
+    row.addEventListener('mouseenter', function () {
+      if (document.activeElement === sel) return false;
+
+      // three buttons: metric (sum or mean), plot entry, weight-by selection
+      // the 4th and permanent button is "hide"
+      var mbtn = byId('info-metric-btn');
+      var pbtn = byId('info-plot-btn');
+      var rspan = byId('info-ref-span');
+
+      // only one contig is selected, then no need for controls
+      if (Object.keys(pick).length === 1 ||
+        (this.getAttribute('data-type') !== 'number')) {
+        mbtn.classList.add('hidden');
+        pbtn.classList.add('hidden');
+        rspan.classList.add('hidden');
+      }
+      
+      // multiple contigs are selected
+      else {
+        var met = this.getAttribute('data-metric');
+        mbtn.title = 'Metric: ' + met;
+        sel.value = this.getAttribute('data-refcol');
+        mbtn.innerHTML = (met === 'sum') ? '&Sigma;<i>x</i>' :
+          '<span style="text-decoration: overline;"><i>x</i></span>';
+        mbtn.classList.remove('hidden');
+        pbtn.classList.remove('hidden');
+        rspan.classList.remove('hidden');
+      }
+
+      // append controls to row
+      div.setAttribute('data-row', this.rowIndex);
+      var rect = this.getBoundingClientRect();
+      div.style.top = rect.top + 'px';
+      div.classList.remove('hidden');
+    });
+
+    // weight-by selection - add numeric field
+    if (type === 'number') {
+      var opt = document.createElement('option');
+      opt.text = col;
+      opt.value = col;
+      sel.add(opt);
+    }
+
+    // create cells
+    var cell = row.insertCell(-1); // 1st cell: field name
+    cell.innerHTML = col;
+    row.insertCell(-1); // 2nd cell: field value
+  }
+
+  table.parentElement.addEventListener('mouseleave', function () {
+    if (document.activeElement === sel) return;
+    div.classList.add('hidden');
+  });
 }
 
 
 /**
- * Update information of selected contigs.
- * @function updateSelectionInfo
+ * Update information table of selected contigs.
+ * @function updateSelInfo
  * @param {Object} mo - main object
  */
-function updateSelectionInfo(mo) {
+function updateSelInfo(mo) {
   var table = byId('info-table');
-  var indices = Object.keys(mo.pick);
-  if (indices.length === 0) { // no contig is selected
+  var ctgs = Object.keys(mo.pick);
+  if (ctgs.length === 0) { // no contig is selected
     table.classList.add('hidden');
   } else {
     var rows = table.rows;
+    var n = rows.length;
 
     // single contig
-    if (indices.length === 1) {
-      var selData = mo.data.df[indices[0]];
-      for (var i = 0; i < rows.length; i++) {
+    if (ctgs.length === 1) {
+      var selData = mo.data.df[ctgs[0]];
+      for (var i = 0; i < n; i++) {
         var val = selData[rows[i].getAttribute('data-index')];
         var type = rows[i].getAttribute('data-type');
         rows[i].cells[1].innerHTML = value2Str(val, type);
@@ -455,11 +562,12 @@ function updateSelectionInfo(mo) {
     // multiple contigs
     else {
       var selData =
-        transpose(indices.sort().map(function (i) { return mo.data.df[i]; }));
-      for (var i = 0; i < rows.length; i++) {
+        transpose(ctgs.sort().map(function (i) { return mo.data.df[i]; }));
+      var cols = mo.data.cols;
+      for (var i = 0; i < n; i++) {
         var arr = selData[rows[i].getAttribute('data-index')];
         var refcol = rows[i].getAttribute('data-refcol');
-        var refarr = refcol ? selData[mo.data.cols.indexOf(refcol)] : null;
+        var refarr = refcol ? selData[cols.indexOf(refcol)] : null;
         updateInfoRow(rows[i], mo, arr, refarr);
       }
     }
@@ -505,162 +613,6 @@ function updateInfoRow(row, mo, arr, refarr) {
 
 
 /**
- * Select field change event.
- * @function selectFieldChange
- * @param {Object} e - event object
- * @param {Object} data - data object
- * @param {Object} view - view object
- */
-function selectFieldChange(e, data, view) {
-  ['num-sel-p', 'cat-sel-p', 'fea-sel-p', 'des-sel-p'].forEach(function (id) {
-    byId(id).classList.add('hidden');
-  });
-  byId('search-btn').style.visibility = 'hidden';
-  var span = byId('str-match-span');
-  span.classList.add('hidden');
-
-  // show controls by field type
-  var i = e.target.value;
-  if (i !== '') {
-    i = parseInt(i);
-    switch (data.types[i]) {
-      case 'number':
-        byId('num-sel-p').classList.remove('hidden');
-        break;
-      case 'category':
-        var p = byId('cat-sel-p');
-        p.lastElementChild.appendChild(span);
-        // p.appendChild(span);
-        span.classList.remove('hidden');
-        p.classList.remove('hidden');
-        autoComplete(byId('cat-sel-txt'),
-          Object.keys(view.categories[data.cols[i]]).sort());
-        break;
-      case 'feature':
-        var p = byId('fea-sel-p');
-        p.lastElementChild.appendChild(span);
-        // p.appendChild(span);
-        span.classList.remove('hidden');
-        p.classList.remove('hidden');
-        autoComplete(byId('fea-sel-txt'),
-          Object.keys(view.features[data.cols[i]]).sort());
-        break;
-      case 'description':
-        var p = byId('des-sel-p');
-        p.lastElementChild.appendChild(span);
-        // p.appendChild(span);
-        span.classList.remove('hidden');
-        p.classList.remove('hidden');
-        break;
-    }
-    byId('search-btn').style.visibility = 'visible';
-  }
-}
-
-
-/**
- * Select contigs by criteria.
- * @function selectByCriteria
- * @param {Object} mo - main object
- * @returns {boolean} whether selection is successful
- */
-function selectByCriteria(mo) {
-  var data = mo.data;
-  var mask = mo.mask;
-  var f = byId('field-list').value;
-  if (f === '') {
-    toastMsg('No search criterium was specified.', mo.stat);
-    return false;
-  }
-  f = parseInt(f);
-  var type = data.types[f];
-
-  // filter contigs by currently specified criteria
-  var indices = [];
-  var hasMask = (Object.keys(mask).length > 0);
-  var n = data.df.length;
-
-  // search by threshold
-  if (type === 'number') {
-
-    // validate minimum and maximum thresholds
-    var min = byId('min-txt').value;
-    var max = byId('max-txt').value;
-    if (min === '' && max === '') {
-      toastMsg('Must specify minimum and/or maximum thresholds.', mo.stat);
-      return false;
-    }
-    if (min === '') min = null;
-    else if (isNaN(min)) {
-      toastMsg('Invalid minimum threshold was specified.', mo.stat);
-      return false;
-    } else min = Number(min);
-    if (max === '') max = null;
-    else if (isNaN(max)) {
-      toastMsg('Invalid maximum threshold was specified.', mo.stat);
-      return false;
-    } else max = Number(max);
-
-    // whether to include lower and upper bounds
-    var minIn = (byId('min-btn').innerHTML === '[');
-    var maxIn = (byId('max-btn').innerHTML === '[');
-
-    // compare values to threshold(s)
-    for (var i = 0; i < n; i++) {
-      if (hasMask && i in mask) continue;
-      var val = data.df[i][f];
-      if ((val !== null) &&
-        (min === null || (minIn ? (val >= min) : (val > min))) &&
-        (max === null || (maxIn ? (val <= max) : (val < max)))) {
-          indices.push(i);
-      }
-    }
-  }
-
-  // search by keyword
-  else {
-    var text = byId(type.substr(0, 3) + '-sel-txt')
-      .value;
-    if (text === '') {
-      toastMsg('Must specify a keyword.', mo.stat);
-      return false;
-    }
-    var mcase = byId('case-btn').classList
-      .contains('pressed');
-    if (!mcase) text = text.toUpperCase();
-    var mwhole = byId('whole-btn').classList
-      .contains('pressed');
-    for (var i = 0; i < n; i++) {
-      if (hasMask && i in mask) continue;
-      var val = data.df[i][f];
-      if (val === null) continue;
-
-      // category or description
-      if (type !== 'feature') {
-        if (type === 'category') val = val[0];
-        if (!mcase) val = val.toUpperCase();
-        if (mwhole ? (val === text) : (val.indexOf(text) > -1))
-          indices.push(i);
-      }
-
-      // feature
-      else {
-        for (var key in val) {
-          if (mwhole ? (key === text) : (key.indexOf(text) > -1)) {
-            indices.push(i);
-            break;
-          }
-        }
-      }
-    }
-  }
-
-  treatSelection(indices, mo.stat.selmode, mo.stat.masking, mo);
-  return true;
-}
-
-
-/**
  * Deal with selected contigs.
  * @function treatSelection
  * @param {number[]} indices - indices of contigs to be selected / excluded
@@ -668,19 +620,15 @@ function selectByCriteria(mo) {
  * @param {boolean} [masking=false] - masking mode on/off
  * @param {Object} mo - main object
  */
-function treatSelection(indices, selmode, masking, mo) {
+ function treatSelection(indices, selmode, masking, mo) {
   if (typeof masking === 'undefined') masking = false;
   if (typeof selmode === 'undefined') selmode = mo.stat.selmode;
   var target = masking ? mo.mask : mo.pick;
 
   // new selection
   if (selmode === 'new') {
-    Object.keys(target).forEach(function (i) {
-      delete target[i];
-    });
-    indices.forEach(function (i) {
-      target[i] = null;
-    });
+    Object.keys(target).forEach(function (i) { delete target[i]; });
+    indices.forEach(function (i) { target[i] = null; });
     toastMsg((masking ? 'Masked' : 'Selected') + ' ' + indices.length +
       ' contig(s).', mo.stat);
   }
@@ -704,9 +652,7 @@ function treatSelection(indices, selmode, masking, mo) {
     indices.forEach(function (i) {
       if (i in target) toDel.push(i);
     });
-    toDel.forEach(function (i) {
-      delete target[i];
-    });
+    toDel.forEach(function (i) { delete target[i]; });
     toastMsg('Removed ' + toDel.length + ' contig(s) from ' + (masking ?
       'mask' : 'selection') + '.', mo.stat);
   }
@@ -717,9 +663,7 @@ function treatSelection(indices, selmode, masking, mo) {
     Object.keys(mo.pick).forEach(function (i) {
       if (i in mo.mask) toDel.push(i);
     });
-    toDel.forEach(function (i) {
-      delete mo.pick[i];
-    });
+    toDel.forEach(function (i) { delete mo.pick[i]; });
   }
 
   updateView(mo);
@@ -755,11 +699,13 @@ function polygonSelect(mo) {
   // finish drawing
   else {
     oray.getContext('2d').clearRect(0, 0, oray.width, oray.height);
+    var df = data.df;
+    var n = df.length;
     var indices = [];
     var hasMask = (Object.keys(mo.mask).length > 0);
-    for (var i = 0; i < data.df.length; i++) {
+    for (var i = 0; i < n; i++) {
       if (hasMask && i in mo.mask) continue;
-      var datum = data.df[i];
+      var datum = df[i];
       var x = ((scaleNum(datum[view.x.i], view.x.scale) - view.x.min) /
         (view.x.max - view.x.min) - 0.5) * rena.width;
       var y = ((view.y.max - scaleNum(datum[view.y.i], view.y.scale)) /
@@ -778,33 +724,210 @@ function polygonSelect(mo) {
 
 
 /**
+ * @summary Contig searching
+ */
+
+/**
+ * Search field change event.
+ * @function searchFieldChange
+ * @param {Object} e - event object
+ * @param {Object} data - data object
+ * @param {Object} view - view object
+ */
+function searchFieldChange(e, data, view) {
+  ['num-sel-p', 'cat-sel-p', 'fea-sel-p', 'des-sel-p'].forEach(function (id) {
+    byId(id).classList.add('hidden');
+  });
+  byId('search-btn').style.visibility = 'hidden';
+  var span = byId('str-match-span');
+  span.classList.add('hidden');
+
+  // show controls by field type
+  var i = e.target.value;
+  if (i === '') return;
+  i = parseInt(i);
+  switch (data.types[i]) {
+    case 'number':
+      byId('num-sel-p').classList.remove('hidden');
+      break;
+    case 'category':
+      var p = byId('cat-sel-p');
+      p.lastElementChild.appendChild(span);
+      // p.appendChild(span);
+      span.classList.remove('hidden');
+      p.classList.remove('hidden');
+      autoComplete(byId('cat-sel-txt'),
+        Object.keys(view.categories[data.cols[i]]).sort());
+      break;
+    case 'feature':
+      var p = byId('fea-sel-p');
+      p.lastElementChild.appendChild(span);
+      // p.appendChild(span);
+      span.classList.remove('hidden');
+      p.classList.remove('hidden');
+      autoComplete(byId('fea-sel-txt'),
+        Object.keys(view.features[data.cols[i]]).sort());
+      break;
+    case 'description':
+      var p = byId('des-sel-p');
+      p.lastElementChild.appendChild(span);
+      // p.appendChild(span);
+      span.classList.remove('hidden');
+      p.classList.remove('hidden');
+      break;
+  }
+  byId('search-btn').style.visibility = 'visible';
+}
+
+
+/**
+ * Search contigs by criteria.
+ * @function searchByCriteria
+ * @param {Object} mo - main object
+ * @returns {boolean} whether search is successful
+ */
+function searchByCriteria(mo) {
+  var data = mo.data;
+  var mask = mo.mask;
+  var col = byId('search-field-sel').value;
+  if (col === '') {
+    toastMsg('No search criterion was specified.', mo.stat);
+    return false;
+  }
+  col = parseInt(col);
+  var type = data.types[col];
+
+  // filter contigs by currently specified criteria
+  var indices = [];
+  var hasMask = (Object.keys(mask).length > 0);
+  var df = data.df;
+  var n = df.length;
+
+  // search by threshold
+  if (type === 'number') {
+
+    // validate minimum and maximum thresholds
+    var min = byId('min-txt').value;
+    var max = byId('max-txt').value;
+    if (min === '' && max === '') {
+      toastMsg('Must specify minimum and/or maximum thresholds.', mo.stat);
+      return false;
+    }
+    if (min === '') min = null;
+    else if (isNaN(min)) {
+      toastMsg('Invalid minimum threshold was specified.', mo.stat);
+      return false;
+    } else min = Number(min);
+    if (max === '') max = null;
+    else if (isNaN(max)) {
+      toastMsg('Invalid maximum threshold was specified.', mo.stat);
+      return false;
+    } else max = Number(max);
+
+    // whether to include lower and upper bounds
+    var minIn = (byId('min-btn').innerHTML === '[');
+    var maxIn = (byId('max-btn').innerHTML === '[');
+
+    // compare values to threshold(s)
+    var val;
+    for (var i = 0; i < n; i++) {
+      if (hasMask && i in mask) continue;
+      val = df[i][col];
+      if ((val !== null) &&
+        (min === null || (minIn ? (val >= min) : (val > min))) &&
+        (max === null || (maxIn ? (val <= max) : (val < max)))) {
+          indices.push(i);
+      }
+    }
+  }
+
+  // search by keyword
+  else {
+    var text = byId(type.substr(0, 3) + '-sel-txt').value;
+    if (text === '') {
+      toastMsg('Must specify a keyword.', mo.stat);
+      return false;
+    }
+    var mcase = byId('case-btn').classList.contains('pressed');
+    if (!mcase) text = text.toUpperCase();
+    var mwhole = byId('whole-btn').classList.contains('pressed');
+
+    var val;
+    for (var i = 0; i < n; i++) {
+      if (hasMask && i in mask) continue;
+      val = df[i][col];
+      if (val === null) continue;
+
+      // category or description
+      if (type !== 'feature') {
+        if (type === 'category') val = val[0];
+        if (!mcase) val = val.toUpperCase();
+        if (mwhole ? (val === text) : (val.indexOf(text) > -1))
+          indices.push(i);
+      }
+
+      // feature
+      else {
+        for (var key in val) {
+          if (mwhole ? (key === text) : (key.indexOf(text) > -1)) {
+            indices.push(i);
+            break;
+          }
+        }
+      }
+    }
+  }
+
+  treatSelection(indices, mo.stat.selmode, mo.stat.masking, mo);
+  return true;
+}
+
+
+/**
  * @summary Binning utilities
  */
 
 /**
- * Update bins toolbar.
- * @function updateBinToolbar
+ * Update bins controls.
+ * @function updateBinCtrl
  * @param {Object} mo - main object
  */
-function updateBinToolbar(mo) {
+function updateBinCtrl(mo) {
+  // number of bins
   var n = Object.keys(mo.bins).length;
+
+  // update save plan button
+  var txt = byId('plan-sel-txt');
+  var btn = byId('save-plan-btn');
+  btn.classList.toggle('hidden', !n);
+  var col = mo.data.cols[txt.getAttribute('data-col')];
+  if (col == txt.value) btn.title = 'Overwrite binning plan "' + col + '"';
+  else btn.title = 'Save current binning plan as "' + txt.value + '"';
+
+  // update bins panel head
   byId('bins-head').lastElementChild.firstElementChild
     .innerHTML = 'Bins: ' + n;
-  byId('save-bin-btn').classList.toggle('hidden', !n);
-  byId('clear-bin-btn').classList.toggle('hidden', !n);
+
+  byId('export-plan-btn').classList.toggle('hidden', !n);
+  byId('clear-plan-btn').classList.toggle('hidden', !n);
   byId('bin-thead').classList.toggle('hidden', !n);
+
+  // number of selected bins
   var m = 0;
-  var table = byId('bin-tbody');
-  for (var i = 0; i < table.rows.length; i++) {
-    if (table.rows[i].classList.contains('selected')) m ++;
+  var rows = byId('bin-tbody').rows;
+  for (var i = 0; i < rows.length; i++) {
+    if (rows[i].classList.contains('selected')) m ++;
   }
+
   byId('delete-bin-btn').classList.toggle('hidden', !m);
-  byId('merge-bin-btn').classList.toggle('hidden', (m < 2));
+  byId('merge-bins-btn').classList.toggle('hidden', (m < 2));
+
   var k = Object.keys(mo.pick).length;
-  byId('add-to-bin-btn').classList.toggle('hidden',
-    !(m === 1 && k));
-  byId('remove-from-bin-btn').classList.toggle('hidden',
-    !(m === 1 && k));
+  byId('as-new-bin-btn').classList.toggle('hidden', !k);
+  byId('add-to-bin-btn').classList.toggle('hidden', !(m === 1 && k));
+  byId('remove-from-bin-btn').classList.toggle('hidden', !(m === 1 && k));
+  byId('invert-btn').classList.toggle('hidden', !k);
+  byId('mask-btn').classList.toggle('hidden', !k);
 }
 
 
@@ -831,7 +954,7 @@ function updateBinTable(mo) {
       if (icov) covs[i] = data.df[i][icov];
     }
   }
-  
+
   Object.keys(bins).sort().forEach(function (name) {
     var row = table.insertRow(-1);
 
@@ -888,7 +1011,7 @@ function binNameKeyUp(e, stat, bins) {
   var text = e.target;
   var label = text.parentElement.firstElementChild;
   var name = label.innerHTML;
-  if (e.keyCode === 13) { // press Enter to save new name
+  if (e.key === 'Enter') { // save new name
     if (text.value === '') {
       text.value = name;
       toastMsg('Bin name must not be empty.', stat)
@@ -906,111 +1029,10 @@ function binNameKeyUp(e, stat, bins) {
         text.value = name;
       }
     }
-  } else if (e.keyCode === 27) { // press ESC to cancel editing
+  } else if (e.key === 'Esc' || e.key === 'Escape') { // cancel editing
     text.classList.add('hidden');
     label.classList.remove('hidden');
   }
-}
-
-
-/**
- * @summary Bin information
- */
-
-/**
- * Initiate information table.
- * @function initInfoTable
- * @param {Object} data - data object
- * @param {Object} lencol - "length" column name
- * @param {Object} pick - picked contigs
- * @description Fields (rows) to be displayed in the information table are
- * determined based on the type and names of data fields.
- */
-function initInfoTable(data, lencol, pick) {
-  lencol = lencol || '';
-  var table = byId('info-table');
-
-  // temporarily move control span
-  var div = byId('info-ctrl');
-  div.classList.add('hidden');
-
-  // weight-by selection - clear
-  var sel = byId('info-ref-sel');
-  sel.innerHTML = '';
-  sel.add(document.createElement('option'));
-
-  // clear table
-  table.innerHTML = '';
-
-  // create rows
-  for (var i = 1; i < data.cols.length; i++) {
-    var row = table.insertRow(-1);
-    row.setAttribute('data-index', i);
-    row.setAttribute('data-col', data.cols[i]);
-    row.setAttribute('data-type', data.types[i]);
-    if (data.types[i] === 'number') {
-      var met = guessColMetric(data.cols[i]);
-      row.setAttribute('data-refcol', (met.substr(met.length - 2) === 'by')
-        ? lencol : '');
-      row.setAttribute('data-metric', (met.substr(0, 3) === 'sum') ? 'sum'
-        : 'mean');
-    }
-
-    // row hover event: append control span
-    row.addEventListener('mouseenter', function () {
-      if (document.activeElement === sel) return false;
-
-      // three buttons: metric (sum or mean), plot entry, weight-by selection
-      // the 4th and permanent button is "hide"
-      var mbtn = byId('info-metric-btn');
-      var pbtn = byId('info-plot-btn');
-      var rspan = byId('info-ref-span');
-
-      // only one contig is selected, then no need for controls
-      if (Object.keys(pick).length === 1 ||
-        (this.getAttribute('data-type') !== 'number')) {
-        mbtn.classList.add('hidden');
-        pbtn.classList.add('hidden');
-        rspan.classList.add('hidden');
-      }
-      
-      // multiple contigs are selected
-      else {
-        var met = this.getAttribute('data-metric');
-        mbtn.title = 'Metric: ' + met;
-        sel.value = this.getAttribute('data-refcol');
-        mbtn.innerHTML = (met === 'sum') ? '&Sigma;<i>x</i>' :
-          '<span style="text-decoration: overline;"><i>x</i></span>';
-        mbtn.classList.remove('hidden');
-        pbtn.classList.remove('hidden');
-        rspan.classList.remove('hidden');
-      }
-
-      // append controls to row
-      div.setAttribute('data-row', this.rowIndex);
-      var rect = this.getBoundingClientRect();
-      div.style.top = rect.top + 'px';
-      div.classList.remove('hidden');
-    });
-
-    // weight-by selection - add numeric field
-    if (data.types[i] === 'number') {
-      var opt = document.createElement('option');
-      opt.text = data.cols[i];
-      opt.value = data.cols[i];
-      sel.add(opt);
-    }
-
-    // create cells
-    var cell = row.insertCell(-1); // 1st cell: field name
-    cell.innerHTML = data.cols[i];
-    row.insertCell(-1); // 2nd cell: field value
-  }
-
-  table.parentElement.addEventListener('mouseleave', function () {
-    if (document.activeElement === sel) return;
-    div.classList.add('hidden');
-  });
 }
 
 

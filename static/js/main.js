@@ -34,7 +34,7 @@
  * @property {Object} oray - overlay canvas DOM
  * @property {Object} mini - mini plot
  * @property {number[]} dist - pairwise distances among all contigs 
- * @property {Object} palettes - available palettes
+ * @property {Object} theme - program theme
  */
 function mainObj() {
 
@@ -51,7 +51,7 @@ function mainObj() {
     types: [],
     dicts: {},
     df: [],
-  }
+  };
 
   /**
    * View object.
@@ -242,8 +242,8 @@ window.addEventListener('load', function () {
   // the mini plot canvas
   mo.mini.canvas = byId('mini-canvas');
 
-  // initiate color palette object
-  mo.palettes = new PaletteObj();
+  // load program theme
+  mo.theme = loadTheme();
 
   // initiate controls
   initControls(mo);

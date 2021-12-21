@@ -30,6 +30,7 @@ The BinaRena interface is like a [digital map](https://www.google.com/maps). The
 - Press `M` to toggle between selection and masking modes. In the latter scenario, polygon-selected contigs will be directly masked.
 - Press `P` to take a screenshot of the current view.
 - Press `O` to reset the plot view.
+- Press `Space` to add selected contigs to the current bin. If no bin is selected, a new bin will be created.
 
 
 ## Input files
