@@ -382,6 +382,13 @@ function cacheData(data) {
 
 /**
  * @summary Binning operations
+ * - Create a new bin.
+ * - Rename a bin.
+ * - Find current bin.
+ * - Add contigs to a bin.
+ * - Remove contigs from a bin.
+ * - Delete selected bins.
+ * - Load bins from a categorical field.
  */
 
 
@@ -415,9 +422,9 @@ function createBin(bins, name) {
 function renameBin(bins, oldname, newname) {
   if (newname in bins) return false;
   bins[newname] = {};
-  Object.keys(bins[oldname]).forEach(function (idx) {
-    bins[newname][idx] = null;
-  });
+  for (var ctg in bins[oldname]) {
+    bins[newname][ctg] = null;
+  }
   delete bins[oldname];
   return true;
 }
@@ -445,40 +452,40 @@ function currentBin(table) {
 
 
 /**
- * Add selected contigs to a bin.
+ * Add contigs to a bin.
  * @function addToBin
- * @param {number[]} indices - indices of selected contigs
+ * @param {number[]} ctgs - contig indices
  * @param {Object} bin - target bin
  * @returns {number[]} indices of added contigs
  */
-function addToBin(indices, bin) {
-  var res = [];
-  indices.forEach(function (i) {
-    if (!(i in bin)) {
-      bin[i] = null;
-      res.push(i);
+function addToBin(ctgs, bin) {
+  var added = [];
+  for (var ctg in ctgs) {
+    if (!(ctg in bin)) {
+      bin[ctg] = null;
+      added.push(ctg);
     }
-  });
-  return res;
+  }
+  return added;
 }
 
 
 /**
- * Remove selected contigs from a bin.
+ * Remove contigs from a bin.
  * @function removeFromBin
- * @param {number[]} indices - indices of selected contigs
+ * @param {number[]} ctgs - contig indices
  * @param {Object} bin - target bin
  * @returns {number[]} indices of removed contigs
  */
-function removeFromBin(indices, bin) {
-  var res = [];
-  indices.forEach(function (i) {
-    if (i in bin) {
-      delete bin[i];
-      res.push(i);
+function removeFromBin(ctgs, bin) {
+  var removed = [];
+  for (var ctg in ctgs) {
+    if (ctg in bin) {
+      delete bin[ctg];
+      removed.push(ctg);
     }
-  });
-  return res;
+  }
+  return removed;
 }
 
 
@@ -528,7 +535,7 @@ function selectBin(table, name) {
 
 
 /**
- * Load bins based on a categorical field.
+ * Load bins from a categorical field.
  * @function loadBin
  * @param {Object} df - data frame
  * @param {number} idx - field index
@@ -553,49 +560,6 @@ function loadBins(df, idx) {
  * @summary Information operations
  */
 
-/**
- * Format a category cell as string.
- * @function category2Str
- * @param {Array} val - cell value (array of [category, weight])
- * @returns {string} formatted string
- */
-function category2Str(val) {
-  return (val === null ? '' : val[0]);
-}
-
-
-/**
- * Format a feature cell as string.
- * @function feature2Str
- * @param {Object} val - cell value (object of feature: weight pairs)
- * @returns {string} formatted string
- */
-function feature2Str(val) {
-  return Object.keys(val).sort().join(', ');
-}
-
-
-/**
- * Format a cell as string.
- * @function value2Str
- * @param {*} val - cell value
- * @returns {string} formatted string
- */
-function value2Str(val, type) {
-  var str = '';
-  switch (type) {
-    case 'category':
-      str = category2Str(val);
-      break;
-    case 'feature':
-      str = feature2Str(val);
-      break;
-    default:
-      str = (val === null) ? 'na' : val.toString();
-  }
-  return str
-}
-
 
 /**
  * Generate a metric to summarize a field of multiple contigs.
@@ -612,6 +576,7 @@ function columnInfo(arr, type, met, deci, refarr) {
   deci = deci || 0;
   var res = 0;
   switch (type) {
+
     case 'number':
       switch (met) {
         case 'sum':
@@ -625,12 +590,14 @@ function columnInfo(arr, type, met, deci, refarr) {
       }
       res = formatNum(res, deci);
       break;
+
     case 'category':
       var x = objMinMax(listCats(arr));
       var frac = x[1][1] / arr.length;
       res = (frac > 0.5) ? (x[1][0] + ' (' + (frac * 100).toFixed(2)
         .replace(/\.?0+$/, '') + '%)') : 'ambiguous';
       break;
+
     case 'feature':
       var x = listFeats(arr);
       var a = [];

@@ -425,6 +425,51 @@ function guessColMetric(col) {
   return res;
 }
 
+
+/**
+ * Format a category cell as string.
+ * @function category2Str
+ * @param {Array} val - cell value (array of [category, weight])
+ * @returns {string} formatted string
+ */
+ function category2Str(val) {
+  return (val === null ? '' : val[0]);
+}
+
+
+/**
+ * Format a feature cell as string.
+ * @function feature2Str
+ * @param {Object} val - cell value (object of feature: weight pairs)
+ * @returns {string} formatted string
+ */
+function feature2Str(val) {
+  return Object.keys(val).sort().join(', ');
+}
+
+
+/**
+ * Format a cell as string.
+ * @function value2Str
+ * @param {*} val - cell value
+ * @returns {string} formatted string
+ */
+function value2Str(val, type) {
+  var str = '';
+  switch (type) {
+    case 'category':
+      str = category2Str(val);
+      break;
+    case 'feature':
+      str = feature2Str(val);
+      break;
+    default:
+      str = (val === null) ? 'na' : val.toString();
+  }
+  return str
+}
+
+
 /**
  * Format length value.
  * @function FormatLength
