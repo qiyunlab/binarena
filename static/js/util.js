@@ -152,7 +152,36 @@ function unscale(scale) {
 }
 
 
+/**
+ * Filter an array to unique elements while keeping order.
+ * @function arr2obj
+ * @param {Array} arr - input array
+ * @returns {Object} - output object
+ * @see {@link https://stackoverflow.com/questions/9229645/}
+ */
+function arrUniq(arr) {
+  var res = [];
+  var used = {};
+  var n = arr.length;
+  var j = 0;
+  var item;
+  for (var i = 0; i < n; i++) {
+    item = arr[i];
+    if (used[item] !== 1) {
+      used[item] = 1;
+      res[j++] = item;
+    }
+  }
+  return res;
+}
 
+
+/**
+ * Convert an array to an object of nulls.
+ * @function arr2obj
+ * @param {Array} arr - input array
+ * @returns {Object} - output object
+ */
 function arr2obj(arr) {
   var n = arr.length;
   var res = {}
@@ -161,6 +190,7 @@ function arr2obj(arr) {
   }
   return res;
 }
+
 
 /**
  * List categories and their frequencies from a category-type column.

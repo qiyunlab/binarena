@@ -445,7 +445,7 @@ function guessColMetric(col) {
  * @returns {string} formatted string
  */
 function feature2Str(val) {
-  return Object.keys(val).sort().join(', ');
+  return (val === null ? '' : Object.keys(val).sort().join(', '));
 }
 
 

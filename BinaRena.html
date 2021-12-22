@@ -402,11 +402,10 @@
 
         <!-- toolbar -->
         <div class="toolbar left hidden">
-          <button id="new-bin-btn" title="New bin"><i class="fa fa-file-o fa-lg"></i></button>
-          <button id="delete-bin-btn" class="hidden" title="Delete bin"><i class="fa fa-trash fa-lg"></i></button>
-          <button id="merge-bins-btn" class="hidden" title="Merge bins"><i class="fa fa-compress fa-lg"></i></button>
+          <button id="new-bin-btn" title="Create an empty new bin"><i class="fa fa-plus fa-lg"></i></button>
+          <button id="delete-bin-btn" class="hidden" title="Delete selected bin(s)"><i class="fa fa-minus fa-lg"></i></button>
+          <button id="merge-bins-btn" class="hidden" title="Merge selected bins"><i class="fa fa-compress fa-lg"></i></button>
           <button id="export-plan-btn" title="Export current binning plan"><i class="fa fa-download fa-lg"></i></button>
-          <button id="clear-plan-btn" title="Clear current binning plan"><i class="fa fa-repeat fa-lg"></i></button>
         </div>
 
         <!-- bins table -->
@@ -437,12 +436,12 @@
     <div class="side-content" style="flex-grow: 1;"><!-- filling remaing height -->
 
       <!-- toolbar -->
-      <div  class="toolbar left hidden">
+      <div class="toolbar left hidden">
         <button id="as-new-bin-btn" class="hidden" title="Create a new bin from selected contigs"><i class="fa fa-asterisk fa-lg"></i></button>
         <button id="add-to-bin-btn" class="hidden" title="Add selected contigs to bin"><i class="fa fa-plus fa-lg"></i></button>
         <button id="remove-from-bin-btn" class="hidden" title="Remove selected contigs from bin"><i class="fa fa-minus fa-lg"></i></button>
-        <button id="update-bin-btn" class="hidden" title="Update bin with selected contigs"><i class="fa fa-repeat fa-lg"></i></button>
-        <button title="Highlight"><i class="fa fa-star-o fa-lg"></i></button>
+        <button id="update-bin-btn" class="hidden" title="Update bin with selected contigs"><i class="fa fa-refresh fa-lg"></i></button>
+        <span class="spacer"></span>
         <button id="invert-btn" class="hidden" title="Invert selection"><i class="fa fa-exchange fa-lg"></i></button>
         <button id="mask-btn" class="hidden" title="Mask selected contigs"><i class="fa fa-eye-slash fa-lg"></i></button>
       </div>

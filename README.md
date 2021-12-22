@@ -20,7 +20,7 @@ BinaRena is a client-end web application. It is written in vanilla JavaScript, w
 
 ## Mouse and keyboard shortcuts
 
-The BinaRena interface is like a [digital map](https://www.google.com/maps). The following common controls are available:
+The BinaRena interface is like a [digital map](https://www.google.com/maps) and is very intuitive. Although operations can be triggered through the graphical interface, the following basic operations are most convenient by using your mouse and keyboard.
 
 - Drag the plot or use arrow keys (<code>&larr;</code>, <code>&uarr;</code>, <code>&rarr;</code> and <code>&darr;</code>) to move around.
 - Zoom in/out: Mouse wheel, or use `=` and `-`.
@@ -30,8 +30,9 @@ The BinaRena interface is like a [digital map](https://www.google.com/maps). The
 - Press `Delete` or `Backspace` to **mask** selected contigs.
 - Press `M` to toggle between selection and masking modes. In the latter scenario, polygon-selected contigs will be directly masked.
 - Press `P` to take a screenshot of the current view.
-- Press `O` to reset the plot view.
-- Press `Space` to add selected contigs to the current bin. If no bin is selected, a new bin will be created.
+- Press `0` to reset the plot view.
+- Press `Space` to create a new bin from selected contigs.
+- Press `.` (`>`) to add selected contigs to the current bin, press `,` (`<`) to remove selected contigs from the current bin, press `/` to update the current bin with selected contigs (i.e., replace its content).
 
 
 ## Input files

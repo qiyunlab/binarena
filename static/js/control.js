@@ -910,7 +910,6 @@ function updateBinCtrl(mo) {
     .innerHTML = 'Bins: ' + n;
 
   byId('export-plan-btn').classList.toggle('hidden', !n);
-  byId('clear-plan-btn').classList.toggle('hidden', !n);
   byId('bin-thead').classList.toggle('hidden', !n);
 
   // number of selected bins

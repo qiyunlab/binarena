@@ -444,8 +444,8 @@ function renameBin(bins, oldname, newname) {
  * Find current bin.
  * @function currentBin
  * @param {Object} table - bin table
- * @throws if current bin is not defined
- * @returns {[number, string]} row index and name of current bin
+ * @returns {[number, string]} row index and name of current bin, or both null
+ * if no bin is current
  */
 function currentBin(table) {
   var idx;
@@ -457,7 +457,7 @@ function currentBin(table) {
       break;
     }
   }
-  if (idx === undefined) throw 'Error: Current bin is not defined.';
+  if (idx === undefined) return [null, null];
   var bin = rows[idx].cells[0].firstElementChild.innerHTML;
   return [idx, bin];
 }

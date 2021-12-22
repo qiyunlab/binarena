@@ -346,6 +346,13 @@ div.toolbar button:hover {
   background-color: lightgray;
 }
 
+div.toolbar span.spacer {
+  background-color: lightgray;
+  height: 1px;
+  width: 100%;
+  margin: 4px;
+}
+
 
 /** toast */
 
