@@ -204,7 +204,7 @@ div.panel-head select {
   max-width: 150px;
   border-bottom: none;
   top: 50%;
-  transform: translateY(-50%);
+  transform: translate(-50%, -50%);
   left: 25%;
 }
 
@@ -268,7 +268,7 @@ div.dock {
 
 
 /**
- * classical horizontal toolbar (obsolete)
+ * classical toolbar (obsolete)
  */
 
  /* 
@@ -309,7 +309,7 @@ div.toolbar span.spacer {
 
 
 /**
- * toolbar (floating, vertical)
+ * toolbar (floating)
  */
 
 div.toolbar {
@@ -494,7 +494,6 @@ table.square td:hover {
 #list-options {
   width: 100%;
   border: none;
-  empty-cells: show;
 }
 
 #list-options td {
@@ -645,7 +644,7 @@ canvas.main-plot {
 div.dash-content {
   color: black;
   background-color: white;
-  padding: 10px 15px;
+  padding: 8px 15px;
 }
 
 div.dash-content p {
@@ -872,9 +871,6 @@ div.dash-content > table tr td:last-child > span button:hover {
   border-color: white white transparent transparent;
 }
 
-
-/* side panel */
-
 div.side-content {
   border-top: 0;
   resize: vertical; /* IE incompatible */
@@ -899,45 +895,29 @@ div.side-content {
 
 /* bins panel */
 
-/* display save plan button only when plan is new or modified */
-
-#save-plan-btn {
-  visibility: hidden;
-}
-
-#bins-content:hover #save-plan-btn {
-  visibility: visible;
-}
-
 #bin-table-wrap {
-  padding: 5px;
+  padding: 0 5px 5px 5px;
+  max-height: 300px;
 }
 
 #bin-table {
   width: 100%;
   border: none;
-  flex-grow: 1;
   table-layout: fixed;
-}
-
-#bin-thead {
-  background-color: #EEE;
-}
-
-#bin-tbody {
-  overflow: auto;
-  min-height: 100px;
+  overflow-y: scroll;
 }
 
 #bin-table th,td {
-  padding: 2px 5px;
+  padding: 3px 5px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 #bin-thead th {
-  overflow: auto;
+  position: sticky;
+  top: 0;
+  background-color: #EEE;
 }
 
 #bin-thead tr th {

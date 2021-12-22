@@ -1026,7 +1026,8 @@ function initControls(mo) {
     var exist = mo.bins[bin];
     var added = addToBin(Object.keys(mo.pick), exist);
     var n = added.length;
-    if (n > 0) table.rows[idx].cells[1].innerHTML = Object.keys(exist).length;
+    if (n > 0) updateBinRow(table.rows[idx], exist, mo);
+    // table.rows[idx].cells[1].innerHTML = Object.keys(exist).length;
     toastMsg('Added ' + n + ' contig(s) to "' + bin + '".', stat);
   });
 
@@ -1039,7 +1040,8 @@ function initControls(mo) {
     var removed = removeFromBin(Object.keys(mo.pick), exist);
     updateBinCtrl(mo);
     var n = removed.length;
-    if (n > 0) table.rows[idx].cells[1].innerHTML = Object.keys(exist).length;
+    if (n > 0) updateBinRow(table.rows[idx], exist, mo);
+    // table.rows[idx].cells[1].innerHTML = Object.keys(exist).length;
     toastMsg('Removed ' + n + ' contig(s) from "' + bin + '".', stat);
   });
 
@@ -1052,7 +1054,8 @@ function initControls(mo) {
     for (var ctg in mo.pick) ctgs[ctg] = null;
     updateBinCtrl(mo);
     var n = Object.keys(ctgs).length;
-    table.rows[idx].cells[1].innerHTML = n;
+    updateBinRow(table.rows[idx], ctgs, mo);
+    // table.rows[idx].cells[1].innerHTML = n;
     toastMsg('Updated "' + bin + '" (now has ' + n + ' contig(s)).', stat);
   });
 

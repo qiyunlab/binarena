@@ -25,6 +25,7 @@ The BinaRena interface is like a [digital map](https://www.google.com/maps). The
 - Drag the plot or use arrow keys (<code>&larr;</code>, <code>&uarr;</code>, <code>&rarr;</code> and <code>&darr;</code>) to move around.
 - Zoom in/out: Mouse wheel, or use `=` and `-`.
 - Click a contig to select it. Hold `Shift` and click to select multiple contigs.
+- Click a selected contig to unselect it. Hold `Shift` and click to unselect multiple contigs.
 - Press `Enter` to enter **polygon selection** mode. Then use mouse clicks to draw a polygon to contain multiple contigs. Press `Enter` again to complete selection.
 - Press `Delete` or `Backspace` to **mask** selected contigs.
 - Press `M` to toggle between selection and masking modes. In the latter scenario, polygon-selected contigs will be directly masked.

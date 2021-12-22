@@ -934,20 +934,20 @@ function updateBinCtrl(mo) {
 
 
 /**
- * Update bins table.
+ * Update the entire bin table.
  * @function updateBinTable
  * @param {Object} mo - main object
  */
 function updateBinTable(mo) {
-  var view = mo.view;
-  var data = mo.data;
-  var bins = mo.bins;
+  var view = mo.view,
+      data = mo.data,
+      bins = mo.bins;
   var table = byId('bin-tbody');
   table.innerHTML = '';
 
   // cache length and coverage data
-  var lens = {};
-  var covs = {};
+  var lens = {},
+      covs = {};
   if (view.spcols.len || view.spcols.cov) {
     var ilen = view.spcols.len ? view.spcols.len : null;
     var icov = view.spcols.cov ? view.spcols.cov : null;
@@ -983,11 +983,11 @@ function updateBinTable(mo) {
     });
     cell.appendChild(text);
 
-    // 2nd cell: contigs
+    // 2nd cell: number of contigs
     var cell = row.insertCell(-1);
     cell.innerHTML = Object.keys(bins[name]).length;
 
-    // 3rd cell: length (kb)
+    // 3rd cell: total length (kb)
     var cell = row.insertCell(-1);
     if (view.spcols.len) {
       var sum = 0;
@@ -995,7 +995,7 @@ function updateBinTable(mo) {
       cell.innerHTML = Math.round(sum / 1000);
     } else cell.innerHTML = 'na';
     
-    // 4th cell: abundance (%)
+    // 4th cell: relative abundance (%)
     var cell = row.insertCell(-1);
     if (view.spcols.len && view.spcols.cov) {
       var sum = 0;
@@ -1003,6 +1003,54 @@ function updateBinTable(mo) {
       cell.innerHTML = (sum * 100 / view.abundance).toFixed(2);
     } else cell.innerHTML = 'na';
   });
+}
+
+
+/**
+ * Update one row in the bin table.
+ * @function updateBinRow
+ * @param {Object} row - row in the bin table
+ * @param {Object} ctgs - contigs in the bin
+ * @param {Object} mo - main object
+ */
+function updateBinRow(row, ctgs, mo) {
+  var cells = row.cells;
+
+  // 2nd cell: number of contigs
+  cells[1].innerHTML = Object.keys(ctgs).length;
+    
+  // stop if no length
+  var view = mo.view;
+  var ilen = view.spcols.len;
+  if (!ilen) {
+    cells[2].innerHTML = 'na';
+    cells[3].innerHTML = 'na';
+    return;
+  }
+
+  // 3rd cell: total length (kb)
+  var df = mo.data.df;
+  var sumlen = 0;
+  var icov = view.spcols.cov
+  if (!icov) {
+    for (var ctg in ctgs) sumlen += df[ctg][ilen];
+    cells[2].innerHTML = Math.round(sumlen / 1000);
+    cells[3].innerHTML = 'na';
+    return;
+  }
+
+  // 4th cell: relative abundance (%)
+  var totabd = view.abundance;
+  var sumabd = 0;
+  var row, len;
+  for (var ctg in ctgs) {
+    row = df[ctg];
+    len = row[ilen];
+    sumlen += len;
+    sumabd += len * row[icov];
+  }
+  cells[2].innerHTML = Math.round(sumlen / 1000);
+  cells[3].innerHTML = (sumabd * 100 / totabd).toFixed(2);
 }
 
 
