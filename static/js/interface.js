@@ -18,8 +18,10 @@
  * except for canvases.
  */
 function initControls(mo) {
+  resetControls();
   var view = mo.view;
   var stat = mo.stat;
+
 
   /**
    * @summary Window
@@ -65,7 +67,7 @@ function initControls(mo) {
       if (hideDropdown) {
         document.querySelectorAll('div.popup, div.menu').forEach(function (div) {
           div.classList.add('hidden');
-        })
+        });
       }
     }
   });
@@ -79,19 +81,7 @@ function initControls(mo) {
     this.classList.toggle('active');
     byId('dash-panel').classList.toggle('hidden');
     byId('dash-frame').classList.toggle('active');
-    // dashFrameToggleActive();
   });
-
-  // function dashFrameToggleActive() {
-  //   byId('dash-frame').classList.toggle('active',
-  //     !(byId('dash-panel').classList.contains('hidden')) &&
-  //     document.querySelector('.dash-content:not(.hidden)'));
-  // }
-
-
-  /**
-   * @summary Context menu
-   */
 
   // context menu button click
   byId('menu-btn').addEventListener('click', function () {
@@ -122,6 +112,7 @@ function initControls(mo) {
     mo.pick = {};
     mo.mask = {};
     mo.bins = {};
+    mo.dist = null;
     updateViewByData(mo);
   });
 
@@ -175,6 +166,30 @@ function initControls(mo) {
     if (w) mf.style.width = w;
     resizeArena(mo.rena, mo.oray);
     updateView(mo);
+  });
+
+  // floating toolbars
+  // this is a workaround as I can't find a pure-CSS way
+  document.querySelectorAll('.toolbar').forEach(function (bar) {
+    var div = bar.parentElement;
+    div.addEventListener('mouseenter', function () {
+      bar.classList.remove("hidden");
+    });
+    div.addEventListener('mouseleave', function (e) {
+      var rect = bar.getBoundingClientRect();
+      if (e.clientX >= rect.left && e.clientX <= rect.right &&
+        e.clientY >= rect.top && e.clientY <= rect.bottom) return;
+      bar.classList.add("hidden");
+    });
+    bar.addEventListener('mouseenter', function () {
+      bar.classList.remove("hidden");
+    });
+    bar.addEventListener('mouseleave', function (e) {
+      var rect = div.getBoundingClientRect();
+      if (e.clientX >= rect.left && e.clientX <= rect.right &&
+        e.clientY >= rect.top && e.clientY <= rect.bottom) return;
+      bar.classList.add("hidden");
+    });
   });
 
 
@@ -291,7 +306,7 @@ function initControls(mo) {
   });
 
   // change coverage filter
-  var btn = byId('cov-filt');
+  btn = byId('cov-filt');
   btn.value = mo.view.filter.cov;
   btn.addEventListener('blur', function () {
     var val = parseFloat(this.value);
@@ -405,7 +420,7 @@ function initControls(mo) {
     if (menu.classList.contains('hidden')) {
       var n = Object.keys(mo.bins).length;
       byId('silhouet-a').classList.toggle('disabled', !n);
-      byId('adj-rand-a').classList.toggle('disabled', !n)
+      byId('adj-rand-a').classList.toggle('disabled', !n);
       menu.classList.remove('hidden');
     } else {
       menu.classList.add('hidden');
@@ -529,8 +544,8 @@ function initControls(mo) {
 
   cav.addEventListener('mousedown', function (e) {
     var rect = this.getBoundingClientRect();
-    mo.mini.drag = (e.clientX - rect.left) / (rect.right - rect.left)
-      * cav.width;
+    mo.mini.drag = (e.clientX - rect.left) / (rect.right - rect.left) *
+      cav.width;
   });
 
   cav.addEventListener('mouseup', function () {
@@ -698,8 +713,8 @@ function initControls(mo) {
   });
 
   document.querySelectorAll('.legend .range').forEach(function (range) {
-    range.title = 'Adjust ' + checkClassName(range, ['lower', 'upper'])
-      + ' bound of ' + range.parentElement.getAttribute('data-item');
+    range.title = 'Adjust ' + checkClassName(range, ['lower', 'upper']) +
+      ' bound of ' + range.parentElement.getAttribute('data-item');
     range.addEventListener('mousedown', rangeMouseDown);
     range.addEventListener('mouseup', rangeMouseUp);
   });
@@ -732,11 +747,11 @@ function initControls(mo) {
 
 
   /**
-   * @summary Select panel body
+   * @summary Search panel
    */
 
-  byId('field-list').addEventListener('change', function (e) {
-    selectFieldChange(e, mo.data, view);
+  byId('search-field-sel').addEventListener('change', function (e) {
+    searchFieldChange(e, mo.data, view);
   });
 
   byId('min-btn').addEventListener('click', function () {
@@ -768,93 +783,144 @@ function initControls(mo) {
   ['min-txt', 'max-txt', 'cat-sel-txt', 'fea-sel-txt', 'des-sel-txt']
     .forEach(function (id) {
     byId(id).addEventListener('keyup', function (e) {
-      if (e.keyCode === 13) byId('search-btn').click();
+      if (e.key === 'Enter') byId('search-btn').click();
     });
-  })
+  });
 
   byId('search-btn').addEventListener('click', function () {
-    selectByCriteria(mo);
+    searchByCriteria(mo);
   });
 
 
   /**
-   * @summary Bin panel tool bar
+   * @summary Bins panel controls
    */
 
   // load bins from a categorical field
-  byId('load-bin-btn').addEventListener('click', function () {
-    if (!this.value) {
-      listSelect(Object.keys(view.categories).sort(), this, 'down');
-    } else {
-      var idx = mo.data.cols.indexOf(this.value);
-      mo.bins = loadBins(mo.data.df, idx);
-      updateBinTable(mo);
-      updateBinToolbar(mo);
-      toastMsg('Loaded ' + Object.keys(mo.bins).length + ' bins from "' +
-        this.value + '".', stat);
+  byId('plan-sel-txt').addEventListener('click', function () {
+    var cols = Object.keys(view.categories).sort();
+    listSelect(['(clear)'].concat(cols), this, 'down', true);
+  });
+
+  byId('plan-sel-txt').addEventListener('focus', function () {
+    var plan = this.value
+
+    // empty option: unload any binning plan
+    if (plan === '(clear)') {
       this.value = '';
+      this.setAttribute('data-col', '');
+      mo.bins = {};
+    }
+
+    // load an existing binning plan
+    else {
+      var idx = mo.data.cols.indexOf(plan);
+      if (idx === -1) return;
+      if (idx === this.getAttribute('data-col')) return;
+      this.setAttribute('data-col', idx);
+      mo.bins = loadBins(mo.data.df, idx);
+    }
+
+    // update interface
+    updateBinTable(mo);
+    updateBinCtrl(mo);
+    byId('save-plan-btn').classList.add('hidden');
+    var n = Object.keys(mo.bins).length;
+    if (n === 0) return;
+    toastMsg('Loaded ' + n + ' bins from "' + plan + '".', stat);
+  });
+
+  byId('plan-sel-txt').addEventListener('input', function () {
+    byId('save-plan-btn').classList.remove('hidden');
+  });
+
+  // save current binning plan
+  byId('save-plan-btn').addEventListener('click', function () {
+    var plan = byId('plan-sel-txt').value;
+    if (plan === '') return;
+    var bins = mo.bins;
+    if (Object.keys(bins).length === 0) {
+      toastMsg('Error: The current binning plan has no bin.', stat);
+      return;
+    }
+
+    // generate a contig-to-bin map
+    var df = mo.data.df;
+    var map = {};
+    var bin, ctg;
+    var dups = [];
+    for (bin in bins) {
+      for (ctg in bins[bin]) {
+        if (ctg in map) dups.push(ctg);
+        else map[ctg] = bin;
+      }
+    }
+
+    // report ambiguous assignments
+    dups = arrUniq(dups);
+    var n = dups.length;
+    if (n > 0) {
+      treatSelection(dups, 'new', false, mo);
+      toastMsg('Error: ' + n + ' contigs were assigned to non-unique bins. '
+        + 'They are now selected.', stat);
+      return;
+    }
+
+    // create a new categorical field
+    var idx = mo.data.cols.indexOf(plan);
+    n = df.length;
+    if (idx === -1) {
+      mo.data.cols.push('plan');
+      mo.data.types.push('category');
+      for (var i = 0; i < n; i++) {
+        df[i].push(i in map ? [map[i], null] : null);
+      }
+      updateCtrlByData(mo.data, mo.view);
+      fillDataTable(mo.data, n);
+      toastMsg('Saved to new binning plan "' + plan + '".', stat);
+    }
+
+    // overwrite an existing categorical field
+    else {
+      for (var i = 0; i < n; i++) {
+        df[i][idx] = (i in map ? [map[i], null] : null);
+      }
+      updateCtrlByData(mo.data, mo.view);
+      fillDataTable(mo.data, n);
+      toastMsg('Overwritten binning plan "' + plan + '".', stat);
     }
   });
 
-  // create a new bin
-  byId('new-bin-btn').addEventListener('click', function () {
+  // create an empty new bin
+  byId('new-empty-bin-btn').addEventListener('click', function () {
     var name = createBin(mo.bins);
-    var ctgs = Object.keys(mo.pick);
-    var n = ctgs.length;
-    if (n > 0) {
-      addToBin(ctgs, mo.bins[name]);
-      mo.pick = {};
-      updateSelection(mo);
-    }
     updateBinTable(mo);
-    updateBinToolbar(mo);
+    updateBinCtrl(mo);
     var table = byId('bin-tbody');
     selectBin(table, name);
-    toastMsg('Created "' + name + '"' + (n ? ' with ' + n
-      + ' contig(s)': '') + '.', stat);
-  });
-
-  // add selected contigs to current bin
-  byId('add-to-bin-btn').addEventListener('click', function () {
-    var table = byId('bin-tbody');
-    var x = currentBin(table);
-    var added = addToBin(Object.keys(mo.pick), mo.bins[x[1]]);
-    var n = added.length;
-    if (n > 0) table.rows[x[0]].cells[1].innerHTML =
-      Object.keys(mo.bins[x[1]]).length;
-    toastMsg('Added ' + n + ' contig(s) to "' + x[1] + '".', stat);
-  });
-
-  // remove selected contigs from current bin
-  byId('remove-from-bin-btn').addEventListener('click', function () {
-    var table = byId('bin-tbody');
-    var x = currentBin(table);
-    var removed = removeFromBin(Object.keys(mo.pick), mo.bins[x[1]]);
-    updateBinToolbar(mo);
-    var n = removed.length;
-    if (n > 0) table.rows[x[0]].cells[1].innerHTML = Object.keys(mo.bins[x[1]])
-      .length;
-    toastMsg('Removed ' + n + ' contig(s) from "' + x[1] + '".', stat);
+    toastMsg('Created "' + name + '".', stat);
   });
 
   // delete current bin
   byId('delete-bin-btn').addEventListener('click', function () {
     var table = byId('bin-tbody');
     var deleted = deleteBins(table, mo.bins)[0];
-    updateBinToolbar(mo);
+    
+    // update interface
+    updateBinCtrl(mo);
     var n = deleted.length;
     if (n === 1) toastMsg('Deleted "' + deleted[0] + '".', stat);
     else toastMsg('Deleted ' + n + ' bins.', stat);
   });
 
   // merge currently selected bins
-  byId('merge-bin-btn').addEventListener('click', function () {
+  byId('merge-bins-btn').addEventListener('click', function () {
     var table = byId('bin-tbody');
     var x = deleteBins(table, mo.bins);
     var name = createBin(mo.bins);
     addToBin(x[1], mo.bins[name]);
     updateBinTable(mo);
-    updateBinToolbar(mo);
+    updateBinCtrl(mo);
     selectBin(table, name);
     var n = x[0].length;
     if (n === 2) toastMsg('Merged "' + x[0][0] + '" and "' + x[0][1] +
@@ -863,15 +929,8 @@ function initControls(mo) {
   });
 
   // export current binning plan
-  byId('save-bin-btn').addEventListener('click', function () {
+  byId('export-plan-btn').addEventListener('click', function () {
     exportBins(mo.bins, mo.data);
-  });
-
-  // clear current binning plan
-  byId('clear-bin-btn').addEventListener('click', function () {
-    mo.bins = {};
-    updateBinTable(mo);
-    updateBinToolbar(mo);
   });
 
 
@@ -883,7 +942,7 @@ function initControls(mo) {
     // prevent table text from being selected
     this.onselectstart = function () {
       return false;
-    }
+    };
     var rows = this.rows;
     var n = rows.length;
     var selected;
@@ -913,7 +972,7 @@ function initControls(mo) {
         if (!e.shiftKey) row.classList.remove('selected');
       }
     }
-    updateBinToolbar(mo);
+    updateBinCtrl(mo);
 
     // select contigs in bin
     if (selected !== undefined) {
@@ -925,9 +984,121 @@ function initControls(mo) {
 
 
   /** 
-   * @summary Information table events
+   * @summary Info panel toolbar
    */
 
+  /** 
+   * Create a new bin from selected contigs.
+   */
+  byId('as-new-bin-btn').addEventListener('click', function () {
+  
+    // if there is no binning plan, create one
+    if (Object.keys(mo.bins).length === 0) {
+      byId('plan-sel-txt').value = newName(arr2obj(mo.data.cols), 'plan');
+    }
+
+    // create a new bin
+    var name = createBin(mo.bins);
+
+    // if one or multiple contigs are selected, add them to bin
+    var ctgs = Object.keys(mo.pick);
+    var n = ctgs.length;
+    if (n > 0) {
+      addToBin(ctgs, mo.bins[name]);
+      mo.pick = {};
+      updateSelection(mo);
+    }
+    updateBinTable(mo);
+    updateBinCtrl(mo);
+    var table = byId('bin-tbody');
+    selectBin(table, name);
+    toastMsg('Created "' + name + '"' + (n ? ' with ' + plural('contig', n)
+      : '') + '.', stat);
+  });
+
+
+  /** 
+   * Add selected contigs to current bin.
+   */
+  byId('add-to-bin-btn').addEventListener('click', function () {
+    var table = byId('bin-tbody');
+    var [idx, bin] = currentBin(table);
+    if (idx == null) return;
+    var ctgs = Object.keys(mo.pick);
+    if (ctgs.length === 0) return;
+    var exist = mo.bins[bin];
+    var added = addToBin(ctgs, exist);
+    var n = added.length;
+    if (n > 0) updateBinRow(table.rows[idx], exist, mo);
+    toastMsg('Added ' + plural('contig', n) + ' to "' + bin + '".', stat);
+  });
+
+
+  /** 
+   * Remove selected contigs from current bin.
+   */
+  byId('remove-from-bin-btn').addEventListener('click', function () {
+    var table = byId('bin-tbody');
+    var [idx, bin] = currentBin(table);
+    if (idx == null) return;
+    var ctgs = Object.keys(mo.pick);
+    if (ctgs.length === 0) return;
+    var exist = mo.bins[bin];
+    var removed = removeFromBin(ctgs, exist);
+    updateBinCtrl(mo);
+    var n = removed.length;
+    if (n > 0) updateBinRow(table.rows[idx], exist, mo);
+    toastMsg('Removed ' + plural('contig', n) + ' from "' + bin + '".', stat);
+  });
+
+
+  /** 
+   * Update current bin with selected contigs.
+   */
+  byId('update-bin-btn').addEventListener('click', function () {
+    var table = byId('bin-tbody');
+    var [idx, bin] = currentBin(table);
+    if (idx == null) return;
+    if (Object.keys(mo.pick).length === 0) return;
+    mo.bins[bin] = {};
+    var ctgs = mo.bins[bin];
+    for (var ctg in mo.pick) ctgs[ctg] = null;
+    updateBinCtrl(mo);
+    var n = Object.keys(ctgs).length;
+    updateBinRow(table.rows[idx], ctgs, mo);
+    toastMsg('Updated "' + bin + '" (now has ' + plural('contig', n) +
+      ').', stat);
+  });
+
+
+  /** 
+   * @summary Info table events
+   */
+
+  /** 
+   * Invert selection.
+   */
+  byId('invert-btn').addEventListener('click', function () {
+    var pick = mo.pick;
+    var mask = mo.mask;
+    var n = mo.data.df.length;
+    var res = [];
+    for (var i = 0; i < n; i++) {
+      if (!(i in mask) && !(i in pick)) res.push(i);
+    }
+    mo.pick = {};
+    pick = mo.pick;
+    n = res.length;
+    for (var i = 0; i < n; i++) {
+      pick[res[i]] = null;
+    }
+    treatSelection(res, 'new', false, mo);
+  });
+
+
+  /** 
+   * Mask selection.
+   */
   byId('mask-btn').addEventListener('click', function () {
     var indices = Object.keys(mo.pick);
     if (indices.length > 0) {
@@ -936,7 +1107,10 @@ function initControls(mo) {
     }
   });
 
-  // metric (sum or mean)
+
+  /** 
+   * Toggle summary metric (sum or mean).
+   */
   byId('info-metric-btn').addEventListener('click', function () {
     var row = byId('info-table').rows[this.parentElement
       .getAttribute('data-row')];
@@ -946,7 +1120,7 @@ function initControls(mo) {
         '<i>x</i></span>';
     } else {
       row.setAttribute('data-metric', 'sum');
-      this.innerHTML = '&Sigma;<i>x</i>'
+      this.innerHTML = '&Sigma;<i>x</i>';
     }
     updateInfoRow(row, mo);
   });
@@ -962,8 +1136,8 @@ function initControls(mo) {
   // plot variable
   byId('info-plot-btn').addEventListener('click', function () {
     var div = this.parentElement;
-    var idx = byId('info-table').rows[div
-      .getAttribute('data-row')].getAttribute('data-index');
+    var idx = byId('info-table').rows[div.getAttribute('data-row')]
+      .getAttribute('data-index');
     mo.mini.field = idx;
     byId('mini-field-sel').value = idx;
     updateMiniPlot(mo);
@@ -974,8 +1148,7 @@ function initControls(mo) {
   // hide variable
   byId('info-hide-btn').addEventListener('click', function () {
     var div = this.parentElement;
-    var row = byId('info-table').rows[div
-      .getAttribute('data-row')];
+    var row = byId('info-table').rows[div.getAttribute('data-row')];
     div.classList.add('hidden');
     byId('info-table').deleteRow(row.rowIndex);
   });
@@ -984,6 +1157,7 @@ function initControls(mo) {
   /**
    * @summary Mask panel events
    */
+
   byId('clear-mask-btn').addEventListener('click', function () {
     mo.mask = {};
     updateView(mo);
@@ -993,6 +1167,7 @@ function initControls(mo) {
   /** 
    * @summary Data table events
    */
+
   byId('load-data-btn').addEventListener('click', function () {
     byId('open-file').click();
   });
@@ -1001,6 +1176,7 @@ function initControls(mo) {
   /** 
    * @summary Toast events
    */
+
   byId('toast-close-btn').addEventListener('click', function () {
     byId('toast').classList.add('hidden');
   });
@@ -1084,42 +1260,64 @@ function initCanvas(mo) {
   /* keyboard events */
   rena.addEventListener('keydown', function (e) {
     // var t0 = performance.now();
-    switch (e.keyCode) {
-      case 37: // Left
+    switch (e.key) {
+      case 'Left':
+      case 'ArrowLeft':
         byId('left-btn').click();
         break;
-      case 38: // Up
+      case 'Up':
+      case 'ArrowUp':
         byId('up-btn').click();
         break;
-      case 39: // Right
+      case 'Right':
+      case 'ArrowRight':
         byId('right-btn').click();
         break;
-      case 40: // Down
+      case 'Down':
+      case 'ArrowDown':
         byId('down-btn').click();
         break;
-      case 173: // - (Firefox)
-      case 189: // - (others)
+      case '-':
+      case '_':
         byId('zoomout-btn').click();
         break;
-      case 61: // = (Firefox)
-      case 187: // = (others)
+      case '=':
+      case '+':
         byId('zoomin-btn').click();
         break;
-      case 48: // 0 (zero)
+      case '0':
         byId('reset-btn').click();
         break;
-      case 80: // P
+      case 'p':
+      case 'P':
         byId('screenshot-btn').click();
         break;
-      case 77: // M
+      case 'm':
+      case 'M':
         byId('masking-btn').click();
         break;
-      case 46: // Delete
-      case 8: // Backspace
+      case 'Delete':
+      case 'Backspace':
         byId('mask-btn').click();
         break;
-      case 13: // Enter
+      case 'Enter':
         polygonSelect(mo);
+        break;
+      case ' ':
+        byId('as-new-bin-btn').click();
+        break;
+      case '.':
+      case '>':
+        byId('add-to-bin-btn').click();
+        break;
+      case ',':
+      case '<':
+        byId('remove-from-bin-btn').click();
+        break;
+      case '/':
+      case '?':
+        byId('update-bin-btn').click();
+        e.preventDefault(); // otherwise it will open Firefox quick find bar
         break;
     }
     // var t1 = performance.now();
@@ -1147,12 +1345,10 @@ function canvasMouseClick(e, mo) {
   
   // keep drawing polygon
   else if (stat.drawing) {
-    var x = (e.offsetX - view.pos.x) / view.scale;
-    var y = (e.offsetY - view.pos.y) / view.scale;
     stat.polygon.push({
-      x: x,
-      y: y
-    })
+      x: (e.offsetX - view.pos.x) / view.scale,
+      y: (e.offsetY - view.pos.y) / view.scale,
+    });
     drawPolygon(mo);
   }
 
@@ -1164,21 +1360,14 @@ function canvasMouseClick(e, mo) {
     var masking = (Object.keys(mo.mask).length > 0) ? true : false;
     var df = data.df;
     var n = df.length;
-    var datum,
-        idx,
-        radius,
-        r2,
-        x,
-        y,
-        dx,
-        dy,
-        x2y2;
+
+    var datum, idx, radius, r2, x, y, dx, dy, x2y2;
     for (var i = 0; i < n; i++) {
       if (masking && i in mo.mask) continue;
       datum = df[i];
       idx = view.size.i;
-      radius = idx ? scaleNum(datum[idx], view.size.scale) * view.rbase
-        / view.size.max : view.rbase;
+      radius = idx ? scaleNum(datum[idx], view.size.scale) * view.rbase /
+        view.size.max : view.rbase;
       // var ratio = scaleNum(datum[view.size.i], view.size.scale) *
       //   view.rbase / view.size.max;
       r2 = radius * radius; // this is faster than Math.pow(x, 2)
@@ -1189,14 +1378,12 @@ function canvasMouseClick(e, mo) {
       dx = x - x0;
       dy = y - y0;
       x2y2 = dx * dx + dy * dy;
-      // var x2y2 = Math.pow(x - x0, 2) + Math.pow(y - y0, 2);
       if (x2y2 <= r2) arr.push([i, x2y2]);
     }
     if (!e.shiftKey) mo.pick = {}; // clear selection
     if (arr.length > 0) {
-      arr.sort(function (a, b) {
-        return (a[1] - b[1]);
-      });
+      arr.sort(function (a, b) { return (a[1] - b[1]); });
+
       // if already selected, remove; else, add to selection
       i = arr[0][0];
       if (i in mo.pick) delete mo.pick[i];
@@ -1204,6 +1391,18 @@ function canvasMouseClick(e, mo) {
     }
     updateSelection(mo);
   }
+}
+
+
+/**
+ * Reset all input and select elements.
+ * @function resetControls
+ * @description I didn't find a way to do this automatically...
+ */
+function resetControls() {
+  document.querySelectorAll('input, select').forEach(function (dom) {
+    dom.value = '';
+  });
 }
 
 
@@ -1310,6 +1509,8 @@ function popupPos(source, target, direc, same) {
   var vh = window.innerHeight;
   var ts = target.style;
   var rect = source.getBoundingClientRect();
+
+  // pop up toward right
   if (direc === 'right') {
     ts.left = rect.right + 'px';
     ts.right = '';
@@ -1323,7 +1524,10 @@ function popupPos(source, target, direc, same) {
       ts.top = '';
       ts.bottom = (vh - rect.bottom) + 'px';
     }
-  } else if (direc === 'down') {
+  }
+
+  // pop up toward bottom
+  else if (direc === 'down') {
     ts.top = rect.bottom + 'px';
     ts.bottom = '';
     if (same) {
@@ -1345,6 +1549,8 @@ function popupPos(source, target, direc, same) {
  * @function listSelect
  * @param {Object} src - source DOM
  * @param {string[]} lst - list of options
+ * @param {string} direc - direction of list expansion
+ * @param {boolean} same - keep same dimension
  */
 function listSelect(lst, src, direc, same) {
   var div = byId('list-select');
@@ -1392,7 +1598,7 @@ function scale2HTML(scale) {
  * @param {boolean} toclose - display a close button
  */
 function toastMsg(msg, stat, duration, loading, toclose) {
-  if (duration === undefined) duration = 1000;
+  if (duration === undefined) duration = 2000;
   var toast = byId('toast');
   toast.firstElementChild.innerHTML = msg;
   byId('loading-dots').classList.toggle('hidden', !loading);
@@ -1420,39 +1626,46 @@ function toastMsg(msg, stat, duration, loading, toclose) {
  * @param {Object} inp - input text box
  * @param {*} arr - list of options
  */
-function autoComplete(inp, arr) {
+ function autoComplete(inp, arr) {
   var focus;
-  inp.addEventListener('input', function () {
-    var val = this.value;
+
+  inp.addEventListener('input', inputEvent);
+  function inputEvent(e) {
+    var val = e.currentTarget.value;
     if (!val) return false;
     var VAL = val.toUpperCase();
     var l = val.length;
     var lst = [];
     arr.forEach(function (itm) {
-      var prefix = itm.substr(0, l);
+      var prefix = itm.substring(0, l);
       if (prefix.toUpperCase() === VAL) {
-        lst.push('<strong>' + prefix + '</strong>' + itm.substr(l));
+        lst.push('<strong>' + prefix + '</strong>' + itm.substring(l));
       }
     });
     listSelect(lst, inp, 'down', true);
     focus = -1;
-  });
+  }
 
-  inp.addEventListener('keydown', function (e) {
+  inp.addEventListener('keydown', keydownEvent);
+  function keydownEvent(e) {
     var table = byId('list-options');
-    if (e.keyCode == 40) { // Down key
-      focus ++;
-      addActive(table);
-    } else if (e.keyCode == 38) { // Up key
-      focus --;
-      addActive(table);
-    } else if (e.keyCode == 13) { // Enter key
-      e.preventDefault();
-      if (focus > -1) {
-        table.rows[focus].cells[0].click();
-      }
+    switch (e.key) {
+      case 'Down':
+      case 'ArrowDown':
+        focus ++;
+        addActive(table);
+        break;
+      case 'Up':
+      case 'ArrowUp':
+        focus --;
+        addActive(table);
+        break;
+      case 'Enter':
+        e.preventDefault();
+        if (focus > -1) table.rows[focus].cells[0].click();
+        break;
     }
-  });
+  }
 
   function addActive(table) {
     removeActive(table);
@@ -1563,9 +1776,9 @@ function updateColorGradient(mo) {
   var ci = mo.view.color.i;
   if (!ci) return;
   if (mo.data.types[ci] === 'category') return;
-  byId('color-gradient').style.backgroundImage
-    = 'linear-gradient(to right, ' + PALETTES[mo.view.contpal].map(
-    function (e) {return '#' + e}).join(', ') + ')';
+  byId('color-gradient').style.backgroundImage =
+    'linear-gradient(to right, ' + PALETTES[mo.view.contpal].map(
+    function (e) { return '#' + e; }).join(', ') + ')';
 }
 
 
@@ -1627,8 +1840,8 @@ function populatePaletteSelect() {
       // continuous color
       if (div.classList.contains('cont')) {
         box.innerHTML = '&nbsp;';
-        box.style.backgroundImage = 'linear-gradient(to right, '
-          + PALETTES[pal].map(function (e) {return '#' + e}).join(', ') + ')';
+        box.style.backgroundImage = 'linear-gradient(to right, ' +
+          PALETTES[pal].map(function (e) { return '#' + e; }).join(', ') + ')';
       }
 
       // discrete color
@@ -1666,4 +1879,18 @@ function formatValueLabel(value, icol, digits, unit, mo) {
   } else {
     return formatNum(value, digits);
   }
+}
+
+
+/**
+ * Load program theme
+ * @function loadTheme
+ * @returns {Object} theme
+ * @description Currently, it reads colors defined in "theme.css".
+ */
+ function loadTheme() {
+  var theme = {};
+  theme.selection = getComputedStyle(byId('selection-color')).color;
+  theme.polygon = getComputedStyle(byId('polygon-color')).color;
+  return theme;
 }

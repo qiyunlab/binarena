@@ -106,24 +106,30 @@ function parseObj(obj, data) {
  */
 function parseTable(text, data) {
   var lines = splitLines(text);
-  if (lines.length == 1) throw 'Error: Table is empty.';
+  var n = lines.length;
+  if (n <= 1) throw 'Error: Table is empty.';
+
   // read column names and table body
   var cols = [];
   var df = [];
   var ncol = 0;
-  for (var i = 0; i < lines.length; i++) {
-    var arr = lines[i].split('\t');
+  var row;
+  for (var i = 0; i < n; i++) {
+    row = lines[i].split('\t');
+
     // parse table header
     if (i == 0) {
-      cols = arr;
+      cols = row;
       ncol = cols.length;
+    }
+
     // parse table body
-    } else {
-      if (arr.length !== ncol) {
+    else {
+      if (row.length !== ncol) {
         throw ('Error: Table has ' + ncol + ' columns but row ' + i +
-          ' has ' + arr.length + ' cells.');
+          ' has ' + row.length + ' cells.');
       }
-      df.push(arr);
+      df.push(row);
     }
   }
   return formatData(data, df, cols);
@@ -298,27 +304,31 @@ function parseContigTitle(line, format) {
  * @function formatData
  * @param {Object} data - data object
  * @param {Matrix} df - data points for available characteristices of contigs
- * @param {Object} columns - available characteristics of contigs
+ * @param {Object} cols - available characteristics of contigs
  * @returns {Array.<Object, Object, Object>} - decimals, categories, features
  */
-function formatData(data, df, columns) {
-  var deci = {};
-  var cats = {};
-  var feats = {};
+function formatData(data, df, cols) {
+  var deci = {},
+      cats = {},
+      feats = {};
 
   // identify field types and re-format data
   var types = ['id'];
-  for (var i = 1; i < columns.length; i++) {
-    var arr = [];
-    for (var j = 0; j < df.length; j++) {
-      arr.push(df[df.length - j - 1][i]);
+  var m = cols.length,
+      n = df.length;
+  var arr;
+  for (var i = 1; i < m; i++) {
+    arr = [];
+    for (var j = 0; j < n; j++) {
+      arr.push(df[j][i]);
+      // arr.push(df[n - j - 1][i]);
     }
-    var x = parseFieldType(columns[i], arr);
+    var x = guessFieldType(cols[i], arr);
     var type = x[0];
     var col = x[1];
     types.push(type); // identified type
-    columns[i] = col; // updated name
-    for (var j = 0; j < df.length; j++) {
+    cols[i] = col; // updated name
+    for (var j = 0; j < n; j++) {
       df[j][i] = arr[j];
     }
 
@@ -336,7 +346,7 @@ function formatData(data, df, columns) {
     }
   }
 
-  data.cols = columns;
+  data.cols = cols;
   data.types = types;
   data.features = [];
   data.df = df;
@@ -382,7 +392,34 @@ function cacheData(data) {
 
 /**
  * @summary Binning operations
+ * - Create a new bin.
+ * - Rename a bin.
+ * - Find current bin.
+ * - Add contigs to a bin.
+ * - Remove contigs from a bin.
+ * - Delete selected bins.
+ * - Load bins from a categorical field.
  */
+
+
+/**
+ * Create a new bin.
+ * @function createBin
+ * @param {Object} bins - current bins
+ * @param {string} [name] - bin name
+ * @throws if bin name exists
+ * @returns {string} bin name
+ */
+function createBin(bins, name) {
+  if (name === undefined) {
+    name = newName(bins, 'bin');
+  } else if (name in bins) {
+    throw 'Error: bin name "' + name + '" already exists.';
+  }
+  bins[name] = {};
+  return name;
+}
+
 
 /**
  * Rename a bin.
@@ -395,30 +432,11 @@ function cacheData(data) {
 function renameBin(bins, oldname, newname) {
   if (newname in bins) return false;
   bins[newname] = {};
-  Object.keys(bins[oldname]).forEach(function (idx) {
-    bins[newname][idx] = null;
-  });
+  for (var ctg in bins[oldname]) {
+    bins[newname][ctg] = null;
+  }
   delete bins[oldname];
   return true;
-}
-
-
-/**
- * Create a new bin.
- * @function createBin
- * @param {Object} [bins] - current bins
- * @param {string} [name] - bin name
- * @throws if bin name exists
- * @returns {string} bin name
- */
-function createBin(bins, name) {
-  if (name === undefined) {
-    name = newBinName(bins);
-  } else if (name in bins) {
-    throw 'Error: bin name "' + bin + '" exists.';
-  }
-  bins[name] = {};
-  return name;
 }
 
 
@@ -426,58 +444,66 @@ function createBin(bins, name) {
  * Find current bin.
  * @function currentBin
  * @param {Object} table - bin table
- * @throws if current bin is not defined
- * @returns {[number, string]} row index and name of current bin
+ * @returns {[number, string]} row index and name of current bin, or both null
+ * if no bin is current
  */
 function currentBin(table) {
   var idx;
-  for (var i = 0; i < table.rows.length; i++) {
-    if (table.rows[i].classList.contains('current')) {
+  var rows = table.rows;
+  var n = rows.length;
+  for (var i = 0; i < n; i++) {
+    if (rows[i].classList.contains('current')) {
       idx = i;
       break;
     }
   }
-  if (idx === undefined) throw 'Error: Current bin is not defined.';
-  var name = table.rows[idx].cells[0].firstElementChild.innerHTML;
-  return [idx, name];
+  if (idx === undefined) return [null, null];
+  var bin = rows[idx].cells[0].firstElementChild.innerHTML;
+  return [idx, bin];
 }
 
 
 /**
- * Add selected contigs to a bin.
+ * Add contigs to a bin.
  * @function addToBin
- * @param {number[]} indices - indices of selected contigs
+ * @param {number[]} ctgs - contig indices
  * @param {Object} bin - target bin
  * @returns {number[]} indices of added contigs
  */
-function addToBin(indices, bin) {
-  var res = [];
-  indices.forEach(function (i) {
-    if (!(i in bin)) {
-      bin[i] = null;
-      res.push(i);
+function addToBin(ctgs, bin) {
+  var added = [];
+  var n = ctgs.length;
+  var ctg;
+  for (var i = 0; i < n; i++) {
+    ctg = ctgs[i];
+    if (!(ctg in bin)) {
+      bin[ctg] = null;
+      added.push(ctg);
     }
-  });
-  return res;
+  }
+  return added;
 }
 
 
 /**
- * Remove selected contigs from a bin.
+ * Remove contigs from a bin.
  * @function removeFromBin
- * @param {number[]} indices - indices of selected contigs
+ * @param {number[]} ctgs - contig indices
  * @param {Object} bin - target bin
  * @returns {number[]} indices of removed contigs
  */
-function removeFromBin(indices, bin) {
-  var res = [];
-  indices.forEach(function (i) {
-    if (i in bin) {
-      delete bin[i];
-      res.push(i);
+function removeFromBin(ctgs, bin) {
+  var removed = [];
+  var n = ctgs.length;
+  var ctg;
+  for (var i = 0; i < n; i++) {
+    ctg = ctgs[i];
+    if (ctg in bin) {
+      delete bin[ctg];
+      removed.push(ctg);
     }
-  });
-  return res;
+  }
+  return removed;
 }
 
 
@@ -486,27 +512,33 @@ function removeFromBin(indices, bin) {
  * @function deleteBins
  * @param {Object} table - bin table
  * @param {Object} bins - bins object
- * @throws Error if no bin is selected
+ * @throws error if no bin is selected
  * @returns {[string[]], [number[]]} deleted bins and their contigs
  */
 function deleteBins(table, bins) {
-  var names = [];
-  for (var i = table.rows.length - 1; i >= 0; i--) {
-    var row = table.rows[i];
+  var i, n, row, bin, ctg;
+
+  // identify bins to delete (from bottom to top of the table)
+  var todel = [];
+  var rows = table.rows;
+  for (i = rows.length - 1; i >= 0; i--) {
+    row = rows[i];
     if (row.classList.contains('selected')) {
-      names.push(row.cells[0].firstElementChild.innerHTML);
+      todel.push(row.cells[0].firstElementChild.innerHTML);
       table.deleteRow(i);
     }
   }
+  if (todel.length === 0) throw 'Error: No bin is selected.';
+
+  // delete bins while listing affected bins and contigs
   var ctgs = {};
-  if (names.length === 0) throw 'Error: No bin is selected.';
-  names.forEach(function (name) {
-    Object.keys(bins[name]).forEach(function (idx) {
-      ctgs[idx] = null;
-    });
-    delete bins[name];
-  });
-  return [names, Object.keys(ctgs).sort()];
+  n = todel.length;
+  for (i = 0; i < n; i++) {
+    bin = todel[i];
+    for (ctg in bins[bin]) ctgs[ctg] = null;
+    delete bins[bin];
+  }
+  return [todel, Object.keys(ctgs).sort()];
 }
 
 
@@ -514,12 +546,16 @@ function deleteBins(table, bins) {
  * Programmatically select a bin in the bin table.
  * @function selectBin
  * @param {Object} table - bin table
- * @param {string} name - bin name
+ * @param {string} bin - bin name
  */
-function selectBin(table, name) {
-  for (var i = 0; i < table.rows.length; i++) {
-    if (table.rows[i].cells[0].firstElementChild.innerHTML === name) {
-      table.rows[i].click();
+function selectBin(table, bin) {
+  var row;
+  var rows = table.rows;
+  var n = rows.length;
+  for (var i = 0; i < n; i++) {
+    row = rows[i];
+    if (row.cells[0].firstElementChild.innerHTML === bin) {
+      row.click();
       break;
     }
   }
@@ -527,19 +563,20 @@ function selectBin(table, name) {
 
 
 /**
- * Load bins based on a categorical field.
+ * Load bins from a categorical field.
  * @function loadBin
  * @param {Object} df - data frame
  * @param {number} idx - field index
  * @returns {Object} bins object
  */
 function loadBins(df, idx) {
+  var val, cat;
   var bins = {};
   var n = df.length;
   for (var i = 0; i < n; i++) {
-    var val = df[i][idx];
+    val = df[i][idx];
     if (val !== null) {
-      var cat = val[0];
+      cat = val[0];
       if (!(cat in bins)) bins[cat] = {};
       bins[cat][i] = null;
     }
@@ -552,65 +589,23 @@ function loadBins(df, idx) {
  * @summary Information operations
  */
 
-/**
- * Format a category cell as string.
- * @function category2Str
- * @param {Array} val - cell value (array of [category, weight])
- * @returns {string} formatted string
- */
-function category2Str(val) {
-  return (val === null ? '' : val[0]);
-}
-
-
-/**
- * Format a feature cell as string.
- * @function feature2Str
- * @param {Object} val - cell value (object of feature: weight pairs)
- * @returns {string} formatted string
- */
-function feature2Str(val) {
-  return Object.keys(val).sort().join(', ');
-}
-
-
-/**
- * Format a cell as string.
- * @function value2Str
- * @param {*} val - cell value
- * @returns {string} formatted string
- */
-function value2Str(val, type) {
-  var str = '';
-  switch (type) {
-    case 'category':
-      str = category2Str(val);
-      break;
-    case 'feature':
-      str = feature2Str(val);
-      break;
-    default:
-      str = (val === null) ? 'na' : val.toString();
-  }
-  return str
-}
-
 
 /**
  * Generate a metric to summarize a field of multiple contigs.
  * @function columnInfo
  * @param {Array} arr - data column to describe
  * @param {string} type - type of column
- * @param {string} [met] - metric (sum or mean)
- * @param {string} [deci] - digits after decimal point
+ * @param {string} [met='none'] - metric (sum or mean)
+ * @param {string} [deci=5] - digits after decimal point
  * @param {string} [refarr] - reference column for weighting
  */
 function columnInfo(arr, type, met, deci, refarr) {
   var isRef = Array.isArray(refarr);
   met = met || 'none';
-  deci = deci || 0;
+  deci = deci || 5;
   var res = 0;
   switch (type) {
+
     case 'number':
       switch (met) {
         case 'sum':
@@ -624,12 +619,14 @@ function columnInfo(arr, type, met, deci, refarr) {
       }
       res = formatNum(res, deci);
       break;
+
     case 'category':
       var x = objMinMax(listCats(arr));
       var frac = x[1][1] / arr.length;
       res = (frac > 0.5) ? (x[1][0] + ' (' + (frac * 100).toFixed(2)
         .replace(/\.?0+$/, '') + '%)') : 'ambiguous';
       break;
+
     case 'feature':
       var x = listFeats(arr);
       var a = [];

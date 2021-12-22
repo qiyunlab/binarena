@@ -27,16 +27,16 @@ function isMissing(str) {
 
 
 /**
- * Parse field types.
+ * Guess field types.
  * This function in overly long, because it attempts to guess the data type of each field.
  * Options are: number, category, feature, description.
- * @function parseFieldType
+ * @function guessFieldType
  * @param {string} name - field name of the column
  * @param {string[]} arr - cell values of the column
  * @throws if field name is invalid
  * @returns {[string, string]} field type, updated field name
  */
-function parseFieldType(name, arr) {
+function guessFieldType(name, arr) {
 
   // look for pre-defined field type
   var code2type = {
@@ -175,6 +175,7 @@ function parseFieldType(name, arr) {
     }
   }
 }
+
 
 /**
  * Define display items based on data.
@@ -425,6 +426,54 @@ function guessColMetric(col) {
   return res;
 }
 
+
+/**
+ * Format a category cell as string.
+ * @function category2Str
+ * @param {Array} val - cell value (array of [category, weight])
+ * @returns {string} formatted string
+ */
+ function category2Str(val) {
+  return (val === null ? '' : val[0]);
+}
+
+
+/**
+ * Format a feature cell as string.
+ * @function feature2Str
+ * @param {Object} val - cell value (object of feature: weight pairs)
+ * @returns {string} formatted string
+ */
+function feature2Str(val) {
+  return (val === null ? '' : Object.keys(val).sort().join(', '));
+}
+
+
+/**
+ * Format a cell as string.
+ * @function value2Str
+ * @param {*} val - cell value
+ * @returns {string} formatted string
+ */
+function value2Str(val, type) {
+  var str = '';
+  switch (type) {
+    case 'number':
+      str = (val === null) ? 'na' : formatNum(val, 5);
+      break;
+    case 'category':
+      str = category2Str(val);
+      break;
+    case 'feature':
+      str = feature2Str(val);
+      break;
+    default:
+      str = (val === null) ? 'na' : val.toString();
+  }
+  return str;
+}
+
+
 /**
  * Format length value.
  * @function FormatLength
@@ -444,18 +493,40 @@ function FormatLength(len) {
 
 
 /**
- * Generate a new bin name based on existing bin names.
- * Will read like "bin_#", in which "#" is an incremental integer.
- * @function newBinName
- * @param {Object} bins - existing bin names
- * @returns {string} new bin name
+ * Generate a new name that does not conflict with existing names.
+ * Will read like "prefix_#", in which "#" is an incremental integer.
+ * @function newName
+ * @param {Object} exists - existing names
+ * @param {string} prefix - name prefix
+ * @returns {string} new name
  */
-function newBinName(bins) {
-  var i = Object.keys(bins).length + 1;
+ function newName(exists, prefix) {
   var name;
+  var i = 1;
   while (true) {
-    name = 'bin_' + i;
-    if (name in bins) i ++;
+    name = prefix + '_' + i;
+    if (name in exists) i ++;
     else return name;
   }
+}
+
+
+/**
+ * Dictionary of singular to plural transformations.
+ */
+var PLURAL_FORMS = {};
+
+
+/**
+ * Generate a new name that does not conflict with existing names.
+ * Will read like "prefix_#", in which "#" is an incremental integer.
+ * @function plural
+ * @param {Object} exists - existing names
+ * @param {string} prefix - name prefix
+ * @returns {string} new name
+ */
+function plural(noun, n) {
+  if (n <= 1) return n + ' ' + noun;
+  else if (noun in PLURAL_FORMS) return n + ' ' + PLURAL_FORMS[noun];
+  else return n + ' ' + noun + 's';
 }

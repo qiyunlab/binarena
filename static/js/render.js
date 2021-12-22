@@ -54,9 +54,18 @@ function resizeArena(rena, oray) {
  * Render arena given current data and view.
  * @function renderArena
  * @param {Object} mo - main object
+ * @description This is the main rendering engine of the program. It is also a
+ * computationally expensive task. Several resorts have been adopted to improve
+ * performance, including:
+ * - Minimize fill style changes.
+ * - Minimize number of paths.
+ * - For small circles draw squares instead.
+ * - Cache variables and references.
  * @todo {@link https://stackoverflow.com/questions/21089959/}
+ * @todo rectangle-circle collision detection
  * @todo round floats into integers should improve performance, but may cause
  * problem when zoomin scale is large, needs further thought
+ * @todo get rid of masked contigs prior to loop
  */
 function renderArena(mo) {
   var data = mo.data;
@@ -93,73 +102,76 @@ function renderArena(mo) {
 
   // cache parameters
   var w = rena.width,
-    h = rena.height;
-  // x-coordinate
+      h = rena.height;
+  // x-axis
   var xi = view.x.i,
-    xscale = view.x.scale,
-    xmin = view.x.min,
-    xmax = view.x.max,
-    dx = xmax - xmin;
-  // y-coordinate
+      xscale = view.x.scale,
+      xmin = view.x.min,
+      xmax = view.x.max,
+      dx = xmax - xmin;
+  // y-axis
   var yi = view.y.i,
-    yscale = view.y.scale,
-    ymin = view.y.min,
-    ymax = view.y.max,
-    dy = ymax - ymin;
+      yscale = view.y.scale,
+      ymin = view.y.min,
+      ymax = view.y.max,
+      dy = ymax - ymin;
   // size
   var rbase = view.rbase;
   var si = view.size.i,
-    sscale = view.size.scale,
-    smin = view.size.zero ? 0 : view.size.min,
-    slow = view.size.lower / 100,
-    sfac = (view.size.upper / 100 - slow) / (view.size.max - smin);
+      sscale = view.size.scale,
+      smin = view.size.zero ? 0 : view.size.min,
+      slow = view.size.lower / 100,
+      sfac = (view.size.upper / 100 - slow) / (view.size.max - smin);
   // opacity
   var oi = view.opacity.i,
-    oscale = view.opacity.scale,
-    omin = view.opacity.zero ? 0 : view.opacity.min,
-    olow = view.opacity.lower / 100,
-    ofac = (view.opacity.upper / 100 - olow) / (view.opacity.max - omin);
+      oscale = view.opacity.scale,
+      omin = view.opacity.zero ? 0 : view.opacity.min,
+      olow = view.opacity.lower / 100,
+      ofac = (view.opacity.upper / 100 - olow) / (view.opacity.max - omin);
   // color
   var ci = view.color.i,
-    discmap = view.color.discmap,
-    contmap = view.color.contmap,
-    ctype = ci ? data.types[ci] : null,
-    cscale = view.color.scale,
-    cmin = view.color.zero ? 0 : view.color.min,
-    clow = view.color.lower,
-    cfac = (view.color.upper - clow) / (view.color.max - cmin);
+      discmap = view.color.discmap,
+      contmap = view.color.contmap,
+      ctype = ci ? data.types[ci] : null,
+      cscale = view.color.scale,
+      cmin = view.color.zero ? 0 : view.color.min,
+      clow = view.color.lower,
+      cfac = (view.color.upper - clow) / (view.color.max - cmin);
 
   // rendering parameters
   var paths = {};
+
+  // intermediates
+  var datum, radius, rviz, x, y, c, val, cat, alpha, fs;
 
   // determine appearance of contig
   var df = data.df;
   var n = df.length;
   for (var i = 0; i < n; i++) {
     if (masking && i in mo.mask) continue;
-    var datum = df[i];
+    datum = df[i];
 
     // determine radius (size)
     // var radius = si ? scaleNum(datum[si], sscale) * rbase / smax : rbase;
-    var radius = si ? ((scaleNum(datum[si], sscale) - smin) * sfac + slow)
+    radius = si ? ((scaleNum(datum[si], sscale) - smin) * sfac + slow)
       * rbase : rbase;
-    var rviz = radius * scale;
+    rviz = radius * scale;
 
     // if contig occupies less than one pixel on screen, skip
     if (rviz < min1) continue;
 
     // determine x- and y-coordinates
-    var x = Math.round(((scaleNum(datum[xi], xscale) - xmin) / dx - 0.5) * w);
-    var y = Math.round(((ymax - scaleNum(datum[yi], yscale)) / dy - 0.5) * h);
+    x = Math.round(((scaleNum(datum[xi], xscale) - xmin) / dx - 0.5) * w);
+    y = Math.round(((ymax - scaleNum(datum[yi], yscale)) / dy - 0.5) * h);
 
     // determine color
-    var c = '0,0,0';
+    c = '0,0,0';
     if (ci) {
-      var val = datum[ci];
+      val = datum[ci];
       if (val !== null) {
         // discrete data
         if (ctype === 'category') {
-          var cat = val[0];
+          cat = val[0];
           if (cat in discmap) c = hexToRgb(discmap[cat]);
         }
 
@@ -173,14 +185,14 @@ function renderArena(mo) {
 
     // determine opacity
     // var alpha = (scaleNum(datum[oi], oscale) / omax).toFixed(2);
-    var alpha = oi ? ((scaleNum(datum[oi], oscale) - omin) * ofac + olow)
+    alpha = oi ? ((scaleNum(datum[oi], oscale) - omin) * ofac + olow)
       .toFixed(2) : 1.0;
 
     // generate fill style string
-    var fs = 'rgba(' + c + ',' + alpha + ')';
+    fs = 'rgba(' + c + ',' + alpha + ')';
     if (!(fs in paths)) paths[fs] = { 'square': [], 'circle': [] };
 
-    // if contig occupies less than four pixels on screen, draw a square
+    // if a contig occupies less than four pixels on screen, draw a square
     if (rviz < min2) {
       paths[fs]['square'].push([x, y, Math.round(radius * pi1_2)]);
     }
@@ -192,24 +204,31 @@ function renderArena(mo) {
   } // end for i
 
   // render contigs
-  // note: minimizing changes of fill style can improve performance
-  // note: minimizing numbers of paths can improve performance
+  var squares, sq, circles, ci;
   for (var fs in paths) {
     ctx.fillStyle = fs;
-    for (var i = 0; i < paths[fs]['square'].length; i++) {
-      var sq = paths[fs]['square'][i];
+
+    // draw squares
+    squares = paths[fs]['square'];
+    n = squares.length;
+    for (i = 0; i < n; i++) {
+      sq = squares[i];
       ctx.fillRect(sq[0], sq[1], sq[2], sq[2]);
     }
-    var n = paths[fs]['circle'].length;
+
+    // draw circles
+    circles = paths[fs]['circle'];
+    n = circles.length;
     if (n === 0) continue;
     ctx.beginPath();
     for (var i = 0; i < n; i++) {
-      var ci = paths[fs]['circle'][i];
+      ci = circles[i];
       ctx.moveTo(ci[0], ci[1]);
       ctx.arc(ci[0], ci[1], ci[2], 0, pi2, true);
     }
+
     ctx.fill();
-  }
+  } // end for fs
 
   // draw grid
   if (view.grid) drawGrid(rena, view);
@@ -230,7 +249,7 @@ function renderSelection(mo) {
   var oray = mo.oray;
 
   // get shadow color
-  var color = getComputedStyle(byId('hilite-color')).color;
+  var color = mo.theme.selection;
 
   // clear canvas
   var ctx = oray.getContext('2d');
@@ -256,22 +275,22 @@ function renderSelection(mo) {
   // cache parameters
   var rbase = view.rbase;
   var w = oray.width,
-    h = oray.height;
+      h = oray.height;
   var xi = view.x.i,
-    xscale = view.x.scale,
-    xmin = view.x.min,
-    xmax = view.x.max,
-    dx = xmax - xmin;
+      xscale = view.x.scale,
+      xmin = view.x.min,
+      xmax = view.x.max,
+      dx = xmax - xmin;
   var yi = view.y.i,
-    yscale = view.y.scale,
-    ymin = view.y.min,
-    ymax = view.y.max,
-    dy = ymax - ymin;
+      yscale = view.y.scale,
+      ymin = view.y.min,
+      ymax = view.y.max,
+      dy = ymax - ymin;
   var si = view.size.i,
-    sscale = view.size.scale,
-    smin = view.size.zero ? 0 : view.size.min,
-    slow = view.size.lower / 100,
-    sfac = (view.size.upper / 100 - slow) / (view.size.max - smin);
+      sscale = view.size.scale,
+      smin = view.size.zero ? 0 : view.size.min,
+      slow = view.size.lower / 100,
+      sfac = (view.size.upper / 100 - slow) / (view.size.max - smin);
 
   // render shadows around selected contigs
   ctx.beginPath();
@@ -303,7 +322,7 @@ function drawPolygon(mo) {
   var vertices = stat.polygon;
   var pi2 = Math.PI * 2;
   var radius = 3 / view.scale;
-  var color = getComputedStyle(byId('polygon-color')).color;
+  var color = mo.theme.polygon;
   var ctx = oray.getContext('2d');
   ctx.clearRect(0, 0, oray.width, oray.height);
   ctx.save();
@@ -314,19 +333,18 @@ function drawPolygon(mo) {
   var n = vertices.length;
   var vertex;
   var j;
+  ctx.beginPath();
   for (var i = 0; i < n; i++) {
     vertex = vertices[i];
-    ctx.beginPath();
     ctx.arc(vertex.x, vertex.y, radius, 0, pi2, true);
-    ctx.closePath();
     ctx.lineWidth = 1 / view.scale;
     ctx.moveTo(vertex.x, vertex.y);
     j = i + 1;
     if (j == n) j = 0;
     vertex = vertices[j];
     ctx.lineTo(vertex.x, vertex.y);
-    ctx.stroke();
   }
+  ctx.stroke();
   ctx.restore();
 }
 

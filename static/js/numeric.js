@@ -276,7 +276,7 @@ function bincount(x) {
  * Bin data points into even intervals, i.e., a histogram
  * @function histogram
  * @param {number[]} x - input data
- * @param {number[]} n - number of bins
+ * @param {number[]} [n=10] - number of bins
  * @return {[number[], number[]]} bins and edges
  * @see numpy.histogram
  */
