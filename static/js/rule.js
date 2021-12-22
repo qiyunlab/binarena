@@ -458,6 +458,9 @@ function feature2Str(val) {
 function value2Str(val, type) {
   var str = '';
   switch (type) {
+    case 'number':
+      str = (val === null) ? 'na' : formatNum(val, 5);
+      break;
     case 'category':
       str = category2Str(val);
       break;
@@ -467,7 +470,7 @@ function value2Str(val, type) {
     default:
       str = (val === null) ? 'na' : val.toString();
   }
-  return str
+  return str;
 }
 
 
@@ -505,4 +508,25 @@ function FormatLength(len) {
     if (name in exists) i ++;
     else return name;
   }
+}
+
+
+/**
+ * Dictionary of singular to plural transformations.
+ */
+var PLURAL_FORMS = {};
+
+
+/**
+ * Generate a new name that does not conflict with existing names.
+ * Will read like "prefix_#", in which "#" is an incremental integer.
+ * @function plural
+ * @param {Object} exists - existing names
+ * @param {string} prefix - name prefix
+ * @returns {string} new name
+ */
+function plural(noun, n) {
+  if (n <= 1) return n + ' ' + noun;
+  else if (noun in PLURAL_FORMS) return n + ' ' + PLURAL_FORMS[noun];
+  else return n + ' ' + noun + 's';
 }

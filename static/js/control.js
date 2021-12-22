@@ -428,7 +428,6 @@ function updateMaskCtrl(mo) {
 }
 
 
-
 /**
  * @summary Information of selected contigs
  */
@@ -472,10 +471,10 @@ function updateMaskCtrl(mo) {
     row.setAttribute('data-type', type);
     if (type === 'number') {
       var met = guessColMetric(col);
-      row.setAttribute('data-refcol', (met.substring(met.length - 2) === 'by')
-        ? lencol : '');
-      row.setAttribute('data-metric', (met.substring(0, 3) === 'sum') ? 'sum'
-        : 'mean');
+      row.setAttribute('data-refcol', (met.substring(met.length - 2) ===
+        'by') ? lencol : '');
+      row.setAttribute('data-metric', (met.substring(0, 3) === 'sum') ?
+        'sum' : 'mean');
     }
 
     // row hover event: append control span
@@ -495,7 +494,7 @@ function updateMaskCtrl(mo) {
         pbtn.classList.add('hidden');
         rspan.classList.add('hidden');
       }
-      
+
       // multiple contigs are selected
       else {
         var met = this.getAttribute('data-metric');
@@ -540,40 +539,60 @@ function updateMaskCtrl(mo) {
  * Update information table of selected contigs.
  * @function updateSelInfo
  * @param {Object} mo - main object
+ * @todo Currently this function is very inefficient because it involves data
+ * table splicing, transposing, etc.
  */
 function updateSelInfo(mo) {
   var table = byId('info-table');
   var ctgs = Object.keys(mo.pick);
-  if (ctgs.length === 0) { // no contig is selected
+  var n = ctgs.length;
+
+  // no contig is selected
+  if (n === 0) {
     table.classList.add('hidden');
-  } else {
-    var rows = table.rows;
-    var n = rows.length;
-
-    // single contig
-    if (ctgs.length === 1) {
-      var selData = mo.data.df[ctgs[0]];
-      for (var i = 0; i < n; i++) {
-        var val = selData[rows[i].getAttribute('data-index')];
-        var type = rows[i].getAttribute('data-type');
-        rows[i].cells[1].innerHTML = value2Str(val, type);
-      }
-    }
-
-    // multiple contigs
-    else {
-      var selData =
-        transpose(ctgs.sort().map(function (i) { return mo.data.df[i]; }));
-      var cols = mo.data.cols;
-      for (var i = 0; i < n; i++) {
-        var arr = selData[rows[i].getAttribute('data-index')];
-        var refcol = rows[i].getAttribute('data-refcol');
-        var refarr = refcol ? selData[cols.indexOf(refcol)] : null;
-        updateInfoRow(rows[i], mo, arr, refarr);
-      }
-    }
-    table.classList.remove('hidden');
+    return;
   }
+  var rows = table.rows;
+
+  // single contig
+  if (n === 1) {
+    var datum = mo.data.df[ctgs[0]];
+    for (var row of rows) {
+      row.cells[1].innerHTML = value2Str(
+        datum[row.getAttribute('data-index')],
+        row.getAttribute('data-type'));
+    }
+  }
+
+  // multiple contigs
+  else {
+    var cols = mo.data.cols,
+        df = mo.data.df;
+    for (var row of rows) {
+
+      // get data
+      var idx = row.getAttribute('data-index');
+      var arr = Array(n).fill();
+      for (var i = 0; i < n; i++) {
+        arr[i] = df[ctgs[i]][idx];
+      }
+
+      // get reference data, if available
+      var refarr;
+      idx = cols.indexOf(row.getAttribute('data-refcol'));
+      if (idx !== -1) {
+        refarr = Array(n).fill();
+        for (var i = 0; i < n; i++) {
+          refarr[i] = df[ctgs[i]][idx];
+        }
+      }
+
+      // summarize data and display
+      updateInfoRow(row, mo, arr, refarr);
+    }
+  }
+
+  table.classList.remove('hidden');
 }
 
 
@@ -584,32 +603,46 @@ function updateSelInfo(mo) {
  * @param {Object} mo - main object
  * @param {Array} [arr] - data column
  * @param {Array} [refarr] - reference column
+ * @description arr and refarr are not necessary; but they can be provided in
+ * order to save compute
  */
 function updateInfoRow(row, mo, arr, refarr) {
-  if (arr === undefined) {
-    var data_ = Object.keys(mo.pick).sort()
-      .map(function (i) { return mo.data.df[i]; });
-    var idx = row.getAttribute('data-index');
-    arr = data_.map(function (x) { return x[idx]; });
-    var refcol = row.getAttribute('data-refcol');
-    if (refcol) {
-      idx = mo.data.cols.indexOf(refcol);
-      refarr = data_.map(function (x) { return x[idx]; });
-    } else refarr = null;
-  }
-  arr = arr || Object.keys(mo.pick).sort()
-    .map(function (i) { return mo.data.df[i]; })
-    .map(function (x) { return x[row.getAttribute('data-index')]; });
-  var type = row.getAttribute('data-type');
+  var ctgs = Object.keys(mo.pick).sort();
+  var n = ctgs.length;
+  var df = mo.data.df;
+  var idx;
 
+  // populate data array
+  if (arr == null) {
+    idx = row.getAttribute('data-index');
+    arr = Array(n).fill();
+    for (var i = 0; i < n; i++) {
+      arr[i] = df[ctgs[i]][idx];
+    }
+  }
+
+  // for non-number types, directly summarize
+  var type = row.getAttribute('data-type');
   if (type !== 'number') {
     row.cells[1].innerHTML = row.cells[1].title = columnInfo(arr, type);
-  } else {
-    var met = row.getAttribute('data-metric');
-    var deci = mo.view.decimals[row.getAttribute('data-col')];
-    var refcol = row.getAttribute('data-refcol');
-    row.cells[1].innerHTML = columnInfo(arr, type, met, deci, refarr);
+    return;
   }
+
+  // populate reference array
+  if (refarr == null) {
+    idx = mo.data.cols.indexOf(row.getAttribute('data-refcol'));
+    if (idx !== -1) {
+      refarr = Array(n).fill();
+      for (var i = 0; i < n; i++) {
+        refarr[i] = df[ctgs[i]][idx];
+      }
+    }
+  }
+
+  // summarize a numberic column
+  var met = row.getAttribute('data-metric');
+  var deci = mo.view.decimals[row.getAttribute('data-col')];
+  row.cells[1].innerHTML = columnInfo(arr, type, met, deci, refarr);
 }
 
 
@@ -630,8 +663,8 @@ function updateInfoRow(row, mo, arr, refarr) {
   if (selmode === 'new') {
     Object.keys(target).forEach(function (i) { delete target[i]; });
     indices.forEach(function (i) { target[i] = null; });
-    toastMsg((masking ? 'Masked' : 'Selected') + ' ' + indices.length +
-      ' contig(s).', mo.stat);
+    toastMsg((masking ? 'Masked' : 'Selected') + ' ' + plural('contig',
+      indices.length) + '.', mo.stat);
   }
 
   // add to selection
@@ -643,19 +676,19 @@ function updateInfoRow(row, mo, arr, refarr) {
         n++;
       }
     });
-    toastMsg('Added ' + n + ' contig(s) to ' + (masking ? 'mask' : 'selection')
-      + '.', mo.stat);
+    toastMsg('Added ' + plural('contig', n) + ' to ' + (masking ? 'mask' :
+      'selection') + '.', mo.stat);
   }
 
   // remove from selection
   else if (selmode === 'remove') {
-    var toDel = [];
+    var todel = [];
     indices.forEach(function (i) {
       if (i in target) toDel.push(i);
     });
-    toDel.forEach(function (i) { delete target[i]; });
-    toastMsg('Removed ' + toDel.length + ' contig(s) from ' + (masking ?
-      'mask' : 'selection') + '.', mo.stat);
+    todel.forEach(function (i) { delete target[i]; });
+    toastMsg('Removed ' + plural('contig', todel.length) + ' from ' + (
+      masking ? 'mask' : 'selection') + '.', mo.stat);
   }
 
   // remove excluded contigs from selection, if any

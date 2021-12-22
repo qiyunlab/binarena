@@ -892,21 +892,13 @@ function initControls(mo) {
   });
 
   // create an empty new bin
-  byId('new-bin-btn').addEventListener('click', function () {
+  byId('new-empty-bin-btn').addEventListener('click', function () {
     var name = createBin(mo.bins);
-    var ctgs = Object.keys(mo.pick);
-    var n = ctgs.length;
-    if (n > 0) {
-      addToBin(ctgs, mo.bins[name]);
-      mo.pick = {};
-      updateSelection(mo);
-    }
     updateBinTable(mo);
     updateBinCtrl(mo);
     var table = byId('bin-tbody');
     selectBin(table, name);
-    toastMsg('Created "' + name + '"' + (n ? ' with ' + n +
-      ' contig(s)': '') + '.', stat);
+    toastMsg('Created "' + name + '".', stat);
   });
 
   // delete current bin
@@ -995,7 +987,9 @@ function initControls(mo) {
    * @summary Info panel toolbar
    */
 
-  // create a new bin from selected contigs
+  /** 
+   * Create a new bin from selected contigs.
+   */
   byId('as-new-bin-btn').addEventListener('click', function () {
   
     // if there is no binning plan, create one
@@ -1018,11 +1012,14 @@ function initControls(mo) {
     updateBinCtrl(mo);
     var table = byId('bin-tbody');
     selectBin(table, name);
-    toastMsg('Created "' + name + '"' + (n ? ' with ' + n +
-      ' contig(s)': '') + '.', stat);
+    toastMsg('Created "' + name + '"' + (n ? ' with ' + plural('contig', n)
+      : '') + '.', stat);
   });
 
-  // add selected contigs to current bin
+
+  /** 
+   * Add selected contigs to current bin.
+   */
   byId('add-to-bin-btn').addEventListener('click', function () {
     var table = byId('bin-tbody');
     var [idx, bin] = currentBin(table);
@@ -1033,10 +1030,13 @@ function initControls(mo) {
     var added = addToBin(ctgs, exist);
     var n = added.length;
     if (n > 0) updateBinRow(table.rows[idx], exist, mo);
-    toastMsg('Added ' + n + ' contig(s) to "' + bin + '".', stat);
+    toastMsg('Added ' + plural('contig', n) + ' to "' + bin + '".', stat);
   });
 
-  // remove selected contigs from current bin
+
+  /** 
+   * Remove selected contigs from current bin.
+   */
   byId('remove-from-bin-btn').addEventListener('click', function () {
     var table = byId('bin-tbody');
     var [idx, bin] = currentBin(table);
@@ -1048,10 +1048,13 @@ function initControls(mo) {
     updateBinCtrl(mo);
     var n = removed.length;
     if (n > 0) updateBinRow(table.rows[idx], exist, mo);
-    toastMsg('Removed ' + n + ' contig(s) from "' + bin + '".', stat);
+    toastMsg('Removed ' + plural('contig', n) + ' from "' + bin + '".', stat);
   });
 
-  // update current bin with selected contigs
+
+  /** 
+   * Update current bin with selected contigs.
+   */
   byId('update-bin-btn').addEventListener('click', function () {
     var table = byId('bin-tbody');
     var [idx, bin] = currentBin(table);
@@ -1063,7 +1066,8 @@ function initControls(mo) {
     updateBinCtrl(mo);
     var n = Object.keys(ctgs).length;
     updateBinRow(table.rows[idx], ctgs, mo);
-    toastMsg('Updated "' + bin + '" (now has ' + n + ' contig(s)).', stat);
+    toastMsg('Updated "' + bin + '" (now has ' + plural('contig', n) +
+      ').', stat);
   });
 
 
@@ -1071,7 +1075,9 @@ function initControls(mo) {
    * @summary Info table events
    */
 
-  // invert selection
+  /** 
+   * Invert selection.
+   */
   byId('invert-btn').addEventListener('click', function () {
     var pick = mo.pick;
     var mask = mo.mask;
@@ -1089,7 +1095,10 @@ function initControls(mo) {
     treatSelection(res, 'new', false, mo);
   });
 
-  // mask selection
+
+  /** 
+   * Mask selection.
+   */
   byId('mask-btn').addEventListener('click', function () {
     var indices = Object.keys(mo.pick);
     if (indices.length > 0) {
@@ -1098,7 +1107,10 @@ function initControls(mo) {
     }
   });
 
-  // metric (sum or mean)
+
+  /** 
+   * Toggle summary metric (sum or mean).
+   */
   byId('info-metric-btn').addEventListener('click', function () {
     var row = byId('info-table').rows[this.parentElement
       .getAttribute('data-row')];
@@ -1305,9 +1317,9 @@ function initCanvas(mo) {
       case '/':
       case '?':
         byId('update-bin-btn').click();
+        e.preventDefault(); // otherwise it will open Firefox quick find bar
         break;
     }
-    e.preventDefault();
     // var t1 = performance.now();
     // console.log(t1 - t0);
   });
@@ -1333,11 +1345,9 @@ function canvasMouseClick(e, mo) {
   
   // keep drawing polygon
   else if (stat.drawing) {
-    var x = (e.offsetX - view.pos.x) / view.scale;
-    var y = (e.offsetY - view.pos.y) / view.scale;
     stat.polygon.push({
-      x: x,
-      y: y
+      x: (e.offsetX - view.pos.x) / view.scale,
+      y: (e.offsetY - view.pos.y) / view.scale,
     });
     drawPolygon(mo);
   }
@@ -1356,8 +1366,8 @@ function canvasMouseClick(e, mo) {
       if (masking && i in mo.mask) continue;
       datum = df[i];
       idx = view.size.i;
-      radius = idx ? scaleNum(datum[idx], view.size.scale) * view.rbase
-        / view.size.max : view.rbase;
+      radius = idx ? scaleNum(datum[idx], view.size.scale) * view.rbase /
+        view.size.max : view.rbase;
       // var ratio = scaleNum(datum[view.size.i], view.size.scale) *
       //   view.rbase / view.size.max;
       r2 = radius * radius; // this is faster than Math.pow(x, 2)
@@ -1499,6 +1509,8 @@ function popupPos(source, target, direc, same) {
   var vh = window.innerHeight;
   var ts = target.style;
   var rect = source.getBoundingClientRect();
+
+  // pop up toward right
   if (direc === 'right') {
     ts.left = rect.right + 'px';
     ts.right = '';
@@ -1512,7 +1524,10 @@ function popupPos(source, target, direc, same) {
       ts.top = '';
       ts.bottom = (vh - rect.bottom) + 'px';
     }
-  } else if (direc === 'down') {
+  }
+
+  // pop up toward bottom
+  else if (direc === 'down') {
     ts.top = rect.bottom + 'px';
     ts.bottom = '';
     if (same) {

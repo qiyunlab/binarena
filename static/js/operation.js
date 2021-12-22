@@ -596,13 +596,13 @@ function loadBins(df, idx) {
  * @param {Array} arr - data column to describe
  * @param {string} type - type of column
  * @param {string} [met='none'] - metric (sum or mean)
- * @param {string} [deci=0] - digits after decimal point
+ * @param {string} [deci=5] - digits after decimal point
  * @param {string} [refarr] - reference column for weighting
  */
 function columnInfo(arr, type, met, deci, refarr) {
   var isRef = Array.isArray(refarr);
   met = met || 'none';
-  deci = deci || 0;
+  deci = deci || 5;
   var res = 0;
   switch (type) {
 
