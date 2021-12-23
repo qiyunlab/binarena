@@ -34,16 +34,20 @@
  * 2. Assembly file (i.e., contig sequences).
  */
 function updateDataFromText(text, data, filter) {
+  let obj;
+
   // try to parse as JSON
   try {
-    var obj = JSON.parse(text);
+    obj = JSON.parse(text);
     return parseObj(obj, data);
   }
   catch (err) {
+
     // parse as an assembly
     if (text.charAt() === '>') {
       return parseAssembly(text, data, filter);
     }
+
     // parse as a table
     else {
       return parseTable(text, data);
@@ -62,7 +66,7 @@ function updateDataFromText(text, data, filter) {
 function parseObj(obj, data) {
   // enumerate valid keys only
   // note: a direct `data = x` will break object reference
-  for (var key in data) {
+  for (let key in data) {
     if (key in obj) data[key] = obj[key];
   }
   return cacheData(data);
@@ -105,16 +109,16 @@ function parseObj(obj, data) {
  *   e.g., "", "-", "N/A", "na", "#NaN"
  */
 function parseTable(text, data) {
-  var lines = splitLines(text);
-  var n = lines.length;
+  const lines = splitLines(text);
+  const n = lines.length;
   if (n <= 1) throw 'Error: Table is empty.';
 
   // read column names and table body
-  var cols = [];
-  var df = [];
-  var ncol = 0;
-  var row;
-  for (var i = 0; i < n; i++) {
+  const df = [];
+  let cols = [],
+      ncol = 0;
+  let row;
+  for (let i = 0; i < n; i++) {
     row = lines[i].split('\t');
 
     // parse table header
@@ -126,8 +130,8 @@ function parseTable(text, data) {
     // parse table body
     else {
       if (row.length !== ncol) {
-        throw ('Error: Table has ' + ncol + ' columns but row ' + i +
-          ' has ' + row.length + ' cells.');
+        throw (`Error: Table has ${ncol} columns but row ${i} has 
+          ${row.length} cells.`);
       }
       df.push(row);
     }
@@ -149,17 +153,17 @@ function parseTable(text, data) {
  * @todo think twice about the hard-coded decimal places
  */
 function parseAssembly(text, data, filter) {
-  var lines = splitLines(text);
-  var format = getAssemblyFormat(text); // infer assembly file format
+  const lines = splitLines(text);
+  const format = getAssemblyFormat(text); // infer assembly file format
 
-  var minLen = filter.len;
-  var minCov = filter.cov;
+  const minLen = filter.len,
+        minCov = filter.cov;
 
-  var df = [];
-  var id = null;
-  var length = 0;
-  var gc = 0;
-  var coverage = 0;
+  const df = [];
+  let id = null,
+      length = 0,
+      gc = 0,
+      coverage = 0;
 
   // append dataframe with current contig information
   function appendContig() {
@@ -168,9 +172,10 @@ function parseAssembly(text, data, filter) {
     }
   }
 
-  var n = lines.length;
-  for (var i = 0; i < n; i++) {
-    var line = lines[i];
+  const n = lines.length;
+  let line;
+  for (let i = 0; i < n; i++) {
+    line = lines[i];
     if (line.charAt() === '>') { // check if the current line is a contig title
       appendContig(); // append previous contig
       [id, coverage] = parseContigTitle(line, format);
@@ -195,11 +200,7 @@ function parseAssembly(text, data, filter) {
   data.df = df;
 
   // return decimals (hard-coded)
-  var deci = {
-    'length': 0,
-    'gc': 3,
-    'coverage': 6
-  }
+  const deci = { 'length': 0, 'gc': 3, 'coverage': 6 }
   return [deci, {}, {}];
 }
 
@@ -213,11 +214,12 @@ function parseAssembly(text, data, filter) {
  * {@link https://www.bioinformatics.org/sms/iupac.html}
 */
 function countGC(line) {
-  var count = 0;
+  let count = 0;
   // iterate through the line to find IUPAC nucleotide codes that have a
   // probability of including 'G' or 'C'
-  for (var i = 0; i < line.length; i++) {
-    var base = line.charAt(i);
+  let base;
+  for (let i = 0; i < line.length; i++) {
+    base = line.charAt(i);
     // gc count is multiplied by 6 such that it is an integer
     switch (base.toUpperCase()) {
       case 'G':
@@ -250,7 +252,7 @@ function countGC(line) {
  * Infer the format of an assembly file.
  * @function getAssemblyFormat
  * @param {String} text - file content (multi-line)
- * @returns {String} - assembly file format
+ * @returns {String} - assembly file format (spades, megahit, or null)
  * @see parseContigTitle
  * This function searches for unique starting sequences of different assembly
  * formats. Currently, it supports SPAdes and MEGAHIT formats.
@@ -258,16 +260,14 @@ function countGC(line) {
 function getAssemblyFormat(text) {
   // SPAdes contig title
   // e.g. NODE_1_length_1000_cov_12.3
-  var spades_regex = /^>NODE_\d+\_length_\d+\_cov_\d*\.?\d*/g;
-  if (text.search(spades_regex) === 0) {
-    return 'spades';
-  }
+  const spades_regex = /^>NODE_\d+\_length_\d+\_cov_\d*\.?\d*/g;
+  if (text.search(spades_regex) === 0) return 'spades';
+
   // MEGAHIT contig title
   // e.g. k141_1 flag=1 multi=5.0000 len=1000
-  var megahit_regex = /^>k\d+_\d+\sflag=\d+\smulti=\d*\.?\d*\slen=\d+/g;
-  if (text.search(megahit_regex) === 0) {
-    return 'megahit';
-  }
+  const megahit_regex = /^>k\d+_\d+\sflag=\d+\smulti=\d*\.?\d*\slen=\d+/g;
+  if (text.search(megahit_regex) === 0) return 'megahit';
+
   // neither
   return null;
 }
@@ -282,16 +282,16 @@ function getAssemblyFormat(text) {
  * @see getAssemblyFormat
  */
 function parseContigTitle(line, format) {
-  var id = '';
-  var length = 0;
-  var coverage = 0;
+  let id = '',
+      length = 0,
+      coverage = 0;
   if (format === 'spades') {
-    var regex = /(?<=_)(\+|-)?[0-9]*(\.[0-9]*)?$|\d+/g;
+    const regex = /(?<=_)(\+|-)?[0-9]*(\.[0-9]*)?$|\d+/g;
     [id, length, coverage] = line.match(regex);
     return [id, coverage];
   }
   if (format === 'megahit') {
-    var regex = /(?<==|_)[0-9]*(\.[0-9]*)?/g;
+    const regex = /(?<==|_)[0-9]*(\.[0-9]*)?/g;
     [id, , coverage, length] = line.match(regex);
     return [id, coverage];
   }
@@ -308,27 +308,27 @@ function parseContigTitle(line, format) {
  * @returns {Array.<Object, Object, Object>} - decimals, categories, features
  */
 function formatData(data, df, cols) {
-  var deci = {},
-      cats = {},
-      feats = {};
+  const deci = {},
+        cats = {},
+        feats = {};
 
   // identify field types and re-format data
-  var types = ['id'];
-  var m = cols.length,
-      n = df.length;
-  var arr;
-  for (var i = 1; i < m; i++) {
+  const types = ['id'];
+  const m = cols.length,
+        n = df.length;
+  let arr, x, type, col, j;
+  for (let i = 1; i < m; i++) {
     arr = [];
-    for (var j = 0; j < n; j++) {
+    for (j = 0; j < n; j++) {
       arr.push(df[j][i]);
       // arr.push(df[n - j - 1][i]);
     }
-    var x = guessFieldType(cols[i], arr);
-    var type = x[0];
-    var col = x[1];
+    x = guessFieldType(cols[i], arr);
+    type = x[0];
+    col = x[1];
     types.push(type); // identified type
     cols[i] = col; // updated name
-    for (var j = 0; j < n; j++) {
+    for (j = 0; j < n; j++) {
       df[j][i] = arr[j];
     }
 
@@ -363,27 +363,26 @@ function formatData(data, df, cols) {
  * @see parseTable
  */
 function cacheData(data) {
-  var deci = {};
-  var cats = {};
-  var feats = {};
-  data.types.forEach(function (type, i) {
-    if (['number', 'category', 'feature'].indexOf(type) !== -1) {
-      var arr = [];
-      for (var j = 0; j < data.df.length; j++) {
-        arr.push(data.df[j][i]);
-      }
-      var col = data.cols[i];
-      switch (type) {
-        case 'number':
-          deci[col] = maxDecimals(arr);
-          break;
-        case 'category':
-          cats[col] = listCats(arr);
-          break;
-        case 'feature':
-          feats[col] = listFeats(arr);
-          break;
-      }
+  const deci = {}, cats = {},  feats = {};
+  data.types.forEach((type, i) => {
+    if (['number', 'category', 'feature'].indexOf(type) === -1) return;
+    const arr = [];
+    const df = data.df;
+    const n = df.length;
+    for (let j = 0; j < n; j++) {
+      arr.push(df[j][i]);
+    }
+    const col = data.cols[i];
+    switch (type) {
+      case 'number':
+        deci[col] = maxDecimals(arr);
+        break;
+      case 'category':
+        cats[col] = listCats(arr);
+        break;
+      case 'feature':
+        feats[col] = listFeats(arr);
+        break;
     }
   });
   return [deci, cats, feats];
@@ -414,7 +413,7 @@ function createBin(bins, name) {
   if (name === undefined) {
     name = newName(bins, 'bin');
   } else if (name in bins) {
-    throw 'Error: bin name "' + name + '" already exists.';
+    throw `Error: bin name "${name}" already exists.`;
   }
   bins[name] = {};
   return name;
@@ -432,7 +431,7 @@ function createBin(bins, name) {
 function renameBin(bins, oldname, newname) {
   if (newname in bins) return false;
   bins[newname] = {};
-  for (var ctg in bins[oldname]) {
+  for (let ctg in bins[oldname]) {
     bins[newname][ctg] = null;
   }
   delete bins[oldname];
@@ -448,17 +447,17 @@ function renameBin(bins, oldname, newname) {
  * if no bin is current
  */
 function currentBin(table) {
-  var idx;
-  var rows = table.rows;
-  var n = rows.length;
-  for (var i = 0; i < n; i++) {
+  let idx;
+  const rows = table.rows;
+  const n = rows.length;
+  for (let i = 0; i < n; i++) {
     if (rows[i].classList.contains('current')) {
       idx = i;
       break;
     }
   }
   if (idx === undefined) return [null, null];
-  var bin = rows[idx].cells[0].firstElementChild.innerHTML;
+  const bin = rows[idx].cells[0].firstElementChild.innerHTML;
   return [idx, bin];
 }
 
@@ -471,10 +470,10 @@ function currentBin(table) {
  * @returns {number[]} indices of added contigs
  */
 function addToBin(ctgs, bin) {
-  var added = [];
-  var n = ctgs.length;
-  var ctg;
-  for (var i = 0; i < n; i++) {
+  const added = [];
+  const n = ctgs.length;
+  let ctg;
+  for (let i = 0; i < n; i++) {
     ctg = ctgs[i];
     if (!(ctg in bin)) {
       bin[ctg] = null;
@@ -493,10 +492,10 @@ function addToBin(ctgs, bin) {
  * @returns {number[]} indices of removed contigs
  */
 function removeFromBin(ctgs, bin) {
-  var removed = [];
-  var n = ctgs.length;
-  var ctg;
-  for (var i = 0; i < n; i++) {
+  const removed = [];
+  const n = ctgs.length;
+  let ctg;
+  for (let i = 0; i < n; i++) {
     ctg = ctgs[i];
     if (ctg in bin) {
       delete bin[ctg];
@@ -516,12 +515,12 @@ function removeFromBin(ctgs, bin) {
  * @returns {[string[]], [number[]]} deleted bins and their contigs
  */
 function deleteBins(table, bins) {
-  var i, n, row, bin, ctg;
 
   // identify bins to delete (from bottom to top of the table)
-  var todel = [];
-  var rows = table.rows;
-  for (i = rows.length - 1; i >= 0; i--) {
+  const todel = [];
+  const rows = table.rows;
+  let row;
+  for (let i = rows.length - 1; i >= 0; i--) {
     row = rows[i];
     if (row.classList.contains('selected')) {
       todel.push(row.cells[0].firstElementChild.innerHTML);
@@ -531,9 +530,10 @@ function deleteBins(table, bins) {
   if (todel.length === 0) throw 'Error: No bin is selected.';
 
   // delete bins while listing affected bins and contigs
-  var ctgs = {};
-  n = todel.length;
-  for (i = 0; i < n; i++) {
+  const ctgs = {};
+  const n = todel.length;
+  let bin, ctg;
+  for (let i = 0; i < n; i++) {
     bin = todel[i];
     for (ctg in bins[bin]) ctgs[ctg] = null;
     delete bins[bin];
@@ -549,11 +549,7 @@ function deleteBins(table, bins) {
  * @param {string} bin - bin name
  */
 function selectBin(table, bin) {
-  var row;
-  var rows = table.rows;
-  var n = rows.length;
-  for (var i = 0; i < n; i++) {
-    row = rows[i];
+  for (let row of table.rows) {
     if (row.cells[0].firstElementChild.innerHTML === bin) {
       row.click();
       break;
@@ -570,10 +566,10 @@ function selectBin(table, bin) {
  * @returns {Object} bins object
  */
 function loadBins(df, idx) {
-  var val, cat;
-  var bins = {};
-  var n = df.length;
-  for (var i = 0; i < n; i++) {
+  let val, cat;
+  const bins = {};
+  const n = df.length;
+  for (let i = 0; i < n; i++) {
     val = df[i][idx];
     if (val !== null) {
       cat = val[0];
@@ -600,10 +596,11 @@ function loadBins(df, idx) {
  * @param {string} [refarr] - reference column for weighting
  */
 function columnInfo(arr, type, met, deci, refarr) {
-  var isRef = Array.isArray(refarr);
+  const isRef = Array.isArray(refarr);
   met = met || 'none';
   deci = deci || 5;
-  var res = 0;
+  let res = 0;
+  let x;
   switch (type) {
 
     case 'number':
@@ -621,16 +618,16 @@ function columnInfo(arr, type, met, deci, refarr) {
       break;
 
     case 'category':
-      var x = objMinMax(listCats(arr));
-      var frac = x[1][1] / arr.length;
+      x = objMinMax(listCats(arr));
+      const frac = x[1][1] / arr.length;
       res = (frac > 0.5) ? (x[1][0] + ' (' + (frac * 100).toFixed(2)
         .replace(/\.?0+$/, '') + '%)') : 'ambiguous';
       break;
 
     case 'feature':
-      var x = listFeats(arr);
-      var a = [];
-      Object.keys(x).sort().forEach(function (k) {
+      x = listFeats(arr);
+      const a = [];
+      Object.keys(x).sort().forEach(k => {
         if (x[k] === 1) a.push(k);
         else a.push(k + '(' + x[k] + ')');
       });

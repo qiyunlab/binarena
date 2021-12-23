@@ -45,10 +45,10 @@ function formatNum(num, digits) {
  * @see {@link https://stackoverflow.com/questions/5623838/}
  */
 function hexToRgb(hex) {
-  var bigint = parseInt(hex, 16);
-  var r = (bigint >> 16) & 255;
-  var g = (bigint >> 8) & 255;
-  var b = bigint & 255;
+  const bigint = parseInt(hex, 16);
+  const r = (bigint >> 16) & 255,
+        g = (bigint >> 8) & 255,
+        b = bigint & 255;
   return [r, g, b].join();
 }
 
@@ -110,7 +110,7 @@ function scaleNum(num, scale) {
       case 'exp10':
         return Math.pow(10, num);
       default:
-        throw 'Error: invalid scale name "' + scale + '".';
+        throw `Error: invalid scale name "${scale}".`;
     }
   } else {
     throw 'Error: invalid scale type';
@@ -127,18 +127,18 @@ function scaleNum(num, scale) {
  * @todo
  */
 function unscale(scale) {
-  var dict = {
-    'none': 'none',
+  const dict = {
+    'none':   'none',
     'square': 'sqrt',
-    'sqrt': 'square',
-    'cube': 'cbrt',
-    'cbrt': 'cube',
-    'log': 'exp',
-    'exp': 'log',
-    'log2': 'exp2',
-    'exp2': 'log2',
-    'log10': 'exp10',
-    'exp10': 'log10'
+    'sqrt':   'square',
+    'cube':   'cbrt',
+    'cbrt':   'cube',
+    'log':    'exp',
+    'exp':    'log',
+    'log2':   'exp2',
+    'exp2':   'log2',
+    'log10':  'exp10',
+    'exp10':  'log10'
   };
   if (scale == null) {
     return null;
@@ -147,7 +147,7 @@ function unscale(scale) {
   } else if (typeof(scale) === 'string') {
     if (scale in dict) return dict[scale];
   } else {
-    throw 'Error: invalid scale type';
+    throw 'Error: invalid scale type.';
   }
 }
 
@@ -160,12 +160,12 @@ function unscale(scale) {
  * @see {@link https://stackoverflow.com/questions/9229645/}
  */
 function arrUniq(arr) {
-  var res = [];
-  var used = {};
-  var n = arr.length;
-  var j = 0;
-  var item;
-  for (var i = 0; i < n; i++) {
+  const res = [];
+  const used = {};
+  const n = arr.length;
+  let j = 0;
+  let item;
+  for (let i = 0; i < n; i++) {
     item = arr[i];
     if (used[item] !== 1) {
       used[item] = 1;
@@ -183,9 +183,9 @@ function arrUniq(arr) {
  * @returns {Object} - output object
  */
 function arr2obj(arr) {
-  var n = arr.length;
-  var res = {}
-  for (var i = 0; i < n; i++) {
+  const n = arr.length;
+  const res = {}
+  for (let i = 0; i < n; i++) {
     res[arr[i]] = null;
   }
   return res;
@@ -199,8 +199,8 @@ function arr2obj(arr) {
  * @returns {Object} - category to frequency map
  */
 function listCats(arr) {
-  var res = {};
-  arr.forEach(function (datum) {
+  const res = {};
+  arr.forEach(datum => {
     if (datum !== null) {
       if (datum[0] in res) res[datum[0]] ++;
       else res[datum[0]] = 1;
@@ -217,10 +217,10 @@ function listCats(arr) {
  * @returns {Object} - feature to frequency map
  */
 function listFeats(arr) {
-  var res = {};
-  arr.forEach(function (datum) {
+  const res = {};
+  arr.forEach(datum => {
     if (datum !== null) {
-      Object.keys(datum).forEach(function (key) {
+      Object.keys(datum).forEach(key => {
         if (key in res) res[key] ++;
         else res[key] = 1;
       });
@@ -238,8 +238,8 @@ function listFeats(arr) {
  * @returns {number} - number of digits
  */
 function maxDecimals(arr) {
-  var res = 0;
-  arr.forEach(function (datum) {
+  let res = 0;
+  arr.forEach(datum => {
     if (datum !== null && (datum % 1) != 0) {
       res = Math.max(res, datum.toString().split('.')[1].length);
     }
@@ -255,8 +255,8 @@ function maxDecimals(arr) {
  * @param {Array.<string>} classes - candidate class names
  */
 function checkClassName(element, classes) {
-  for (var i = 0; i < classes.length; i++) {
-    if (element.classList.contains(classes[i])) return classes[i];
+  for (let c of classes) {
+    if (element.classList.contains(c)) return c;
   }
 }
 
@@ -268,14 +268,14 @@ function checkClassName(element, classes) {
  * @returns {string[]} - array of 101 "r,g,b"s
  */
 function palette11to101(palette) {
-  var rgbs = [[], [], []];
-  var i, j, k, step, rgb;
+  const rgbs = [[], [], []];
+  let i, j, k, step, rgb;
   for (i = 0; i < 11; i++) {
     for (j = 0; j < 3; j++) {
       rgbs[j].push(parseInt(palette[i].substring(j * 2, j * 2 + 2), 16))
     }
   }
-  var res = [];
+  const res = [];
   for (i = 0; i < 10; i++) {
     res.push([rgbs[0][i], rgbs[1][i], rgbs[2][i]].join());
     step = (rgbs[0][i + 1] - rgbs[0][i]) / 10;

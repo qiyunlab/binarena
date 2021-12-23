@@ -15,12 +15,12 @@
  * @returns {[number, number]} min and max
  */
 function arrMinMax(arr) {
-  var val = arr[0];
-  var min = val;
-  var max = val;
-  var n = arr.length;
-  for (var i = 1; i < n; i++) {
-    var val = arr[i];
+  let val = arr[0];
+  let min = val,
+      max = val;
+  const n = arr.length;
+  for (let i = 1; i < n; i++) {
+    val = arr[i];
     min = (val < min) ? val : min;
     max = (val > max) ? val : max;
   }
@@ -35,13 +35,13 @@ function arrMinMax(arr) {
  * @returns {[[string, number], [string, number]]} min and max key-value pairs
  */
 function objMinMax(obj) {
-  var arr = Object.keys(obj);
-  var key = arr[0]
-  var val = obj[key];
-  var min = [key, val];
-  var max = [key, val];
-  var n = arr.length;
-  for (var i = 1; i < n; i++) {
+  const arr = Object.keys(obj);
+  let key = arr[0]
+  let val = obj[key];
+  let min = [key, val],
+      max = [key, val];
+  const n = arr.length;
+  for (let i = 1; i < n; i++) {
     key = arr[i];
     val = obj[key];
     min = (val < min[1]) ? [key, val] : min;
@@ -58,9 +58,9 @@ function objMinMax(obj) {
  * @returns {number} sum
  */
 function arrSum(arr) {
-  var sum = 0;
-  var n = arr.length;
-  for (var i = 0; i < n; i++) {
+  let sum = 0;
+  const n = arr.length;
+  for (let i = 0; i < n; i++) {
     sum += arr[i];
   }
   return sum;
@@ -87,9 +87,9 @@ function arrMean(arr) {
  * @returns {number} sum of products
  */
 function arrProdSum(arr1, arr2) {
-  var sum = 0;
-  var n = arr1.length;
-  for (var i = 0; i < n; i++) {
+  let sum = 0;
+  const n = arr1.length;
+  for (let i = 0; i < n; i++) {
     sum += arr1[i] * arr2[i];
   }
   return sum;
@@ -105,11 +105,11 @@ function arrProdSum(arr1, arr2) {
  */
 function arrEqual(arr1, arr2) {
   if (arr1 instanceof Array && arr2 instanceof Array) {
-    var n = arr1.length;
+    const n = arr1.length;
     if (n !== arr2.length) {
       return false;
     }
-    for (var i = 0; i < n; i++) {
+    for (let i = 0; i < n; i++) {
       if (!arrEqual(arr1[i], arr2[i])) {
         return false;
       }
@@ -133,13 +133,13 @@ function arrEqual(arr1, arr2) {
  * @see matplotlib.scale.LogScale
  */
  function arrLog(arr, clip) {
-  var n = arr.length;
-  var x;
+  const n = arr.length;
+  let x;
 
   // mask non-positive numbers (i.e., drop them from array)
   if (!clip) {
-    var res = [];
-    for (var i = 0; i < n; i++) {
+    const res = [];
+    for (let i = 0; i < n; i++) {
       x = arr[i];
       if (x > 0) {
         res.push(Math.log(x));
@@ -153,8 +153,8 @@ function arrEqual(arr1, arr2) {
   // https://github.com/matplotlib/matplotlib/blob/v3.5.1/lib/matplotlib/
   // scale.py#L236
   else {
-    var res = Array(n).fill();
-    for (var i = 0; i < n; i++) {
+    const res = Array(n).fill();
+    for (let i = 0; i < n; i++) {
       x = arr[i];
       res[i] = (x > 0) ? Math.log(x) : -1000;
     }
@@ -170,14 +170,15 @@ function arrEqual(arr1, arr2) {
  * @returns {Array.<Array>} transposed 2D array
  */
 function transpose(df) {
-  var res = [];
-  var m = df[0].length;
-  for (var i = 0; i < m; i++) {
+  const res = [];
+  const m = df[0].length;
+  for (let i = 0; i < m; i++) {
     res.push([]);
   }
-  var n = df.length;
-  for (var i = 0; i < n; i++) {
-    for (var j = 0; j < m; j++) {
+  let j;
+  const n = df.length;
+  for (let i = 0; i < n; i++) {
+    for (j = 0; j < m; j++) {
       res[j].push(df[i][j]);
     }
   }
@@ -197,9 +198,9 @@ function euclidean(x, y) {
   if (arrEqual(x, y)) {
     return 0;
   }
-  var sum = 0;
-  var n = x.length;
-  for (var i = 0; i < n; i++) {
+  let sum = 0;
+  const n = x.length;
+  for (let i = 0; i < n; i++) {
     sum += (x[i] - y[i]) ** 2;
   }
   return Math.sqrt(sum);
@@ -218,19 +219,20 @@ function euclidean(x, y) {
  * expensive computations in the analysis.
  */
 function pdist(arr) {
-  var n = arr.length;
-  var m = arr[0].length;
+  const n = arr.length;
+  const m = arr[0].length;
 
   // initiate condensed distance matrix
-  var res = Array(n * (n - 1) / 2).fill();
+  const res = Array(n * (n - 1) / 2).fill();
 
   // intermediates
-  var ii;  // part of index
-  var xi;  // left data point
-  var xj;  // right data point
-  var sum; // sum of square distances
+  let ii,  // part of index
+      xi,  // left data point
+      xj,  // right data point
+      sum; // sum of square distances
+  let j, k;
 
-  for (var i = 0; i < n; i++) {
+  for (let i = 0; i < n; i++) {
     xi = arr[i];
 
     // convert square matrix index to condensed matrix index
@@ -238,14 +240,14 @@ function pdist(arr) {
     ii = n * i - i * (i + 3) / 2 - 1;
 
     // only calculate upper triangle
-    for (var j = i + 1; j < n; j++) {
+    for (j = i + 1; j < n; j++) {
       xj = arr[j];
 
       // calculate Euclidean distance
       // written so to avoid expensive function calls, otherwise it can be:
       // res[ii + j] = euclidean(xi, xj);
       sum = 0;
-      for (var k = 0; k < m; k++) {
+      for (k = 0; k < m; k++) {
         sum += (xi[k] - xj[k]) ** 2
       }
       res[ii + j] = Math.sqrt(sum);
@@ -263,9 +265,9 @@ function pdist(arr) {
  * @see numpy.bincount
  */
 function bincount(x) {
-  var res = Array(Math.max.apply(null, x) + 1).fill(0);
-  var l = x.length;
-  for (var i = 0; i < l; i++) {
+  const res = Array(Math.max.apply(null, x) + 1).fill(0);
+  const n = x.length;
+  for (let i = 0; i < n; i++) {
     res[x[i]]++;
   }
   return res;
@@ -282,15 +284,15 @@ function bincount(x) {
  */
 function histogram(x, n) {
   n = n || 10;
-  var [min, max] = arrMinMax(x);
-  var size = (max - min) / n;
-  var hist = Array(n).fill(0);
-  var l = x.length;
-  for (var i = 0; i < l; i++) {
+  const [min, max] = arrMinMax(x);
+  const size = (max - min) / n;
+  const hist = Array(n).fill(0);
+  const l = x.length;
+  for (let i = 0; i < l; i++) {
     hist[Math.min(((x[i] - min) / size) >> 0, n - 1)]++;
   }
-  var edge = Array(n + 1).fill(0);
-  for (var i = 0; i < n + 1; i++) {
+  const edge = Array(n + 1).fill(0);
+  for (let i = 0; i < n + 1; i++) {
     edge[i] = min + size * i;
   }
   return [hist, edge];
@@ -307,20 +309,20 @@ function histogram(x, n) {
  * @see numpy.unique
  */
  function unique(arr, returnInv=false) {
-  let res = Array.from(new Set(arr));
-  if (!returnInv) {
-    return res;
-  } else {
-    let inv = Array(arr.length).fill();
-    for (let i = 0; i < arr.length; i++) {
-      for (let j = 0; j < res.length; j++) {
-        if (arr[i] === res[j]) {
-          inv[i] = j;
-        }
+  const n = arr.length;
+  const res = Array.from(new Set(arr));
+  if (!returnInv) return res;
+  const m = res.length;
+  let inv = Array(n).fill();
+  let j;
+  for (let i = 0; i < n; i++) {
+    for (j = 0; j < m; j++) {
+      if (arr[i] === res[j]) {
+        inv[i] = j;
       }
     }
-    return [res, inv];
   }
+  return [res, inv];
 }
 
 
@@ -370,8 +372,8 @@ function comb(n, m) {
  * @see numpy.identity
  */
  function idMat(n) {
-  var res = Array(n).fill().map(() => Array(n).fill(0));
-  for (var i = 0; i < n; i++) {
+  const res = Array(n).fill().map(() => Array(n).fill(0));
+  for (let i = 0; i < n; i++) {
     res[i][i] = 1;
   }
   return res;
@@ -401,8 +403,8 @@ function comb(n, m) {
 
   // row reduction
   for (let i = 0; i < c; i++) {
-    var idx = i;
-    var max = a[i][i];
+    let idx = i;
+    let max = a[i][i];
     for (let j = i; j < r; j++) {
       let cur = Math.abs(a[j][i]);
       if (cur > max) { // find max element and its index in the ith column

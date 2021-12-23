@@ -22,8 +22,8 @@
 function det(x) {
   let r = x.length;
   let res = 1;
-  var Aj, Ai, alpha, i;
-  //var i,j,k,Aj,Ai,alpha,temp,k1,k2,k3;
+  let Aj, Ai, alpha, i;
+  // let i,j,k,Aj,Ai,alpha,temp,k1,k2,k3;
   let m = [];
   for (i = 0; i < r; i++) {
     m[i] = x[i].slice();

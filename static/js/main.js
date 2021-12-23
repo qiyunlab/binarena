@@ -78,18 +78,18 @@ function mainObj() {
     scale: 1.0,
 
     /** display variables */
-    x: {},
-    y: {},
-    size: {},
+    x:       {},
+    y:       {},
+    size:    {},
     opacity: {},
-    color: {},
+    color:   {},
 
     /** display features */
-    grid: false,
-    rbase: 15,
+    grid:    false,
+    rbase:   15,
     contpal: DEFAULT_CONTINUOUS_PALETTE,
     discpal: DEFAULT_DISCRETE_PALETTE,
-    ncolor: 7,
+    ncolor:  7,
 
     /** contig filter */
     filter: {
@@ -101,14 +101,14 @@ function mainObj() {
     spcols: {
       len: null,
       cov: null,
-      gc: null
+      gc:  null
     },
 
     /** pre-cached data info */
-    categories: {}, // column to category to frequency map
-    features: {}, // column to category to frequency map
-    decimals: {}, // column to maximum decimals map
-    abundance: null // total abundance (sum of len * cov)
+    categories: {},  // column to category to frequency map
+    features:   {},  // column to category to frequency map
+    decimals:   {},  // column to maximum decimals map
+    abundance:  null // total abundance (sum of len * cov)
   };
 
   /**
@@ -122,17 +122,14 @@ function mainObj() {
    * @property {number} upper - upper bound of visual parameter
    * @property {boolean} zero - whether lower bound is zero or minimum
    */
-  var items = ['x', 'y', 'size', 'opacity', 'color'];
-  var params = ['i', 'scale', 'min', 'max'];
-  for (var i = 0; i < items.length; i++) {
-    for (var j = 0; j < params.length; j++) {
-      this.view[items[i]][params[j]] = null;
+  let item, param, obj;
+  for (item of ['x', 'y', 'size', 'opacity', 'color']) {
+    for (param of ['i', 'scale', 'min', 'max']) {
+      this.view[item][param] = null;
     }
   }
-
-  items = ['size', 'opacity', 'color'];
-  for (var i = 0; i < items.length; i++) {
-    var obj = this.view[items[i]];
+  for (item of ['size', 'opacity', 'color']) {
+    obj = this.view[item];
     obj['lower'] = 0;
     obj['upper'] = 100;
     obj['zero'] = true;
@@ -160,13 +157,13 @@ function mainObj() {
   this.stat = {
     mousedown: false,
     mousemove: false,
-    drag: {},
-    selmode: 'new',
-    masking: false,
-    drawing: false,
-    polygon: [],
-    resizing: null,
-    toasting: null,
+    drag:      {},
+    selmode:   'new',
+    masking:   false,
+    drawing:   false,
+    polygon:   [],
+    resizing:  null,
+    toasting:  null
   }
 
   /** Current picked and masked contigs. */
@@ -219,7 +216,7 @@ function mainObj() {
 /**
  * Shorthand for DOM selection.
  */
-var byId = function (id) { return document.getElementById(id); };
+const byId = (id) => document.getElementById(id);
 
 
 /**
@@ -228,7 +225,7 @@ var byId = function (id) { return document.getElementById(id); };
 window.addEventListener('load', function () {
 
   // single global main object
-  var mo = new mainObj();
+  const mo = new mainObj();
 
   // load demo data, if available
   if (typeof dataPath !== 'undefined') {

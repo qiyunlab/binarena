@@ -19,8 +19,8 @@
  */
 function initControls(mo) {
   resetControls();
-  var view = mo.view;
-  var stat = mo.stat;
+  const view = mo.view,
+        stat = mo.stat;
 
 
   /**
@@ -34,14 +34,14 @@ function initControls(mo) {
 
   // main frame resize event
   // IE 10 incompatible
-  var observer = new MutationObserver(function (mutations) {
-    var mutation = mutations[0];
+  const observer = new MutationObserver(function (mutations) {
+    const mutation = mutations[0];
     if (mutation.attributeName !== 'style') return;
-    var mf = mutation.target;
+    const mf = mutation.target;
     if (mf.id !== 'main-frame') return;
-    var w = mf.style.width;
+    const w = mf.style.width;
     if (w !== '100%') {
-      var w0 = mf.getAttribute('data-width');
+      const w0 = mf.getAttribute('data-width');
       if (!(w0) || w !== w0) {
         mf.setAttribute('data-width', w);
         resizeWindow(mo);
@@ -56,17 +56,17 @@ function initControls(mo) {
     if (e.button === 0) { // left button
 
       // hide dropdown divs if event target is not marked as "dropdown"
-      var hideDropdown = true;
-      var dds = document.getElementsByClassName('dropdown');
-      for (var i = 0; i < dds.length; i++) {
-        if (dds[i].contains(e.target)) {
+      let hideDropdown = true;
+      const dds = document.getElementsByClassName('dropdown');
+      for (let dd of dds) {
+        if (dd.contains(e.target)) {
           hideDropdown = false;
           break;
         }
       }
       if (hideDropdown) {
-        document.querySelectorAll('div.popup, div.menu').forEach(function (div) {
-          div.classList.add('hidden');
+        document.querySelectorAll('div.popup, div.menu').forEach(div => {
+          div.classList.add('hidden')
         });
       }
     }
@@ -85,8 +85,8 @@ function initControls(mo) {
 
   // context menu button click
   byId('menu-btn').addEventListener('click', function () {
-    var rect = byId('menu-btn').getBoundingClientRect();
-    var menu = byId('context-menu');
+    const rect = byId('menu-btn').getBoundingClientRect();
+    const menu = byId('context-menu');
     // menu.style.right = 0;
     menu.style.top = rect.bottom + 'px';
     menu.style.left = rect.left + 'px';
@@ -141,16 +141,19 @@ function initControls(mo) {
   document.querySelectorAll('.panel-head span:last-of-type button').forEach(
     function (btn) {
     btn.addEventListener('click', function () {
-      var panel = this.parentElement.parentElement.nextElementSibling;
+      const panel = this.parentElement.parentElement.nextElementSibling;
       if (panel !== null) panel.classList.toggle("hidden");
     });
   });
 
-  // show/hide side frame
+
+  /**
+   * Show/hide side frame
+   */
   byId('hide-side-btn').addEventListener('click', function () {
     byId('side-frame').classList.add('hidden');
     byId('show-frame').classList.remove('hidden');
-    var mf = byId('main-frame');
+    const mf = byId('main-frame');
     mf.style.resize = 'none';
     mf.style.width = '100%';
     resizeArena(mo.rena, mo.oray);
@@ -160,34 +163,36 @@ function initControls(mo) {
   byId('show-side-btn').addEventListener('click', function () {
     byId('show-frame').classList.add('hidden');
     byId('side-frame').classList.remove('hidden');
-    var mf = byId('main-frame');
+    const mf = byId('main-frame');
     mf.style.resize = 'horizontal';
-    var w = mf.getAttribute('data-width');
+    const w = mf.getAttribute('data-width');
     if (w) mf.style.width = w;
     resizeArena(mo.rena, mo.oray);
     updateView(mo);
   });
 
-  // floating toolbars
-  // this is a workaround as I can't find a pure-CSS way
+  /**
+   * Floating toolbars
+   * This is a workaround as I couldn't find a pure-CSS way.
+   */
   document.querySelectorAll('.toolbar').forEach(function (bar) {
-    var div = bar.parentElement;
+    const div = bar.parentElement;
     div.addEventListener('mouseenter', function () {
       bar.classList.remove("hidden");
     });
     div.addEventListener('mouseleave', function (e) {
-      var rect = bar.getBoundingClientRect();
+      const rect = bar.getBoundingClientRect();
       if (e.clientX >= rect.left && e.clientX <= rect.right &&
-        e.clientY >= rect.top && e.clientY <= rect.bottom) return;
+          e.clientY >= rect.top  && e.clientY <= rect.bottom) return;
       bar.classList.add("hidden");
     });
     bar.addEventListener('mouseenter', function () {
       bar.classList.remove("hidden");
     });
     bar.addEventListener('mouseleave', function (e) {
-      var rect = div.getBoundingClientRect();
+      const rect = div.getBoundingClientRect();
       if (e.clientX >= rect.left && e.clientX <= rect.right &&
-        e.clientY >= rect.top && e.clientY <= rect.bottom) return;
+          e.clientY >= rect.top  && e.clientY <= rect.bottom) return;
       bar.classList.add("hidden");
     });
   });
@@ -205,12 +210,11 @@ function initControls(mo) {
   // DOM. The user clicks an item, and this code will transfer the selection
   // back to the source DOM and trigger an event of it.
   byId('list-options').addEventListener('click', function (e) {
-    var rows = this.rows;
-    var n = rows.length;
-    for (var i = 0; i < n; i++) {
-      if (rows[i].contains(e.target)) {
-        var src = byId(this.getAttribute('data-target-id'));
-        src.value = rows[i].cells[0].textContent;
+    let src;
+    for (let row of this.rows) {
+      if (row.contains(e.target)) {
+        src = byId(this.getAttribute('data-target-id'));
+        src.value = row.cells[0].textContent;
         if (src.nodeName.toLowerCase() == 'input') {
           src.focus(); // for text box etc.
         } else {
@@ -224,23 +228,22 @@ function initControls(mo) {
 
   // scale select buttons
   // It is a dropdown menu of various scaling methods.
-  var list = byId('scale-select');
+  let lst = byId('scale-select');
   document.querySelectorAll('button.scale-btn').forEach(function (btn) {
     btn.addEventListener('click', function () {
       byId('current-scale').innerHTML = this.getAttribute('data-scale');
-      list.setAttribute('data-target-id', this.id);
-      var rect = this.getBoundingClientRect();
-      list.style.top = rect.bottom + 'px';
-      list.style.left = rect.left + 'px';
-      list.classList.toggle('hidden');
+      lst.setAttribute('data-target-id', this.id);
+      const rect = this.getBoundingClientRect();
+      lst.style.top = rect.bottom + 'px';
+      lst.style.left = rect.left + 'px';
+      lst.classList.toggle('hidden');
     });
   });
 
   // scale select options
-  var table = byId('scale-options');
-  for (var i = 0; i < table.rows.length; i++) {
-    for (var j = 0; j < table.rows[i].cells.length; j++) {
-      var cell = table.rows[i].cells[j];
+  let table = byId('scale-options');
+  for (let row of table.rows) {
+    for (let cell of row.cells) {
 
       // mouse over to show scale name
       cell.addEventListener('mouseover', function () {
@@ -249,11 +252,11 @@ function initControls(mo) {
 
       // click to select a scale
       cell.addEventListener('click', function () {
-        var src = byId(byId('scale-select').getAttribute('data-target-id'));
+        const src = byId(byId('scale-select').getAttribute('data-target-id'));
         if (src.innerHTML !== this.innerHTML) {
           src.innerHTML = this.innerHTML;
           src.setAttribute('data-scale', this.title);
-          var item = src.id.split('-')[0];
+          const item = src.id.split('-')[0];
           displayItemChange(item, byId(item + '-field-sel').value,
             this.title, mo);
         }
@@ -263,23 +266,23 @@ function initControls(mo) {
 
   // color palette select button
   byId('palette-btn').addEventListener('click', function () {
-    var list = byId('palette-select');
-    if (list.classList.contains('hidden')) {
-      var val = byId('color-field-sel').value;
+    const lst = byId('palette-select');
+    if (lst.classList.contains('hidden')) {
+      const val = byId('color-field-sel').value;
       if (!val) return;
-      var isNum = (mo.data.types[val] === 'number');
-      list.querySelectorAll('.disc').forEach(function (div) {
+      const isNum = (mo.data.types[val] === 'number');
+      lst.querySelectorAll('.disc').forEach(div => {
         div.classList.toggle('hidden', isNum);
       });
-      list.querySelectorAll('.cont').forEach(function (div) {
+      lst.querySelectorAll('.cont').forEach(div => {
         div.classList.toggle('hidden', !isNum);
       });
-      var rect = this.getBoundingClientRect();
-      list.style.top = rect.bottom + 'px';
-      list.style.left = rect.left + 'px';
-      list.classList.remove('hidden');
+      const rect = this.getBoundingClientRect();
+      lst.style.top = rect.bottom + 'px';
+      lst.style.left = rect.left + 'px';
+      lst.classList.remove('hidden');
     } else {
-      list.classList.add('hidden');
+      lst.classList.add('hidden');
     }
   });
 
@@ -288,52 +291,62 @@ function initControls(mo) {
    * @summary settings panel
    */
 
-  // display settings
+
+  /**
+   * Display settings.
+   */
   byId('set-btn').addEventListener('click', function () {
     this.classList.toggle('pressed');
     this.nextElementSibling.classList.toggle('hidden');
   });
 
-  // change length filter
-  var btn = byId('len-filt');
+  /**
+   * Change length filter.
+   */
+  let btn = byId('len-filt');
   btn.value = mo.view.filter.len;
   btn.addEventListener('blur', function () {
-    var val = parseInt(this.value);
+    const val = parseInt(this.value);
     if (val !== mo.view.filter.len) {
       mo.view.filter.len = val;
-      toastMsg('Changed contig length threshold to ' + val + '.', mo.stat);
+      toastMsg(`Changed contig length threshold to ${val}.`, mo.stat);
     }
   });
 
-  // change coverage filter
+  /**
+   * Change coverage filter.
+   */
   btn = byId('cov-filt');
   btn.value = mo.view.filter.cov;
   btn.addEventListener('blur', function () {
-    var val = parseFloat(this.value);
+    const val = parseFloat(this.value);
     if (val != mo.view.filter.cov) {
       mo.view.filter.cov = val;
-      toastMsg('Changed contig coverage threshold to ' + val + '.', mo.stat);
+      toastMsg(`Changed contig coverage threshold to ${val}.`, mo.stat);
     }
   });
 
-  // show/hide grid
+  /**
+   * Show/hide grid.
+   */
   byId('grid-chk').addEventListener('change', function () {
     view.grid = this.checked;
-    byId('coords-label').classList.toggle('hidden',
-      !this.checked);
+    byId('coords-label').classList.toggle('hidden', !this.checked);
     renderArena(mo);
   });
 
-  // show/hide navigation controls
+  /**
+   * Show/hide navigation controls.
+   */
   byId('nav-chk').addEventListener('change', function () {
-    byId('nav-panel').classList.toggle('hidden',
-      !this.checked);
+    byId('nav-panel').classList.toggle('hidden', !this.checked);
   });
 
-  // show/hide frequent buttons
+  /**
+   * Show/hide frequent buttons.
+   */
   byId('freq-chk').addEventListener('change', function () {
-    byId('freq-panel').classList.toggle('hidden',
-      !this.checked);
+    byId('freq-panel').classList.toggle('hidden', !this.checked);
   });
 
 
@@ -349,10 +362,10 @@ function initControls(mo) {
 
   // toggle selection mode
   byId('selmode-btn').addEventListener('click', function () {
-    var modes = ['new', 'add', 'remove'];
-    var icons = ['asterisk', 'plus', 'minus'];
-    var titles = ['new', 'add to', 'remove from'];
-    var i = (modes.indexOf(stat.selmode) + 1) % 3;
+    const modes = ['new', 'add', 'remove'],
+          icons = ['asterisk', 'plus', 'minus'],
+          titles = ['new', 'add to', 'remove from'];
+    const i = (modes.indexOf(stat.selmode) + 1) % 3;
     stat.selmode = modes[i];
     this.innerHTML = '<i class="fa fa-' + icons[i] + '"></i>';
     this.title = 'Current selection mode: ' + titles[i] + ' selection';
@@ -416,9 +429,9 @@ function initControls(mo) {
 
   // show calculation menu
   byId('calc-btn').addEventListener('click', function () {
-    var menu = byId('calc-menu');
+    const menu = byId('calc-menu');
     if (menu.classList.contains('hidden')) {
-      var n = Object.keys(mo.bins).length;
+      const n = Object.keys(mo.bins).length;
       byId('silhouet-a').classList.toggle('disabled', !n);
       byId('adj-rand-a').classList.toggle('disabled', !n);
       menu.classList.remove('hidden');
@@ -451,10 +464,10 @@ function initControls(mo) {
    */
 
   // show/hide legend
-  document.querySelectorAll('.legend-btn').forEach(function (btn) {
+  document.querySelectorAll('.legend-btn').forEach(btn => {
     btn.addEventListener('click', function () {
-      var tr = this.parentElement.parentElement.parentElement;
-      var legend = tr.nextElementSibling;
+      const tr = this.parentElement.parentElement.parentElement;
+      const legend = tr.nextElementSibling;
       legend.classList.toggle('hidden');
       this.classList.toggle('pressed');
       // have to update legends here, because it relies on visibility
@@ -469,7 +482,7 @@ function initControls(mo) {
     byId(key + '-field-sel').addEventListener('change', function () {
       byId(key + '-param-span').classList.toggle('hidden', !this.value);
       if (!this.value) {
-        var div = byId(key + '-legend');
+        const div = byId(key + '-legend');
         if (div) div.parentElement.parentElement.classList.add('hidden');
       }
       displayItemChange(key, this.value, view[key].scale, mo);
@@ -479,9 +492,9 @@ function initControls(mo) {
   // swap x- and y-axes
   document.querySelectorAll('button.swap-btn').forEach(function (btn) {
     btn.addEventListener('click', function () {
-      var xx = mo.view.x;
-      var yy = mo.view.y;
-      ['i', 'scale', 'min', 'max'].forEach(function (key) {
+      const xx = mo.view.x,
+            yy = mo.view.y;
+      ['i', 'scale', 'min', 'max'].forEach(key => {
         xx[key] = [yy[key], yy[key] = xx[key]][0];
       });
       updateCtrlByData(mo.data, mo.view);
@@ -498,9 +511,9 @@ function initControls(mo) {
   // select palette
   byId('palette-select').querySelectorAll('table').forEach(
     function (table) {
-    for (var i = 0; i < table.rows.length; i++) {
-      table.rows[i].addEventListener('click', function () {
-        var palette = this.firstElementChild.innerHTML;
+    for (let row of table.rows) {
+      row.addEventListener('click', function () {
+        const palette = this.firstElementChild.innerHTML;
         if (this.parentElement.parentElement.parentElement.classList
           .contains('cont')) {
           mo.view.contpal = palette;
@@ -539,11 +552,11 @@ function initControls(mo) {
    */
 
   // mini plot aspect: 16:9
-  var cav = byId('mini-canvas');
+  let cav = byId('mini-canvas');
   cav.height = cav.width * 0.5625;
 
   cav.addEventListener('mousedown', function (e) {
-    var rect = this.getBoundingClientRect();
+    const rect = this.getBoundingClientRect();
     mo.mini.drag = (e.clientX - rect.left) / (rect.right - rect.left) *
       cav.width;
   });
@@ -619,13 +632,13 @@ function initControls(mo) {
   document.querySelectorAll('.gradient').forEach(function (grad) {
 
     grad.addEventListener('mousemove', function (e) {
-      var item = this.parentElement.getAttribute('data-item');
-      var v = mo.view[item];
-      var rect = this.getBoundingClientRect();
-      var width = rect.right - rect.left;
-      var offset = e.clientX - rect.left;
-      var step = width / 10;
-      var ranging = this.parentElement.getAttribute('data-ranging');
+      const item = this.parentElement.getAttribute('data-item');
+      const v = mo.view[item];
+      const rect = this.getBoundingClientRect();
+      const width = rect.right - rect.left;
+      const offset = e.clientX - rect.left;
+      const step = width / 10;
+      const ranging = this.parentElement.getAttribute('data-ranging');
 
       // show tooltip
       if (ranging === 'none') {
@@ -637,23 +650,23 @@ function initControls(mo) {
           .getAttribute('data-tick') * step) return;
 
         // specify tip position
-        var tip = byId('legend-tip');
+        const tip = byId('legend-tip');
         tip.style.left = e.clientX + 'px';
         tip.style.top = Math.round(rect.bottom) + 'px';
 
         // specify tip label
-        var vmin = v.zero ? 0 : v.min;
-        var value = scaleNum(vmin + offset / width * (v.max - vmin),
+        const vmin = v.zero ? 0 : v.min;
+        const value = scaleNum(vmin + offset / width * (v.max - vmin),
           unscale(v.scale));
         byId('legend-value').innerHTML = formatValueLabel(
           value, mo.view[item].i, 3, true, mo);
 
         // item-specific operations
-        var circle = byId('legend-circle');
+        const circle = byId('legend-circle');
         circle.classList.remove('hidden');
         if (item === 'size') {
           circle.style.backgroundColor = 'black';
-          var diameter = Math.ceil(mo.view.rbase * 2 * offset / width);
+          const diameter = Math.ceil(mo.view.rbase * 2 * offset / width);
           circle.style.height = diameter + 'px';
           circle.style.width = diameter + 'px';
         }
@@ -673,12 +686,12 @@ function initControls(mo) {
 
       // drag to adjust range
       else {
-        var tick = Math.round(offset / width * 10);
-        var range = this.parentElement.querySelector('.range.' + ranging);
+        const tick = Math.round(offset / width * 10);
+        const range = this.parentElement.querySelector('.range.' + ranging);
         if (tick == range.getAttribute('data-tick')) return;
         // ensure there's at least one step between lower & upper bounds
-        var other = (ranging === 'lower') ? 'upper' : 'lower';
-        var space = (this.parentElement.querySelector('.range.' + other)
+        const other = (ranging === 'lower') ? 'upper' : 'lower';
+        const space = (this.parentElement.querySelector('.range.' + other)
           .getAttribute('data-tick') - tick) * (1 - ['lower', 'upper']
           .indexOf(ranging) * 2);
         if (space < 1) return;
@@ -698,12 +711,12 @@ function initControls(mo) {
     });
 
     grad.addEventListener('mouseup', function () {
-      var ranging = this.parentElement.getAttribute('data-ranging');
+      const ranging = this.parentElement.getAttribute('data-ranging');
       if (ranging === 'none') {
         byId('legend-tip').classList.add('hidden');
       } else {
         this.parentElement.setAttribute('data-ranging', 'none');
-        var item = this.parentElement.getAttribute('data-item');
+        const item = this.parentElement.getAttribute('data-item');
         mo.view[item][ranging]= parseInt(this.parentElement.querySelector(
           '.range.' + ranging).getAttribute('data-tick')) * 10;
         renderArena(mo);
@@ -728,7 +741,7 @@ function initControls(mo) {
   function rangeMouseUp(e) {
     e.preventDefault();
     this.parentElement.setAttribute('data-ranging', 'none');
-    var item = this.parentElement.getAttribute('data-item');
+    const item = this.parentElement.getAttribute('data-item');
     mo.view[item][checkClassName(this, ['lower', 'upper'])]
       = this.getAttribute('data-tick') * 10;
     renderArena(mo);
@@ -738,7 +751,7 @@ function initControls(mo) {
   document.querySelectorAll('.legend .min').forEach(function (label) {
     label.title = 'Toggle zero or minimum value';
     label.addEventListener('click', function () {
-      var item = this.parentElement.getAttribute('data-item');
+      const item = this.parentElement.getAttribute('data-item');
       mo.view[item].zero = !mo.view[item].zero;
       updateLegends(mo, [item]);
       renderArena(mo);
@@ -754,6 +767,9 @@ function initControls(mo) {
     searchFieldChange(e, mo.data, view);
   });
 
+  /**
+   * Toggle inclusion/exclusion of upper/lower bounds.
+   */
   byId('min-btn').addEventListener('click', function () {
     if (this.innerHTML === '[') {
       this.innerHTML = '(';
@@ -774,15 +790,14 @@ function initControls(mo) {
     }
   });
 
-  ['case-btn', 'whole-btn'].forEach(function (id) {
+  ['case-btn', 'whole-btn'].forEach(id => {
     byId(id).addEventListener('click', function () {
       this.classList.toggle('pressed');
     });
   });
 
   ['min-txt', 'max-txt', 'cat-sel-txt', 'fea-sel-txt', 'des-sel-txt']
-    .forEach(function (id) {
-    byId(id).addEventListener('keyup', function (e) {
+    .forEach(id => { byId(id).addEventListener('keyup', function (e) {
       if (e.key === 'Enter') byId('search-btn').click();
     });
   });
@@ -798,12 +813,12 @@ function initControls(mo) {
 
   // load bins from a categorical field
   byId('plan-sel-txt').addEventListener('click', function () {
-    var cols = Object.keys(view.categories).sort();
+    const cols = Object.keys(view.categories).sort();
     listSelect(['(clear)'].concat(cols), this, 'down', true);
   });
 
   byId('plan-sel-txt').addEventListener('focus', function () {
-    var plan = this.value
+    const plan = this.value
 
     // empty option: unload any binning plan
     if (plan === '(clear)') {
@@ -814,7 +829,7 @@ function initControls(mo) {
 
     // load an existing binning plan
     else {
-      var idx = mo.data.cols.indexOf(plan);
+      const idx = mo.data.cols.indexOf(plan);
       if (idx === -1) return;
       if (idx === this.getAttribute('data-col')) return;
       this.setAttribute('data-col', idx);
@@ -825,9 +840,9 @@ function initControls(mo) {
     updateBinTable(mo);
     updateBinCtrl(mo);
     byId('save-plan-btn').classList.add('hidden');
-    var n = Object.keys(mo.bins).length;
+    const n = Object.keys(mo.bins).length;
     if (n === 0) return;
-    toastMsg('Loaded ' + n + ' bins from "' + plan + '".', stat);
+    toastMsg(`Loaded ${n} bins from "${plan}".`, stat);
   });
 
   byId('plan-sel-txt').addEventListener('input', function () {
@@ -836,19 +851,19 @@ function initControls(mo) {
 
   // save current binning plan
   byId('save-plan-btn').addEventListener('click', function () {
-    var plan = byId('plan-sel-txt').value;
+    const plan = byId('plan-sel-txt').value;
     if (plan === '') return;
-    var bins = mo.bins;
+    const bins = mo.bins;
     if (Object.keys(bins).length === 0) {
       toastMsg('Error: The current binning plan has no bin.', stat);
       return;
     }
 
     // generate a contig-to-bin map
-    var df = mo.data.df;
-    var map = {};
-    var bin, ctg;
-    var dups = [];
+    const df = mo.data.df;
+    const map = {};
+    let bin, ctg;
+    let dups = [];
     for (bin in bins) {
       for (ctg in bins[bin]) {
         if (ctg in map) dups.push(ctg);
@@ -858,74 +873,74 @@ function initControls(mo) {
 
     // report ambiguous assignments
     dups = arrUniq(dups);
-    var n = dups.length;
+    let n = dups.length;
     if (n > 0) {
       treatSelection(dups, 'new', false, mo);
-      toastMsg('Error: ' + n + ' contigs were assigned to non-unique bins. '
-        + 'They are now selected.', stat);
+      toastMsg(`Error: ${n} contigs were assigned to non-unique bins. 
+        They are now selected.`, stat);
       return;
     }
 
     // create a new categorical field
-    var idx = mo.data.cols.indexOf(plan);
+    const idx = mo.data.cols.indexOf(plan);
     n = df.length;
     if (idx === -1) {
-      mo.data.cols.push('plan');
+      mo.data.cols.push(plan);
       mo.data.types.push('category');
-      for (var i = 0; i < n; i++) {
+      for (let i = 0; i < n; i++) {
         df[i].push(i in map ? [map[i], null] : null);
       }
       updateCtrlByData(mo.data, mo.view);
       fillDataTable(mo.data, n);
-      toastMsg('Saved to new binning plan "' + plan + '".', stat);
+      toastMsg(`Saved to new binning plan "${plan}".`, stat);
     }
 
     // overwrite an existing categorical field
     else {
-      for (var i = 0; i < n; i++) {
+      for (let i = 0; i < n; i++) {
         df[i][idx] = (i in map ? [map[i], null] : null);
       }
       updateCtrlByData(mo.data, mo.view);
       fillDataTable(mo.data, n);
-      toastMsg('Overwritten binning plan "' + plan + '".', stat);
+      toastMsg(`Overwritten binning plan "${plan}".`, stat);
     }
   });
 
   // create an empty new bin
   byId('new-empty-bin-btn').addEventListener('click', function () {
-    var name = createBin(mo.bins);
+    const name = createBin(mo.bins);
     updateBinTable(mo);
     updateBinCtrl(mo);
-    var table = byId('bin-tbody');
+    const table = byId('bin-tbody');
     selectBin(table, name);
-    toastMsg('Created "' + name + '".', stat);
+    toastMsg(`Created "${name}".`, stat);
   });
 
   // delete current bin
   byId('delete-bin-btn').addEventListener('click', function () {
-    var table = byId('bin-tbody');
-    var deleted = deleteBins(table, mo.bins)[0];
+    const table = byId('bin-tbody');
+    const deleted = deleteBins(table, mo.bins)[0];
     
     // update interface
     updateBinCtrl(mo);
-    var n = deleted.length;
-    if (n === 1) toastMsg('Deleted "' + deleted[0] + '".', stat);
-    else toastMsg('Deleted ' + n + ' bins.', stat);
+    const n = deleted.length;
+    if (n === 1) toastMsg(`Deleted "${deleted[0]}".`, stat);
+    else toastMsg(`Deleted ${plural('bin', n)}.`, stat);
   });
 
   // merge currently selected bins
   byId('merge-bins-btn').addEventListener('click', function () {
-    var table = byId('bin-tbody');
-    var x = deleteBins(table, mo.bins);
-    var name = createBin(mo.bins);
-    addToBin(x[1], mo.bins[name]);
+    const table = byId('bin-tbody');
+    const [bins, ctgs] = deleteBins(table, mo.bins);
+    const name = createBin(mo.bins);
+    addToBin(ctgs, mo.bins[name]);
     updateBinTable(mo);
     updateBinCtrl(mo);
     selectBin(table, name);
-    var n = x[0].length;
-    if (n === 2) toastMsg('Merged "' + x[0][0] + '" and "' + x[0][1] +
-      '" into "' + name + '".', stat, 2000);
-    else toastMsg('Merged ' + n + ' bins into "' + name + '".', stat, 2000);
+    const n = bins.length;
+    if (n === 2) toastMsg(`Merged "${bins[0]}" and "${bins[1]}" into 
+      "${name}".`, stat, 2000);
+    else toastMsg(`Merged ${plural('bin', n)} into "${name}".`, stat, 2000);
   });
 
   // export current binning plan
@@ -940,19 +955,16 @@ function initControls(mo) {
 
   byId('bin-tbody').addEventListener('click', function (e) {
     // prevent table text from being selected
-    this.onselectstart = function () {
-      return false;
-    };
-    var rows = this.rows;
-    var n = rows.length;
-    var selected;
-    for (var i = 0; i < n; i++) {
-      var row = rows[i];
-      var label = row.cells[0].firstElementChild;
-      var text = row.cells[0].lastElementChild;
+    this.onselectstart = () => false;
+
+    let cell, label, text, selected;
+    for (let row of this.rows) {
+      cell = row.cells[0];
+      label = cell.firstElementChild;
+      text = cell.lastElementChild;
       if (row.contains(e.target)) { // bin being clicked
         if (row.classList.contains('current') &&
-          row.cells[0].contains(e.target)) {
+          cell.contains(e.target)) {
           label.classList.add('hidden');
           text.classList.remove('hidden');
           text.focus();
@@ -977,7 +989,7 @@ function initControls(mo) {
     // select contigs in bin
     if (selected !== undefined) {
       mo.pick = {};
-      for (var i in mo.bins[selected]) mo.pick[i] = null;
+      for (let i in mo.bins[selected]) mo.pick[i] = null;
       updateSelection(mo);
     }
   });
@@ -998,11 +1010,11 @@ function initControls(mo) {
     }
 
     // create a new bin
-    var name = createBin(mo.bins);
+    const name = createBin(mo.bins);
 
     // if one or multiple contigs are selected, add them to bin
-    var ctgs = Object.keys(mo.pick);
-    var n = ctgs.length;
+    const ctgs = Object.keys(mo.pick);
+    const n = ctgs.length;
     if (n > 0) {
       addToBin(ctgs, mo.bins[name]);
       mo.pick = {};
@@ -1010,10 +1022,9 @@ function initControls(mo) {
     }
     updateBinTable(mo);
     updateBinCtrl(mo);
-    var table = byId('bin-tbody');
+    const table = byId('bin-tbody');
     selectBin(table, name);
-    toastMsg('Created "' + name + '"' + (n ? ' with ' + plural('contig', n)
-      : '') + '.', stat);
+    toastMsg(`Created "${name}" (with ${plural('contig', n)}).`, stat);
   });
 
 
@@ -1021,16 +1032,16 @@ function initControls(mo) {
    * Add selected contigs to current bin.
    */
   byId('add-to-bin-btn').addEventListener('click', function () {
-    var table = byId('bin-tbody');
-    var [idx, bin] = currentBin(table);
+    const table = byId('bin-tbody');
+    const [idx, bin] = currentBin(table);
     if (idx == null) return;
-    var ctgs = Object.keys(mo.pick);
+    const ctgs = Object.keys(mo.pick);
     if (ctgs.length === 0) return;
-    var exist = mo.bins[bin];
-    var added = addToBin(ctgs, exist);
-    var n = added.length;
+    const exist = mo.bins[bin];
+    const added = addToBin(ctgs, exist);
+    const n = added.length;
     if (n > 0) updateBinRow(table.rows[idx], exist, mo);
-    toastMsg('Added ' + plural('contig', n) + ' to "' + bin + '".', stat);
+    toastMsg(`Added ${plural('contig', n)} to "${bin}".`, stat);
   });
 
 
@@ -1038,17 +1049,17 @@ function initControls(mo) {
    * Remove selected contigs from current bin.
    */
   byId('remove-from-bin-btn').addEventListener('click', function () {
-    var table = byId('bin-tbody');
-    var [idx, bin] = currentBin(table);
+    const table = byId('bin-tbody');
+    const [idx, bin] = currentBin(table);
     if (idx == null) return;
-    var ctgs = Object.keys(mo.pick);
+    const ctgs = Object.keys(mo.pick);
     if (ctgs.length === 0) return;
-    var exist = mo.bins[bin];
-    var removed = removeFromBin(ctgs, exist);
+    const exist = mo.bins[bin];
+    const removed = removeFromBin(ctgs, exist);
     updateBinCtrl(mo);
-    var n = removed.length;
+    const n = removed.length;
     if (n > 0) updateBinRow(table.rows[idx], exist, mo);
-    toastMsg('Removed ' + plural('contig', n) + ' from "' + bin + '".', stat);
+    toastMsg(`Removed ${plural('contig', n)} from "${bin}".`, stat);
   });
 
 
@@ -1056,18 +1067,17 @@ function initControls(mo) {
    * Update current bin with selected contigs.
    */
   byId('update-bin-btn').addEventListener('click', function () {
-    var table = byId('bin-tbody');
-    var [idx, bin] = currentBin(table);
+    const table = byId('bin-tbody');
+    const [idx, bin] = currentBin(table);
     if (idx == null) return;
     if (Object.keys(mo.pick).length === 0) return;
     mo.bins[bin] = {};
-    var ctgs = mo.bins[bin];
-    for (var ctg in mo.pick) ctgs[ctg] = null;
+    const ctgs = mo.bins[bin];
+    for (let ctg in mo.pick) ctgs[ctg] = null;
     updateBinCtrl(mo);
-    var n = Object.keys(ctgs).length;
+    const n = Object.keys(ctgs).length;
     updateBinRow(table.rows[idx], ctgs, mo);
-    toastMsg('Updated "' + bin + '" (now has ' + plural('contig', n) +
-      ').', stat);
+    toastMsg(`Updated "${bin}" (now has ${plural('contig', n)}).`, stat);
   });
 
 
@@ -1079,17 +1089,17 @@ function initControls(mo) {
    * Invert selection.
    */
   byId('invert-btn').addEventListener('click', function () {
-    var pick = mo.pick;
-    var mask = mo.mask;
-    var n = mo.data.df.length;
-    var res = [];
-    for (var i = 0; i < n; i++) {
+    let pick = mo.pick;
+    const mask = mo.mask;
+    let n = mo.data.df.length;
+    const res = [];
+    for (let i = 0; i < n; i++) {
       if (!(i in mask) && !(i in pick)) res.push(i);
     }
     mo.pick = {};
     pick = mo.pick;
     n = res.length;
-    for (var i = 0; i < n; i++) {
+    for (let i = 0; i < n; i++) {
       pick[res[i]] = null;
     }
     treatSelection(res, 'new', false, mo);
@@ -1100,10 +1110,10 @@ function initControls(mo) {
    * Mask selection.
    */
   byId('mask-btn').addEventListener('click', function () {
-    var indices = Object.keys(mo.pick);
-    if (indices.length > 0) {
+    const ctgs = Object.keys(mo.pick);
+    if (ctgs.length > 0) {
       // switch to "add" mode, then treat deletion
-      treatSelection(indices, 'add', true, mo);
+      treatSelection(ctgs, 'add', true, mo);
     }
   });
 
@@ -1112,7 +1122,7 @@ function initControls(mo) {
    * Toggle summary metric (sum or mean).
    */
   byId('info-metric-btn').addEventListener('click', function () {
-    var row = byId('info-table').rows[this.parentElement
+    const row = byId('info-table').rows[this.parentElement
       .getAttribute('data-row')];
     if (row.getAttribute('data-metric') === 'sum') {
       row.setAttribute('data-metric', 'mean');
@@ -1127,7 +1137,7 @@ function initControls(mo) {
 
   // weight variable by reference
   byId('info-ref-sel').addEventListener('change', function () {
-    var row = byId('info-table').rows[this.parentElement
+    const row = byId('info-table').rows[this.parentElement
       .parentElement.getAttribute('data-row')];
     row.setAttribute('data-refcol', this.value);
     updateInfoRow(row, mo);
@@ -1135,20 +1145,19 @@ function initControls(mo) {
 
   // plot variable
   byId('info-plot-btn').addEventListener('click', function () {
-    var div = this.parentElement;
-    var idx = byId('info-table').rows[div.getAttribute('data-row')]
+    const div = this.parentElement;
+    const idx = byId('info-table').rows[div.getAttribute('data-row')]
       .getAttribute('data-index');
     mo.mini.field = idx;
     byId('mini-field-sel').value = idx;
     updateMiniPlot(mo);
-    var div = byId('mini-canvas').parentElement;
-    div.classList.remove('hidden');
+    byId('mini-canvas').parentElement.classList.remove('hidden');
   });
 
   // hide variable
   byId('info-hide-btn').addEventListener('click', function () {
-    var div = this.parentElement;
-    var row = byId('info-table').rows[div.getAttribute('data-row')];
+    const div = this.parentElement;
+    const row = byId('info-table').rows[div.getAttribute('data-row')];
     div.classList.add('hidden');
     byId('info-table').deleteRow(row.rowIndex);
   });
@@ -1189,10 +1198,10 @@ function initControls(mo) {
  * @params {Object} mo - main object
  */
 function initCanvas(mo) {
-  var view = mo.view;
-  var stat = mo.stat;
-  var rena = mo.rena;
-  var oray = mo.oray;
+  const view = mo.view,
+        stat = mo.stat,
+        rena = mo.rena,
+        oray = mo.oray;
 
   resizeArena(rena, oray);
 
@@ -1232,7 +1241,7 @@ function initCanvas(mo) {
 
   rena.addEventListener('contextmenu', function (e) {
     e.preventDefault();
-    var menu = byId('context-menu');
+    const menu = byId('context-menu');
     menu.style.top = e.clientY + 'px';
     menu.style.left = e.clientX + 'px';
     menu.classList.remove('hidden');
@@ -1259,7 +1268,7 @@ function initCanvas(mo) {
 
   /* keyboard events */
   rena.addEventListener('keydown', function (e) {
-    // var t0 = performance.now();
+    // const t0 = performance.now();
     switch (e.key) {
       case 'Left':
       case 'ArrowLeft':
@@ -1320,7 +1329,7 @@ function initCanvas(mo) {
         e.preventDefault(); // otherwise it will open Firefox quick find bar
         break;
     }
-    // var t1 = performance.now();
+    // const t1 = performance.now();
     // console.log(t1 - t0);
   });
 } // end initializing controls
@@ -1333,10 +1342,10 @@ function initCanvas(mo) {
  * @param {Object} mo - main object
  */
 function canvasMouseClick(e, mo) {
-  var data = mo.data;
-  var view = mo.view;
-  var stat = mo.stat;
-  var rena = mo.rena;
+  const data = mo.data,
+        view = mo.view,
+        stat = mo.stat,
+        rena = mo.rena;
 
   // mouse up after dragging
   if (stat.mousemove) {
@@ -1354,21 +1363,21 @@ function canvasMouseClick(e, mo) {
 
   // determine which contigs are clicked
   else {
-    var arr = [];
-    var x0 = (e.offsetX - view.pos.x) / view.scale;
-    var y0 = (e.offsetY - view.pos.y) / view.scale;
-    var masking = (Object.keys(mo.mask).length > 0) ? true : false;
-    var df = data.df;
-    var n = df.length;
+    const arr = [];
+    const x0 = (e.offsetX - view.pos.x) / view.scale,
+          y0 = (e.offsetY - view.pos.y) / view.scale;
+    const masking = (Object.keys(mo.mask).length > 0) ? true : false;
+    const df = data.df;
+    const n = df.length;
 
-    var datum, idx, radius, r2, x, y, dx, dy, x2y2;
-    for (var i = 0; i < n; i++) {
+    let datum, idx, radius, r2, x, y, dx, dy, x2y2;
+    for (let i = 0; i < n; i++) {
       if (masking && i in mo.mask) continue;
       datum = df[i];
       idx = view.size.i;
       radius = idx ? scaleNum(datum[idx], view.size.scale) * view.rbase /
         view.size.max : view.rbase;
-      // var ratio = scaleNum(datum[view.size.i], view.size.scale) *
+      // const ratio = scaleNum(datum[view.size.i], view.size.scale) *
       //   view.rbase / view.size.max;
       r2 = radius * radius; // this is faster than Math.pow(x, 2)
       x = ((scaleNum(datum[view.x.i], view.x.scale) - view.x.min) /
@@ -1385,7 +1394,7 @@ function canvasMouseClick(e, mo) {
       arr.sort(function (a, b) { return (a[1] - b[1]); });
 
       // if already selected, remove; else, add to selection
-      i = arr[0][0];
+      const i = arr[0][0];
       if (i in mo.pick) delete mo.pick[i];
       else mo.pick[i] = null;
     }
@@ -1400,7 +1409,7 @@ function canvasMouseClick(e, mo) {
  * @description I didn't find a way to do this automatically...
  */
 function resetControls() {
-  document.querySelectorAll('input, select').forEach(function (dom) {
+  document.querySelectorAll('input, select').forEach(dom => {
     dom.value = '';
   });
 }
@@ -1413,10 +1422,8 @@ function resetControls() {
  * @description also manually triggered when user resizes main frame
  */
 function resizeWindow(mo) {
-  var dims = calcArenaDimensions(mo.rena);
-  var w = dims[0],
-    h = dims[1];
-  toastMsg('Plot size: ' + w.toString() + ' x ' + h.toString(), mo.stat);
+  const [w, h] = calcArenaDimensions(mo.rena);
+  toastMsg(`Plot size: ${w} x ${h}`, mo.stat);
   clearTimeout(mo.stat.resizing);
   mo.stat.resizing = setTimeout(function () {
     resizeArena(mo.rena, mo.oray);
@@ -1432,18 +1439,18 @@ function resizeWindow(mo) {
  * @param {Object} mo - main object
  */
 function canvasMouseMove(e, mo) {
-  var view = mo.view;
-  var stat = mo.stat;
-  var rena = mo.rena;
+  const view = mo.view,
+        stat = mo.stat,
+        rena = mo.rena;
   if (stat.mousedown) {
     stat.mousemove = true;
     view.pos.x = e.clientX - stat.drag.x;
     view.pos.y = e.clientY - stat.drag.y;
     updateView(mo);
   } else {
-    var x = ((e.offsetX - view.pos.x) / view.scale / rena.width + 0.5) *
+    const x = ((e.offsetX - view.pos.x) / view.scale / rena.width + 0.5) *
       (view.x.max - view.x.min) + view.x.min;
-    var y = view.y.max - ((e.offsetY - view.pos.y) / view.scale /
+    const y = view.y.max - ((e.offsetY - view.pos.y) / view.scale /
       rena.height + 0.5) * (view.y.max - view.y.min);
     byId('coords-label').innerHTML = x.toFixed(3) + ',' + y.toFixed(3);
   }
@@ -1455,20 +1462,18 @@ function canvasMouseMove(e, mo) {
  * @function initBtnGroups
  */
 function initBtnGroups() {
-  var groups = document.getElementsByClassName('btn-group');
-  for (var i = 0; i < groups.length; i++) {
-    var btns = groups[i].getElementsByTagName('button');
-    for (var j = 0; j < btns.length; j++) {
-      btns[j].addEventListener('click', function () {
-        if (!this.classList.contains('pressed')) {
-          var btns = this.parentElement.getElementsByTagName('button');
-          for (var i = 0; i < btns.length; i++) {
-            if (btns[i] !== this) {
-              btns[i].classList.remove('pressed');
-            }
-          }
-          this.classList.add('pressed');
+  const groups = document.getElementsByClassName('btn-group');
+  let btns, btn;
+  for (let group of groups) {
+    btns = group.getElementsByTagName('button');
+    for (btn of btns) {
+      btn.addEventListener('click', function () {
+        if (this.classList.contains('pressed')) return;
+        btns = this.parentElement.getElementsByTagName('button');
+        for (let btn of btns) {
+          if (btn !== this) btn.classList.remove('pressed');
         }
+        this.classList.add('pressed');
       });
     }
   }
@@ -1481,7 +1486,7 @@ function initBtnGroups() {
  */
 function initCloseBtns() {
   document.querySelectorAll(".modal-head").forEach(function (div) {
-    var btn = document.createElement('button');
+    const btn = document.createElement('button');
     btn.innerHTML = '&times;';
     btn.title = 'Close ' + div.textContent.toLowerCase() + ' window';
     btn.addEventListener('click', function () {
@@ -1504,11 +1509,11 @@ function initCloseBtns() {
  * it will pop up toward top and/or left.
  */
 function popupPos(source, target, direc, same) {
-  var th = 0.8;
-  var vw = window.innerWidth;
-  var vh = window.innerHeight;
-  var ts = target.style;
-  var rect = source.getBoundingClientRect();
+  const th = 0.8, // threshold: 80%
+        vw = window.innerWidth,
+        vh = window.innerHeight,
+        ts = target.style;
+  const rect = source.getBoundingClientRect();
 
   // pop up toward right
   if (direc === 'right') {
@@ -1553,15 +1558,15 @@ function popupPos(source, target, direc, same) {
  * @param {boolean} same - keep same dimension
  */
 function listSelect(lst, src, direc, same) {
-  var div = byId('list-select');
+  const div = byId('list-select');
   div.classList.add('hidden');
   popupPos(src, div, direc, same);
-  var table = byId('list-options');
+  const table = byId('list-options');
   table.setAttribute('data-target-id', src.id);
   table.innerHTML = '';
-  lst.forEach(function (itm) {
-    var row = table.insertRow(-1);
-    var cell = row.insertCell(-1);
+  lst.forEach(itm => {
+    const row = table.insertRow(-1);
+    const cell = row.insertCell(-1);
     cell.innerHTML = itm;
   });
   div.classList.remove('hidden');
@@ -1575,13 +1580,10 @@ function listSelect(lst, src, direc, same) {
  * @returns {string} - HTML code
  */
 function scale2HTML(scale) {
-  var table = byId('scale-options');
-  for (var i = 0; i < table.rows.length; i++) {
-    for (var j = 0; j < table.rows[i].cells.length; j++) {
-      var cell = table.rows[i].cells[j];
-      if (cell.title === scale) {
-        return cell.innerHTML;
-      }
+  const table = byId('scale-options');
+  for (let row of table.rows) {
+    for (let cell of row.cells) {
+      if (cell.title === scale) return cell.innerHTML;
     }
   }
 }
@@ -1599,7 +1601,7 @@ function scale2HTML(scale) {
  */
 function toastMsg(msg, stat, duration, loading, toclose) {
   if (duration === undefined) duration = 2000;
-  var toast = byId('toast');
+  const toast = byId('toast');
   toast.firstElementChild.innerHTML = msg;
   byId('loading-dots').classList.toggle('hidden', !loading);
   byId('toast-close-btn').classList.toggle('hidden', !toclose);
@@ -1623,32 +1625,34 @@ function toastMsg(msg, stat, duration, loading, toclose) {
 /**
  * Add auto-complete function to a text box.
  * @function autoComplete
- * @param {Object} inp - input text box
+ * @param {Object} src - source text box
  * @param {*} arr - list of options
  */
- function autoComplete(inp, arr) {
-  var focus;
+ function autoComplete(src, arr) {
+  let focus;
 
-  inp.addEventListener('input', inputEvent);
+  // this is to avoid re-assign listener when making autocomplete multiple
+  // times, although I didn't validate
+  src.addEventListener('input', inputEvent);
   function inputEvent(e) {
-    var val = e.currentTarget.value;
+    const val = e.currentTarget.value;
     if (!val) return false;
-    var VAL = val.toUpperCase();
-    var l = val.length;
-    var lst = [];
-    arr.forEach(function (itm) {
-      var prefix = itm.substring(0, l);
+    const VAL = val.toUpperCase();
+    const l = val.length;
+    const lst = [];
+    arr.forEach(itm => {
+      const prefix = itm.substring(0, l);
       if (prefix.toUpperCase() === VAL) {
         lst.push('<strong>' + prefix + '</strong>' + itm.substring(l));
       }
     });
-    listSelect(lst, inp, 'down', true);
+    listSelect(lst, src, 'down', true);
     focus = -1;
   }
 
-  inp.addEventListener('keydown', keydownEvent);
+  src.addEventListener('keydown', keydownEvent);
   function keydownEvent(e) {
-    var table = byId('list-options');
+    const table = byId('list-options');
     switch (e.key) {
       case 'Down':
       case 'ArrowDown':
@@ -1675,9 +1679,7 @@ function toastMsg(msg, stat, duration, loading, toclose) {
   }
 
   function removeActive(table) {
-    for (var i = 0; i < table.rows.length; i++) {
-      table.rows[i].cells[0].classList.remove('active');
-    }
+    for (let row of table.rows) row.cells[0].classList.remove('active');
   }
 }
 
@@ -1691,15 +1693,15 @@ function toastMsg(msg, stat, duration, loading, toclose) {
  */
 function updateLegends(mo, items) {
   items = items || ['size', 'opacity', 'color'];
-  for (var i = 0; i < items.length; i++) {
-    
-    var item = items[i];
-    var icol = mo.view[item].i;
+  let icol, isCat, scale, legend, grad, rect, step, poses, clip;
+
+  for (let item of items) {
+    icol = mo.view[item].i;
     if (!icol) continue;
 
     // discrete colors
     if (item === 'color') {
-      var isCat = (mo.data.types[icol] === 'category');
+      isCat = (mo.data.types[icol] === 'category');
       byId('color-legend').classList.toggle('hidden', isCat);
       byId('color-legend-2').classList.toggle('hidden', !isCat);
       if (isCat) {
@@ -1709,15 +1711,15 @@ function updateLegends(mo, items) {
     }
 
     // continuous data
-    var scale = unscale(mo.view[item].scale);
-    var legend = byId(item + '-legend');
-    var grad = legend.querySelector('.gradient');
+    scale = unscale(mo.view[item].scale);
+    legend = byId(item + '-legend');
+    grad = legend.querySelector('.gradient');
     if (grad === null) continue;
   
     // refresh labels
-    ['min', 'max'].forEach(function (key) {
-      var label = legend.querySelector('label.' + key);
-      var value = scaleNum(mo.view[item][key], scale);
+    ['min', 'max'].forEach(key => {
+      const label = legend.querySelector('label.' + key);
+      let value = scaleNum(mo.view[item][key], scale);
       value = formatValueLabel(value, icol, 3, false, mo);
       label.setAttribute('data-value', value);
       label.innerHTML = (key === 'min' && mo.view[item].zero) ? 0 : value;
@@ -1728,10 +1730,10 @@ function updateLegends(mo, items) {
     if (item === 'color') updateColorGradient(mo);
 
     // position ranges
-    var rect = grad.getBoundingClientRect();
-    var step = (rect.right - rect.left) / 10;
-    var poses = {};
-    ['lower', 'upper'].forEach(function (key) {
+    rect = grad.getBoundingClientRect();
+    step = (rect.right - rect.left) / 10;
+    poses = {};
+    ['lower', 'upper'].forEach(key => {
       poses[key] = legend.querySelector('.range.' + key).getAttribute(
         'data-tick') * step;
       legend.querySelector('.range.' + key).style.left = Math.round(rect.left
@@ -1739,7 +1741,7 @@ function updateLegends(mo, items) {
     });
   
     // position clips
-    var clip = legend.querySelector('.clip.lower');
+    clip = legend.querySelector('.clip.lower');
     clip.style.left = Math.round(rect.left) + 'px';
     clip.style.width = Math.floor(poses['lower']) + 'px';
     clip = legend.querySelector('.clip.upper');
@@ -1757,13 +1759,12 @@ function updateLegends(mo, items) {
  * cannot accept percentage, thus need to be adjusted specifically.
  */
 function updateSizeGradient(mo) {
-  var rbase = mo.view.rbase;
-  var grad = byId('size-gradient');
+  const rbase = mo.view.rbase;
+  const grad = byId('size-gradient');
   grad.style.height = rbase + 'px';
   grad.style.borderTopWidth = rbase + 'px';
-  var rect = grad.getBoundingClientRect();
-  var width = Math.floor(rect.right - rect.left);
-  grad.style.borderRightWidth = width + 'px';
+  const rect = grad.getBoundingClientRect();
+  grad.style.borderRightWidth = Math.floor(rect.right - rect.left) + 'px';
 }
 
 
@@ -1773,7 +1774,7 @@ function updateSizeGradient(mo) {
  * @param {Object} mo - main object
  */
 function updateColorGradient(mo) {
-  var ci = mo.view.color.i;
+  const ci = mo.view.color.i;
   if (!ci) return;
   if (mo.data.types[ci] === 'category') return;
   byId('color-gradient').style.backgroundImage =
@@ -1788,13 +1789,13 @@ function updateColorGradient(mo) {
  * @param {Object} mo - main object
  */
 function updateColorTable(mo) {
-  var table = byId('color-table');
+  const table = byId('color-table');
   table.innerHTML = '';
-  var cmap = mo.view.color.discmap;
-  var row, cell, div;
+  const cmap = mo.view.color.discmap;
+  let row, cell, div;
 
   // row for each category
-  for (var cat in cmap) {
+  for (let cat in cmap) {
     row = table.insertRow(-1);
     cell = row.insertCell(-1);
     div = document.createElement('div');
@@ -1822,20 +1823,20 @@ function updateColorTable(mo) {
  * @function populatePaletteSelect
  */
 function populatePaletteSelect() {
-  var popup = byId('palette-select');
+  const popup = byId('palette-select');
   popup.querySelectorAll('div').forEach(function (div) {
-    var table = document.createElement('table');
-    var pals = div.classList.contains('sequ') ? SEQUENTIAL_PALETTES
+    const table = document.createElement('table');
+    const pals = div.classList.contains('sequ') ? SEQUENTIAL_PALETTES
       : (div.classList.contains('dive') ? DIVERGING_PALETTES
       : QUALITATIVE_PALETTES);
 
     // create palette list
     pals.forEach(function (pal) {
-      var row = table.insertRow(-1);
-      var cell = row.insertCell(-1);
+      const row = table.insertRow(-1);
+      let cell = row.insertCell(-1);
       cell.innerHTML = pal;
       cell = row.insertCell(-1);
-      var box = document.createElement('div');
+      const box = document.createElement('div');
 
       // continuous color
       if (div.classList.contains('cont')) {
@@ -1846,8 +1847,9 @@ function populatePaletteSelect() {
 
       // discrete color
       else {
-        for (var i = 0; i < 8; i++) {
-          var span = document.createElement('span');
+        let span;
+        for (let i = 0; i < 8; i++) {
+          span = document.createElement('span');
           span.innerHTML = '&nbsp;';
           span.style.backgroundColor = '#' + PALETTES[pal][i];
           box.appendChild(span);
@@ -1870,10 +1872,10 @@ function populatePaletteSelect() {
  * @param {Object} mo - main object
  */
 function formatValueLabel(value, icol, digits, unit, mo) {
-  var ilen = mo.view.spcols.len;
+  const ilen = mo.view.spcols.len;
   if (ilen && icol === ilen) {
-    var fmtlen = FormatLength(value);
-    var res = formatNum(fmtlen[0], digits);
+    const fmtlen = FormatLength(value);
+    const res = formatNum(fmtlen[0], digits);
     if (unit) res += ' ' + fmtlen[1];
     return res;
   } else {
@@ -1889,7 +1891,7 @@ function formatValueLabel(value, icol, digits, unit, mo) {
  * @description Currently, it reads colors defined in "theme.css".
  */
  function loadTheme() {
-  var theme = {};
+  const theme = {};
   theme.selection = getComputedStyle(byId('selection-color')).color;
   theme.polygon = getComputedStyle(byId('polygon-color')).color;
   return theme;

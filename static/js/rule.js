@@ -16,7 +16,7 @@
  * @returns {boolean} check result
  */
 function isMissing(str) {
-  var nulls = ['na', 'n/a', 'nan', 'null', ''];
+  const nulls = ['na', 'n/a', 'nan', 'null', ''];
   try {
     str = str.replace(/^[#-]+/, '');
   } catch (e) {
@@ -39,21 +39,21 @@ function isMissing(str) {
 function guessFieldType(name, arr) {
 
   // look for pre-defined field type
-  var code2type = {
+  const code2type = {
     'n': 'number',
     'c': 'category',
     'f': 'feature',
     'd': 'description'
   };
-  var type = '';
-  var i = name.indexOf('|');
+  let type = '';
+  let i = name.indexOf('|');
   if (i > -1) {
     if (i != name.length - 2) {
-      throw 'Invalid field name: "' + name + '".'; 
+      throw `Invalid field name: "${name}".`;
     }
-    var code = name.slice(-1);
+    const code = name.slice(-1);
     if (!(code in code2type)) {
-      throw 'Invalid field type code: "' + code + '".';
+      throw `Invalid field type code: "${code}".`;
     }
     type = code2type[code];
     name = name.slice(0, i);
@@ -65,8 +65,8 @@ function guessFieldType(name, arr) {
   }
 
   // check number
-  var areNumbers = true;
-  for (var i = 0; i < arr.length; i++) {
+  let areNumbers = true;
+  for (i = 0; i < arr.length; i++) {
     if (!isMissing(arr[i]) && isNaN(arr[i])) { // not a number
       areNumbers = false;
       break
@@ -74,13 +74,13 @@ function guessFieldType(name, arr) {
   }
 
   if ((type === 'number') && !areNumbers) {
-    throw 'Non-numeric value(s) found in number-type field "' + name + '".'
+    throw `Non-numeric value(s) found in number-type field "${name}".`;
   }
 
   // check integer or float
   if (areNumbers && ((type === '') || (type === 'number'))) {
-    var areIntegers = true;
-    for (var i = 0; i < arr.length; i++) {
+    let areIntegers = true;
+    for (i = 0; i < arr.length; i++) {
       if (!isMissing(arr[i]) && (arr[i].indexOf('.') !== -1)) { // has float point
         areIntegers = false;
         break
@@ -89,14 +89,14 @@ function guessFieldType(name, arr) {
 
     // convert to integers
     if (areIntegers) {
-      for (var i = 0; i < arr.length; i++) {
+      for (i = 0; i < arr.length; i++) {
         arr[i] = isMissing(arr[i]) ? null : parseInt(arr[i]);
       }
     }
 
     // convert to floats
     else {
-      for (var i = 0; i < arr.length; i++) {
+      for (i = 0; i < arr.length; i++) {
         arr[i] = isMissing(arr[i]) ? null : parseFloat(arr[i]);
       }
     }
@@ -105,8 +105,8 @@ function guessFieldType(name, arr) {
 
   // check category
   else {
-    var areCategories = true;
-    for (var i = 0; i < arr.length; i++) {
+    let areCategories = true;
+    for (i = 0; i < arr.length; i++) {
       arr[i] = arr[i].replace(/\s*,\s*/g, ','); // trim whitespaces
       if (!isMissing(arr[i]) && (arr[i].indexOf(',') !== -1)) { // has comma
         areCategories = false;
@@ -115,18 +115,20 @@ function guessFieldType(name, arr) {
     }
 
     // check weights
-    var areWeightsIntegers = true;
-    for (var i = 0; i < arr.length; i++) {
+    let areWeightsIntegers = true;
+    let items, j, a, weight;
+    for (i = 0; i < arr.length; i++) {
       if (!isMissing(arr[i])) {
-        var items = arr[i].split(',');
-        for (var j = 0; j < items.length; j++) {
-          var a = items[j].split(':');
+        items = arr[i].split(',');
+        for (j = 0; j < items.length; j++) {
+          a = items[j].split(':');
           if (a.length > 2) {
-            throw 'Invalid expression: "' + items[j] + '": multiple colons.'
+            throw `Invalid expression: "${items[j]}": multiple colons.`;
           } else if (a.length === 2) {
-            var weight = a[1];
+            weight = a[1];
             if (isNaN(weight)) {
-              throw 'Invalid expression: "' + items[j] + '": weight must be a number.';
+              throw `Invalid expression: "${items[j]}": weight must be a 
+                number.`;
             } else if (weight.indexOf('.') !== -1) {
               areWeightsIntegers = false;
               break;
@@ -138,11 +140,12 @@ function guessFieldType(name, arr) {
 
     // convert to categories
     if (areCategories || (type == 'category')) {
-      for (var i = 0; i < arr.length; i++) {
+      let a;
+      for (i = 0; i < arr.length; i++) {
         if (isMissing(arr[i])) {
           arr[i] = null;
         } else {
-          var a = arr[i].split(':');
+          a = arr[i].split(':');
           if (a.length === 1) {
             arr[i] = [arr[i], null];
           } else {
@@ -155,14 +158,15 @@ function guessFieldType(name, arr) {
 
     // convert to features
     else {
-      for (var i = 0; i < arr.length; i++) {
+      let items, j, a;
+      for (i = 0; i < arr.length; i++) {
         if (isMissing(arr[i])) {
           arr[i] = {}; // empty object
         } else {
-          var items = arr[i].split(',');
+          items = arr[i].split(',');
           arr[i] = {};
-          for (var j = 0; j < items.length; j++) {
-            var a = items[j].split(':');
+          for (j = 0; j < items.length; j++) {
+            a = items[j].split(':');
             if (a.length === 1) {
               arr[i][items[j]] = null;
             } else {
@@ -195,7 +199,7 @@ function guessFieldType(name, arr) {
  * Options are: number, category, feature, description.
  */
 function guessDisplayFields(data, view) {
-  var res = {
+  const res = {
     x: null,
     y: null,
     size: null,
@@ -204,12 +208,13 @@ function guessDisplayFields(data, view) {
   }
 
   // first, locate x and y (mandatory)
-  var xyCand = [null, null];
-  for (var i = 1; i < data.cols.length; i++) {
+  const xyCand = [null, null];
+  let name;
+  for (let i = 1; i < data.cols.length; i++) {
     if (data.types[i] !== 'number') {
       continue;
     }
-    var name = data.cols[i].toLowerCase();
+    name = data.cols[i].toLowerCase();
     if (name === 'x') {
       xyCand[0] = i;
     } else if (name === 'y') {
@@ -230,10 +235,11 @@ function guessDisplayFields(data, view) {
 
   // otherwise, get gc -> coverage -> length
   else {
-    var keys = ['gc', 'cov', 'len'];
-    var avails = [];
-    for (var i = 0; i < keys.length; i++) {
-      var icol = view.spcols[keys[i]];
+    const keys = ['gc', 'cov', 'len'];
+    const avails = [];
+    let icol;
+    for (let i = 0; i < keys.length; i++) {
+      icol = view.spcols[keys[i]];
       if (icol !== null) avails.push(icol);
     }
     if (avails.length >= 2) {
@@ -255,8 +261,8 @@ function guessDisplayFields(data, view) {
  * @returns {Object} field name to scale dict
  */
 function guessDisplayScales(items) {
-  var res = {};
-  items.forEach(function(item) {
+  const res = {};
+  items.forEach(item => {
     switch(item) {
       case 'x':
       case 'y':
@@ -284,7 +290,7 @@ function guessDisplayScales(items) {
  * @returns {number} - index of "length" column
  */
 function guessLenColumn(data) {
-  var keys = ['length', 'size', 'len', 'bp'];
+  const keys = ['length', 'size', 'len', 'bp'];
   return findColumnByKeys(data, keys, ['number']);
 }
 
@@ -296,7 +302,7 @@ function guessLenColumn(data) {
  * @returns {number} - index of "coverage" column
  */
 function guessCovColumn(data) {
-  var keys = ['coverage', 'cov', 'depth'];
+  const keys = ['coverage', 'cov', 'depth'];
   return findColumnByKeys(data, keys, ['number']);
 }
 
@@ -308,7 +314,7 @@ function guessCovColumn(data) {
  * @returns {number} - index of "gc" column
  */
 function guessGCColumn(data) {
-  var keys = ['gc', 'g+c', 'gc%', 'gc-content', 'gc-ratio'];
+  const keys = ['gc', 'g+c', 'gc%', 'gc-content', 'gc-ratio'];
   return findColumnByKeys(data, keys, ['number']);
 }
 
@@ -321,7 +327,7 @@ function guessGCColumn(data) {
  */
 function guessRankColumn(data) {
   // ignore kingdom/domain and species
-  var keys = ['phylum', 'class', 'order', 'family', 'genus'];
+  const keys = ['phylum', 'class', 'order', 'family', 'genus'];
   return findColumnByKeys(data, keys, ['category']);
 }
 
@@ -337,10 +343,10 @@ function guessRankColumn(data) {
 function findColumnByKeys(data, keys, types) {
 
   // get column names
-  var cols = getColNames(data, types);
+  const cols = getColNames(data, types);
 
   // find a column name that is identical to one of the keywords
-  var col = matchWhole(keys, cols);
+  let col = matchWhole(keys, cols);
   if (col) return data.cols.indexOf(col);
 
   // if fail, find a column name that starts with one of the keywords
@@ -357,10 +363,12 @@ function findColumnByKeys(data, keys, types) {
  * @param {string[]} [types=] - data types
  */
 function getColNames(data, types) {
-  var notype = (typeof masking === 'undefined');
-  var res = [];
-  for (var i = 1; i < data.cols.length; i++) {
-    if (notype || types.indexOf(data.types[i]) !== -1) res.push(data.cols[i]);
+  const cols = data.cols;
+        types = data.types;
+  const notype = (typeof masking === 'undefined');
+  const res = [];
+  for (let i = 1; i < cols.length; i++) {
+    if (notype || types.indexOf(types[i]) !== -1) res.push(cols[i]);
   }
   return res;
 }
@@ -373,7 +381,7 @@ function getColNames(data, types) {
  * @param {string[]} cols - column names
  */
 function matchWhole(keys, cols) {
-  for (var i = 0; i < cols.length; i++) {
+  for (let i = 0; i < cols.length; i++) {
     if (keys.indexOf(cols[i].toLowerCase()) !== -1) return cols[i];
   }
   return null;
@@ -387,10 +395,11 @@ function matchWhole(keys, cols) {
  * @param {string[]} cols - column names
  */
 function matchPrefix(keys, cols) {
-  var delims = [' ', '/', '_', '.'];
-  for (var i = 0; i < delims.length; i++) {
-    for (var j = 0; j < cols.length; j++) {
-      var prefix = cols[j].toLowerCase().split(delims[i], 1)[0];
+  const delims = [' ', '/', '_', '.'];
+  let j, prefix;
+  for (let i = 0; i < delims.length; i++) {
+    for (j = 0; j < cols.length; j++) {
+      prefix = cols[j].toLowerCase().split(delims[i], 1)[0];
       if (keys.indexOf(prefix) !== -1) {
         return cols[i];
       }
@@ -410,7 +419,7 @@ function matchPrefix(keys, cols) {
  * e.g., "gc" and "coverage" => meanby (length)
  */
 function guessColMetric(col) {
-  var res = 'sum';
+  let res = 'sum';
   switch(col.toLowerCase()) {
     case 'x':
     case 'y':
@@ -456,7 +465,7 @@ function feature2Str(val) {
  * @returns {string} formatted string
  */
 function value2Str(val, type) {
-  var str = '';
+  let str = '';
   switch (type) {
     case 'number':
       str = (val === null) ? 'na' : formatNum(val, 5);
@@ -481,7 +490,7 @@ function value2Str(val, type) {
  * @returns {Array.<number, string>} number and unit
  */
 function FormatLength(len) {
-  var abslen = Math.abs(len);
+  const abslen = Math.abs(len);
   if (abslen < 999.5) {
     return [len, 'bp'];
   } else if (abslen < 999500) {
@@ -501,8 +510,8 @@ function FormatLength(len) {
  * @returns {string} new name
  */
  function newName(exists, prefix) {
-  var name;
-  var i = 1;
+  let name;
+  let i = 1;
   while (true) {
     name = prefix + '_' + i;
     if (name in exists) i ++;
@@ -514,7 +523,7 @@ function FormatLength(len) {
 /**
  * Dictionary of singular to plural transformations.
  */
-var PLURAL_FORMS = {};
+const PLURAL_FORMS = {};
 
 
 /**

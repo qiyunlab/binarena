@@ -15,8 +15,8 @@
  * @see {@link: https://stackoverflow.com/questions/21089959/}
  */
  function rectCircleColliding(circle, rect){
-  var distX = Math.abs(circle.x - rect.x - rect.w / 2);
-  var distY = Math.abs(circle.y - rect.y - rect.h / 2);
+  const distX = Math.abs(circle.x - rect.x - rect.w / 2),
+        distY = Math.abs(circle.y - rect.y - rect.h / 2);
 
   if (distX > (rect.w / 2 + circle.r)) return false;
   if (distY > (rect.h / 2 + circle.r)) return false;
@@ -24,8 +24,8 @@
   if (distX <= (rect.w / 2)) return true;
   if (distY <= (rect.h / 2)) return true;
 
-  var dx = distX-rect.w / 2;
-  var dy = distY-rect.h / 2;
+  const dx = distX - rect.w / 2,
+        dy = distY - rect.h / 2;
   return (dx * dx + dy * dy <= (circle.r * circle.r));
 }
 
@@ -46,13 +46,14 @@
  * @see licenses/pnpoly.txt
  */
 function pnpoly(x, y, polygon) {
-  var res = false;
-  var n = polygon.length;
-  for (var i = 0, j = n - 1; i < n; j = i++) {
-    var xi = polygon[i].x,
-      yi = polygon[i].y;
-    var xj = polygon[j].x,
-      yj = polygon[j].y;
+  let res = false;
+  const n = polygon.length;
+  let xi, yi, xj, yj;
+  for (let i = 0, j = n - 1; i < n; j = i++) {
+    xi = polygon[i].x,
+    yi = polygon[i].y;
+    xj = polygon[j].x,
+    yj = polygon[j].y;
     if (((yi > y) != (yj > y)) &&
       (x < (xj - xi) * (y - yi) / (yj - yi) + xi)) {
       res = !res;
@@ -77,26 +78,27 @@ function pnpoly(x, y, polygon) {
  * current function.
  */
 function silhouetteSample(x, label, dist) {
-  var n = x.length;
-  var count = bincount(label); // bin sizes
-  var c = count.length;
+  const n = x.length;
+  const count = bincount(label); // bin sizes
+  const c = count.length;
 
   // intermediates
-  var distIn;  // intra-bin distance
-  var distOut; // inter-bin distances
-  var li;      // contig label
-  var ii;      // index cache (to accelerate calculation)
-  var idx;     // distance index
+  let distIn;  // intra-bin distance
+  let distOut; // inter-bin distances
+  let li;      // contig label
+  let ii;      // index cache (to accelerate calculation)
+  let idx;     // distance index
+  let j, k;    // counters
 
   // calculate silhouette for each contig
-  var res = Array(n).fill();
-  for (var i = 0; i < n; i++) {
+  const res = Array(n).fill();
+  for (let i = 0; i < n; i++) {
     li = label[i];
     if (count[li] > 1) {
       distIn = 0;
       distOut = Array(c).fill(0);
       ii = n * i - i * (i + 3) / 2 - 1;
-      for (var j = 0; j < n; j++) {
+      for (j = 0; j < n; j++) {
 
         // determine index in condensed distance matrix
         if (i < j) {
@@ -116,7 +118,7 @@ function silhouetteSample(x, label, dist) {
       }
 
       // mean inter-bin distance for each other bin
-      for (var k = 0; k < c; k++) {
+      for (k = 0; k < c; k++) {
         distOut[k] /= count[k];
       }
 
@@ -134,20 +136,6 @@ function silhouetteSample(x, label, dist) {
     }
   } // end for i
   return res;
-}
-
-
-/**
- * Compute the silhouette score of a binning plan.
- * @function silhouetteScore
- * @param {number[]} x - the input data array
- * @param {number[]} label - the label of input data
- * @return {number} the silhouette score
- * @description The silhouette score, i.e., the mean silhouette coefficient of
- * all contigs, evaluates the quality of a binning plan.
- */
-function silhouetteScore(x, label) {
-  return arrMean(silhouetteSample(x, label));  
 }
 
 
@@ -170,18 +158,21 @@ function silhouetteScore(x, label) {
  * @return {number[]} the coordinate matrix 
  */
  function coordinateMatrix(row, col, data, shape, sparse=false) {
-  var res = Array(shape[0]).fill().map(() => Array(shape[1]).fill(0));
-  var n = row.length;
-  for (var i = 0; i < n; i++) {
+  const res = Array(shape[0]).fill().map(() => Array(shape[1]).fill(0));
+  const n = row.length;
+  let i, j;
+  for (i = 0; i < n; i++) {
     res[row[i]][col[i]] += data[i];
   }  
   if (!sparse) {
     return res;
   } else {
-    var key = [];
-    var value = [];
-    for (var i = 0; i < res[0].length; i++) {
-      for (var j = 0; j < res[1].length; j++) {
+    const key = [],
+          value = [];
+    const n = res[0].length,
+          m = res[1].length;
+    for (i = 0; i < n; i++) {
+      for (j = 0; j < m; j++) {
         if (res[i][j] !== 0) {
           key.push([i, j]);
           value.push(res[i][j]);

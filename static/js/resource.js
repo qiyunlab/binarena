@@ -11,7 +11,7 @@
  * Texts
  */
 
-var helpInfo = 'Help information to be added.';
+const helpInfo = 'Help information to be added.';
 
 
 /**
@@ -52,7 +52,7 @@ var helpInfo = 'Help information to be added.';
  */
 
 
-var PALETTES = {
+ const PALETTES = {
   // QIIME
   'QIIME':    ['ff0000', '0000ff', 'f27405', '008000', '91278e', 'ffff00', '7cecf4', 'f49ac2', '5da09e', '6b440b', '808080', 'f79679', '7da9d8', 'fcc688', '80c99b', 'a287bf', 'fff899', 'c49c6b', 'c0c0c0', 'ed008a', '00b6ff', 'a54700', '808000', '008080'],
   // Perceptually Uniform Sequential
@@ -121,27 +121,27 @@ var PALETTES = {
   'tab20c':   ['3182bd', '6baed6', '9ecae1', 'c6dbef', 'e6550d', 'fd8d3c', 'fdae6b', 'fdd0a2', '31a354', '74c476', 'a1d99b', 'c7e9c0', '756bb1', '9e9ac8', 'bcbddc', 'dadaeb', '636363', '969696', 'bdbdbd', 'd9d9d9'],  
 };
 
-var QUALITATIVE_PALETTES = [
+const QUALITATIVE_PALETTES = [
   'QIIME', 'Paired', 'Accent', 'Dark2', 'Set1', 'Set2', 'Set3', 'Pastel1',
   'Pastel2', 'tab10', 'tab20', 'tab20b', 'tab20c'
 ];
 
-var CONTINUOUS_PALETTES = [
+const CONTINUOUS_PALETTES = [
   'viridis', 'plasma', 'inferno', 'magma', 'cividis', 'Spectral', 'RdYlGn',
   'RdYlBu', 'PuBuGn', 'YlGnBu', 'GnBu', 'YlOrRd', 'YlOrBr', 'RdBu', 'BuGn',
   'BuPu', 'PuBu', 'RdPu', 'PuRd', 'YlGn', 'OrRd', 'PiYG', 'PRGn', 'PuOr',
   'RdGy', 'BrBG'
 ];
 
-var SEQUENTIAL_PALETTES = [
+const SEQUENTIAL_PALETTES = [
   'viridis', 'plasma', 'inferno', 'magma', 'cividis', 'PuBuGn', 'YlGnBu',
   'GnBu', 'YlOrRd', 'YlOrBr', 'BuGn', 'BuPu', 'RdPu', 'YlGn', 'OrRd'
 ];
 
-var DIVERGING_PALETTES = [
+const DIVERGING_PALETTES = [
   'Spectral', 'RdYlGn', 'RdYlBu', 'RdBu', 'PiYG', 'PRGn', 'PuOr', 'RdGy',
   'BrBG'
 ];
 
-var DEFAULT_DISCRETE_PALETTE = 'QIIME';
-var DEFAULT_CONTINUOUS_PALETTE = 'viridis';
+const DEFAULT_DISCRETE_PALETTE = 'QIIME';
+const DEFAULT_CONTINUOUS_PALETTE = 'viridis';
