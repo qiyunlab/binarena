@@ -3,9 +3,9 @@
 /**!
  * @module util
  * @file Utilities - functions for general purposes.
- * They only operate on the parameters that are explicitly passed to them.
- * They do NOT directly access the main object OR the "document" object.
- * They are not related to any visual elements.
+ * @description They only operate on the parameters that are explicitly passed
+ * to them. They do NOT directly access the main object OR the "document"
+ * object. They are not related to any visual elements.
  */
 
 

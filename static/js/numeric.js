@@ -4,6 +4,9 @@
  * @module numeric
  * @file Numeric calculation functions, involving arrays, matrices,
  * combination, etc.
+ * @description They only operate on the parameters that are explicitly passed
+ * to them. They do NOT directly access the main object OR the "document"
+ * object. They are not related to any visual elements.
  */
 
 
@@ -132,7 +135,7 @@ function arrEqual(arr1, arr2) {
  * to deal with them.
  * @see matplotlib.scale.LogScale
  */
- function arrLog(arr, clip) {
+function arrLog(arr, clip) {
   const n = arr.length;
   let x;
 
@@ -308,7 +311,7 @@ function histogram(x, n) {
  * @return {number[]} the unique array and optional indices of unique array
  * @see numpy.unique
  */
- function unique(arr, returnInv=false) {
+function unique(arr, returnInv=false) {
   const n = arr.length;
   const res = Array.from(new Set(arr));
   if (!returnInv) return res;
@@ -333,7 +336,7 @@ function histogram(x, n) {
  * @param {number} m - the input integer, default to 1
  * @return {number} the factorial quotient of 2 integers
  */
- function factorial(n, m=1) {
+function factorial(n, m=1) {
   if (!Number.isInteger(n) || (m != undefined && !Number.isInteger(m))) {
     return 0;
   }
@@ -371,7 +374,7 @@ function comb(n, m) {
  * @see {@link https://en.wikipedia.org/wiki/Identity_matrix}
  * @see numpy.identity
  */
- function idMat(n) {
+function idMat(n) {
   const res = Array(n).fill().map(() => Array(n).fill(0));
   for (let i = 0; i < n; i++) {
     res[i][i] = 1;
@@ -388,7 +391,7 @@ function comb(n, m) {
  * @see {@link https://en.wikipedia.org/wiki/Invertible_matrix}
  * @see numpy.linalg.inv
  */
- function matInv(x) {
+function matInv(x) {
   if (typeof(x) === 'number') {
     return 1 / x;
   }

@@ -442,7 +442,7 @@ function guessColMetric(col) {
  * @param {Array} val - cell value (array of [category, weight])
  * @returns {string} formatted string
  */
- function category2Str(val) {
+function category2Str(val) {
   return (val === null ? '' : val[0]);
 }
 
@@ -509,7 +509,7 @@ function FormatLength(len) {
  * @param {string} prefix - name prefix
  * @returns {string} new name
  */
- function newName(exists, prefix) {
+function newName(exists, prefix) {
   let name;
   let i = 1;
   while (true) {

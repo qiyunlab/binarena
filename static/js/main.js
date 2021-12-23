@@ -232,28 +232,18 @@ window.addEventListener('load', function () {
     updateDataFromRemote(dataPath, mo);
   }
 
-  // the two main canvases that render the graphs
-  mo.rena = byId('arena-canvas');
-  mo.oray = byId('overlay-canvas');
-
-  // the mini plot canvas
-  mo.mini.canvas = byId('mini-canvas');
-
   // load program theme
   mo.theme = loadTheme();
 
-  // initiate controls
-  initControls(mo);
-
-  // initiate canvas
-  initCanvas(mo);
+  // initiate graphical user interface
+  initGUI(mo);
 
   // update view based on data
   updateViewByData(mo);
 
 });
 
- 
+
 /**
  * Test function.
  * @function testFunction
