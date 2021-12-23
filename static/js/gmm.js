@@ -22,8 +22,8 @@
 function det(x) {
   let r = x.length;
   let res = 1;
-  var Aj, Ai, alpha, i;
-  //var i,j,k,Aj,Ai,alpha,temp,k1,k2,k3;
+  let Aj, Ai, alpha, i;
+  // let i,j,k,Aj,Ai,alpha,temp,k1,k2,k3;
   let m = [];
   for (i = 0; i < r; i++) {
     m[i] = x[i].slice();
@@ -85,7 +85,8 @@ function gaussian(mean, variance) {
 gaussian.prototype.pdf = function(x) {
   let mean = this.mean;
   if (typeof(x) === 'number') {
-    return 1 / (this.variance * Math.sqrt(2 * Math.PI)) * Math.exp((x - mean)**2 / (-2 * this.variance**2));
+    return 1 / (this.variance * Math.sqrt(2 * Math.PI)) * Math.exp((
+      x - mean) ** 2 / (-2 * this.variance ** 2));
   }
   let d = x.map(function(a, i) { // element-wise array substraction
     return a - mean[i];
@@ -210,14 +211,16 @@ function mStep(x, mean, variance, k, z, weight) {
   let n = x[0].length; // n dimension
   for (let j = 0; j < k; j++) {
     // column sum of latent matrix
-    let c = z.map(function(a, i) {return a[j]}).reduce((acc, cur) => acc + cur);
+    let c = z.map((a, i) => { return a[j]; }).reduce((acc, cur) => acc + cur);
     weight[j] = 1 / m * c;
     let mu = Array(n).fill(0);
     let sigma = Array(n).fill().map(() => Array(n).fill(0));
     for (let i = 0; i < m; i++) {
-      mu = mu.map(function(a, idx) {return a + x[i].map(a => a * z[i][j])[idx]});
+      mu = mu.map(function(a, idx) {return a + x[i].map(
+        a => a * z[i][j])[idx]; });
       // matrix element-wise operations need to fix
-      sigma = sigma.map(function(a, idx){return a + cov(x[i], mean[j]).map(a => a * z[i][j])[idx]});
+      sigma = sigma.map(function(a, idx){return a + cov(x[i], mean[j]).map(
+        a => a * z[i][j])[idx]; });
     }
     mean[j] = mu.map(a => a / c);
     variance[j] = sigma.map(a => a / c);
@@ -305,8 +308,8 @@ function fit(x, k=2, tol=1e-5) {
 
   while(cur > prev) {
     prev = loglikelihood(x, mean, variance, weight);
-    eStep;
-    mStep;
+    eStep();
+    mStep();
     cur = loglikelihood(x, mean, variance, weight);
   }
 }

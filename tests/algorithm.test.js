@@ -7,17 +7,11 @@ describe('algorithm.js', function() {
   it('silhouetteSample', function() {
     let x0 = [[5, 0], [3, 3], [7, 9]];
     let label0 = [0, 0, 1];
-    expect(silhouetteSample(x0, label0))
+    expect(silhouetteSample(x0, label0, pdist(x0)))
       .toEqual([(Math.sqrt(85) - Math.sqrt(13)) / Math.sqrt(85), 0.5, 0]);
     let x1 = [[3, 0], [0, 4], [3, 4], [0, 0]];
     let label1 = [0, 1, 1, 0];
-    expect(silhouetteSample(x1, label1)).toEqual([1/3, 1/3, 1/3, 1/3]);
-  });
-
-  it('silhouetteScore', function() {
-    let x0 = [[3, 0], [0, 4], [3, 4], [0, 0]];
-    let label0 = [0, 1, 1, 0];
-    expect(silhouetteScore(x0, label0)).toBe(1/3);
+    expect(silhouetteSample(x1, label1, pdist(x1))).toEqual([1/3, 1/3, 1/3, 1/3]);
   });
 
   it('coordinateMatrix', function() {

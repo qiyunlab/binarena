@@ -7,8 +7,8 @@
 
   <script>
     function loadFile(filePath) {
-      var result = null;
-      var xmlhttp = new XMLHttpRequest();
+      let result = null;
+      const xmlhttp = new XMLHttpRequest();
       xmlhttp.open("GET", filePath, false);
       xmlhttp.send();
       if (xmlhttp.status==200) {
@@ -18,11 +18,11 @@
     }
 
     function readDemoFile() {
-      var content = loadFile('demo.txt');
+      const content = loadFile('demo.txt');
       document.write(content);
     }
     function readLicenseFile() {
-      var content = loadFile('../LICENSE');
+      const content = loadFile('../LICENSE');
       document.write(content);
     }
   </script>

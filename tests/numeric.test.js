@@ -44,12 +44,12 @@
   });
 
   it('transpose', function() {
-    var before = [
+    const before = [
       [1, 2, 4, 2],
       [-2, 0, 3, 1],
       [3, 5, -1, -3]
     ];
-    var after = [
+    const after = [
       [1, -2, 3],
       [2, 0, 5],
       [4, 3, -1],
