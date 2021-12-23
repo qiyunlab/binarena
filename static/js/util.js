@@ -184,7 +184,7 @@ function arrUniq(arr) {
  */
 function arr2obj(arr) {
   const n = arr.length;
-  const res = {}
+  const res = {};
   for (let i = 0; i < n; i++) {
     res[arr[i]] = null;
   }
@@ -272,7 +272,7 @@ function palette11to101(palette) {
   let i, j, k, step, rgb;
   for (i = 0; i < 11; i++) {
     for (j = 0; j < 3; j++) {
-      rgbs[j].push(parseInt(palette[i].substring(j * 2, j * 2 + 2), 16))
+      rgbs[j].push(parseInt(palette[i].substring(j * 2, j * 2 + 2), 16));
     }
   }
   const res = [];
@@ -282,7 +282,7 @@ function palette11to101(palette) {
     for (j = 0; j < 9; j++) {
       rgb = [];
       for (k = 0; k < 3; k++) {
-        rgb.push(Math.round(rgbs[k][i] + step * j))
+        rgb.push(Math.round(rgbs[k][i] + step * j));
       }
       res.push(rgb.join());
     }

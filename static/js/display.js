@@ -8,6 +8,11 @@
  */
 
 
+/**
+ * Initialize display controls.
+ * @function initDisplayCtrl
+ * @params {Object} mo - main object
+ */
 function initDisplayCtrl(mo) {
   const view = mo.view;
 
@@ -252,8 +257,8 @@ function initDisplayCtrl(mo) {
     e.preventDefault();
     this.parentElement.setAttribute('data-ranging', 'none');
     const item = this.parentElement.getAttribute('data-item');
-    view[item][checkClassName(this, ['lower', 'upper'])]
-      = this.getAttribute('data-tick') * 10;
+    view[item][checkClassName(this, ['lower', 'upper'])] =
+      this.getAttribute('data-tick') * 10;
     renderArena(mo);
     updateLegends(mo, [item]);
   }
@@ -378,17 +383,17 @@ function updateLegends(mo, items) {
     ['lower', 'upper'].forEach(key => {
       poses[key] = legend.querySelector('.range.' + key).getAttribute(
         'data-tick') * step;
-      legend.querySelector('.range.' + key).style.left = Math.round(rect.left
-        + poses[key]) + 'px';
+      legend.querySelector('.range.' + key).style.left = Math.round(
+        rect.left + poses[key]) + 'px';
     });
   
     // position clips
     clip = legend.querySelector('.clip.lower');
     clip.style.left = Math.round(rect.left) + 'px';
-    clip.style.width = Math.floor(poses['lower']) + 'px';
+    clip.style.width = Math.floor(poses.lower) + 'px';
     clip = legend.querySelector('.clip.upper');
-    clip.style.left = Math.round(rect.left + poses['upper']) + 'px';
-    clip.style.width = Math.ceil(rect.right - rect.left - poses['upper']) + 'px';
+    clip.style.left = Math.round(rect.left + poses.upper) + 'px';
+    clip.style.width = Math.ceil(rect.right - rect.left - poses.upper) + 'px';
   }
 }
 

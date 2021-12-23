@@ -175,8 +175,8 @@ function miniPlotMouseMove(e, mo) {
     bin1 = Math.min(Math.max(i, j), nbin - 1);
 
     // if same as saved bin status, still update plot but keep tooltip
-    const skip = ((bin0 === mo.mini.bin0) && (bin1 === mo.mini.bin1))
-      ? true : false;
+    const skip = ((bin0 === mo.mini.bin0) && (bin1 === mo.mini.bin1)) ?
+      true : false;
 
     // save bin status
     mo.mini.bin0 = bin0;
@@ -207,12 +207,12 @@ function miniPlotMouseMove(e, mo) {
   const icol = mo.mini.field;
   left = formatValueLabel(left, icol, 3, false, mo);
   right = formatValueLabel(right, icol, 3, true, mo);
-  byId('legend-value').innerHTML = n + '<br><small>' + left + ' to '
-    + right + '</small>';
+  byId('legend-value').innerHTML = `${n}<br><small>${left} to 
+    ${right}</small>`;
 
   // determine tooltip position
-  tip.style.left = Math.round((10 + ((bin0 + bin1) / 2 + 0.5) * (w - 20)
-    / nbin) / w * (rect.right - rect.left) + rect.left) + 'px';
+  tip.style.left = Math.round((10 + ((bin0 + bin1) / 2 + 0.5) * (w - 20) /
+    nbin) / w * (rect.right - rect.left) + rect.left) + 'px';
   tip.style.top = Math.round(rect.bottom - 5) + 'px';
   
   // display bin size and range in tooltip
@@ -238,8 +238,8 @@ function miniPlotSelect(mo) {
   // it is exclusive (")"). But in the last bar, it is inclusive ("]").
   // To tackle this, the code removes the upper bound of the last bar.
   const min = mo.mini.edges[mo.mini.bin0];
-  const max = (mo.mini.bin1 === mo.mini.nbin - 1)
-    ? null : mo.mini.edges[mo.mini.bin1 + 1];
+  const max = (mo.mini.bin1 === mo.mini.nbin - 1) ?
+    null : mo.mini.edges[mo.mini.bin1 + 1];
 
   // reset histogram status
   mo.mini.hist = null;

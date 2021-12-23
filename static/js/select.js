@@ -226,7 +226,7 @@ function updateSelTools(mo) {
 function updateMaskCtrl(mo) {
   const ctgs = Object.keys(mo.mask);
   const n = ctgs.length;
-  const str = 'Masked: ' + n;
+  let str = 'Masked: ' + n;
   if (n === 1) str += ' (ID: ' +  mo.data.df[ctgs[0]][0] + ')';
   byId('mask-head-btn').innerHTML = str;
 }

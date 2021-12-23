@@ -53,9 +53,9 @@ function pnpoly(x, y, polygon) {
   const n = polygon.length;
   let xi, yi, xj, yj;
   for (let i = 0, j = n - 1; i < n; j = i++) {
-    xi = polygon[i].x,
+    xi = polygon[i].x;
     yi = polygon[i].y;
-    xj = polygon[j].x,
+    xj = polygon[j].x;
     yj = polygon[j].y;
     if (((yi > y) != (yj > y)) &&
       (x < (xj - xi) * (y - yi) / (yj - yi) + xi)) {
@@ -182,7 +182,7 @@ function coordinateMatrix(row, col, data, shape, sparse=false) {
         }
       }
     }
-    return [key, value]
+    return [key, value];
   }
 }
 
@@ -199,7 +199,8 @@ function contingencyMatrix(labelTrue, labelPred) {
   let [clusters, clusterIdx] = unique(labelPred, true);
   let nClasses = classes.length;
   let nClusters = clusters.length;
-  let contingency = coordinateMatrix(classIdx, clusterIdx, Array(classIdx.length).fill(1), [nClasses, nClusters], true);
+  let contingency = coordinateMatrix(classIdx, clusterIdx, Array(
+    classIdx.length).fill(1), [nClasses, nClusters], true);
   return contingency;
 }
 
@@ -216,7 +217,8 @@ function adjustedRandScore(labelTrue, labelPred) {
   let nClasses = unique(labelTrue).length;
   let nClusters = unique(labelPred).length;
 
-  if (nClasses == nClusters === 1 || nClasses == nClusters === 0 || nClasses === nClusters === nSamples) {
+  if (nClasses == nClusters === 1 || nClasses == nClusters === 0 ||
+    nClasses === nClusters === nSamples) {
     return 1.0;
   }
 
