@@ -7,6 +7,11 @@
  */
 
 
+/**
+ * Initialize binning controls.
+ * @function initBinCtrl
+ * @params {Object} mo - main object
+ */
 function initBinCtrl(mo) {
   const view = mo.view,
         stat = mo.stat;
@@ -22,7 +27,7 @@ function initBinCtrl(mo) {
   });
 
   byId('plan-sel-txt').addEventListener('focus', function () {
-    const plan = this.value
+    const plan = this.value;
 
     // empty option: unload any binning plan
     if (plan === '(clear)') {
@@ -461,7 +466,7 @@ function binNameKeyUp(e, stat, bins) {
   if (e.key === 'Enter') { // save new name
     if (text.value === '') {
       text.value = name;
-      toastMsg('Bin name must not be empty.', stat)
+      toastMsg('Bin name must not be empty.', stat);
     } else if (text.value === name) {
       text.classList.add('hidden');
       label.classList.remove('hidden');

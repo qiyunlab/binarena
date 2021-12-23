@@ -120,7 +120,7 @@ function initWindow(mo) {
       }
       if (hideDropdown) {
         document.querySelectorAll('div.popup, div.menu').forEach(div => {
-          div.classList.add('hidden')
+          div.classList.add('hidden');
         });
       }
     }

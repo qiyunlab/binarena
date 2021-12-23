@@ -75,7 +75,7 @@ function calcSilhouette(mo) {
     }
 
     // color contigs by score
-    mo.view['color'].zero = false; // silhouettes can be negative
+    mo.view.color.zero = false; // silhouettes can be negative
     const sel = byId('color-field-sel');
     sel.value = col;
     sel.dispatchEvent(new Event('change'));

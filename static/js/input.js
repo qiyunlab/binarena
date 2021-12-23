@@ -21,7 +21,7 @@ function uploadFile(file, mo) {
     const cache = updateDataFromText(e.target.result, mo.data, mo.view.filter);
     updateViewByData(mo, cache);
     toastMsg(`Read ${plural('contig', mo.data.df.length)}.`, mo.stat);
-  }
+  };
   reader.readAsText(file);
 }
 
@@ -43,7 +43,7 @@ function updateDataFromRemote(path, mo) {
         toastMsg(`Read ${plural('contig', mo.data.df.length)}.`, mo.stat);
       }
     }
-  }
+  };
   xhr.open('GET', path, true);
   xhr.send();
 }
@@ -226,12 +226,12 @@ function parseAssembly(text, data, filter) {
 
   // update data object
   data.cols = ['id', 'length', 'gc', 'coverage'];
-  data.types = ['id', 'number', 'number', 'number']
+  data.types = ['id', 'number', 'number', 'number'];
   data.features = [];
   data.df = df;
 
   // return decimals (hard-coded)
-  const deci = { 'length': 0, 'gc': 3, 'coverage': 6 }
+  const deci = { 'length': 0, 'gc': 3, 'coverage': 6 };
   return [deci, {}, {}];
 }
 

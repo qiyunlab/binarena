@@ -391,8 +391,8 @@ function renderArena(mo) {
 
     // determine radius (size)
     // radius = si ? scaleNum(datum[si], sscale) * rbase / smax : rbase;
-    radius = si ? ((scaleNum(datum[si], sscale) - smin) * sfac + slow)
-      * rbase : rbase;
+    radius = si ? ((scaleNum(datum[si], sscale) - smin) * sfac + slow) *
+      rbase : rbase;
     rviz = radius * scale;
 
     // if contig occupies less than one pixel on screen, skip
@@ -415,8 +415,8 @@ function renderArena(mo) {
 
         // continuous data
         else {
-          c = contmap[Math.round((scaleNum(datum[ci], cscale) - cmin) * cfac
-            + clow)];
+          c = contmap[Math.round((scaleNum(datum[ci], cscale) - cmin) *
+            cfac + clow)];
         }
       }
     }
@@ -432,12 +432,12 @@ function renderArena(mo) {
 
     // if a contig occupies less than four pixels on screen, draw a square
     if (rviz < min2) {
-      paths[fs]['square'].push([x, y, Math.round(radius * pi1_2)]);
+      paths[fs].square.push([x, y, Math.round(radius * pi1_2)]);
     }
 
     // if bigger, draw a circle
     else {
-      paths[fs]['circle'].push([x, y, Math.round(radius)]);
+      paths[fs].circle.push([x, y, Math.round(radius)]);
     }
   } // end for i
 
@@ -447,7 +447,7 @@ function renderArena(mo) {
     ctx.fillStyle = fs;
 
     // draw squares
-    squares = paths[fs]['square'];
+    squares = paths[fs].square;
     n = squares.length;
     for (let i = 0; i < n; i++) {
       sq = squares[i];
@@ -455,7 +455,7 @@ function renderArena(mo) {
     }
 
     // draw circles
-    circles = paths[fs]['circle'];
+    circles = paths[fs].circle;
     n = circles.length;
     if (n === 0) continue;
     ctx.beginPath();
@@ -537,8 +537,8 @@ function renderSelection(mo) {
   for (let i = 0; i < n; i++) {
     datum = df[ctgs[i]];
     // radius = Math.round(si ? scaleNum(datum[si], sscale) * sratio : rbase);
-    radius = Math.round(si ? ((scaleNum(datum[si], sscale) - smin)
-      * sfac + slow) * rbase : rbase);
+    radius = Math.round(si ? ((scaleNum(datum[si], sscale) - smin) *
+      sfac + slow) * rbase : rbase);
     x = Math.round(((scaleNum(datum[xi], xscale) - xmin) / dx - 0.5) * w);
     y = Math.round(((ymax - scaleNum(datum[yi], yscale)) / dy - 0.5) * h);
     ctx.moveTo(x, y);

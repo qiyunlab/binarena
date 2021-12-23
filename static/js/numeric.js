@@ -39,7 +39,7 @@ function arrMinMax(arr) {
  */
 function objMinMax(obj) {
   const arr = Object.keys(obj);
-  let key = arr[0]
+  let key = arr[0];
   let val = obj[key];
   let min = [key, val],
       max = [key, val];
@@ -251,7 +251,7 @@ function pdist(arr) {
       // res[ii + j] = euclidean(xi, xj);
       sum = 0;
       for (k = 0; k < m; k++) {
-        sum += (xi[k] - xj[k]) ** 2
+        sum += (xi[k] - xj[k]) ** 2;
       }
       res[ii + j] = Math.sqrt(sum);
     }
