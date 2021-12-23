@@ -3,6 +3,9 @@
 /**!
  * @module algorithm
  * @file Advanced algorithms.
+ * @description They only operate on the parameters that are explicitly passed
+ * to them. They do NOT directly access the main object OR the "document"
+ * object. They are not related to any visual elements.
  */
 
 
@@ -14,7 +17,7 @@
  * @description adopted from markE's answer at:
  * @see {@link: https://stackoverflow.com/questions/21089959/}
  */
- function rectCircleColliding(circle, rect){
+function rectCircleColliding(circle, rect){
   const distX = Math.abs(circle.x - rect.x - rect.w / 2),
         distY = Math.abs(circle.y - rect.y - rect.h / 2);
 
@@ -50,9 +53,9 @@ function pnpoly(x, y, polygon) {
   const n = polygon.length;
   let xi, yi, xj, yj;
   for (let i = 0, j = n - 1; i < n; j = i++) {
-    xi = polygon[i].x,
+    xi = polygon[i].x;
     yi = polygon[i].y;
-    xj = polygon[j].x,
+    xj = polygon[j].x;
     yj = polygon[j].y;
     if (((yi > y) != (yj > y)) &&
       (x < (xj - xi) * (y - yi) / (yj - yi) + xi)) {
@@ -157,7 +160,7 @@ function silhouetteSample(x, label, dist) {
  * @param {boolean} sparse - true to return a sparse matrix, default to false
  * @return {number[]} the coordinate matrix 
  */
- function coordinateMatrix(row, col, data, shape, sparse=false) {
+function coordinateMatrix(row, col, data, shape, sparse=false) {
   const res = Array(shape[0]).fill().map(() => Array(shape[1]).fill(0));
   const n = row.length;
   let i, j;
@@ -179,7 +182,7 @@ function silhouetteSample(x, label, dist) {
         }
       }
     }
-    return [key, value]
+    return [key, value];
   }
 }
 
@@ -196,7 +199,8 @@ function contingencyMatrix(labelTrue, labelPred) {
   let [clusters, clusterIdx] = unique(labelPred, true);
   let nClasses = classes.length;
   let nClusters = clusters.length;
-  let contingency = coordinateMatrix(classIdx, clusterIdx, Array(classIdx.length).fill(1), [nClasses, nClusters], true);
+  let contingency = coordinateMatrix(classIdx, clusterIdx, Array(
+    classIdx.length).fill(1), [nClasses, nClusters], true);
   return contingency;
 }
 
@@ -213,7 +217,8 @@ function adjustedRandScore(labelTrue, labelPred) {
   let nClasses = unique(labelTrue).length;
   let nClusters = unique(labelPred).length;
 
-  if (nClasses == nClusters === 1 || nClasses == nClusters === 0 || nClasses === nClusters === nSamples) {
+  if (nClasses == nClusters === 1 || nClasses == nClusters === 0 ||
+    nClasses === nClusters === nSamples) {
     return 1.0;
   }
 

@@ -1,22 +1,53 @@
 "use strict";
 
 /**!
- * @module operation
- * @file Operative functions.
- * They do NOT directly access the main object OR the "document" object.
- * They may access the "data" object and DOMs that are explicitly passed to
- * them.
- * 
- * @summary Table of content
- * - Data operations
- * - Binning operations
- * - Information operations
+ * @module input
+ * @file Data input functions.
+ * @description This module parse input files, extract data and construct data
+ * tables that can be visualized and analyzed.
  */
 
 
 /**
- * @summary Data operations
+ * Import data from a text file.
+ * @function uploadFile
+ * @param {File} file - user upload file
+ * @param {Object} mo - main object
+ * @description It uses the FileReader object, available since IE 10.
  */
+function uploadFile(file, mo) {
+  const reader = new FileReader();
+  reader.onload = function (e) {
+    const cache = updateDataFromText(e.target.result, mo.data, mo.view.filter);
+    updateViewByData(mo, cache);
+    toastMsg(`Read ${plural('contig', mo.data.df.length)}.`, mo.stat);
+  };
+  reader.readAsText(file);
+}
+
+/**
+ * Import data from a remote location
+ * @function updateDataFromRemote
+ * @param {string} path - remote path to data file
+ * @param {Object} mo - main object
+ * @description It uses XMLHttpRequest, which has to be run on a server.
+ */
+function updateDataFromRemote(path, mo) {
+  const xhr = new XMLHttpRequest();
+  xhr.onreadystatechange = function() {
+    if (this.readyState == 4) {
+      if (this.status == 200) {
+        const cache = updateDataFromText(this.responseText, mo.data,
+          mo.view.filter);
+        updateViewByData(mo, cache);
+        toastMsg(`Read ${plural('contig', mo.data.df.length)}.`, mo.stat);
+      }
+    }
+  };
+  xhr.open('GET', path, true);
+  xhr.send();
+}
+
 
 /**
  * Update data from text file.
@@ -195,12 +226,12 @@ function parseAssembly(text, data, filter) {
 
   // update data object
   data.cols = ['id', 'length', 'gc', 'coverage'];
-  data.types = ['id', 'number', 'number', 'number']
+  data.types = ['id', 'number', 'number', 'number'];
   data.features = [];
   data.df = df;
 
   // return decimals (hard-coded)
-  const deci = { 'length': 0, 'gc': 3, 'coverage': 6 }
+  const deci = { 'length': 0, 'gc': 3, 'coverage': 6 };
   return [deci, {}, {}];
 }
 
@@ -390,249 +421,18 @@ function cacheData(data) {
 
 
 /**
- * @summary Binning operations
- * - Create a new bin.
- * - Rename a bin.
- * - Find current bin.
- * - Add contigs to a bin.
- * - Remove contigs from a bin.
- * - Delete selected bins.
- * - Load bins from a categorical field.
+ * Export data as a JSON file.
+ * @function exportJSON
+ * @param {Object} data - data object to export
+ * @see {@link https://stackoverflow.com/questions/17527713/}
+ * This way avoids saving the lengthy href.
  */
-
-
-/**
- * Create a new bin.
- * @function createBin
- * @param {Object} bins - current bins
- * @param {string} [name] - bin name
- * @throws if bin name exists
- * @returns {string} bin name
- */
-function createBin(bins, name) {
-  if (name === undefined) {
-    name = newName(bins, 'bin');
-  } else if (name in bins) {
-    throw `Error: bin name "${name}" already exists.`;
-  }
-  bins[name] = {};
-  return name;
-}
-
-
-/**
- * Rename a bin.
- * @function renameBin
- * @param {Object} bins - bins
- * @param {string} oldname - old bin name
- * @param {string} newname - new bin name
- * @returns {boolean} whether renaming is successful
- */
-function renameBin(bins, oldname, newname) {
-  if (newname in bins) return false;
-  bins[newname] = {};
-  for (let ctg in bins[oldname]) {
-    bins[newname][ctg] = null;
-  }
-  delete bins[oldname];
-  return true;
-}
-
-
-/**
- * Find current bin.
- * @function currentBin
- * @param {Object} table - bin table
- * @returns {[number, string]} row index and name of current bin, or both null
- * if no bin is current
- */
-function currentBin(table) {
-  let idx;
-  const rows = table.rows;
-  const n = rows.length;
-  for (let i = 0; i < n; i++) {
-    if (rows[i].classList.contains('current')) {
-      idx = i;
-      break;
-    }
-  }
-  if (idx === undefined) return [null, null];
-  const bin = rows[idx].cells[0].firstElementChild.innerHTML;
-  return [idx, bin];
-}
-
-
-/**
- * Add contigs to a bin.
- * @function addToBin
- * @param {number[]} ctgs - contig indices
- * @param {Object} bin - target bin
- * @returns {number[]} indices of added contigs
- */
-function addToBin(ctgs, bin) {
-  const added = [];
-  const n = ctgs.length;
-  let ctg;
-  for (let i = 0; i < n; i++) {
-    ctg = ctgs[i];
-    if (!(ctg in bin)) {
-      bin[ctg] = null;
-      added.push(ctg);
-    }
-  }
-  return added;
-}
-
-
-/**
- * Remove contigs from a bin.
- * @function removeFromBin
- * @param {number[]} ctgs - contig indices
- * @param {Object} bin - target bin
- * @returns {number[]} indices of removed contigs
- */
-function removeFromBin(ctgs, bin) {
-  const removed = [];
-  const n = ctgs.length;
-  let ctg;
-  for (let i = 0; i < n; i++) {
-    ctg = ctgs[i];
-    if (ctg in bin) {
-      delete bin[ctg];
-      removed.push(ctg);
-    }
-  }
-  return removed;
-}
-
-
-/**
- * Delete selected bins.
- * @function deleteBins
- * @param {Object} table - bin table
- * @param {Object} bins - bins object
- * @throws error if no bin is selected
- * @returns {[string[]], [number[]]} deleted bins and their contigs
- */
-function deleteBins(table, bins) {
-
-  // identify bins to delete (from bottom to top of the table)
-  const todel = [];
-  const rows = table.rows;
-  let row;
-  for (let i = rows.length - 1; i >= 0; i--) {
-    row = rows[i];
-    if (row.classList.contains('selected')) {
-      todel.push(row.cells[0].firstElementChild.innerHTML);
-      table.deleteRow(i);
-    }
-  }
-  if (todel.length === 0) throw 'Error: No bin is selected.';
-
-  // delete bins while listing affected bins and contigs
-  const ctgs = {};
-  const n = todel.length;
-  let bin, ctg;
-  for (let i = 0; i < n; i++) {
-    bin = todel[i];
-    for (ctg in bins[bin]) ctgs[ctg] = null;
-    delete bins[bin];
-  }
-  return [todel, Object.keys(ctgs).sort()];
-}
-
-
-/**
- * Programmatically select a bin in the bin table.
- * @function selectBin
- * @param {Object} table - bin table
- * @param {string} bin - bin name
- */
-function selectBin(table, bin) {
-  for (let row of table.rows) {
-    if (row.cells[0].firstElementChild.innerHTML === bin) {
-      row.click();
-      break;
-    }
-  }
-}
-
-
-/**
- * Load bins from a categorical field.
- * @function loadBin
- * @param {Object} df - data frame
- * @param {number} idx - field index
- * @returns {Object} bins object
- */
-function loadBins(df, idx) {
-  let val, cat;
-  const bins = {};
-  const n = df.length;
-  for (let i = 0; i < n; i++) {
-    val = df[i][idx];
-    if (val !== null) {
-      cat = val[0];
-      if (!(cat in bins)) bins[cat] = {};
-      bins[cat][i] = null;
-    }
-  }
-  return bins;
-}
-
-
-/**
- * @summary Information operations
- */
-
-
-/**
- * Generate a metric to summarize a field of multiple contigs.
- * @function columnInfo
- * @param {Array} arr - data column to describe
- * @param {string} type - type of column
- * @param {string} [met='none'] - metric (sum or mean)
- * @param {string} [deci=5] - digits after decimal point
- * @param {string} [refarr] - reference column for weighting
- */
-function columnInfo(arr, type, met, deci, refarr) {
-  const isRef = Array.isArray(refarr);
-  met = met || 'none';
-  deci = deci || 5;
-  let res = 0;
-  let x;
-  switch (type) {
-
-    case 'number':
-      switch (met) {
-        case 'sum':
-          if (!isRef) res = arrSum(arr);
-          else res = arrProdSum(arr, refarr);
-          break;
-        case 'mean':
-          if (!isRef) res = arrMean(arr);
-          else res = arrProdSum(arr, refarr) / arrSum(refarr);
-          break;
-      }
-      res = formatNum(res, deci);
-      break;
-
-    case 'category':
-      x = objMinMax(listCats(arr));
-      const frac = x[1][1] / arr.length;
-      res = (frac > 0.5) ? (x[1][0] + ' (' + (frac * 100).toFixed(2)
-        .replace(/\.?0+$/, '') + '%)') : 'ambiguous';
-      break;
-
-    case 'feature':
-      x = listFeats(arr);
-      const a = [];
-      Object.keys(x).sort().forEach(k => {
-        if (x[k] === 1) a.push(k);
-        else a.push(k + '(' + x[k] + ')');
-      });
-      res = a.join(', ');
-      break;
-  }
-  return res; 
+ function exportJSON(data) {
+  const a = document.createElement('a');
+  a.href = 'data:text/json;charset=utf-8,' +
+    encodeURIComponent(JSON.stringify(data, null, 2));
+  a.download = 'data.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
 }

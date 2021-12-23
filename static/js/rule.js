@@ -28,7 +28,8 @@ function isMissing(str) {
 
 /**
  * Guess field types.
- * This function in overly long, because it attempts to guess the data type of each field.
+ * This function in overly long, because it attempts to guess the data type of
+ * each field.
  * Options are: number, category, feature, description.
  * @function guessFieldType
  * @param {string} name - field name of the column
@@ -69,7 +70,7 @@ function guessFieldType(name, arr) {
   for (i = 0; i < arr.length; i++) {
     if (!isMissing(arr[i]) && isNaN(arr[i])) { // not a number
       areNumbers = false;
-      break
+      break;
     }
   }
 
@@ -81,9 +82,10 @@ function guessFieldType(name, arr) {
   if (areNumbers && ((type === '') || (type === 'number'))) {
     let areIntegers = true;
     for (i = 0; i < arr.length; i++) {
-      if (!isMissing(arr[i]) && (arr[i].indexOf('.') !== -1)) { // has float point
+      // if it has float point
+      if (!isMissing(arr[i]) && (arr[i].indexOf('.') !== -1)) {
         areIntegers = false;
-        break
+        break;
       }
     }
 
@@ -149,7 +151,8 @@ function guessFieldType(name, arr) {
           if (a.length === 1) {
             arr[i] = [arr[i], null];
           } else {
-            arr[i] = [a[0], (areWeightsIntegers ? parseInt(a[1]) : parseFloat(a[1]))];
+            arr[i] = [a[0], (areWeightsIntegers ?
+              parseInt(a[1]) : parseFloat(a[1]))];
           }
         }
       }
@@ -170,7 +173,8 @@ function guessFieldType(name, arr) {
             if (a.length === 1) {
               arr[i][items[j]] = null;
             } else {
-              arr[i][a[0]] = (areWeightsIntegers ? parseInt(a[1]) : parseFloat(a[1]));
+              arr[i][a[0]] = (areWeightsIntegers ?
+                parseInt(a[1]) : parseFloat(a[1]));
             }
           }
         }
@@ -205,7 +209,7 @@ function guessDisplayFields(data, view) {
     size: null,
     opacity: null,
     color: null
-  }
+  };
 
   // first, locate x and y (mandatory)
   const xyCand = [null, null];
@@ -442,7 +446,7 @@ function guessColMetric(col) {
  * @param {Array} val - cell value (array of [category, weight])
  * @returns {string} formatted string
  */
- function category2Str(val) {
+function category2Str(val) {
   return (val === null ? '' : val[0]);
 }
 
@@ -509,7 +513,7 @@ function FormatLength(len) {
  * @param {string} prefix - name prefix
  * @returns {string} new name
  */
- function newName(exists, prefix) {
+function newName(exists, prefix) {
   let name;
   let i = 1;
   while (true) {

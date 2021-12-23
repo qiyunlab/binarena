@@ -130,16 +130,16 @@ function mainObj() {
   }
   for (item of ['size', 'opacity', 'color']) {
     obj = this.view[item];
-    obj['lower'] = 0;
-    obj['upper'] = 100;
-    obj['zero'] = true;
+    obj.lower = 0;
+    obj.upper = 100;
+    obj.zero = true;
   }
 
   /**
    * Item-specific properties
    */
-  this.view.color['contmap'] = [];
-  this.view.color['discmap'] = {};
+  this.view.color.contmap = [];
+  this.view.color.discmap = {};
 
   /**
    * Stat object
@@ -164,7 +164,7 @@ function mainObj() {
     polygon:   [],
     resizing:  null,
     toasting:  null
-  }
+  };
 
   /** Current picked and masked contigs. */
   this.pick = {};
@@ -200,7 +200,7 @@ function mainObj() {
     bin0:   null,
     bin1:   null,
     drag:   null,
-  }
+  };
 
   /**
    * Pairwise distances
@@ -232,28 +232,18 @@ window.addEventListener('load', function () {
     updateDataFromRemote(dataPath, mo);
   }
 
-  // the two main canvases that render the graphs
-  mo.rena = byId('arena-canvas');
-  mo.oray = byId('overlay-canvas');
-
-  // the mini plot canvas
-  mo.mini.canvas = byId('mini-canvas');
-
   // load program theme
   mo.theme = loadTheme();
 
-  // initiate controls
-  initControls(mo);
-
-  // initiate canvas
-  initCanvas(mo);
+  // initiate graphical user interface
+  initGUI(mo);
 
   // update view based on data
   updateViewByData(mo);
 
 });
 
- 
+
 /**
  * Test function.
  * @function testFunction
