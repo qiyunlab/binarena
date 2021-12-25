@@ -1,3 +1,5 @@
+"use strict";
+
 /**!
  * @file Unit tests for "algorithm.js".
  */

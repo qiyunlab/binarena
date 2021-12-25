@@ -44,14 +44,14 @@ function buildDataTable(columns, types) {
  * Populate data table by data.
  * @function fillDataTable
  * @param {Object} data - data object
+ * @param {Object} cols - cols object
  * @param {number} [n=100] - maximum number of rows
  */
-function fillDataTable(data, n) {
+function fillDataTable(data, cols, n) {
   n = n || 100;
-  const df = data.df,
-        cols = data.cols,
-        types = data.types;
-  const m = cols.length;
+  const names = cols.names,
+        types = cols.types;
+  const m = names.length;
   const table = byId('data-table');
   table.tBodies[0].innerHTML = '';
   let i, j, row, cell;
@@ -59,7 +59,7 @@ function fillDataTable(data, n) {
     row = table.tBodies[0].insertRow(-1);
     for (j = 0; j < m; j++) {
       cell = row.insertCell(-1);
-      cell.innerHTML = value2Str(df[i][j], types[j]);
+      cell.innerHTML = value2Str(data[j][i], types[j]);
     }
   }
 }

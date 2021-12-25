@@ -25,11 +25,11 @@ function initCanvas(mo) {
 
   resizeArena(rena, oray);
 
-  /* mouse events */
+  /** mouse events */
   rena.addEventListener('mousedown', function (e) {
     stat.mousedown = true;
-    stat.drag.x = e.clientX - view.pos.x;
-    stat.drag.y = e.clientY - view.pos.y;
+    stat.dragX = e.clientX - view.posX;
+    stat.dragY = e.clientY - view.posY;
   });
 
   rena.addEventListener('mouseup', function () {
@@ -71,7 +71,7 @@ function initCanvas(mo) {
     canvasMouseClick(e, mo);
   });
 
-  /* drag & drop file to upload */
+  /** drag & drop file to upload */
   rena.addEventListener('dragover', function (e) {
     e.preventDefault();
   });
@@ -86,7 +86,7 @@ function initCanvas(mo) {
     uploadFile(e.dataTransfer.files[0], mo);
   });
 
-  /* keyboard events */
+  /** keyboard events */
   rena.addEventListener('keydown', function (e) {
     // const t0 = performance.now();
     switch (e.key) {
@@ -167,13 +167,13 @@ function initCanvas(mo) {
         rena = mo.rena;
   if (stat.mousedown) {
     stat.mousemove = true;
-    view.pos.x = e.clientX - stat.drag.x;
-    view.pos.y = e.clientY - stat.drag.y;
+    view.posX = e.clientX - stat.dragX;
+    view.posY = e.clientY - stat.dragY;
     updateView(mo);
   } else {
-    const x = ((e.offsetX - view.pos.x) / view.scale / rena.width + 0.5) *
+    const x = ((e.offsetX - view.posX) / view.scale / rena.width + 0.5) *
       (view.x.max - view.x.min) + view.x.min;
-    const y = view.y.max - ((e.offsetY - view.pos.y) / view.scale /
+    const y = view.y.max - ((e.offsetY - view.posY) / view.scale /
       rena.height + 0.5) * (view.y.max - view.y.min);
     byId('coords-label').innerHTML = x.toFixed(3) + ',' + y.toFixed(3);
   }
@@ -200,34 +200,37 @@ function canvasMouseClick(e, mo) {
   // keep drawing polygon
   else if (stat.drawing) {
     stat.polygon.push({
-      x: (e.offsetX - view.pos.x) / view.scale,
-      y: (e.offsetY - view.pos.y) / view.scale,
+      x: (e.offsetX - view.posX) / view.scale,
+      y: (e.offsetY - view.posY) / view.scale,
     });
     drawPolygon(mo);
   }
 
   // determine which contigs are clicked
   else {
+    if (data.length === 0) return;
     const arr = [];
-    const x0 = (e.offsetX - view.pos.x) / view.scale,
-          y0 = (e.offsetY - view.pos.y) / view.scale;
+    const x0 = (e.offsetX - view.posX) / view.scale,
+          y0 = (e.offsetY - view.posY) / view.scale;
     const masking = (Object.keys(mo.mask).length > 0) ? true : false;
-    const df = data.df;
-    const n = df.length;
+    
+    const si = view.size.i;
+    const S = si ? data[si] : null;
+    const X = data[view.x.i],
+          Y = data[view.y.i];
+    const n = X.length;
 
-    let datum, idx, radius, r2, x, y, dx, dy, x2y2;
+    let radius, r2, x, y, dx, dy, x2y2;
     for (let i = 0; i < n; i++) {
       if (masking && i in mo.mask) continue;
-      datum = df[i];
-      idx = view.size.i;
-      radius = idx ? scaleNum(datum[idx], view.size.scale) * view.rbase /
+      radius = si ? scaleNum(S[i], view.size.scale) * view.rbase /
         view.size.max : view.rbase;
-      // const ratio = scaleNum(datum[view.size.i], view.size.scale) *
+      // const ratio = scaleNum(S[i], view.size.scale) *
       //   view.rbase / view.size.max;
       r2 = radius * radius; // this is faster than Math.pow(x, 2)
-      x = ((scaleNum(datum[view.x.i], view.x.scale) - view.x.min) /
+      x = ((scaleNum(X[i], view.x.scale) - view.x.min) /
         (view.x.max - view.x.min) - 0.5) * rena.width;
-      y = ((view.y.max - scaleNum(datum[view.y.i], view.y.scale)) /
+      y = ((view.y.max - scaleNum(Y[i], view.y.scale)) /
         (view.y.max - view.y.min) - 0.5) * rena.height;
       dx = x - x0;
       dy = y - y0;
@@ -309,6 +312,7 @@ function renderArena(mo) {
   const data = mo.data,
         view = mo.view,
         rena = mo.rena;
+  const types = mo.cols.types;
 
   // prepare canvas context
   // note: origin (0, 0) is at the upper-left corner
@@ -319,11 +323,17 @@ function renderArena(mo) {
   ctx.save();
 
   // move to current position
-  ctx.translate(view.pos.x, view.pos.y);
+  ctx.translate(view.posX, view.posY);
 
   // scale canvas
   const scale = view.scale;
   ctx.scale(scale, scale);
+
+  // nothing to draw
+  if (data.length === 0) {
+    ctx.restore();
+    return;
+  }
 
   // alternative: css scale, which is theoretically faster, but it blurs when
   // zoom in
@@ -342,13 +352,13 @@ function renderArena(mo) {
   const w = rena.width,
         h = rena.height;
   // x-axis
-  const xi = view.x.i,
+  const X = data[view.x.i],
         xscale = view.x.scale,
         xmin = view.x.min,
         xmax = view.x.max,
         dx = xmax - xmin;
   // y-axis
-  const yi = view.y.i,
+  const Y = data[view.y.i],
         yscale = view.y.scale,
         ymin = view.y.min,
         ymax = view.y.max,
@@ -356,42 +366,49 @@ function renderArena(mo) {
   // size
   const rbase = view.rbase;
   const si = view.size.i,
+        S = si ? data[si] : null,
         sscale = view.size.scale,
         smin = view.size.zero ? 0 : view.size.min,
         slow = view.size.lower / 100,
         sfac = (view.size.upper / 100 - slow) / (view.size.max - smin);
   // opacity
   const oi = view.opacity.i,
+        O = oi ? data[oi] : null,
         oscale = view.opacity.scale,
         omin = view.opacity.zero ? 0 : view.opacity.min,
         olow = view.opacity.lower / 100,
         ofac = (view.opacity.upper / 100 - olow) / (view.opacity.max - omin);
   // color
   const ci = view.color.i,
+        C = ci ? data[ci] : null,
         discmap = view.color.discmap,
         contmap = view.color.contmap,
-        ctype = ci ? data.types[ci] : null,
+        ctype = ci ? types[ci] : null,
         cscale = view.color.scale,
         cmin = view.color.zero ? 0 : view.color.min,
         clow = view.color.lower,
         cfac = (view.color.upper - clow) / (view.color.max - cmin);
 
+  // workaround
+  if (X === undefined) {
+    ctx.restore();
+    return;
+  }
+
   // rendering parameters
   const paths = {};
 
   // intermediates
-  let datum, radius, rviz, x, y, c, val, cat, alpha, fs;
-
+  let radius, rviz, x, y, c, val, cat, alpha, fs;
   // determine appearance of contig
-  const df = data.df;
-  let n = df.length;
+
+  let n = X.length;
   for (let i = 0; i < n; i++) {
     if (masking && i in mo.mask) continue;
-    datum = df[i];
 
     // determine radius (size)
-    // radius = si ? scaleNum(datum[si], sscale) * rbase / smax : rbase;
-    radius = si ? ((scaleNum(datum[si], sscale) - smin) * sfac + slow) *
+    // radius = si ? scaleNum(S[i], sscale) * rbase / smax : rbase;
+    radius = si ? ((scaleNum(S[i], sscale) - smin) * sfac + slow) *
       rbase : rbase;
     rviz = radius * scale;
 
@@ -399,31 +416,30 @@ function renderArena(mo) {
     if (rviz < min1) continue;
 
     // determine x- and y-coordinates
-    x = Math.round(((scaleNum(datum[xi], xscale) - xmin) / dx - 0.5) * w);
-    y = Math.round(((ymax - scaleNum(datum[yi], yscale)) / dy - 0.5) * h);
+    x = Math.round(((scaleNum(X[i], xscale) - xmin) / dx - 0.5) * w);
+    y = Math.round(((ymax - scaleNum(Y[i], yscale)) / dy - 0.5) * h);
 
     // determine color
     c = '0,0,0';
     if (ci) {
-      val = datum[ci];
-      if (val !== null) {
+      val = C[i];
+      if (val) {
         // discrete data
-        if (ctype === 'category') {
-          cat = val[0];
-          if (cat in discmap) c = hexToRgb(discmap[cat]);
+        if (ctype === 'cat') {
+          if (val in discmap) c = hexToRgb(discmap[val]);
         }
 
         // continuous data
         else {
-          c = contmap[Math.round((scaleNum(datum[ci], cscale) - cmin) *
+          c = contmap[Math.round((scaleNum(val, cscale) - cmin) *
             cfac + clow)];
         }
       }
     }
 
     // determine opacity
-    // alpha = (scaleNum(datum[oi], oscale) / omax).toFixed(2);
-    alpha = oi ? ((scaleNum(datum[oi], oscale) - omin) * ofac + olow)
+    // alpha = (scaleNum(O[i], oscale) / omax).toFixed(2);
+    alpha = oi ? ((scaleNum(O[i], oscale) - omin) * ofac + olow)
       .toFixed(2) : 1.0;
 
     // generate fill style string
@@ -499,7 +515,7 @@ function renderSelection(mo) {
 
   // prepare canvas
   ctx.save();
-  ctx.translate(view.pos.x, view.pos.y);
+  ctx.translate(view.posX, view.posY);
   ctx.scale(view.scale, view.scale);
   ctx.fillStyle = color;
   ctx.shadowColor = color;
@@ -514,33 +530,33 @@ function renderSelection(mo) {
   const rbase = view.rbase;
   const w = oray.width,
         h = oray.height;
-  const xi = view.x.i,
+  const X = data[view.x.i],
         xscale = view.x.scale,
         xmin = view.x.min,
         xmax = view.x.max,
         dx = xmax - xmin;
-  const yi = view.y.i,
+  const Y = data[view.y.i],
         yscale = view.y.scale,
         ymin = view.y.min,
         ymax = view.y.max,
         dy = ymax - ymin;
   const si = view.size.i,
+        S = si ? data[si] : null,
         sscale = view.size.scale,
         smin = view.size.zero ? 0 : view.size.min,
         slow = view.size.lower / 100,
         sfac = (view.size.upper / 100 - slow) / (view.size.max - smin);
 
   // render shadows around selected contigs
-  const df = data.df;
-  let datum, radius, x, y;
+  let ctg, radius, x, y;
   ctx.beginPath();
   for (let i = 0; i < n; i++) {
-    datum = df[ctgs[i]];
-    // radius = Math.round(si ? scaleNum(datum[si], sscale) * sratio : rbase);
-    radius = Math.round(si ? ((scaleNum(datum[si], sscale) - smin) *
+    ctg = ctgs[i];
+    // radius = Math.round(si ? scaleNum(S[ctg], sscale) * sratio : rbase);
+    radius = Math.round(si ? ((scaleNum(S[ctg], sscale) - smin) *
       sfac + slow) * rbase : rbase);
-    x = Math.round(((scaleNum(datum[xi], xscale) - xmin) / dx - 0.5) * w);
-    y = Math.round(((ymax - scaleNum(datum[yi], yscale)) / dy - 0.5) * h);
+    x = Math.round(((scaleNum(X[ctg], xscale) - xmin) / dx - 0.5) * w);
+    y = Math.round(((ymax - scaleNum(Y[ctg], yscale)) / dy - 0.5) * h);
     ctx.moveTo(x, y);
     ctx.arc(x, y, radius, 0, pi2, true);
   }
@@ -566,7 +582,7 @@ function drawPolygon(mo) {
   const ctx = oray.getContext('2d');
   ctx.clearRect(0, 0, oray.width, oray.height);
   ctx.save();
-  ctx.translate(view.pos.x, view.pos.y);
+  ctx.translate(view.posX, view.posY);
   ctx.scale(view.scale, view.scale);
   ctx.fillStyle = color;
   ctx.strokeStyle = color;
@@ -652,17 +668,17 @@ function polygonSelect(mo) {
   // finish drawing
   else {
     oray.getContext('2d').clearRect(0, 0, oray.width, oray.height);
-    const df = data.df;
-    const n = df.length;
+    const X = data[view.x.i],
+          Y = data[view.y.i];
+    const n = X.length;
     const ctgs = [];
     const hasMask = (Object.keys(mo.mask).length > 0);
-    let datum, x, y;
+    let x, y;
     for (let i = 0; i < n; i++) {
       if (hasMask && i in mo.mask) continue;
-      datum = df[i];
-      x = ((scaleNum(datum[view.x.i], view.x.scale) - view.x.min) /
+      x = ((scaleNum(X[i], view.x.scale) - view.x.min) /
         (view.x.max - view.x.min) - 0.5) * rena.width;
-      y = ((view.y.max - scaleNum(datum[view.y.i], view.y.scale)) /
+      y = ((view.y.max - scaleNum(Y[i], view.y.scale)) /
         (view.y.max - view.y.min) - 0.5) * rena.height;
       if (pnpoly(x, y, stat.polygon)) ctgs.push(i);
     }

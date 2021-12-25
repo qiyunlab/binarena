@@ -10,11 +10,6 @@
 
 
 /**
- * @summary String operations
- */
-
-
-/**
  * Split text into lines.
  * @function splitLines
  * @param {string} text - multi-line string
@@ -54,11 +49,6 @@ function hexToRgb(hex) {
 
 
 /**
- * @summary Arithmetics
- */
-
-
-/**
  * Round a number to given precision.
  * @function roundNum
  * @param {number} num - number to format
@@ -83,7 +73,7 @@ function roundNum(num, digits) {
 function scaleNum(num, scale) {
   if (scale == null) {
     return num;
-  } else if (typeof(scale) === 'number') {
+  } else if (typeof(scale) === 'num') {
     return Math.pow(num, scale);
   } else if (typeof(scale) === 'string') {
     switch(scale) {
@@ -153,6 +143,18 @@ function unscale(scale) {
 
 
 /**
+ * Check of all elements in an array are identical.
+ * @function arr2obj
+ * @param {Array} arr - input array
+ * @returns {boolean} - whether all identical
+ */
+function arrIdent(arr) {
+  const x0 = arr[0];
+  return arr.every(x => x === x0);
+}
+
+
+/**
  * Filter an array to unique elements while keeping order.
  * @function arr2obj
  * @param {Array} arr - input array
@@ -193,6 +195,27 @@ function arr2obj(arr) {
 
 
 /**
+ * List column names of a specific type.
+ * @function arr2obj
+ * @param {Object} cols - cols object
+ * @param {string} type - column type
+ * @returns {Array} - column names
+ */
+function listColsByType(cols, type) {
+  const names = cols.names,
+        types = cols.types;
+  const n = names.length;
+  const res = [];
+  for (let i = 0; i < n; i++) {
+    if (types[i] === type) {
+      res.push(names[i]);
+    }
+  }
+  return res;
+}
+
+
+/**
  * List categories and their frequencies from a category-type column.
  * @function listCats
  * @param {Array} arr - category-type column
@@ -200,32 +223,35 @@ function arr2obj(arr) {
  */
 function listCats(arr) {
   const res = {};
-  arr.forEach(datum => {
-    if (datum !== null) {
-      if (datum[0] in res) res[datum[0]] ++;
-      else res[datum[0]] = 1;
+  const n = arr.length;
+  let cat;
+  for (let i = 0; i < n; i++) {
+    cat = arr[i];
+    if (cat) {
+      if (cat in res) res[cat] ++;
+      else res[cat] = 1;
     }
-  });
+  }
   return res;
 }
 
 
 /**
  * List features and their frequencies from a feature-type column.
- * @function listFeats
+ * @function listFeas
  * @param {Array} arr - feature-type column
  * @returns {Object} - feature to frequency map
  */
-function listFeats(arr) {
+function listFeas(arr) {
   const res = {};
-  arr.forEach(datum => {
-    if (datum !== null) {
-      Object.keys(datum).forEach(key => {
-        if (key in res) res[key] ++;
-        else res[key] = 1;
-      });
-    }
-  });
+  const n = arr.length;
+  let fea;
+  for (let i = 0; i < n; i++) {
+    for (fea of arr[i]) {
+      if (fea in res) res[fea] ++;
+      else res[fea] = 1;
+    };
+  }
   return res;
 }
 

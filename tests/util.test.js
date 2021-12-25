@@ -1,8 +1,10 @@
+"use strict";
+
 /**!
  * @file Unit tests for "util.js".
  */
 
- describe('util.js', function() {
+describe('util.js', function() {
 
   it('splitLines', function() {
     expect(splitLines('This is\na multiline\nstring'))
@@ -14,4 +16,5 @@
     expect(hexToRgb('377eb8')).toBe('55,126,184');
     expect(hexToRgb('4daf4a')).toBe('77,175,74');
   });
+
 });

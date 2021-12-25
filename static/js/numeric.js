@@ -169,25 +169,22 @@ function arrLog(arr, clip) {
 /**
  * Transpose a 2D array.
  * @function transpose
- * @param {Array.<Array>} df - input 2D array
+ * @param {Array.<Array>} arr2d - input 2D array
  * @returns {Array.<Array>} transposed 2D array
  */
-function transpose(df) {
-  const res = [];
-  const m = df[0].length;
-  for (let i = 0; i < m; i++) {
-    res.push([]);
-  }
+function transpose(arr2d) {
+  const n = arr2d.length;
+  const m = arr2d[0].length;
+  const res = Array(m).fill().map(() => Array(n));
   let j;
-  const n = df.length;
   for (let i = 0; i < n; i++) {
     for (j = 0; j < m; j++) {
-      res[j].push(df[i][j]);
+      res[j][i] = arr2d[i][j];
     }
   }
   return res;
 }
-  
+
 
 /**
  * Calculate euclidean distance between two points.

@@ -86,13 +86,13 @@ function initMiniPlotCtrl(mo) {
 
 
 /**
- * Update mini plot controls by data.
+ * Update mini plot controls by data columns.
  * @function updateMiniPlotCtrl
- * @params {Object} data - data object
+ * @params {Object} cols - cols object
  */
-function updateMiniPlotCtrl(data) {
-  const cols = data.cols,
-        types = data.types;
+function updateMiniPlotCtrl(cols) {
+  const names = cols.names,
+        types = cols.types;
   const sel = byId('mini-field-sel');
   sel.innerHTML = '';
 
@@ -100,13 +100,13 @@ function updateMiniPlotCtrl(data) {
   sel.add(document.createElement('option'));
 
   // create an option for each column
-  const n = cols.length;
+  const n = names.length;
   let opt;
   for (let i = 0; i < n; i++) {
-    if (types[i] !== 'number') continue;    
+    if (types[i] !== 'num') continue;    
     opt = document.createElement('option');
     opt.value = i;
-    opt.text = cols[i];
+    opt.text = names[i];
     sel.add(opt);
   }
 }
@@ -251,7 +251,7 @@ function miniPlotSelect(mo) {
   const res = [];
   const mask = mo.mask;
   const hasMask = (Object.keys(mask).length > 0);
-  const df = mo.data.df;
+  const arr = mo.data[col];
 
   // selection will take place within the already selected contigs
   const picked = Object.keys(mo.pick);
@@ -262,7 +262,7 @@ function miniPlotSelect(mo) {
   for (let i = 0; i < n; i++) {
     idx = picked[i];
     if (hasMask && idx in mask) continue;
-    val = df[idx][col];
+    val = arr[idx];
 
     // lower bound: inclusive; upper bound: exclusive
     if (val !== null && val >= min && (max === null || val < max)) {
@@ -312,10 +312,10 @@ function updateMiniPlot(mo, keep, x1) {
   if (!keep || (hist === null)) {
 
     // variable values
-    const df = mo.data.df;
+    const arr = mo.data[col];
     let data = Array(n).fill();
     for (let i = 0; i < n; i++) {
-      data[i] = df[ctgs[i]][col];
+      data[i] = arr[ctgs[i]];
     }
 
     // log transformation

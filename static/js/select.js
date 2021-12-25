@@ -6,16 +6,6 @@
  */
 
 
-/** 
- * export default treatSelection;
- * export default buildInfoTable;
- * export default updateSelection;
- * 
- * import treatSelection from 'select.js';
- * import updateMiniPlot from 'miniplot.js';
- * */ 
-
-
 /**
  * Initialize mini plot controls.
  * @function initSelectCtrl
@@ -40,9 +30,10 @@ function initSelTools(mo) {
 
   // Invert selection.
   byId('invert-btn').addEventListener('click', function () {
+    if (mo.data.length === 0) return;
     let pick = mo.pick;
     const mask = mo.mask;
-    let n = mo.data.df.length;
+    let n = mo.data[0].length;
     const res = [];
     for (let i = 0; i < n; i++) {
       if (!(i in mask) && !(i in pick)) res.push(i);
@@ -85,7 +76,7 @@ function initSelTools(mo) {
  */
 function initInfoCtrl(mo) {
 
-  // Toggle summary metric (sum or mean).
+  /** Toggle summary metric (sum or mean). */
   byId('info-metric-btn').addEventListener('click', function () {
     const row = byId('info-table').rows[this.parentElement
       .getAttribute('data-row')];
@@ -100,7 +91,7 @@ function initInfoCtrl(mo) {
     updateInfoRow(row, mo);
   });
 
-  // Weight variable by reference.
+  /** Weight variable by reference. */
   byId('info-ref-sel').addEventListener('change', function () {
     const row = byId('info-table').rows[this.parentElement
       .parentElement.getAttribute('data-row')];
@@ -108,7 +99,7 @@ function initInfoCtrl(mo) {
     updateInfoRow(row, mo);
   });
 
-  // Plot variable.
+  /** Plot variable. */
   byId('info-plot-btn').addEventListener('click', function () {
     const div = this.parentElement;
     const idx = byId('info-table').rows[div.getAttribute('data-row')]
@@ -119,7 +110,7 @@ function initInfoCtrl(mo) {
     byId('mini-canvas').parentElement.classList.remove('hidden');
   });
 
-  // Hide variable
+  /** Hide variable */
   byId('info-hide-btn').addEventListener('click', function () {
     const div = this.parentElement;
     const row = byId('info-table').rows[div.getAttribute('data-row')];
@@ -167,9 +158,7 @@ function treatSelection(ctgs, selmode, masking, mo) {
   // remove from selection
   else if (selmode === 'remove') {
     const todel = [];
-    ctgs.forEach(function (i) {
-      if (i in target) toDel.push(i);
-    });
+    ctgs.forEach(i => { if (i in target) todel.push(i); });
     todel.forEach(i => { delete target[i]; });
     toastMsg(`Removed ${plural('contig', todel.length)} from ${masking ?
       'mask' : 'selection'}.`, mo.stat);
@@ -213,7 +202,7 @@ function updateSelTools(mo) {
   const ctgs = Object.keys(mo.pick);
   const n = ctgs.length;
   let str = 'Selected: ' + n;
-  if (n === 1) str += ' (ID: ' + mo.data.df[ctgs[0]][0] + ')';
+  if (n === 1) str += ' (ID: ' + mo.data[0][ctgs[0]] + ')';
   byId('info-head-btn').innerHTML = str;
 }
 
@@ -227,7 +216,7 @@ function updateMaskCtrl(mo) {
   const ctgs = Object.keys(mo.mask);
   const n = ctgs.length;
   let str = 'Masked: ' + n;
-  if (n === 1) str += ' (ID: ' +  mo.data.df[ctgs[0]][0] + ')';
+  if (n === 1) str += ' (ID: ' +  mo.data[0][ctgs[0]] + ')';
   byId('mask-head-btn').innerHTML = str;
 }
 
@@ -235,16 +224,15 @@ function updateMaskCtrl(mo) {
 /**
  * Build info table based on the dataset and selected contigs.
  * @function buildInfoTable
- * @param {Object} data - data object
- * @param {Object} [lencol] - "length" column name
+ * @param {Object} cols - cols object
  * @param {Object} pick - selected contigs
+ * @param {Object} [lencol] - "length" column index
  * @description It re-draws the entire info table to reflect updates in the
  * dataset (e.g., loaded a new dataset; added a new column). Fields (rows)
  * displayed in the table are determined based on the type and names of data
  * fields.
  */
-function buildInfoTable(data, lencol, pick) {
-  lencol = lencol || '';
+function buildInfoTable(cols, pick, lencol) {
   const table = byId('info-table');
 
   // temporarily move control span
@@ -260,19 +248,21 @@ function buildInfoTable(data, lencol, pick) {
   table.innerHTML = '';
 
   // create rows
-  const cols = data.cols,
-        types = data.types;
-  const n = cols.length;
-  let col, type, row, met;
+  const names = cols.names,
+        types = cols.types;
+  lencol = lencol ? names[lencol] : '';
+
+  const n = names.length;
+  let name, type, row, met;
   for (let i = 1; i < n; i++) {
-    col = cols[i];
+    name = names[i];
     type = types[i];
     row = table.insertRow(-1);
     row.setAttribute('data-index', i);
-    row.setAttribute('data-col', col);
+    row.setAttribute('data-col', name);
     row.setAttribute('data-type', type);
-    if (type === 'number') {
-      met = guessColMetric(col);
+    if (type === 'num') {
+      met = guessColMetric(name);
       row.setAttribute('data-refcol', (
         met.substring(met.length - 2) === 'by') ? lencol : '');
       row.setAttribute('data-metric', (
@@ -291,7 +281,7 @@ function buildInfoTable(data, lencol, pick) {
 
       // only one contig is selected, then no need for controls
       if (Object.keys(pick).length === 1 ||
-        (this.getAttribute('data-type') !== 'number')) {
+        (this.getAttribute('data-type') !== 'num')) {
         mbtn.classList.add('hidden');
         pbtn.classList.add('hidden');
         rspan.classList.add('hidden');
@@ -317,19 +307,20 @@ function buildInfoTable(data, lencol, pick) {
     });
 
     // weight-by selection - add numeric field
-    if (type === 'number') {
+    if (type === 'num') {
       const opt = document.createElement('option');
-      opt.text = col;
-      opt.value = col;
+      opt.text = name;
+      opt.value = name;
       sel.add(opt);
     }
 
     // create cells
     const cell = row.insertCell(-1); // 1st cell: field name
-    cell.innerHTML = col;
+    cell.innerHTML = name;
     row.insertCell(-1); // 2nd cell: field value
   }
 
+  // hide toolbar
   table.parentElement.addEventListener('mouseleave', InfoTableMouseLeave);
   function InfoTableMouseLeave() {
     if (document.activeElement === sel) return;
@@ -358,37 +349,39 @@ function updateInfoTable(mo) {
     return;
   }
   const rows = table.rows;
+  const data = mo.data;
 
   // single contig
   if (n === 1) {
-    const datum = mo.data.df[ctgs[0]];
+    const ctg = ctgs[0];
     for (let row of rows) {
       row.cells[1].innerHTML = value2Str(
-        datum[row.getAttribute('data-index')],
+        data[row.getAttribute('data-index')][ctg],
         row.getAttribute('data-type'));
     }
   }
 
   // multiple contigs
   else {
-    const cols = mo.data.cols,
-          df = mo.data.df;
-    let idx, arr, refarr, i;
+    const names = mo.cols.names;
+    let idx, datum, arr, refarr, i;
     for (let row of rows) {
 
       // get data
       idx = row.getAttribute('data-index');
+      datum = data[idx];
       arr = Array(n).fill();
       for (i = 0; i < n; i++) {
-        arr[i] = df[ctgs[i]][idx];
+        arr[i] = datum[ctgs[i]];
       }
 
       // get reference data, if available
-      idx = cols.indexOf(row.getAttribute('data-refcol'));
+      idx = names.indexOf(row.getAttribute('data-refcol'));
       if (idx !== -1) {
+        datum = data[idx];
         refarr = Array(n).fill();
         for (i = 0; i < n; i++) {
-          refarr[i] = df[ctgs[i]][idx];
+          refarr[i] = datum[ctgs[i]];
         }
       }
 
@@ -414,40 +407,45 @@ function updateInfoTable(mo) {
 function updateInfoRow(row, mo, arr, refarr) {
   const ctgs = Object.keys(mo.pick).sort();
   const n = ctgs.length;
-  const df = mo.data.df;
-  let idx;
+  const data = mo.data;
+  let idx, datum, info;
 
   // populate data array
   if (arr == null) {
     idx = row.getAttribute('data-index');
+    datum = data[idx];
     arr = Array(n).fill();
     for (let i = 0; i < n; i++) {
-      arr[i] = df[ctgs[i]][idx];
+      arr[i] = datum[ctgs[i]];
     }
   }
 
   // for non-number types, directly summarize
   const type = row.getAttribute('data-type');
-  if (type !== 'number') {
-    row.cells[1].innerHTML = row.cells[1].title = getFieldInfo(arr, type);
+  if (type !== 'num') {
+    info = getFieldInfo(arr, type);
+    row.cells[1].innerHTML = info;
+    row.cells[1].title = info;
     return;
   }
 
   // populate reference array
   if (refarr == null) {
-    idx = mo.data.cols.indexOf(row.getAttribute('data-refcol'));
+    idx = mo.cols.names.indexOf(row.getAttribute('data-refcol'));
     if (idx !== -1) {
+      datum = data[idx];
       refarr = Array(n).fill();
       for (let i = 0; i < n; i++) {
-        refarr[i] = df[ctgs[i]][idx];
+        refarr[i] = datum[ctgs[i]];
       }
     }
   }
 
   // summarize a numberic column
   const met = row.getAttribute('data-metric');
-  const deci = mo.view.decimals[row.getAttribute('data-col')];
-  row.cells[1].innerHTML = getFieldInfo(arr, type, met, deci, refarr);
+  info = getFieldInfo(arr, type, met, 5, refarr);
+  row.cells[1].innerHTML = info;
+  row.cells[1].title = info;
 }
 
 
@@ -468,7 +466,7 @@ function getFieldInfo(arr, type, met, deci, refarr) {
   let x;
   switch (type) {
 
-    case 'number':
+    case 'num':
       switch (met) {
         case 'sum':
           if (!isRef) res = arrSum(arr);
@@ -482,15 +480,17 @@ function getFieldInfo(arr, type, met, deci, refarr) {
       res = formatNum(res, deci);
       break;
 
-    case 'category':
+    case 'cat':
       x = objMinMax(listCats(arr));
       const frac = x[1][1] / arr.length;
+
+      // majority rule
       res = (frac > 0.5) ? (x[1][0] + ' (' + (frac * 100).toFixed(2)
         .replace(/\.?0+$/, '') + '%)') : 'ambiguous';
       break;
 
-    case 'feature':
-      x = listFeats(arr);
+    case 'fea':
+      x = listFeas(arr);
       const a = [];
       Object.keys(x).sort().forEach(k => {
         if (x[k] === 1) a.push(k);
@@ -499,5 +499,6 @@ function getFieldInfo(arr, type, met, deci, refarr) {
       res = a.join(', ');
       break;
   }
-  return res; 
+  return res;
+
 }

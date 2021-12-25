@@ -91,6 +91,8 @@ function mainObj() {
    * - Missing data are stored as '' (empty string).
    * @param {string[]} fea - feature sets
    * - Missing data are stored as [] (empty array).
+   * @param {string[]} des - description
+   * - Missing data are stored as [] (empty array).
    * @param {number}   cwt - weights of categories
    * @param {number[]} fwt - weights of features (same order)
    * 
@@ -124,10 +126,10 @@ function mainObj() {
    * @property {number} len - minimum length threshold
    * @property {number} cov - minimum coverage threshold
    */
-   this.filter = {
+  this.filter = {
     len: 1000,
     cov: 1.0
-  }
+  };
 
 
   /**
@@ -135,7 +137,7 @@ function mainObj() {
    * @member {Object} cache
    * @description Calculation results that can be reused are stored here.
    * 
-   * @property {Object.<number>} specs - indices of special columns
+   * @property {Object.<number>} speci - indices of special columns
    * Three contig properties are special in the analysis:
    * @param len - length
    * @param cov - coverage
@@ -144,11 +146,7 @@ function mainObj() {
    * @property {number} abund - total abundance of contigs
    * Equals to the sum of (length x coverage) of all contigs.
    * Used to calculate the relative abundance of individual contigs and bins.
-   * 
-   * @param {Map.<number>} decis - decimal places of numeric columns
-   * Used to determine the display format of numbers.
-   * Key: column index, value: number of digits after the decimal point.
-   * 
+   *
    * @property {Object.<Map>} freqs - category and feature frequencies
    * Used to determine the most frequent categories or features to display.
    * Key: column index, value: frequency map.
@@ -166,12 +164,11 @@ function mainObj() {
    * spatial.distance.pdist.html}
    */
   this.cache = {
-    specs = {},
-    abund = 0,
-    decis = {},
-    freqs = {},
-    locis = {},
-    pdist = [],
+    speci: {},
+    abund: 0,
+    freqs: {},
+    locis: {},
+    pdist: [],
   };
 
 
@@ -180,8 +177,8 @@ function mainObj() {
    * @member {Object} view
    * @description Visual properties of the main plot.
    * 
-   * @property {number}  posx    - viewport position x
-   * @property {number}  posy    - viewport position y
+   * @property {number}  posX    - viewport position x
+   * @property {number}  posY    - viewport position y
    * @property {number}  scale   - scaling factor
    * 
    * @property {Object}  x       - x-axis variable
@@ -198,8 +195,8 @@ function mainObj() {
    */
   this.view = {
     /** canvas rendering */
-    posx:    0,
-    posy:    0,
+    posX:    0,
+    posY:    0,
     scale:   1.0,
     /** display variables */
     x:       {},
@@ -234,7 +231,7 @@ function mainObj() {
       this.view[item][param] = null;
     }
   }
-  for (item of ['size', 'opacity', 'color']) {
+  for (let item of ['size', 'opacity', 'color']) {
     let obj = this.view[item];
     obj.lower = 0;
     obj.upper = 100;
@@ -253,7 +250,8 @@ function mainObj() {
    * 
    * @property {boolean} mousedown - mouse is down
    * @property {boolean} mousemove - mouse is moving
-   * @property {{x: number, y: number}} drag - dragging position
+   * @property {number}  dragX     - dragging position X
+   * @property {number}  dragY     - dragging position Y
    * @property {string}  selmode   - selection mode (new, add, remove)
    * @property {boolean} masking   - masking mode is on
    * @property {boolean} drawing   - polygon drawing is ongoing
@@ -264,7 +262,8 @@ function mainObj() {
   this.stat = {
     mousedown: false,
     mousemove: false,
-    drag:      {},
+    dragX:     0,
+    dragY:     0,
     selmode:   'new',
     masking:   false,
     drawing:   false,

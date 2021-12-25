@@ -16,8 +16,10 @@
  */
 function calcSilhouette(mo) {
   const data = mo.data,
+        cols = mo.cols,
         view = mo.view,
-        bins = mo.bins;
+        bins = mo.bins,
+        cache = mo.cache;
 
   // validate binning plan
   const names = Object.keys(bins);
@@ -28,7 +30,7 @@ function calcSilhouette(mo) {
   }
 
   // get bin labels
-  const labels = Array(data.df.length).fill(0);
+  const labels = Array(data[0].length).fill(0);
   names.forEach(function (name, i) {
     Object.keys(bins[name]).forEach(idx => {
       labels[idx] = i + 1;
@@ -38,7 +40,10 @@ function calcSilhouette(mo) {
   // get contig positions
   const xi = view.x.i,
         yi = view.y.i;
-  const vals = data.df.map(datum => [datum[xi], datum[yi]]);
+  const X = data[xi],
+        Y = data[yi];
+  const vals = transpose([X, Y]);
+  // const vals = data.df.map(datum => [datum[xi], datum[yi]]);
 
   // This is a heavy calculation so a progress bar is displayed prior to
   // starting the calculation. This can only be achieved through an async
@@ -48,30 +53,41 @@ function calcSilhouette(mo) {
   setTimeout(function () {
 
     // calculate pairwise distance if not already
-    if (mo.dist === null) mo.dist = pdist(vals);
+    if (cache.pdist.length === 0) cache.pdist = pdist(vals);
 
     // calculate silhouette scores
-    let scores = silhouetteSample(vals, labels, mo.dist);
+    let scores = silhouetteSample(vals, labels, cache.pdist);
 
     // remove unbinned contigs
     scores = scores.map((score, i) => labels[i] ? score : null);
 
     // add scores to data table
-    let col = data.cols.indexOf('silhouette');
+    let col = cols.names.indexOf('silhouette');
 
     // append new column and modify controls
     if (col === -1) {
-      scores.forEach((score, i) => { data.df[i].push(score); });
-      col = data.cols.length;
-      data.cols.push('silhouette');
-      data.types.push('number');
-      updateControls(data, view);
-      buildInfoTable(data, view.spcols.len, mo.pick);
+      col = data.length;
+      let arr = Array(data[0].length).fill(NaN);
+      for (let i = 0; i < scores.length; i++) {
+        arr[i] = scores[i];
+      }
+      data.push(arr);
+      cols.names.push('silhouette');
+      cols.types.push('num');
+      updateControls(cols, view);
+      buildInfoTable(cols, mo.pick, mo.cache.speci.len);
     }
 
     // update existing column
     else {
-      scores.forEach((score, i) => { data.df[i][col] = score; });
+      if (cols.types[i] !== 'num') {
+        throw 'Error: Field "silhouette" already exists, but it is not ' +
+          'a numeric field.';
+      }
+      let arr = data[col];
+      for (let i = 0; i < scores.length; i++) {
+        arr[i] = scores[i];
+      }
     }
 
     // color contigs by score
@@ -96,8 +112,8 @@ function calcSilhouette(mo) {
  * @param {string} field - categorical field to serve as reference
  */
 function calcAdjRand(mo, field) {
-  const df = mo.data.df;
-  const n = df.length;
+  const data = mo.data;
+  const n = data[0].length;
 
   // current labels
   const cur = Array(n).fill(0);
@@ -111,12 +127,13 @@ function calcAdjRand(mo, field) {
 
   // reference labels
   const ref = Array(n).fill(0);
-  const idx = mo.data.cols.indexOf(field);
+  const idx = mo.cols.names.indexOf(field);
+  const datum = data[idx];
   let val;
   for (let i = 0; i < n; i++) {
-    val = df[i][idx];
+    val = datum[i];
     if (val !== null) {
-      ref[i] = val[0];
+      ref[i] = val;
     }
   }
 

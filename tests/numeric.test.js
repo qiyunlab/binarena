@@ -1,8 +1,10 @@
+"use strict";
+
 /**!
  * @file Unit tests for "numeric.js".
  */
 
- describe('numeric.js', function() {
+describe('numeric.js', function() {
 
   it('arrMinMax', function() {
     expect(arrMinMax([1])).toEqual([1, 1]);

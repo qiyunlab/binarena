@@ -13,8 +13,12 @@
  * @params {Object} mo - main object
  */
 function initBinCtrl(mo) {
-  const view = mo.view,
+  const data = mo.data,
+        cols = mo.cols,
+        view = mo.view,
         stat = mo.stat;
+  const names = cols.names,
+        types = cols.types;
 
   /**
    * Top bar of bin panel, including binning plan and save button.
@@ -22,8 +26,8 @@ function initBinCtrl(mo) {
 
   // load bins from a categorical field
   byId('plan-sel-txt').addEventListener('click', function () {
-    const cols = Object.keys(view.categories).sort();
-    listSelect(['(clear)'].concat(cols), this, 'down', true);
+    const lst = listColsByType(cols, 'cat');
+    listSelect(['(clear)'].concat(lst), this, 'down', true);
   });
 
   byId('plan-sel-txt').addEventListener('focus', function () {
@@ -38,11 +42,11 @@ function initBinCtrl(mo) {
 
     // load an existing binning plan
     else {
-      const idx = mo.data.cols.indexOf(plan);
+      const idx = names.indexOf(plan);
       if (idx === -1) return;
-      if (idx === this.getAttribute('data-col')) return;
+      if (idx == this.getAttribute('data-col')) return;
       this.setAttribute('data-col', idx);
-      mo.bins = loadBins(mo.data.df, idx);
+      mo.bins = loadBins(data[idx]);
     }
 
     // update interface
@@ -69,7 +73,6 @@ function initBinCtrl(mo) {
     }
 
     // generate a contig-to-bin map
-    const df = mo.data.df;
     const map = {};
     let bin, ctg;
     let dups = [];
@@ -91,26 +94,29 @@ function initBinCtrl(mo) {
     }
 
     // create a new categorical field
-    const idx = mo.data.cols.indexOf(plan);
-    n = df.length;
+    const idx = names.indexOf(plan);
+    n = data[0].length;
     if (idx === -1) {
-      mo.data.cols.push(plan);
-      mo.data.types.push('category');
+      const arr = Array(n).fill('');
       for (let i = 0; i < n; i++) {
-        df[i].push(i in map ? [map[i], null] : null);
+        if (i in map) arr[i] = map[i];
       }
-      updateControls(mo.data, mo.view);
-      fillDataTable(mo.data, n);
+      data.push(arr);
+      names.push(plan);
+      types.push('cat');
+      updateControls(cols, view);
+      fillDataTable(data, cols, n);
       toastMsg(`Saved to new binning plan "${plan}".`, stat);
     }
 
     // overwrite an existing categorical field
     else {
+      const arr = data[idx];
       for (let i = 0; i < n; i++) {
-        df[i][idx] = (i in map ? [map[i], null] : null);
+        arr[i] = (i in map) ? map[i] : '';
       }
-      updateControls(mo.data, mo.view);
-      fillDataTable(mo.data, n);
+      updateControls(cols, view);
+      fillDataTable(data, cols, n);
       toastMsg(`Overwritten binning plan "${plan}".`, stat);
     }
   });
@@ -159,7 +165,7 @@ function initBinCtrl(mo) {
 
   // export current binning plan
   byId('export-plan-btn').addEventListener('click', function () {
-    exportBins(mo.bins, mo.data);
+    exportBins(mo.bins, data);
   });
 
 
@@ -172,7 +178,7 @@ function initBinCtrl(mo) {
   
     // if there is no binning plan, create one
     if (Object.keys(mo.bins).length === 0) {
-      byId('plan-sel-txt').value = newName(arr2obj(mo.data.cols), 'plan');
+      byId('plan-sel-txt').value = newName(arr2obj(names), 'plan');
     }
 
     // create a new bin
@@ -301,7 +307,7 @@ function updateBinCtrl(mo) {
   const txt = byId('plan-sel-txt');
   const btn = byId('save-plan-btn');
   btn.classList.toggle('hidden', !n);
-  const col = mo.data.cols[txt.getAttribute('data-col')];
+  const col = mo.cols.names[txt.getAttribute('data-col')];
   if (col == txt.value) btn.title = `Overwrite binning plan "${col}"`;
   else btn.title = `Save current binning plan as "${txt.value}"`;
 
@@ -337,27 +343,19 @@ function updateBinCtrl(mo) {
  * @param {Object} mo - main object
  */
 function updateBinTable(mo) {
-  const view = mo.view,
-        data = mo.data,
-        bins = mo.bins;
+  const data = mo.data,
+        bins = mo.bins,
+        cache = mo.cache;
+  const abund = cache.abund;
+  const lencol = cache.speci.len,
+        covcol = cache.speci.cov;
+  const L = lencol ? data[lencol] : null,
+        C = covcol ? data[covcol] : null;
+
   const table = byId('bin-tbody');
   table.innerHTML = '';
 
-  // cache length and coverage data
-  const lens = {},
-        covs = {};
-  if (view.spcols.len || view.spcols.cov) {
-    const ilen = view.spcols.len ? view.spcols.len : null,
-          icov = view.spcols.cov ? view.spcols.cov : null;
-    const df = data.df;
-    const n = df.length;
-    for (let i = 0; i < n; i++) {
-      if (ilen) lens[i] = df[i][ilen];
-      if (icov) covs[i] = df[i][icov];
-    }
-  }
-
-  Object.keys(bins).sort().forEach(function (name) {
+  Object.keys(bins).sort().forEach(function (bin) {
     const row = table.insertRow(-1);
 
     // 1st cell: bin name
@@ -365,13 +363,13 @@ function updateBinTable(mo) {
 
     // name label
     const label = document.createElement('span');
-    label.title = label.innerHTML = name;
+    label.title = label.innerHTML = bin;
     cell.appendChild(label);
 
     // rename text box
     const text = document.createElement('input');
     text.type = 'text';
-    text.value = name;
+    text.value = bin;
     text.classList.add('hidden');
     text.addEventListener('focus', function () {
       this.select();
@@ -383,22 +381,22 @@ function updateBinTable(mo) {
 
     // 2nd cell: number of contigs
     cell = row.insertCell(-1);
-    cell.innerHTML = Object.keys(bins[name]).length;
+    cell.innerHTML = Object.keys(bins[bin]).length;
 
     // 3rd cell: total length (kb)
     cell = row.insertCell(-1);
-    if (view.spcols.len) {
+    if (lencol) {
       let sum = 0;
-      for (let i in bins[name]) sum += lens[i];
+      for (let i in bins[bin]) sum += L[i];
       cell.innerHTML = Math.round(sum / 1000);
     } else cell.innerHTML = 'na';
     
     // 4th cell: relative abundance (%)
     cell = row.insertCell(-1);
-    if (view.spcols.len && view.spcols.cov) {
+    if (lencol && covcol) {
       let sum = 0;
-      for (let i in bins[name]) sum += lens[i] * covs[i];
-      cell.innerHTML = (sum * 100 / view.abundance).toFixed(2);
+      for (let i in bins[bin]) sum += L[i] * C[i];
+      cell.innerHTML = (sum * 100 / abund).toFixed(2);
     } else cell.innerHTML = 'na';
   });
 }
@@ -418,8 +416,8 @@ function updateBinRow(row, ctgs, mo) {
   cells[1].innerHTML = Object.keys(ctgs).length;
     
   // stop if no length
-  const view = mo.view;
-  const ilen = view.spcols.len;
+  const cache = mo.cache;
+  const ilen = cache.speci.len;
   if (!ilen) {
     cells[2].innerHTML = 'na';
     cells[3].innerHTML = 'na';
@@ -427,25 +425,26 @@ function updateBinRow(row, ctgs, mo) {
   }
 
   // 3rd cell: total length (kb)
-  const df = mo.data.df;
-  const icov = view.spcols.cov;
+  const data = mo.data;
+  const L = data[ilen];
+  const icov = cache.speci.cov;
   let sumlen = 0;
   if (!icov) {
-    for (let ctg in ctgs) sumlen += df[ctg][ilen];
+    for (let ctg in ctgs) sumlen += L[ctg];
     cells[2].innerHTML = Math.round(sumlen / 1000);
     cells[3].innerHTML = 'na';
     return;
   }
 
   // 4th cell: relative abundance (%)
-  const totabd = view.abundance;
+  const C = data[icov];
+  const totabd = cache.abund;
   let sumabd = 0;
-  let datum, len;
+  let len;
   for (let ctg in ctgs) {
-    datum = df[ctg];
-    len = datum[ilen];
+    len = L[ctg];
     sumlen += len;
-    sumabd += len * datum[icov];
+    sumabd += len * C[ctg];
   }
   cells[2].innerHTML = Math.round(sumlen / 1000);
   cells[3].innerHTML = (sumabd * 100 / totabd).toFixed(2);
@@ -658,19 +657,17 @@ function selectBin(table, bin) {
 
 /**
  * Load bins from a categorical field.
- * @function loadBin
- * @param {Object} df - data frame
- * @param {number} idx - field index
+ * @function loadBins
+ * @param {Object} arr - data column
  * @returns {Object} bins object
  */
-function loadBins(df, idx) {
-  let val, cat;
+function loadBins(arr) {
+  let n = arr.length;
   const bins = {};
-  const n = df.length;
+  let cat;
   for (let i = 0; i < n; i++) {
-    val = df[i][idx];
-    if (val !== null) {
-      cat = val[0];
+    cat = arr[i];
+    if (cat) {
       if (!(cat in bins)) bins[cat] = {};
       bins[cat][i] = null;
     }
@@ -691,16 +688,11 @@ function loadBins(df, idx) {
  * ...
  */
  function exportBins(bins, data) {
-  const idmap = {};
-  const df = data.df;
-  const n = df.length;
-  for (let i = 0; i < n; i++) {
-    idmap[i] = df[i][0];
-  }
+  const ids = data[0];
   let tsv = '';
   Object.keys(bins).sort().forEach(name => {
     tsv += (name + '\t' + Object.keys(bins[name]).sort().map(
-      i => idmap[i]).join(',') + '\n');
+      i => ids[i]).join(',') + '\n');
   });
   const a = document.createElement('a');
   a.href = "data:text/tab-separated-values;charset=utf-8," +

@@ -43,18 +43,18 @@ function initSearchCtrl(mo) {
   });
 
   // Toggle case strict mode and whole cell matching mode.
-  ['case-btn', 'whole-btn'].forEach(id => {
-    byId(id).addEventListener('click', function () {
+  for (let key of ['case', 'whole']) {
+    byId(key + '-btn').addEventListener('click', function () {
       this.classList.toggle('pressed');
     });
-  });
+  }
 
   // Let user press Enter to triggle search.
-  ['min-txt', 'max-txt', 'cat-sel-txt', 'fea-sel-txt', 'des-sel-txt']
-    .forEach(id => { byId(id).addEventListener('keyup', function (e) {
+  for (let key of ['min', 'max', 'cat-sel', 'fea-sel', 'des-sel']) {
+    byId(key + '-txt').addEventListener('keyup', function (e) {
       if (e.key === 'Enter') byId('search-btn').click();
     });
-  });
+  }
 
   // Launch search function.
   byId('search-btn').addEventListener('click', function () {
@@ -65,13 +65,13 @@ function initSearchCtrl(mo) {
 
 
 /**
- * Update search panel controls by data.
+ * Update search panel controls by data columns.
  * @function updateSearchCtrl
- * @params {Object} data - data object
+ * @params {Object} cols - cols object
  */
-function updateSearchCtrl(data) {
-  const cols = data.cols,
-        types = data.types;
+function updateSearchCtrl(cols) {
+  const names = cols.names,
+        types = cols.types;
   const sel = byId('search-field-sel');
   sel.innerHTML = '';
 
@@ -79,13 +79,14 @@ function updateSearchCtrl(data) {
   sel.add(document.createElement('option'));
 
   // create an option for each column
-  let opt;
-  const n = cols.length;
+  let type, opt;
+  const n = names.length;
   for (let i = 0; i < n; i++) {
-    if (types[i] === 'id') continue;    
+    type = types[i];
+    if (type === 'id' || type.endsWith('wt')) continue;
     opt = document.createElement('option');
     opt.value = i;
-    opt.text = cols[i];
+    opt.text = names[i];
     sel.add(opt);
   }
 }
@@ -98,12 +99,12 @@ function updateSearchCtrl(data) {
  * @param {Object} mo - main object
  */
 function searchFieldChange(e, mo) {
-  const data = mo.data,
+  const cols = mo.cols,
         view = mo.view;
 
-  ['num-sel-p', 'cat-sel-p', 'fea-sel-p', 'des-sel-p'].forEach(id => {
-    byId(id).classList.add('hidden');
-  });
+  for (let key of ['num', 'cat', 'fea', 'des']) {
+    byId(key + '-sel-p').classList.add('hidden');
+  }
   byId('search-btn').style.visibility = 'hidden';
   const span = byId('str-match-span');
   span.classList.add('hidden');
@@ -113,33 +114,31 @@ function searchFieldChange(e, mo) {
   if (i === '') return;
   i = parseInt(i);
   let p;
-  switch (data.types[i]) {
+  switch (cols.types[i]) {
 
-    case 'number':
+    case 'num':
       byId('num-sel-p').classList.remove('hidden');
       break;
 
-    case 'category':
+    case 'cat':
       p = byId('cat-sel-p');
       p.lastElementChild.appendChild(span);
       // p.appendChild(span);
       span.classList.remove('hidden');
       p.classList.remove('hidden');
-      autoComplete(byId('cat-sel-txt'),
-        Object.keys(view.categories[data.cols[i]]).sort());
+      autoComplete(byId('cat-sel-txt'), Object.keys(mo.cache.freqs[i]).sort());
       break;
 
-    case 'feature':
+    case 'fea':
       p = byId('fea-sel-p');
       p.lastElementChild.appendChild(span);
       // p.appendChild(span);
       span.classList.remove('hidden');
       p.classList.remove('hidden');
-      autoComplete(byId('fea-sel-txt'),
-        Object.keys(view.features[data.cols[i]]).sort());
+      autoComplete(byId('fea-sel-txt'), Object.keys(mo.cache.freqs[i]).sort());
       break;
 
-    case 'description':
+    case 'des':
       p = byId('des-sel-p');
       p.lastElementChild.appendChild(span);
       // p.appendChild(span);
@@ -158,24 +157,23 @@ function searchFieldChange(e, mo) {
  * @returns {boolean} whether search is successful
  */
 function searchByCriteria(mo) {
-  const data = mo.data,
-        mask = mo.mask;
   let col = byId('search-field-sel').value;
   if (col === '') {
     toastMsg('No search criterion was specified.', mo.stat);
     return false;
   }
   col = parseInt(col);
-  const type = data.types[col];
 
   // filter contigs by currently specified criteria
-  const ctgs = [];
+  const mask = mo.mask;
   const hasMask = (Object.keys(mask).length > 0);
-  const df = data.df;
-  const n = df.length;
 
   // search by threshold
-  if (type === 'number') {
+  const arr = mo.data[col];
+  const n = arr.length;
+  const type = mo.cols.types[col];
+  const ctgs = [];
+  if (type === 'num') {
 
     // validate minimum and maximum thresholds
     let min = byId('min-txt').value,
@@ -203,8 +201,8 @@ function searchByCriteria(mo) {
     let val;
     for (let i = 0; i < n; i++) {
       if (hasMask && i in mask) continue;
-      val = df[i][col];
-      if ((val !== null) &&
+      val = arr[i];
+      if ((val !== NaN) &&
         (min === null || (minIn ? (val >= min) : (val > min))) &&
         (max === null || (maxIn ? (val <= max) : (val < max)))) {
           ctgs.push(i);
@@ -214,7 +212,7 @@ function searchByCriteria(mo) {
 
   // search by keyword
   else {
-    let text = byId(type.substring(0, 3) + '-sel-txt').value;
+    let text = byId(type + '-sel-txt').value;
     if (text === '') {
       toastMsg('Must specify a keyword.', mo.stat);
       return false;
@@ -226,12 +224,11 @@ function searchByCriteria(mo) {
     let val;
     for (let i = 0; i < n; i++) {
       if (hasMask && i in mask) continue;
-      val = df[i][col];
-      if (val === null) continue;
+      val = arr[i];
 
       // category or description
-      if (type !== 'feature') {
-        if (type === 'category') val = val[0];
+      if (type !== 'fea') {
+        if (val === '') continue;
         if (!mcase) val = val.toUpperCase();
         if (mwhole ? (val === text) : (val.indexOf(text) > -1))
           ctgs.push(i);

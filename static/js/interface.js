@@ -56,22 +56,22 @@ function initGUI(mo) {
  * @description I didn't find a way to do this automatically...
  */
 function resetControls() {
-  document.querySelectorAll('input, select').forEach(dom => {
+  for (let dom of document.querySelectorAll('input, select')) {
     dom.value = '';
-  });
+  }
 }
 
 
 /**
  * Update controls based on new data.
  * @function updateControls
- * @param {Object} data - data object
+ * @param {Object} cols - cols object
  * @param {Object} view - view object
  */
- function updateControls(data, view) {
-  updateSearchCtrl(data);
-  updateDisplayCtrl(data, view);
-  updateMiniPlotCtrl(data);
+ function updateControls(cols, view) {
+  updateSearchCtrl(cols);
+  updateDisplayCtrl(cols, view);
+  updateMiniPlotCtrl(cols);
 }
 
 
@@ -119,9 +119,9 @@ function initWindow(mo) {
         }
       }
       if (hideDropdown) {
-        document.querySelectorAll('div.popup, div.menu').forEach(div => {
+        for (let div of document.querySelectorAll('div.popup, div.menu')) {
           div.classList.add('hidden');
-        });
+        }
       }
     }
   });
@@ -151,13 +151,13 @@ function resizeWindow(mo) {
  * @function initPanelHeads
  */
 function initPanelHeads() {
-  document.querySelectorAll('.panel-head span:last-of-type button').forEach(
-    function (btn) {
+  for (let btn of document.querySelectorAll(
+    '.panel-head span:last-of-type button')) {
     btn.addEventListener('click', function () {
       const panel = this.parentElement.parentElement.nextElementSibling;
       if (panel !== null) panel.classList.toggle("hidden");
     });
-  });
+  }
 }
 
 
@@ -189,7 +189,7 @@ function initBtnGroups() {
  * @function initCloseBtns
  */
 function initCloseBtns() {
-  document.querySelectorAll(".modal-head").forEach(function (div) {
+  for (let div of document.querySelectorAll(".modal-head")) {
     const btn = document.createElement('button');
     btn.innerHTML = '&times;';
     btn.title = 'Close ' + div.textContent.toLowerCase() + ' window';
@@ -197,7 +197,7 @@ function initCloseBtns() {
       div.parentElement.parentElement.classList.add('hidden');
     });
     div.appendChild(btn);
-  });
+  }
 }
 
 
@@ -238,7 +238,7 @@ function initListSel() {
  * @todo Improve it.
  */
 function initFloatTools() {
-   document.querySelectorAll('.toolbar').forEach(function (bar) {
+  for (let bar of document.querySelectorAll('.toolbar')) {
     const div = bar.parentElement;
     div.addEventListener('mouseenter', function () {
       bar.classList.remove("hidden");
@@ -258,7 +258,7 @@ function initFloatTools() {
           e.clientY >= rect.top  && e.clientY <= rect.bottom) return;
       bar.classList.add("hidden");
     });
-  });
+  }
 }
 
 
@@ -314,11 +314,7 @@ function initContextMenu(mo) {
 
   // close current data
   byId('close-data-a').addEventListener('click', function () {
-    mo.data = { cols: [], types: [], dicts: {}, df: [] };
-    mo.pick = {};
-    mo.mask = {};
-    mo.bins = {};
-    mo.dist = null;
+    closeData(mo);
     updateViewByData(mo);
   });
 
@@ -392,7 +388,7 @@ function initSideFrame(mo) {
   // scale select buttons
   // It is a dropdown menu of various scaling methods.
   let lst = byId('scale-select');
-  document.querySelectorAll('button.scale-btn').forEach(function (btn) {
+  for (let btn of document.querySelectorAll('button.scale-btn')) {
     btn.addEventListener('click', function () {
       byId('current-scale').innerHTML = this.getAttribute('data-scale');
       lst.setAttribute('data-target-id', this.id);
@@ -401,7 +397,7 @@ function initSideFrame(mo) {
       lst.style.left = rect.left + 'px';
       lst.classList.toggle('hidden');
     });
-  });
+  }
 
   // scale select options
   let table = byId('scale-options');
@@ -445,29 +441,29 @@ function initSettings(mo) {
 
   // Change length filter.
   let btn = byId('len-filt');
-  btn.value = mo.view.filter.len;
+  btn.value = mo.filter.len;
   btn.addEventListener('blur', function () {
     const val = parseInt(this.value);
-    if (val !== mo.view.filter.len) {
-      mo.view.filter.len = val;
+    if (val !== mo.filter.len) {
+      mo.filter.len = val;
       toastMsg(`Changed contig length threshold to ${val}.`, mo.stat);
     }
   });
 
   // Change coverage filter.
   btn = byId('cov-filt');
-  btn.value = mo.view.filter.cov;
+  btn.value = mo.filter.cov;
   btn.addEventListener('blur', function () {
     const val = parseFloat(this.value);
-    if (val != mo.view.filter.cov) {
-      mo.view.filter.cov = val;
+    if (val != mo.filter.cov) {
+      mo.filter.cov = val;
       toastMsg(`Changed contig coverage threshold to ${val}.`, mo.stat);
     }
   });
 
   // Show/hide grid.
   byId('grid-chk').addEventListener('change', function () {
-    view.grid = this.checked;
+    mo.view.grid = this.checked;
     byId('coords-label').classList.toggle('hidden', !this.checked);
     renderArena(mo);
   });
@@ -491,6 +487,7 @@ function initSettings(mo) {
  * @param {Object} mo - main object
  */
 function initWidgets(mo) {
+  const view = mo.view;
 
   // draw polygon to select contigs
   byId('polygon-btn').addEventListener('click', function () {
@@ -537,22 +534,22 @@ function initWidgets(mo) {
 
   // move around
   byId('left-btn').addEventListener('click', function () {
-    view.pos.x -= 15;
+    view.posX -= 15;
     updateView(mo);
   });
 
   byId('up-btn').addEventListener('click', function () {
-    view.pos.y -= 15;
+    view.posY -= 15;
     updateView(mo);
   });
 
   byId('right-btn').addEventListener('click', function () {
-    view.pos.x += 15;
+    view.posX += 15;
     updateView(mo);
   });
 
   byId('down-btn').addEventListener('click', function () {
-    view.pos.y += 15;
+    view.posY += 15;
     updateView(mo);
   });
 
@@ -579,7 +576,8 @@ function initWidgets(mo) {
   byId('adj-rand-a').addEventListener('click', function () {
     if (this.classList.contains('disabled')) return;
     if (!this.value) {
-      listSelect(Object.keys(mo.view.categories).sort(), this, 'right');
+      const lst = listColsByType(mo.cols, 'cat');
+      listSelect(lst, this, 'right');
     } else {
       calcAdjRand(mo, this.value);
       this.value = null;
@@ -656,11 +654,11 @@ function listSelect(lst, src, direc, same) {
   const table = byId('list-options');
   table.setAttribute('data-target-id', src.id);
   table.innerHTML = '';
-  lst.forEach(itm => {
+  for (let itm of lst) {
     const row = table.insertRow(-1);
     const cell = row.insertCell(-1);
     cell.innerHTML = itm;
-  });
+  }
   div.classList.remove('hidden');
 }
 
@@ -728,16 +726,17 @@ function autoComplete(src, arr) {
     const VAL = val.toUpperCase();
     const l = val.length;
     const lst = [];
-    arr.forEach(itm => {
+    for (let itm of arr) {
       const prefix = itm.substring(0, l);
       if (prefix.toUpperCase() === VAL) {
         lst.push('<strong>' + prefix + '</strong>' + itm.substring(l));
       }
-    });
+    }
     listSelect(lst, src, 'down', true);
     focus = -1;
   }
 
+  // keyboard controls
   src.addEventListener('keydown', keydownEvent);
   function keydownEvent(e) {
     const table = byId('list-options');
@@ -761,13 +760,18 @@ function autoComplete(src, arr) {
 
   function addActive(table) {
     removeActive(table);
-    if (focus >= table.rows.length) focus = 0;
-    else if (focus < 0) focus = (table.rows.length - 1);
+    if (focus >= table.rows.length) {
+      focus = 0;
+    } else if (focus < 0) {
+      focus = (table.rows.length - 1);
+    }
     table.rows[focus].cells[0].classList.add('active');
   }
 
   function removeActive(table) {
-    for (let row of table.rows) row.cells[0].classList.remove('active');
+    for (let row of table.rows) {
+      row.cells[0].classList.remove('active');
+    }
   }
 }
 
@@ -782,7 +786,7 @@ function autoComplete(src, arr) {
  * @param {Object} mo - main object
  */
 function formatValueLabel(value, icol, digits, unit, mo) {
-  const ilen = mo.view.spcols.len;
+  const ilen = mo.cache.speci.len;
   if (ilen && icol === ilen) {
     const fmtlen = FormatLength(value);
     let res = formatNum(fmtlen[0], digits);
