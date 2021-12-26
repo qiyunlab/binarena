@@ -152,15 +152,6 @@
           --><button class="square" id="whole-btn" title="Match whole value">&ldquo;&rdquo;</button>
         </span>
 
-        <!-- selection mode -->
-        <!-- <p>
-          <label title="Choose a selection mode">Mode</label>
-          <span class="btn-group">
-            <button id="sel-new-btn" class="square pressed" title="New selection"><i class="fa fa-asterisk"></i></button>
-            <button id="sel-add-btn" class="square" title="Add to selection"><i class="fa fa-plus"></i></button>
-            <button id="sel-remove-btn" class="square" title="Remove from selection"><i class="fa fa-minus"></i></button>
-          </span>
-        </p> -->
       </div>
 
       <!-- display panel -->
@@ -342,8 +333,6 @@
     <div id="freq-panel">
       <button id="screenshot-btn" title="Take a screenshot (P)"><i class="fa fa-camera"></i></button>
       <button id="polygon-btn" title="Draw polygon with mouse clicks to contain multiple contigs (Enter)" data-title="Finish polygon selection (Enter)"><i class="fa fa-pencil fa-lg"></i></button>
-      <button id="selmode-btn" title="Current selection mode: new selection"><i class="fa fa-asterisk"></i></button>
-      <button id="masking-btn" title="Masking mode: directly add selected contigs to mask (M)"><i class="fa fa-eye-slash fa-lg"></i></button>
     </div>
 
     <!-- calculation panel -->
@@ -422,7 +411,7 @@
                 <th title="Unique bin identifier">Name</th>
                 <th title="Number of contigs">#</th>
                 <th title="Total length of contigs (kbp)">kb</th>
-                <th title="Relative abundance (%) (sum of length x coverage normalized by the entire sample)">%</th>
+                <th title="Relative abundance (%) (sum of length x coverage vs. entire sample)">%</th>
               </tr>
             </thead>
             <tbody id="bin-tbody"></tbody>
@@ -466,7 +455,7 @@
 
     <!-- mask panel -->
     <div id="mask-head" class="panel-head" style="margin-top: auto;">
-      <span style="float: right;"><button id="clear-mask-btn" title="Clear mask"><i class="fa fa-repeat"></i> Clear</button></span>
+      <span style="float: right;"><button id="clear-mask-btn" title="Clear mask">Clear</button></span>
       <span><button id="mask-head-btn">Masked</button></span>
     </div>
   </div>

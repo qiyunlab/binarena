@@ -75,7 +75,7 @@ function calcSilhouette(mo) {
       cols.names.push('silhouette');
       cols.types.push('num');
       updateControls(cols, view);
-      buildInfoTable(cols, mo.pick, mo.cache.speci.len);
+      buildInfoTable(mo);
     }
 
     // update existing column

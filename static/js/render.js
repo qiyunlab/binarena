@@ -20,10 +20,9 @@ function initCanvas(mo) {
 
   const view = mo.view,
         stat = mo.stat,
-        rena = mo.rena,
-        oray = mo.oray;
+        rena = mo.rena;
 
-  resizeArena(rena, oray);
+  resizeArena(mo);
 
   /** mouse events */
   rena.addEventListener('mousedown', function (e) {
@@ -121,16 +120,12 @@ function initCanvas(mo) {
       case 'P':
         byId('screenshot-btn').click();
         break;
-      case 'm':
-      case 'M':
-        byId('masking-btn').click();
-        break;
       case 'Delete':
       case 'Backspace':
         byId('mask-btn').click();
         break;
       case 'Enter':
-        polygonSelect(mo);
+        polygonSelect(mo, e.shiftKey);
         break;
       case ' ':
         byId('as-new-bin-btn').click();
@@ -208,43 +203,61 @@ function canvasMouseClick(e, mo) {
 
   // determine which contigs are clicked
   else {
-    if (data.length === 0) return;
-    const arr = [];
+    const n = mo.cache.nctg;
+    if (!n) return;
+    const pick = mo.pick,
+          mask = mo.mask;
+
+    // clear current selection
+    if (!e.shiftKey) {
+      pick.fill(false);
+      mo.cache.npick = 0;
+    }
+
+    // get mouse position    
     const x0 = (e.offsetX - view.posX) / view.scale,
           y0 = (e.offsetY - view.posY) / view.scale;
-    const masking = (Object.keys(mo.mask).length > 0) ? true : false;
     
     const si = view.size.i;
     const S = si ? data[si] : null;
     const X = data[view.x.i],
           Y = data[view.y.i];
-    const n = X.length;
 
-    let radius, r2, x, y, dx, dy, x2y2;
+    const arr = [];
+    let radius, x, y, x2y2;
     for (let i = 0; i < n; i++) {
-      if (masking && i in mo.mask) continue;
+      if (mask[i]) continue;
       radius = si ? scaleNum(S[i], view.size.scale) * view.rbase /
         view.size.max : view.rbase;
-      // const ratio = scaleNum(S[i], view.size.scale) *
-      //   view.rbase / view.size.max;
-      r2 = radius * radius; // this is faster than Math.pow(x, 2)
       x = ((scaleNum(X[i], view.x.scale) - view.x.min) /
         (view.x.max - view.x.min) - 0.5) * rena.width;
       y = ((view.y.max - scaleNum(Y[i], view.y.scale)) /
         (view.y.max - view.y.min) - 0.5) * rena.height;
-      dx = x - x0;
-      dy = y - y0;
-      x2y2 = dx * dx + dy * dy;
-      if (x2y2 <= r2) arr.push([i, x2y2]);
-    }
-    if (!e.shiftKey) mo.pick = {}; // clear selection
-    if (arr.length > 0) {
-      arr.sort(function (a, b) { return (a[1] - b[1]); });
 
-      // if already selected, remove; else, add to selection
-      const i = arr[0][0];
-      if (i in mo.pick) delete mo.pick[i];
-      else mo.pick[i] = null;
+      // calculate distance to center
+      x2y2 = (x - x0) ** 2 + (y - y0) ** 2;
+
+      // if mouse is within contig area, consider a click
+      if (x2y2 <= radius ** 2) arr.push([i, x2y2]);
+    }
+
+    // if one or more contigs are clicked
+    if (arr.length > 0) {
+
+      // sort clicked contigs by proximity from center to mouse position
+      // no need to square root because it is monotonic
+      arr.sort((a, b) => a[1] - b[1]);
+      let ctg = arr[0][0];
+
+      // if already selected, unselect; else, select
+      if (pick[ctg]) {
+        pick[ctg] = false;
+        mo.cache.npick -= 1;
+      } else {
+        pick[ctg] = true;
+        mo.cache.npick += 1;
+      }
+
     }
     updateSelection(mo);
   }
@@ -269,12 +282,13 @@ function calcArenaDimensions(rena) {
 /**
  * Update canvas dimensions.
  * @function resizeArena
- * @param {Object} rena - arena canvas DOM
- * @param {Object} oray - overlay canvas DOM
+ * @param {Object} mo - main object
  * @description For an HTML5 canvas, (plot) and style width are two things.
  * @see {@link https://stackoverflow.com/questions/4938346/}
  */
-function resizeArena(rena, oray) {
+function resizeArena(mo) {
+  const rena = mo.rena,
+        oray = mo.oray;
   const [w, h] = calcArenaDimensions(rena);
 
   // update width
@@ -288,6 +302,9 @@ function resizeArena(rena, oray) {
   if (rena.height !== h) rena.height = h;
   if (oray.style.height !== h) oray.style.height = h;
   if (oray.height !== h) oray.height = h;
+
+  // re-draw plots
+  updateView(mo);
 }
 
 
@@ -311,7 +328,8 @@ function resizeArena(rena, oray) {
 function renderArena(mo) {
   const data = mo.data,
         view = mo.view,
-        rena = mo.rena;
+        rena = mo.rena,
+        mask = mo.mask;
   const types = mo.cols.types;
 
   // prepare canvas context
@@ -339,8 +357,6 @@ function renderArena(mo) {
   // zoom in
   // rena.style.transformOrigin = '0 0';
   // rena.style.transform = 'scale(' + view.scale + ')';
-
-  const masking = (Object.keys(mo.mask).length > 0);
 
   // cache constants
   const pi2 = Math.PI * 2,
@@ -404,7 +420,7 @@ function renderArena(mo) {
 
   let n = X.length;
   for (let i = 0; i < n; i++) {
-    if (masking && i in mo.mask) continue;
+    if (mask[i]) continue;
 
     // determine radius (size)
     // radius = si ? scaleNum(S[i], sscale) * rbase / smax : rbase;
@@ -500,18 +516,19 @@ function renderArena(mo) {
 function renderSelection(mo) {
   const data = mo.data,
         view = mo.view,
-        oray = mo.oray;
+        oray = mo.oray,
+        pick = mo.pick;
 
   // get shadow color
   const color = mo.theme.selection;
 
-  // clear canvas
+  // clear overlay canvas
   const ctx = oray.getContext('2d');
   ctx.clearRect(0, 0, oray.width, oray.height);
 
-  const ctgs = Object.keys(mo.pick);
-  const n = ctgs.length;
-  if (n === 0) return;
+  if (mo.cache.npick === 0) return;
+  const n = mo.cache.nctg;
+  if (!n) return;
 
   // prepare canvas
   ctx.save();
@@ -548,17 +565,16 @@ function renderSelection(mo) {
         sfac = (view.size.upper / 100 - slow) / (view.size.max - smin);
 
   // render shadows around selected contigs
-  let ctg, radius, x, y;
+  let r, x, y;
   ctx.beginPath();
   for (let i = 0; i < n; i++) {
-    ctg = ctgs[i];
-    // radius = Math.round(si ? scaleNum(S[ctg], sscale) * sratio : rbase);
-    radius = Math.round(si ? ((scaleNum(S[ctg], sscale) - smin) *
+    if (!pick[i]) continue;
+    r = Math.round(si ? ((scaleNum(S[i], sscale) - smin) *
       sfac + slow) * rbase : rbase);
-    x = Math.round(((scaleNum(X[ctg], xscale) - xmin) / dx - 0.5) * w);
-    y = Math.round(((ymax - scaleNum(Y[ctg], yscale)) / dy - 0.5) * h);
+    x = Math.round(((scaleNum(X[i], xscale) - xmin) / dx - 0.5) * w);
+    y = Math.round(((ymax - scaleNum(Y[i], yscale)) / dy - 0.5) * h);
     ctx.moveTo(x, y);
-    ctx.arc(x, y, radius, 0, pi2, true);
+    ctx.arc(x, y, r, 0, pi2, true);
   }
   ctx.fill();
   ctx.restore();
@@ -577,7 +593,7 @@ function drawPolygon(mo) {
         oray = mo.oray;
   const vertices = stat.polygon;
   const pi2 = Math.PI * 2;
-  const radius = 3 / view.scale;
+  const radius = 5 / view.scale;
   const color = mo.theme.polygon;
   const ctx = oray.getContext('2d');
   ctx.clearRect(0, 0, oray.width, oray.height);
@@ -644,8 +660,11 @@ function drawGrid(rena, view) {
  * Let user draw polygon to select a region of contigs.
  * @function polygonSelect
  * @param {Object} mo - main object
+ * @param {boolean} shift - whether Shift key is processed
  */
-function polygonSelect(mo) {
+function polygonSelect(mo, shift) {
+  let n = mo.cache.nctg;
+  if (!n) return;
   const data = mo.data,
         view = mo.view,
         stat = mo.stat,
@@ -664,31 +683,30 @@ function polygonSelect(mo) {
     stat.polygon = [];
     stat.drawing = true;
   }
-  
+
   // finish drawing
   else {
     oray.getContext('2d').clearRect(0, 0, oray.width, oray.height);
     const X = data[view.x.i],
           Y = data[view.y.i];
-    const n = X.length;
+
+    const mask = mo.mask;
     const ctgs = [];
-    const hasMask = (Object.keys(mo.mask).length > 0);
     let x, y;
     for (let i = 0; i < n; i++) {
-      if (hasMask && i in mo.mask) continue;
-      x = ((scaleNum(X[i], view.x.scale) - view.x.min) /
-        (view.x.max - view.x.min) - 0.5) * rena.width;
-      y = ((view.y.max - scaleNum(Y[i], view.y.scale)) /
-        (view.y.max - view.y.min) - 0.5) * rena.height;
-      if (pnpoly(x, y, stat.polygon)) ctgs.push(i);
+      if (!mask[i]) {
+        x = ((scaleNum(X[i], view.x.scale) - view.x.min) /
+          (view.x.max - view.x.min) - 0.5) * rena.width;
+        y = ((view.y.max - scaleNum(Y[i], view.y.scale)) /
+          (view.y.max - view.y.min) - 0.5) * rena.height;
+        if (pnpoly(x, y, stat.polygon)) ctgs.push(i);
+      }
     }
     stat.polygon = [];
     stat.drawing = false;
 
     // treat selection
-    if (ctgs.length > 0) {
-      treatSelection(ctgs, stat.selmode, stat.masking, mo);
-    }
+    treatSelection(ctgs, mo, shift);
   }
 }
 

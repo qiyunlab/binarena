@@ -606,29 +606,6 @@ function parseContigTitle(line, format) {
 
 
 /**
- * Close current dataset.
- * @function closeData
- * @param {Object} mo - main object
- */
-function closeData(mo) {
-
-  // clear existing dataset
-  mo.data.length = 0;
-  mo.cols.names = [];
-  mo.cols.types = [];
-  mo.cols.links = [];
-  mo.pick = {};
-  mo.mask = {};
-  mo.bins = {};
-  mo.cache.abund = 0;
-  mo.cache.speci = {};
-  mo.cache.freqs = {};
-  mo.cache.locis = {};
-  mo.cache.pdist = [];
-}
-
-
-/**
  * Export data as a JSON file.
  * @function exportJSON
  * @param {Object} data - data object to export

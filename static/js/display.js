@@ -577,7 +577,7 @@ function updateColorMap(mo) {
  */
 function updateView(mo) {
   renderArena(mo);
-  updateSelection(mo);
+  renderSelection(mo);
   if (mo.stat.drawing) drawPolygon(mo);
 }
 
@@ -592,13 +592,26 @@ function updateView(mo) {
 function updateViewByData(mo) {
   resetControls();
 
-  const data = mo.data,
-        cols = mo.cols,
-        view = mo.view,
-        cache = mo.cache;
+  // clear work
+  mo.pick.length = 0;
+  mo.mask.length = 0;
+  mo.bins = {};
+
+  // clear cache
+  const cache = mo.cache;
+  cache.abund = 0;
+  cache.speci = {};
+  cache.freqs = {};
+  cache.npick = 0;
+  cache.nmask = 0;
+  cache.locis = {};
+  cache.pdist = [];
 
   // data is closed
+  const data = mo.data,
+        cols = mo.cols;
   if (data.length === 0) {
+    cache.nctg = 0;
     byId('hide-side-btn').click();
     byId('show-side-btn').disabled = true;
     byId('drop-sign').classList.remove('hidden');
@@ -609,43 +622,48 @@ function updateViewByData(mo) {
 
   // data is open
   else {
+    cache.nctg = data[0].length;
     byId('show-side-btn').disabled = false;
     byId('show-side-btn').click();
     byId('drop-sign').classList.add('hidden');
     const btn = byId('dash-btn');
     if (!btn.classList.contains('active')) btn.click();
-  }
 
-  // guess special columns
-  cache.speci = {
-    len: guessLenColumn(cols),
-    cov: guessCovColumn(cols),
-    gc:  guessGCColumn(cols)
-  };
+    // guess special columns
+    cache.speci = {
+      len: guessLenColumn(cols),
+      cov: guessCovColumn(cols),
+      gc:  guessGCColumn(cols)
+    };
 
-  // category and feature frequencies
-  cache.freqs = {};
-  cols.types.forEach((type, i) => {
-    if (type === 'cat') cache.freqs[i] = listCats(data[i]);
-    else if (type === 'fea') cache.freqs[i] = listFeas(data[i]);
-  });
+    // calculate category and feature frequencies
+    const types = cols.types;
+    for (let i = 0; i < types.length; i++) {
+      const type = types[i];
+      if (type === 'cat') {
+        cache.freqs[i] = listCats(data[i]);
+      } else if (type === 'fea') {
+        cache.freqs[i] = listFeas(data[i]);
+      }
+    }
 
-  // calculate total abundance
-  if (cache.speci.len && cache.speci.cov) {
-    cache.abund = 0;
-    const L = data[cache.speci.len],
-          C = data[cache.speci.cov];
-    const n = L.length;
-    for (let i = 0; i < n; i++) {
-      cache.abund += L[i] * C[i];
+    // calculate total abundance
+    if (cache.speci.len && cache.speci.cov) {
+      const L = data[cache.speci.len],
+            C = data[cache.speci.cov];
+      const n = L.length;
+      for (let i = 0; i < n; i++) {
+        cache.abund += L[i] * C[i];
+      }
     }
   }
 
   // manipulate interface
+  const view = mo.view;
   initDisplayItems(cols, cache, view);
   updateColorMap(mo);
   updateControls(cols, view);
-  buildInfoTable(cols, mo.pick, cache.speci.len);
+  buildInfoTable(mo);
   buildDataTable(cols);
   fillDataTable(data, cols);
   byId('bin-tbody').innerHTML = '';
@@ -659,30 +677,18 @@ function updateViewByData(mo) {
  * Initiate or restore default view given data.
  * @function resetView
  * @param {Object} mo - main object
- * @param {boolean} [keep=false] - whether keep selection and masked
  */
-function resetView(mo, keep) {
-  const view = mo.view,
-        rena = mo.rena,
-        oray = mo.oray;
-
-  // reset view parameters
-  keep = keep || false;
-  if (!keep) {
-    view.pick = {};
-    view.mask = {};
-  }
-  view.scale = 1.0;
+function resetView(mo) {
 
   // re-center view
+  const view = mo.view;
+  view.scale = 1.0;
+  const rena = mo.rena;
   view.posX = rena.width / 2;
   view.posY = rena.height / 2;
 
   // re-calculate display item ranges
   calcDispMinMax(mo);
-
-  // clear overlay canvas
-  oray.getContext('2d').clearRect(0, 0, oray.width, oray.height);
 
   // re-render
   updateView(mo);
@@ -703,23 +709,16 @@ function calcDispMinMax(mo, items) {
   if (data.length === 0) return;
   const n = data[0].length;
 
-  // check whether some contigs are masked
-  const hasMask = (Object.keys(mask).length > 0);
-
   // calculate min / max for each item
-  let v, idx, arr, i, scale, min, max;
+  let v, idx, col, arr, i, scale, min, max;
   for (let item of items) {
     v = view[item];
     idx = v.i;
     if (!idx) continue;
-    if (!hasMask) arr = data[idx];
-    
-    // exclude masked contigs
-    else {
-      arr = [];
-      for (i = 0; i < n; i++) {
-        if (!(i in mask)) arr.push(i)
-      }
+    col = data[idx];
+    arr = [];
+    for (i = 0; i < n; i++) {
+      if (!mask[i]) arr.push(col[i]);
     }
 
     // calculate min and max of display items
@@ -747,10 +746,10 @@ function calcDispMinMax(mo, items) {
 function displayItemChange(item, i, scale, mo) {
   mo.view[item].i = i;
   mo.view[item].scale = scale;
-  
+
   // if x- or y-coordinates change, reset view
   if (item === 'x' || item === 'y') {
-    resetView(mo, true);
+    resetView(mo);
     return;
   }
 
@@ -761,4 +760,17 @@ function displayItemChange(item, i, scale, mo) {
 
   renderArena(mo);
   updateLegends(mo, [item]);
+}
+
+
+/**
+ * Close current dataset.
+ * @function closeData
+ * @param {Object} mo - main object
+ */
+function closeData(mo) {
+  mo.data.length = 0; // clear an array in place
+  mo.cols.names.length = 0;
+  mo.cols.types.length = 0;
+  mo.cols.links.length = 0;
 }

@@ -87,9 +87,9 @@ function initBinCtrl(mo) {
     dups = arrUniq(dups);
     let n = dups.length;
     if (n > 0) {
-      treatSelection(dups, 'new', false, mo);
-      toastMsg(`Error: ${n} contigs were assigned to non-unique bins. 
-        They are now selected.`, stat);
+      treatSelection(dups, mo);
+      toastMsg(`Error: ${n} contigs were assigned to non-unique bins ` +
+        '(see selected).', stat);
       return;
     }
 
@@ -153,7 +153,9 @@ function initBinCtrl(mo) {
     const table = byId('bin-tbody');
     const [bins, ctgs] = deleteBins(table, mo.bins);
     const name = createBin(mo.bins);
-    addToBin(ctgs, mo.bins[name]);
+    const pick = Array(mo.pick.length).fill(false);
+    for (let ctg of ctgs) pick[ctg] = true;
+    addToBin(pick, mo.bins[name]);
     updateBinTable(mo);
     updateBinCtrl(mo);
     selectBin(table, name);
@@ -175,6 +177,7 @@ function initBinCtrl(mo) {
 
   // Create a new bin from selected contigs.
   byId('as-new-bin-btn').addEventListener('click', function () {
+    if (mo.cache.npick === 0) return;
   
     // if there is no binning plan, create one
     if (Object.keys(mo.bins).length === 0) {
@@ -185,13 +188,11 @@ function initBinCtrl(mo) {
     const name = createBin(mo.bins);
 
     // if one or multiple contigs are selected, add them to bin
-    const ctgs = Object.keys(mo.pick);
-    const n = ctgs.length;
-    if (n > 0) {
-      addToBin(ctgs, mo.bins[name]);
-      mo.pick = {};
-      updateSelection(mo);
-    }
+    const added = addToBin(mo.pick, mo.bins[name]);
+    const n = added.length;
+    mo.pick.fill(false);
+    mo.cache.npick = 0;
+    updateSelection(mo);
     updateBinTable(mo);
     updateBinCtrl(mo);
     const table = byId('bin-tbody');
@@ -204,10 +205,9 @@ function initBinCtrl(mo) {
     const table = byId('bin-tbody');
     const [idx, bin] = currentBin(table);
     if (idx == null) return;
-    const ctgs = Object.keys(mo.pick);
-    if (ctgs.length === 0) return;
+    if (mo.cache.npick === 0) return;
     const exist = mo.bins[bin];
-    const added = addToBin(ctgs, exist);
+    const added = addToBin(mo.pick, exist);
     const n = added.length;
     if (n > 0) updateBinRow(table.rows[idx], exist, mo);
     toastMsg(`Added ${plural('contig', n)} to "${bin}".`, stat);
@@ -219,10 +219,9 @@ function initBinCtrl(mo) {
     const table = byId('bin-tbody');
     const [idx, bin] = currentBin(table);
     if (idx == null) return;
-    const ctgs = Object.keys(mo.pick);
-    if (ctgs.length === 0) return;
+    if (mo.cache.npick === 0) return;
     const exist = mo.bins[bin];
-    const removed = removeFromBin(ctgs, exist);
+    const removed = removeFromBin(mo.pick, exist);
     updateBinCtrl(mo);
     const n = removed.length;
     if (n > 0) updateBinRow(table.rows[idx], exist, mo);
@@ -235,12 +234,16 @@ function initBinCtrl(mo) {
     const table = byId('bin-tbody');
     const [idx, bin] = currentBin(table);
     if (idx == null) return;
-    if (Object.keys(mo.pick).length === 0) return;
+    if (mo.cache.npick === 0) return;
     mo.bins[bin] = {};
     const ctgs = mo.bins[bin];
-    for (let ctg in mo.pick) ctgs[ctg] = null;
+    const pick = mo.pick;
+    let n = pick.length;
+    for (let i = 0; i < n; i++) {
+      if (pick[i]) ctgs[i] = null;
+    }
     updateBinCtrl(mo);
-    const n = Object.keys(ctgs).length;
+    n = Object.keys(ctgs).length;
     updateBinRow(table.rows[idx], ctgs, mo);
     toastMsg(`Updated "${bin}" (now has ${plural('contig', n)}).`, stat);
   });
@@ -285,8 +288,13 @@ function initBinCtrl(mo) {
 
     // select contigs in bin
     if (selected !== undefined) {
-      mo.pick = {};
-      for (let i in mo.bins[selected]) mo.pick[i] = null;
+      mo.pick.fill(false);
+      let npick = 0;
+      for (let i in mo.bins[selected]) {
+        mo.pick[i] = true;
+        npick++;
+      }
+      mo.cache.npick = npick;
       updateSelection(mo);
     }
   });
@@ -327,7 +335,7 @@ function updateBinCtrl(mo) {
   byId('delete-bin-btn').classList.toggle('hidden', !m);
   byId('merge-bins-btn').classList.toggle('hidden', (m < 2));
 
-  const k = Object.keys(mo.pick).length;
+  const k = mo.cache.npick;
   byId('as-new-bin-btn').classList.toggle('hidden', !k);
   byId('add-to-bin-btn').classList.toggle('hidden', !(m === 1 && k));
   byId('remove-from-bin-btn').classList.toggle('hidden', !(m === 1 && k));
@@ -560,21 +568,21 @@ function currentBin(table) {
 
 
 /**
- * Add contigs to a bin.
+ * Add selected contigs to a bin.
  * @function addToBin
- * @param {number[]} ctgs - contig indices
+ * @param {number[]} pick - contig selection
  * @param {Object} bin - target bin
  * @returns {number[]} indices of added contigs
  */
-function addToBin(ctgs, bin) {
+function addToBin(pick, bin) {
   const added = [];
-  const n = ctgs.length;
-  let ctg;
+  const n = pick.length;
   for (let i = 0; i < n; i++) {
-    ctg = ctgs[i];
-    if (!(ctg in bin)) {
-      bin[ctg] = null;
-      added.push(ctg);
+    if (pick[i]) {
+      if (!(i in bin)) {
+        bin[i] = null;
+        added.push(i);
+      }
     }
   }
   return added;
@@ -582,21 +590,21 @@ function addToBin(ctgs, bin) {
 
 
 /**
- * Remove contigs from a bin.
+ * Remove selected contigs from a bin.
  * @function removeFromBin
- * @param {number[]} ctgs - contig indices
+ * @param {number[]} pick - contig selection
  * @param {Object} bin - target bin
  * @returns {number[]} indices of removed contigs
  */
-function removeFromBin(ctgs, bin) {
+function removeFromBin(pick, bin) {
   const removed = [];
-  const n = ctgs.length;
-  let ctg;
+  const n = pick.length;
   for (let i = 0; i < n; i++) {
-    ctg = ctgs[i];
-    if (ctg in bin) {
-      delete bin[ctg];
-      removed.push(ctg);
+    if (pick[i]) {
+      if (i in bin) {
+        delete bin[i];
+        removed.push(i);
+      }
     }
   }
   return removed;

@@ -57,8 +57,8 @@ function initSearchCtrl(mo) {
   }
 
   // Launch search function.
-  byId('search-btn').addEventListener('click', function () {
-    searchByCriteria(mo);
+  byId('search-btn').addEventListener('click', function (e) {
+    searchByCriteria(mo, e.shiftKey);
   });
 
 }
@@ -154,9 +154,10 @@ function searchFieldChange(e, mo) {
  * Search contigs by criteria.
  * @function searchByCriteria
  * @param {Object} mo - main object
+ * @param {boolean} shift - whether Shift key is processed
  * @returns {boolean} whether search is successful
  */
-function searchByCriteria(mo) {
+function searchByCriteria(mo, shift) {
   let col = byId('search-field-sel').value;
   if (col === '') {
     toastMsg('No search criterion was specified.', mo.stat);
@@ -246,6 +247,7 @@ function searchByCriteria(mo) {
     }
   }
 
-  treatSelection(ctgs, mo.stat.selmode, mo.stat.masking, mo);
+  // treat found contigs
+  treatSelection(ctgs, mo, shift);
   return true;
 }

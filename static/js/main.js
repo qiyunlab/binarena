@@ -135,7 +135,10 @@ function mainObj() {
   /**
    * Data cache.
    * @member {Object} cache
-   * @description Calculation results that can be reused are stored here.
+   * @description Reusable calculation results based on the dataset.
+   * 
+   * @property {number} nctg - number of contigs in the dataset
+   * Equivalent to data[0].length. Stored in case dataset is closed.
    * 
    * @property {Object.<number>} speci - indices of special columns
    * Three contig properties are special in the analysis:
@@ -152,6 +155,9 @@ function mainObj() {
    * Key: column index, value: frequency map.
    * @todo Feature frequency is currently not in use.
    * 
+   * @property {number} npick - number of contigs selected
+   * @property {number} nmask - number of contigs masked
+   * 
    * @property {Object.<Array>} locis - locations of contigs in the plot
    * They are transformed values that can be directly rendered in the plot.
    * @todo Currently not in use.
@@ -164,11 +170,14 @@ function mainObj() {
    * spatial.distance.pdist.html}
    */
   this.cache = {
+    nctg:  0,
     speci: {},
     abund: 0,
     freqs: {},
+    npick: 0,
+    nmask: 0,
     locis: {},
-    pdist: [],
+    pdist: []
   };
 
 
@@ -252,8 +261,6 @@ function mainObj() {
    * @property {boolean} mousemove - mouse is moving
    * @property {number}  dragX     - dragging position X
    * @property {number}  dragY     - dragging position Y
-   * @property {string}  selmode   - selection mode (new, add, remove)
-   * @property {boolean} masking   - masking mode is on
    * @property {boolean} drawing   - polygon drawing is ongoing
    * @property {Array.<{x: number, y: number}>} polygon - vertices of polygon
    * @property {number}  resizing  - window resizing is ongoing
@@ -264,8 +271,6 @@ function mainObj() {
     mousemove: false,
     dragX:     0,
     dragY:     0,
-    selmode:   'new',
-    masking:   false,
     drawing:   false,
     polygon:   [],
     resizing:  null,
@@ -274,13 +279,14 @@ function mainObj() {
 
 
   /**
-   * Selected contigs and masked contigs.
-   * @member {Object.<number>} pick
-   * @member {Object.<number>} mask
-   * @description Indices of contigs that are currently selected or masked.
+   * Contig selection and masking
+   * @member {Array.<boolean>} pick
+   * @member {Array.<boolean>} mask
+   * @description They are 1D arrays of the same size as data columns. Their
+   * elements are true/false values.
    */
-  this.pick = {};
-  this.mask = {};
+   this.pick = [];
+   this.mask = [];
 
 
   /**

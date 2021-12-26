@@ -21,6 +21,17 @@ function splitLines(text) {
 
 
 /**
+ * Capitalize a string
+ * @function capital
+ * @param {string} text - multi-line string
+ * @returns {string[]} split text
+ */
+function capital(str) {
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+
+/**
  * Format a number.
  * @function formatNum
  * @param {number} num - number to format
@@ -228,8 +239,7 @@ function listCats(arr) {
   for (let i = 0; i < n; i++) {
     cat = arr[i];
     if (cat) {
-      if (cat in res) res[cat] ++;
-      else res[cat] = 1;
+      res[cat] = (res[cat] || 0) + 1;
     }
   }
   return res;
@@ -248,8 +258,7 @@ function listFeas(arr) {
   let fea;
   for (let i = 0; i < n; i++) {
     for (fea of arr[i]) {
-      if (fea in res) res[fea] ++;
-      else res[fea] = 1;
+      res[fea] = (res[fea] || 0) + 1;
     };
   }
   return res;

@@ -28,38 +28,49 @@ function initSelectCtrl(mo) {
  */
 function initSelTools(mo) { 
 
-  // Invert selection.
+  /** Invert selection. */
   byId('invert-btn').addEventListener('click', function () {
-    if (mo.data.length === 0) return;
-    let pick = mo.pick;
-    const mask = mo.mask;
-    let n = mo.data[0].length;
-    const res = [];
+    if (!mo.cache.npick) return;
+    const pick = mo.pick,
+          mask = mo.mask;
+    let m = 0;
+    const n = mo.cache.nctg;
     for (let i = 0; i < n; i++) {
-      if (!(i in mask) && !(i in pick)) res.push(i);
+      if (!mask[i]) pick[i] = !pick[i];
+      if (pick[i]) m++;
     }
-    mo.pick = {};
-    pick = mo.pick;
-    n = res.length;
-    for (let i = 0; i < n; i++) {
-      pick[res[i]] = null;
-    }
-    treatSelection(res, 'new', false, mo);
+    mo.cache.npick = m;
+    toastMsg(`Selected ${plural('contig', m)}.`, mo.stat);
+    updateSelection(mo);
+    mo.rena.focus();
   });
 
-  // Mask selection.
+  /** Mask selection. */
   byId('mask-btn').addEventListener('click', function () {
-    const ctgs = Object.keys(mo.pick);
-    if (ctgs.length > 0) {
-      // switch to "add" mode, then treat deletion
-      treatSelection(ctgs, 'add', true, mo);
+    if (!mo.cache.npick) return;
+    const pick = mo.pick,
+          mask = mo.mask;
+    let m = 0;
+    const n = mo.cache.nctg;
+    for (let i = 0; i < n; i++) {
+      if (pick[i]) {
+        mask[i] = true;
+        pick[i] = false;
+        m ++;
+      }
     }
+    mo.cache.npick -= m;
+    mo.cache.nmask += m;
+    toastMsg(`Masked ${plural('contig', m)}.`, mo.stat);
+    updateSelection(mo);
+    mo.rena.focus();
   });
 
-  // Clear mask.
+  /** Clear mask. */
   byId('clear-mask-btn').addEventListener('click', function () {
-    mo.mask = {};
-    updateView(mo);
+    mo.mask.fill(false);
+    mo.cache.nmask = 0;
+    updateSelection(mo);
   });
 
 }
@@ -78,14 +89,14 @@ function initInfoCtrl(mo) {
 
   /** Toggle summary metric (sum or mean). */
   byId('info-metric-btn').addEventListener('click', function () {
-    const row = byId('info-table').rows[this.parentElement
-      .getAttribute('data-row')];
-    if (row.getAttribute('data-metric') === 'sum') {
-      row.setAttribute('data-metric', 'mean');
+    const row = byId('info-table').rows[
+      this.parentElement.getAttribute('data-row')];
+    if (row.getAttribute('data-met') === 'sum') {
+      row.setAttribute('data-met', 'mean');
       this.innerHTML = '<span style="text-decoration: overline;">' +
         '<i>x</i></span>';
     } else {
-      row.setAttribute('data-metric', 'sum');
+      row.setAttribute('data-met', 'sum');
       this.innerHTML = '&Sigma;<i>x</i>';
     }
     updateInfoRow(row, mo);
@@ -95,15 +106,16 @@ function initInfoCtrl(mo) {
   byId('info-ref-sel').addEventListener('change', function () {
     const row = byId('info-table').rows[this.parentElement
       .parentElement.getAttribute('data-row')];
-    row.setAttribute('data-refcol', this.value);
+    row.setAttribute('data-ref', this.value);
     updateInfoRow(row, mo);
+    this.blur();
   });
 
   /** Plot variable. */
   byId('info-plot-btn').addEventListener('click', function () {
     const div = this.parentElement;
     const idx = byId('info-table').rows[div.getAttribute('data-row')]
-      .getAttribute('data-index');
+      .getAttribute('data-idx');
     mo.mini.field = idx;
     byId('mini-field-sel').value = idx;
     updateMiniPlot(mo);
@@ -125,55 +137,41 @@ function initInfoCtrl(mo) {
  * Deal with selected contigs.
  * @function treatSelection
  * @param {number[]} ctgs - indices of contigs to be selected / excluded
- * @param {string} [selmode='new'] - selection mode (new, add, remove)
- * @param {boolean} [masking=false] - masking mode on/off
  * @param {Object} mo - main object
+ * @param {boolean} shift - whether Shift key is processed
+ * @description If Shift key is pressed, the contigs will be added to the
+ * existing selection; otherwise, they will become a new selection.
  */
-function treatSelection(ctgs, selmode, masking, mo) {
-  if (typeof masking === 'undefined') masking = false;
-  if (typeof selmode === 'undefined') selmode = mo.stat.selmode;
-  const target = masking ? mo.mask : mo.pick;
+function treatSelection(ctgs, mo, shift) {
+  const pick = mo.pick;
+  const n = ctgs.length;
 
   // new selection
-  if (selmode === 'new') {
-    Object.keys(target).forEach(i => { delete target[i]; });
-    ctgs.forEach(i => { target[i] = null; });
-    toastMsg(`${masking ? 'Masked' : 'Selected'} ${plural('contig',
-      ctgs.length)}.`, mo.stat);
+  if (!shift) {
+    pick.fill(false);
+    mo.cache.npick = n;
+    for (let i = 0; i < n; i++) {
+      pick[ctgs[i]] = true;
+    }
+    toastMsg(`Selected ${plural('contig', n)}.`, mo.stat);
   }
 
   // add to selection
-  else if (selmode === 'add') {
-    let n = 0;
-    ctgs.forEach(i => {
-      if (!(i in target)) {
-        target[i] = null;
-        n++;
+  else {
+    let ctg;
+    let m = 0;
+    for (let i = 0; i < n; i++) {
+      ctg = ctgs[i];
+      if (!pick[ctg]) {
+        pick[ctg] = true;
+        m++;
       }
-    });
-    toastMsg(`Added ${plural('contig', n)} to ${masking ? 'mask' :
-      'selection'}.`, mo.stat);
+    }
+    mo.cache.npick += m;
+    toastMsg(`Added ${plural('contig', n)} to selection.`, mo.stat);
   }
-
-  // remove from selection
-  else if (selmode === 'remove') {
-    const todel = [];
-    ctgs.forEach(i => { if (i in target) todel.push(i); });
-    todel.forEach(i => { delete target[i]; });
-    toastMsg(`Removed ${plural('contig', todel.length)} from ${masking ?
-      'mask' : 'selection'}.`, mo.stat);
-  }
-
-  // remove excluded contigs from selection, if any
-  if (masking) {
-    const todel = [];
-    Object.keys(mo.pick).forEach(i => {
-      if (i in mo.mask) todel.push(i);
-    });
-    todel.forEach(i => { delete mo.pick[i]; });
-  }
-
-  updateView(mo);
+    
+  updateSelection(mo);
   mo.rena.focus();
 }
 
@@ -187,23 +185,8 @@ function updateSelection(mo) {
   renderSelection(mo);
   updateMiniPlot(mo);
   updateBinCtrl(mo);
-  updateSelTools(mo);
   updateInfoTable(mo);
   updateMaskCtrl(mo);
-}
-
-
-/**
- * Update selection controls.
- * @function updateSelTools
- * @param {Object} mo - main object
- */
-function updateSelTools(mo) {
-  const ctgs = Object.keys(mo.pick);
-  const n = ctgs.length;
-  let str = 'Selected: ' + n;
-  if (n === 1) str += ' (ID: ' + mo.data[0][ctgs[0]] + ')';
-  byId('info-head-btn').innerHTML = str;
 }
 
 
@@ -213,90 +196,141 @@ function updateSelTools(mo) {
  * @param {Object} mo - main object
  */
 function updateMaskCtrl(mo) {
-  const ctgs = Object.keys(mo.mask);
-  const n = ctgs.length;
-  let str = 'Masked: ' + n;
-  if (n === 1) str += ' (ID: ' +  mo.data[0][ctgs[0]] + ')';
+  const n = mo.cache.nmask;
+  let str = `Masked: ${n}`;
+  if (n === 1) str += ' (ID: ' +  mo.data[0][mo.mask.indexOf(true)] + ')';
   byId('mask-head-btn').innerHTML = str;
+  byId('clear-mask-btn').classList.toggle('hidden', !n);
 }
 
 
 /**
  * Build info table based on the dataset and selected contigs.
  * @function buildInfoTable
- * @param {Object} cols - cols object
- * @param {Object} pick - selected contigs
- * @param {Object} [lencol] - "length" column index
+ * @param {Object} mo - main object
  * @description It re-draws the entire info table to reflect updates in the
- * dataset (e.g., loaded a new dataset; added a new column). Fields (rows)
- * displayed in the table are determined based on the type and names of data
- * fields.
+ * dataset (e.g., loaded a new dataset; added a new column).
+ * 
+ * Fields (rows) displayed in the table are determined based on the type and
+ * names of data fields.
+ * 
+ * Each row of the table has five data attributes:
+ * - idx: index of data field that is displayed
+ * - ref: index of data field that serves as reference
+ * - met: how to summarize multiple values; sum or mean
  */
-function buildInfoTable(cols, pick, lencol) {
+function buildInfoTable(mo) {
   const table = byId('info-table');
 
   // temporarily move control span
   const div = byId('info-ctrl');
   div.classList.add('hidden');
 
-  // weight-by selection - clear
+  // reference selection
   const sel = byId('info-ref-sel');
   sel.innerHTML = '';
+
+  // empty option - clear
   sel.add(document.createElement('option'));
 
   // clear table
   table.innerHTML = '';
 
-  // create rows
-  const names = cols.names,
-        types = cols.types;
-  lencol = lencol ? names[lencol] : '';
+  const names = mo.cols.names,
+        types = mo.cols.types;
+  const lencol = mo.cache.speci.len;
 
+  // create rows
   const n = names.length;
-  let name, type, row, met;
+  let name, type, row, metric;
   for (let i = 1; i < n; i++) {
     name = names[i];
     type = types[i];
-    row = table.insertRow(-1);
-    row.setAttribute('data-index', i);
-    row.setAttribute('data-col', name);
-    row.setAttribute('data-type', type);
+
+    // weights are not displayed
+    if (type.endsWith('wt')) continue;
+
+    // add numeric field to reference selection
     if (type === 'num') {
-      met = guessColMetric(name);
-      row.setAttribute('data-refcol', (
-        met.substring(met.length - 2) === 'by') ? lencol : '');
-      row.setAttribute('data-metric', (
-        met.substring(0, 3) === 'sum') ? 'sum' : 'mean');
+      const opt = document.createElement('option');
+      opt.text = name;
+      opt.value = i;
+      sel.add(opt);
+    }
+
+    // create row
+    row = table.insertRow(-1);
+    row.setAttribute('data-idx', i);
+
+    // 1st cell: field name
+    const cell = row.insertCell(-1);
+    cell.innerHTML = name;
+
+    // 2nd cell: field value
+    row.insertCell(-1);
+
+    // numeric: guess which metric may best describe the field
+    if (type === 'num') {
+      metric = guessColMetric(name);
+
+      // with reference (default: length)
+      if (metric.endsWith('by')) {
+        row.setAttribute('data-met', metric.substring(0, metric.length - 2));
+        row.setAttribute('data-ref', lencol);
+      }
+
+      // no reference
+      else {
+        row.setAttribute('data-met', metric);
+        row.setAttribute('data-ref', 0);
+      }
+    }
+
+    // categorical: weight by length, metric not relevant
+    else if (type === 'cat') {
+      row.setAttribute('data-ref', lencol);
     }
 
     // row hover event: append control span
     row.addEventListener('mouseenter', function () {
       if (document.activeElement === sel) return false;
 
-      // three buttons: metric (sum or mean), plot entry, weight-by selection
+      // three DOMs: metric (sum or mean), reference selection, plotting
       // the 4th and permanent button is "hide"
       const mbtn = byId('info-metric-btn'),
             pbtn = byId('info-plot-btn'),
-            rspan = byId('info-ref-span');
+            span = byId('info-ref-span');
 
       // only one contig is selected, then no need for controls
-      if (Object.keys(pick).length === 1 ||
-        (this.getAttribute('data-type') !== 'num')) {
-        mbtn.classList.add('hidden');
-        pbtn.classList.add('hidden');
-        rspan.classList.add('hidden');
+      if (mo.cache.npick < 2) {
+        for (let dom of [mbtn, pbtn, span]) dom.classList.add('hidden');
       }
 
       // multiple contigs are selected
       else {
-        const met = this.getAttribute('data-metric');
-        mbtn.title = 'Metric: ' + met;
-        sel.value = this.getAttribute('data-refcol');
-        mbtn.innerHTML = (met === 'sum') ? '&Sigma;<i>x</i>' :
-          '<span style="text-decoration: overline;"><i>x</i></span>';
-        mbtn.classList.remove('hidden');
-        pbtn.classList.remove('hidden');
-        rspan.classList.remove('hidden');
+        const type = mo.cols.types[parseInt(this.getAttribute('data-idx'))];
+
+        // numeric fields need all controls
+        if (type === 'num') {
+          const metric = this.getAttribute('data-met');
+          mbtn.title = 'Metric: ' + metric;
+          sel.value = this.getAttribute('data-ref');
+          mbtn.innerHTML = (metric === 'sum') ? '&Sigma;<i>x</i>' :
+            '<span style="text-decoration: overline;"><i>x</i></span>';
+          for (let dom of [mbtn, pbtn, span]) dom.classList.remove('hidden');
+        }
+
+        // categorical fields need all but metric
+        else if (type === 'cat') {
+          sel.value = this.getAttribute('data-ref');
+          mbtn.classList.add('hidden');
+          for (let dom of [pbtn, span]) dom.classList.remove('hidden');
+        }
+
+        // other types don't
+        else {
+          for (let dom of [mbtn, pbtn, span]) dom.classList.add('hidden');
+        }
       }
 
       // append controls to row
@@ -306,18 +340,6 @@ function buildInfoTable(cols, pick, lencol) {
       div.classList.remove('hidden');
     });
 
-    // weight-by selection - add numeric field
-    if (type === 'num') {
-      const opt = document.createElement('option');
-      opt.text = name;
-      opt.value = name;
-      sel.add(opt);
-    }
-
-    // create cells
-    const cell = row.insertCell(-1); // 1st cell: field name
-    cell.innerHTML = name;
-    row.insertCell(-1); // 2nd cell: field value
   }
 
   // hide toolbar
@@ -340,57 +362,52 @@ function buildInfoTable(cols, pick, lencol) {
  */
 function updateInfoTable(mo) {
   const table = byId('info-table');
-  const ctgs = Object.keys(mo.pick);
-  const n = ctgs.length;
+  const npick = mo.cache.npick;
+  const data = mo.data,
+        pick = mo.pick;
+  const types = mo.cols.types;
+
+  // display count in info panel head
+  const label = `Selected: ${npick}`;
 
   // no contig is selected
-  if (n === 0) {
+  if (npick === 0) {
+    byId('info-head-btn').innerHTML = label;
     table.classList.add('hidden');
-    return;
   }
-  const rows = table.rows;
-  const data = mo.data;
 
   // single contig
-  if (n === 1) {
-    const ctg = ctgs[0];
-    for (let row of rows) {
-      row.cells[1].innerHTML = value2Str(
-        data[row.getAttribute('data-index')][ctg],
-        row.getAttribute('data-type'));
+  else if (npick === 1) {
+
+    // find that contig
+    const i = pick.indexOf(true);
+
+    // append contig Id to panel head
+    byId('info-head-btn').innerHTML = label + ` (ID: ${data[0][i]})`;
+
+    // display contig information
+    let idx;
+    for (let row of table.rows) {
+      idx = parseInt(row.getAttribute('data-idx'));
+      row.cells[1].innerHTML = value2Str(data[idx][i], types[idx]);
+      row.cells[1].title = '';
     }
+    table.classList.remove('hidden');
   }
 
   // multiple contigs
   else {
-    const names = mo.cols.names;
-    let idx, datum, arr, refarr, i;
-    for (let row of rows) {
-
-      // get data
-      idx = row.getAttribute('data-index');
-      datum = data[idx];
-      arr = Array(n).fill();
-      for (i = 0; i < n; i++) {
-        arr[i] = datum[ctgs[i]];
-      }
-
-      // get reference data, if available
-      idx = names.indexOf(row.getAttribute('data-refcol'));
-      if (idx !== -1) {
-        datum = data[idx];
-        refarr = Array(n).fill();
-        for (i = 0; i < n; i++) {
-          refarr[i] = datum[ctgs[i]];
-        }
-      }
-
-      // summarize data and display
-      updateInfoRow(row, mo, arr, refarr);
+    byId('info-head-btn').innerHTML = label;
+    const n = mo.cache.nctg;
+    const picked = [];
+    for (let i = 0; i < n; i++) {
+      if (pick[i]) picked.push(i);
     }
+    for (let row of table.rows) {
+      updateInfoRow(row, mo, picked);
+    }
+    table.classList.remove('hidden');
   }
-
-  table.classList.remove('hidden');
 }
 
 
@@ -399,106 +416,238 @@ function updateInfoTable(mo) {
  * @function updateInfoRow
  * @param {Object} row - one row in the info table
  * @param {Object} mo - main object
- * @param {Array} [arr] - data column
- * @param {Array} [refarr] - reference column
- * @description arr and refarr are not necessary; but they can be provided in
- * order to save compute
+ * @param {Array} [picked] - indices of selected contigs
+ * @description An explicitly supplied `picked` can save compute. This design
+ * may or may not be most optimal though.
  */
-function updateInfoRow(row, mo, arr, refarr) {
-  const ctgs = Object.keys(mo.pick).sort();
-  const n = ctgs.length;
-  const data = mo.data;
-  let idx, datum, info;
+function updateInfoRow(row, mo, picked) {
 
-  // populate data array
-  if (arr == null) {
-    idx = row.getAttribute('data-index');
-    datum = data[idx];
-    arr = Array(n).fill();
+  // find selected contigs
+  let n;
+  if (picked == null) {
+    picked = [];
+    const pick = mo.pick;
+    n = mo.cache.nctg;
     for (let i = 0; i < n; i++) {
-      arr[i] = datum[ctgs[i]];
+      if (pick[i]) picked.push(i);
     }
   }
 
-  // for non-number types, directly summarize
-  const type = row.getAttribute('data-type');
-  if (type !== 'num') {
-    info = getFieldInfo(arr, type);
-    row.cells[1].innerHTML = info;
-    row.cells[1].title = info;
-    return;
-  }
+  // locate data column
+  const idx = parseInt(row.getAttribute('data-idx'));
+  const ref = parseInt(row.getAttribute('data-ref'));
+  const metric = row.getAttribute('data-met');
+  const type = mo.cols.types[idx];
 
-  // populate reference array
-  if (refarr == null) {
-    idx = mo.cols.names.indexOf(row.getAttribute('data-refcol'));
-    if (idx !== -1) {
-      datum = data[idx];
-      refarr = Array(n).fill();
-      for (let i = 0; i < n; i++) {
-        refarr[i] = datum[ctgs[i]];
-      }
+  // descriptive field can't be summarized
+  if (type === 'des') return;
+
+  n = picked.length;
+  const arr = Array(n);
+  const data = mo.data;
+  const col = data[idx];
+
+  // just data, no reference
+  // feature set field doesn't need reference
+  if (type === 'fea' || !ref) {
+    for (let i = 0; i < n; i++) {
+      arr[i] = col[picked[i]];
     }
+    const [text, comment] = summFieldInfo(arr, type, metric);
+    row.cells[1].innerHTML = text;
+    row.cells[1].title = comment;
   }
 
-  // summarize a numberic column
-  const met = row.getAttribute('data-metric');
-  info = getFieldInfo(arr, type, met, 5, refarr);
-  row.cells[1].innerHTML = info;
-  row.cells[1].title = info;
+  // data and reference
+  else {
+    const rarr = Array(n);
+    const rcol = data[ref];
+    let ctg;
+    for (let i = 0; i < n; i++) {
+      ctg = picked[i];
+      arr[i] = col[ctg];
+      rarr[i] = rcol[ctg];
+    }
+    const [text, comment] = summFieldInfo(arr, type, metric, 3, rarr);
+    row.cells[1].innerHTML = text;
+    row.cells[1].title = comment;
+  }
 }
 
 
 /**
- * Generate a metric to summarize a field of multiple contigs.
- * @function getFieldInfo
- * @param {Array} arr - data column to describe
- * @param {string} type - type of column
- * @param {string} [met='none'] - metric (sum or mean)
- * @param {string} [deci=5] - digits after decimal point
- * @param {string} [refarr] - reference column for weighting
+ * Summarize a field of multiple contigs.
+ * @function summFieldInfo
+ * @param {Array} arr - data array to describe
+ * @param {string} type - field type
+ * @param {string} [metric='mean'] - metric for numeric field (sum or mean)
+ * @param {string} [deci=3] - digits after decimal point
+ * @param {string} [rarr] - reference data array
+ * @param {string} [warr] - weight data array
+ * @returns {[string, string]} descriptive text and comment
  */
-function getFieldInfo(arr, type, met, deci, refarr) {
-  const isRef = Array.isArray(refarr);
-  met = met || 'none';
-  deci = deci || 5;
-  let res = 0;
-  let x;
-  switch (type) {
+function summFieldInfo(arr, type, metric='mean', deci=3, rarr, warr) {
+  const noref = rarr === undefined;
+  const nowei = warr === undefined;
+  const issum = metric === 'sum';
+  let text = '', comment = '';
 
+  switch (type) {
     case 'num':
-      switch (met) {
-        case 'sum':
-          if (!isRef) res = arrSum(arr);
-          else res = arrProdSum(arr, refarr);
-          break;
-        case 'mean':
-          if (!isRef) res = arrMean(arr);
-          else res = arrProdSum(arr, refarr) / arrSum(refarr);
-          break;
+      let val, n, _;
+      if (noref) {
+        if (issum) [val, n] = arrSumNaN(arr);
+        else [val, n] = arrMeanNaN(arr);
+      } else {
+        if (issum) [val, _, n] = arrProdSumNaN(arr, rarr);
+        else [val, _, n] = arrProdMeanNaN(arr, rarr);
       }
-      res = formatNum(res, deci);
+
+      // round number
+      text = val.toFixed(deci).replace(/\.?0+$/, '');
+      comment = `${noref ? '' : 'weighted '}${metric} of ${n} values`;
       break;
 
     case 'cat':
-      x = objMinMax(listCats(arr));
-      const frac = x[1][1] / arr.length;
-
-      // majority rule
-      res = (frac > 0.5) ? (x[1][0] + ' (' + (frac * 100).toFixed(2)
-        .replace(/\.?0+$/, '') + '%)') : 'ambiguous';
+      let top;  // most frequent category
+      let freq; // (weighted) number of contigs in this category
+      let frac; // (weighted) fraction of contigs in this category
+      if (noref) {
+        [top, freq] = objMax(listCats(arr));
+        frac = freq / arr.length;
+      } else {
+        const [freqs, rsum] = listWtCats(arr, rarr);
+        [top, freq] = objMax(freqs);
+        frac = freq / rsum;
+      }
+      if (frac === 1) {
+        text = top;
+        comment = `uniform category`;
+      } else {
+        // convert fraction to percentage
+        const perc = (frac * 100).toFixed(2).replace(/\.?0+$/, '');
+        // find top category by majority rule
+        if (frac > 0.5) {
+          text = `${top} (${perc}%)`;
+          comment = `${noref ? '' : 'weighted '}majority category`;
+        }
+        // ambiguity - no category is majority
+        else {
+          text = 'ambiguous';
+          comment = `no category is ${noref ? '' : 'weighted '}majority; ` +
+            `most frequent: ${top} (${perc}%)`;
+        }
+      }
       break;
 
     case 'fea':
-      x = listFeas(arr);
-      const a = [];
-      Object.keys(x).sort().forEach(k => {
-        if (x[k] === 1) a.push(k);
-        else a.push(k + '(' + x[k] + ')');
-      });
-      res = a.join(', ');
+      text = summFea(arr);
       break;
   }
-  return res;
+  return [text, capital(comment)];
+}
 
+
+/**
+ * Calculate sum of numbers in an array, while skipping NaN.
+ * @function arrSum
+ * @param {number[]} arr - input array
+ * @returns {[number, number]} sum and count of non-NaN numbers
+ */
+function arrSumNaN(arr) {
+  let sum = 0;
+  const n = arr.length;
+  let m = 0;
+  let a;
+  for (let i = 0; i < n; i++) {
+    a = arr[i];
+    if (a === a) {
+      sum += a;
+      m++;
+    }
+  }
+  return [sum, m];
+}
+
+function arrMeanNaN(arr) {
+  const [sum, n] = arrSumNaN(arr);
+  return [(sum * 10) / (n * 10), n];
+}
+
+function arrProdSumNaN(arr1, arr2) {
+  let sum12 = 0, sum2 = 0, m = 0;
+  const n = arr1.length;
+  let a1, a2;
+  for (let i = 0; i < n; i++) {
+    a1 = arr1[i];
+    if (a1 === a1) {
+      a2 = arr2[i];
+      if (a2 === a2) {
+        sum12 += a1 * a2;
+        sum2 += a2;
+        m += 1
+      }
+    }
+  }
+  return [sum12, sum2, m];
+}
+
+function arrProdMeanNaN(arr1, arr2) {
+  const [sum12, sum2, n] = arrProdSumNaN(arr1, arr2);
+  return [(sum12 * 10) / (sum2 * 10), sum2, n];
+}
+
+function objMax(obj) {
+  const arr = Object.keys(obj);
+  const n = arr.length;
+  let key = arr[0];
+  let val = obj[key];
+  let max = [key, val];
+  for (let i = 1; i < n; i++) {
+    key = arr[i];
+    val = obj[key];
+    max = (val > max[1]) ? [key, val] : max;
+  }
+  return max;
+}
+
+
+/**
+ * List categories and their frequencies from a category-type column.
+ * @function listCats
+ * @param {Array} arr - category-type column
+ * @returns {Object} - category to frequency map
+ */
+ function listWtCats(arr1, arr2) {
+  const res = {};
+  const n = arr1.length;
+  let cat, wt;
+  let wtsum = 0;
+  for (let i = 0; i < n; i++) {
+    cat = arr1[i];
+    wt = arr2[i];
+    if (cat && wt === wt) {
+      res[cat] = (res[cat] || 0) + wt;
+    }
+    wtsum += wt;
+  }
+  return [res, wtsum];
+}
+
+
+function summFea(arr) {
+  return Object.entries(listFeas(arr))
+    .sort(([,a],[,b]) => b - a)
+    .map((k, v) => v === 1 ? k : `${k}(${v})`)
+    .join(', ');
+}
+
+
+function countTrue(arr) {
+  const n = arr.length;
+  let res = 0
+  for (let i = 0; i < n; i++) {
+    if (arr[i]) res++;
+  }
+  return res;
 }

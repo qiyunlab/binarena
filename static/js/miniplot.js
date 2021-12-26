@@ -230,8 +230,7 @@ function miniPlotMouseMove(e, mo) {
  * represented by the bars in the range of selection will be selected.
  */
 function miniPlotSelect(mo) {
-  const col = mo.mini.field;
-  
+
   // determine range of selection
   // These are lower and upper bounds of the original data. The lower bound is
   // inclusive ("["). However the upper bound is tricky. In all but last bar,
@@ -239,7 +238,7 @@ function miniPlotSelect(mo) {
   // To tackle this, the code removes the upper bound of the last bar.
   const min = mo.mini.edges[mo.mini.bin0];
   const max = (mo.mini.bin1 === mo.mini.nbin - 1) ?
-    null : mo.mini.edges[mo.mini.bin1 + 1];
+    NaN : mo.mini.edges[mo.mini.bin1 + 1];
 
   // reset histogram status
   mo.mini.hist = null;
@@ -248,28 +247,25 @@ function miniPlotSelect(mo) {
   mo.mini.bin1 = null;
   mo.mini.drag = null;
 
-  const res = [];
-  const mask = mo.mask;
-  const hasMask = (Object.keys(mask).length > 0);
-  const arr = mo.data[col];
-
-  // selection will take place within the already selected contigs
-  const picked = Object.keys(mo.pick);
-  const n = picked.length;
-  let idx, val;
-
   // find within selected contigs which ones are within the range
+  const pick = mo.pick;
+  let npick = mo.cache.npick;
+  const col = mo.data[mo.mini.field];
+  const n = mo.cache.nctg;
+  let val;
   for (let i = 0; i < n; i++) {
-    idx = picked[i];
-    if (hasMask && idx in mask) continue;
-    val = arr[idx];
+    if (pick[i]) {
+      val = col[i];
 
-    // lower bound: inclusive; upper bound: exclusive
-    if (val !== null && val >= min && (max === null || val < max)) {
-      res.push(idx);
+      // lower bound: inclusive; upper bound: exclusive
+      if (val !== val || val < min || val >= max) {
+        pick[i] = false;
+        npick -= 1;
+      }
     }
   }
-  treatSelection(res, mo.stat.selmode, mo.stat.masking, mo);
+  mo.cache.npick = npick;
+  updateSelection(mo);
 }
 
 
@@ -277,8 +273,8 @@ function miniPlotSelect(mo) {
  * Draw a mini plot.
  * @function updateMiniPlot
  * @param {Object} mo - main object
- * @param {boolean} keep - use pre-calculated histogram if available
- * @param {number} x1 - draw selection range from the start position (defined
+ * @param {boolean} [keep] - use pre-calculated histogram if available
+ * @param {number} [x1] - draw selection range from the start position (defined
  * by mo.mini.drag) to this position
  * @description It (re-)draws the entire mini plot. Three things are performed:
  * 1. Draw a histogram of a designated numeric field of selection contigs.
@@ -298,10 +294,8 @@ function updateMiniPlot(mo, keep, x1) {
   const col = mo.mini.field;
   if (!col) return;
 
-  // selected contigs
-  const ctgs = Object.keys(mo.pick).sort();
-  const n = ctgs.length;
-  if (n <= 1) return;
+  // 0 or 1 contig won't be plotted
+  if (mo.cache.npick < 2) return;
 
   // draw mouse range
   const x0 = mo.mini.drag;
@@ -313,17 +307,23 @@ function updateMiniPlot(mo, keep, x1) {
 
     // variable values
     const arr = mo.data[col];
-    let data = Array(n).fill();
+    const n = mo.cache.nctg;
+    const pick = mo.pick;
+    let X = [];
+    let val;
     for (let i = 0; i < n; i++) {
-      data[i] = arr[ctgs[i]];
+      if (pick[i]) {
+        val = arr[i];
+        if (val === val) X.push(val); // only add non-NaN values
+      }
     }
 
     // log transformation
-    if (mo.mini.log) data = arrLog(data);
+    if (mo.mini.log) X = arrLog(X);
 
     // calculate 
     let edges;
-    [hist, edges] = histogram(data, mo.mini.nbin);
+    [hist, edges] = histogram(X, mo.mini.nbin);
 
     // save (and reverse transform) result
     mo.mini.hist = hist;
@@ -333,7 +333,7 @@ function updateMiniPlot(mo, keep, x1) {
 
   // draw frame
   ctx.strokeStyle = 'grey';
-  drawFrame(ctx, w, h);
+  drawPlotFrame(ctx, w, h);
 
   // draw histogram
   const high = [mo.mini.bin0, mo.mini.bin1];
@@ -385,12 +385,12 @@ function drawMouseRange(ctx, x0, x1, w, h) {
 
 /**
  * Draw a frame of plot.
- * @function drawFrame
+ * @function drawPlotFrame
  * @param {Object} ctx - canvas context
  * @param {number} w - canvas width
  * @param {number} h - canvas height
  */
-function drawFrame(ctx, w, h) {
+function drawPlotFrame(ctx, w, h) {
   w = w || ctx.canvas.width;
   h = h || ctx.canvas.height;
   ctx.beginPath();

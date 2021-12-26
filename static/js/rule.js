@@ -251,7 +251,8 @@ function value2Str(val, type) {
   let str = '';
   switch (type) {
     case 'num':
-      str = (!Number.isNaN(val)) ? formatNum(val, 5) : '';
+      // val === val is false if val is NaN
+      str = (val === val) ? formatNum(val, 5) : '';
       break;
     case 'cat':
       str = val;

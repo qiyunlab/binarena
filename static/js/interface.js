@@ -140,8 +140,7 @@ function resizeWindow(mo) {
   toastMsg(`Plot size: ${w} x ${h}`, mo.stat);
   clearTimeout(mo.stat.resizing);
   mo.stat.resizing = setTimeout(function () {
-    resizeArena(mo.rena, mo.oray);
-    updateView(mo);
+    resizeArena(mo);
   }, 250); // redraw canvas after 0.25 sec
 }
 
@@ -355,8 +354,7 @@ function initSideFrame(mo) {
     const mf = byId('main-frame');
     mf.style.resize = 'none';
     mf.style.width = '100%';
-    resizeArena(mo.rena, mo.oray);
-    updateView(mo);
+    resizeArena(mo);
   });
 
   byId('show-side-btn').addEventListener('click', function () {
@@ -366,8 +364,7 @@ function initSideFrame(mo) {
     mf.style.resize = 'horizontal';
     const w = mf.getAttribute('data-width');
     if (w) mf.style.width = w;
-    resizeArena(mo.rena, mo.oray);
-    updateView(mo);
+    resizeArena(mo);
   });
 
 }
@@ -490,25 +487,8 @@ function initWidgets(mo) {
   const view = mo.view;
 
   // draw polygon to select contigs
-  byId('polygon-btn').addEventListener('click', function () {
-    polygonSelect(mo);
-  });
-
-  // toggle selection mode
-  byId('selmode-btn').addEventListener('click', function () {
-    const modes = ['new', 'add', 'remove'],
-          icons = ['asterisk', 'plus', 'minus'],
-          titles = ['new', 'add to', 'remove from'];
-    const i = (modes.indexOf(stat.selmode) + 1) % 3;
-    stat.selmode = modes[i];
-    this.innerHTML = '<i class="fa fa-' + icons[i] + '"></i>';
-    this.title = 'Current selection mode: ' + titles[i] + ' selection';
-  });
-
-  // toggle selecting or masking
-  byId('masking-btn').addEventListener('click', function () {
-    this.classList.toggle('pressed');
-    stat.masking = this.classList.contains('pressed');
+  byId('polygon-btn').addEventListener('click', function (e) {
+    polygonSelect(mo, e.shiftKey);
   });
 
   // take screenshot
