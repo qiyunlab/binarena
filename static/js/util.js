@@ -101,9 +101,9 @@ function scaleNum(num, scale) {
       case 'log':
         return Math.log(num);
       case 'log2':
-        return Math.log(num) / Math.LN2;
+        return Math.log2(num);
       case 'log10':
-        return Math.log(num) / Math.LN10;
+        return Math.log10(num);
       case 'exp':
         return Math.exp(num);
       case 'exp2':
@@ -111,10 +111,10 @@ function scaleNum(num, scale) {
       case 'exp10':
         return Math.pow(10, num);
       default:
-        throw `Error: invalid scale name "${scale}".`;
+        throw `Error: Invalid scale name "${scale}".`;
     }
   } else {
-    throw 'Error: invalid scale type';
+    throw 'Error: Invalid scale type';
   }
 }
 

@@ -29,7 +29,7 @@ function rectCircleColliding(circle, rect){
 
   const dx = distX - rect.w / 2,
         dy = distY - rect.h / 2;
-  return (dx * dx + dy * dy <= (circle.r * circle.r));
+  return (dx ** 2 + dy ** 2 <= (circle.r ** 2));
 }
 
 

@@ -194,6 +194,7 @@ function mainObj() {
    * 
    * @property {boolean} grid    - whether show grid
    * @property {number}  rbase   - base radius (px) of contig
+   * @property {number}  obase   - base opacity (alpha) of contig
    * @property {string}  contpal - continuous palette
    * @property {string}  discpal - discrete palette
    * @property {number}  ncolor  - number of categories to color
@@ -212,6 +213,7 @@ function mainObj() {
     /** display features */
     grid:    false,
     rbase:   15,
+    obase:   0.5,
     contpal: DEFAULT_CONTINUOUS_PALETTE,
     discpal: DEFAULT_DISCRETE_PALETTE,
     ncolor:  7

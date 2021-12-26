@@ -579,6 +579,7 @@ function updateView(mo) {
   renderArena(mo);
   renderSelection(mo);
   if (mo.stat.drawing) drawPolygon(mo);
+  mo.rena.focus();
 }
 
 

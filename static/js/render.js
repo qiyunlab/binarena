@@ -249,7 +249,7 @@ function canvasMouseClick(e, mo) {
       // calculate distance to center
       x2y2 = (x - x0) ** 2 + (y - y0) ** 2;
 
-      // if mouse is within contig area, consider a click
+      // if mouse is within contig area, consider as a click
       if (x2y2 <= radius ** 2) arr.push([i, x2y2]);
     }
 
@@ -269,7 +269,6 @@ function canvasMouseClick(e, mo) {
         pick[ctg] = true;
         mo.cache.npick += 1;
       }
-
     }
     updateSelection(mo);
   }
@@ -329,6 +328,7 @@ function resizeArena(mo) {
  * performance, including:
  * - Minimize fill style changes.
  * - Minimize number of paths.
+ * - Round numbers to integers.
  * - For small circles draw squares instead.
  * - Cache variables and references.
  * @todo {@link https://stackoverflow.com/questions/21089959/}
@@ -400,6 +400,7 @@ function renderArena(mo) {
         slow = view.size.lower / 100,
         sfac = (view.size.upper / 100 - slow) / (view.size.max - smin);
   // opacity
+  const obase = view.obase;
   const oi = view.opacity.i,
         O = oi ? data[oi] : null,
         oscale = view.opacity.scale,
@@ -417,25 +418,30 @@ function renderArena(mo) {
         clow = view.color.lower,
         cfac = (view.color.upper - clow) / (view.color.max - cmin);
 
-  // workaround
-  if (X === undefined) {
+  // cannot render if there is no x- or y-axis
+  if (X === undefined || Y === undefined) {
     ctx.restore();
     return;
   }
 
-  // rendering parameters
+  // calculate edges of visible region
+  const vleft = -view.posX / scale,
+        vright = (w - view.posX) / scale,
+        vtop = -view.posY / scale,
+        vbottom = (h - view.posY) / scale;
+
+  // elements to be rendered, grouped by fill style, then by circle or square
   const paths = {};
 
   // intermediates
-  let radius, rviz, x, y, c, val, cat, alpha, fs;
-  // determine appearance of contig
+  let radius, rviz, x, y, c, val, alpha, fs;
 
+  // determine appearance of contig
   let n = X.length;
   for (let i = 0; i < n; i++) {
     if (mask[i]) continue;
 
     // determine radius (size)
-    // radius = si ? scaleNum(S[i], sscale) * rbase / smax : rbase;
     radius = si ? ((scaleNum(S[i], sscale) - smin) * sfac + slow) *
       rbase : rbase;
     rviz = radius * scale;
@@ -446,6 +452,10 @@ function renderArena(mo) {
     // determine x- and y-coordinates
     x = Math.round(((scaleNum(X[i], xscale) - xmin) / dx - 0.5) * w);
     y = Math.round(((ymax - scaleNum(Y[i], yscale)) / dy - 0.5) * h);
+
+    // skip contigs outside visible region
+    if (x + radius < vleft || x - radius > vright) continue;
+    if (y + radius < vtop || y - radius > vbottom) continue;
 
     // determine color
     c = '0,0,0';
@@ -466,12 +476,11 @@ function renderArena(mo) {
     }
 
     // determine opacity
-    // alpha = (scaleNum(O[i], oscale) / omax).toFixed(2);
     alpha = oi ? ((scaleNum(O[i], oscale) - omin) * ofac + olow)
-      .toFixed(2) : 1.0;
+      .toFixed(2) : obase;
 
     // generate fill style string
-    fs = 'rgba(' + c + ',' + alpha + ')';
+    fs = `rgba(${c},${alpha})`;
     if (!(fs in paths)) paths[fs] = { 'square': [], 'circle': [] };
 
     // if a contig occupies less than four pixels on screen, draw a square
@@ -508,9 +517,9 @@ function renderArena(mo) {
       ctx.moveTo(circ[0], circ[1]);
       ctx.arc(circ[0], circ[1], circ[2], 0, pi2, true);
     }
-
     ctx.fill();
   } // end for fs
+
 
   // draw grid
   if (view.grid) drawGrid(rena, view);
