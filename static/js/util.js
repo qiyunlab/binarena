@@ -3,14 +3,9 @@
 /**!
  * @module util
  * @file Utilities - functions for general purposes.
- * They only operate on the parameters that are explicitly passed to them.
- * They do NOT directly access the master object OR the "document" object.
- * They are not related to any visual elements.
- */
-
-
-/**
- * @summary String operations
+ * @description They only operate on the parameters that are explicitly passed
+ * to them. They do NOT directly access the main object OR the "document"
+ * object. They are not related to any visual elements.
  */
 
 
@@ -22,6 +17,17 @@
  */
 function splitLines(text) {
   return text.replace(/[\r\n]+$/, '').split(/[\r\n]+/);
+}
+
+
+/**
+ * Capitalize a string
+ * @function capital
+ * @param {string} text - multi-line string
+ * @returns {string[]} split text
+ */
+function capital(str) {
+  return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
 
@@ -45,17 +51,12 @@ function formatNum(num, digits) {
  * @see {@link https://stackoverflow.com/questions/5623838/}
  */
 function hexToRgb(hex) {
-  var bigint = parseInt(hex, 16);
-  var r = (bigint >> 16) & 255;
-  var g = (bigint >> 8) & 255;
-  var b = bigint & 255;
+  const bigint = parseInt(hex, 16);
+  const r = (bigint >> 16) & 255,
+        g = (bigint >> 8) & 255,
+        b = bigint & 255;
   return [r, g, b].join();
 }
-
-
-/**
- * @summary Arithmetics
- */
 
 
 /**
@@ -68,136 +69,6 @@ function hexToRgb(hex) {
  */
 function roundNum(num, digits) {
   return Number(Math.round(num + 'e' + digits) + 'e-' + digits);
-}
-
-
-/**
- * Calculate both min and max of a numeric array.
- * Better performance comparing to Math.min + Math.max.
- * @function arrMinMax
- * @param {number[]} arr - input array
- * @returns {[number, number]} min and max
- */
-function arrMinMax(arr) {
-  var val = arr[0];
-  var min = val;
-  var max = val;
-  for (var i = 1; i < arr.length; i++) {
-    var val = arr[i];
-    min = (val < min) ? val : min;
-    max = (val > max) ? val : max;
-  }
-  return [min, max];
-}
-
-
-/**
- * Calculate both min and max of a object with numeric values.
- * @function objMinMax
- * @param {Object.<string, number>} obj - input object
- * @returns {[[string, number], [string, number]]} min and max key-value pairs
- */
-function objMinMax(obj) {
-  var arr = Object.keys(obj);
-  var key = arr[0]
-  var val = obj[key];
-  var min = [key, val];
-  var max = [key, val];
-  for (var i = 1; i < arr.length; i++) {
-    key = arr[i];
-    val = obj[key];
-    min = (val < min[1]) ? [key, val] : min;
-    max = (val > max[1]) ? [key, val] : max;
-  }
-  return [min, max];
-}
-
-
-/**
- * Calculate sum of numbers in an array.
- * @function arrSum
- * @param {number[]} arr - input array
- * @returns {number} sum
- */
-function arrSum(arr) {
-  var sum = 0;
-  for (var i = 0; i < arr.length; i++) {
-    sum += arr[i];
-  }
-  return sum;
-}
-
-
-/**
- * Calculate the average of all elements in the input array.
- * @function arrMean
- * @param {number[]} arr - input array
- * returns {number} mean
- */
-function arrMean(arr) {
-  // to avoid floating point err in js
-  return (arrSum(arr) * 10) / (arr.length * 10);
-}
-
-
-/**
- * Calculate sum of products of paired numbers in two arrays.
- * @function arrProdSum
- * @param {number[]} arr1 - input array
- * @param {number[]} arr2 - input array
- * @returns {number} sum of products
- */
-function arrProdSum(arr1, arr2) {
-  var sum = 0;
-  for (var i = 0; i < arr1.length; i++) {
-    sum += arr1[i] * arr2[i];
-  }
-  return sum;
-}
-
-
-/**
- * Recursively check whether two arrays are equal.
- * @function arrEqual
- * @param {number[]} arr1 - input array
- * @param {number[]} arr2 - input array
- * @return {boolean} true if input arrays are equal, false otherwise 
- */
-function arrEqual(arr1, arr2) {
-  if (arr1 instanceof Array && arr2 instanceof Array) {
-    if (arr1.length !== arr2.length) {
-      return false;
-    }
-    for (let i = 0; i < arr1.length; i++) {
-      if (!arrEqual(arr1[i], arr2[i])) {
-        return false;
-      }
-    }
-    return true;
-  } else {
-    return arr1 == arr2;
-  }
-}
-
-
-/**
- * Transpose a 2D array.
- * @function transpose
- * @param {Array.<Array>} df - input 2D array
- * @returns {Array.<Array>} transposed 2D array
- */
-function transpose(df) {
-  var res = [];
-  var n = df[0].length;
-  for (var i = 0; i < n; i++) {
-    res.push([]);
-  }
-  for (var i = 0; i < df.length; i++) {
-    for (var j = 0; j < n; j++) {
-      res[j].push(df[i][j]);
-    }
-  }
-  return res;
 }
 
 
@@ -230,9 +101,9 @@ function scaleNum(num, scale) {
       case 'log':
         return Math.log(num);
       case 'log2':
-        return Math.log(num) / Math.LN2;
+        return Math.log2(num);
       case 'log10':
-        return Math.log(num) / Math.LN10;
+        return Math.log10(num);
       case 'exp':
         return Math.exp(num);
       case 'exp2':
@@ -240,10 +111,10 @@ function scaleNum(num, scale) {
       case 'exp10':
         return Math.pow(10, num);
       default:
-        throw 'Error: invalid scale name "' + scale + '".';
+        throw `Error: Invalid scale name "${scale}".`;
     }
   } else {
-    throw 'Error: invalid scale type';
+    throw 'Error: Invalid scale type.';
   }
 }
 
@@ -257,18 +128,18 @@ function scaleNum(num, scale) {
  * @todo
  */
 function unscale(scale) {
-  var dict = {
-    'none': 'none',
+  const dict = {
+    'none':   'none',
     'square': 'sqrt',
-    'sqrt': 'square',
-    'cube': 'cbrt',
-    'cbrt': 'cube',
-    'log': 'exp',
-    'exp': 'log',
-    'log2': 'exp2',
-    'exp2': 'log2',
-    'log10': 'exp10',
-    'exp10': 'log10'
+    'sqrt':   'square',
+    'cube':   'cbrt',
+    'cbrt':   'cube',
+    'log':    'exp',
+    'exp':    'log',
+    'log2':   'exp2',
+    'exp2':   'log2',
+    'log10':  'exp10',
+    'exp10':  'log10'
   };
   if (scale == null) {
     return null;
@@ -277,46 +148,163 @@ function unscale(scale) {
   } else if (typeof(scale) === 'string') {
     if (scale in dict) return dict[scale];
   } else {
-    throw 'Error: invalid scale type';
+    throw 'Error: Invalid scale type.';
   }
+}
+
+
+/**
+ * Check of all elements in an array are identical.
+ * @function arrIdent
+ * @param {Array} arr - input array
+ * @returns {boolean} whether all identical
+ */
+function arrIdent(arr) {
+  const x0 = arr[0];
+  return arr.every(x => x === x0);
+}
+
+
+/**
+ * Filter an array to unique elements while keeping order.
+ * @function arrUniq
+ * @param {Array} arr - input array
+ * @returns {Object} output object
+ * @see {@link https://stackoverflow.com/questions/9229645/}
+ */
+function arrUniq(arr) {
+  const res = [];
+  const used = {};
+  const n = arr.length;
+  let j = 0;
+  let item;
+  for (let i = 0; i < n; i++) {
+    item = arr[i];
+    if (used[item] !== 1) {
+      used[item] = 1;
+      res[j++] = item;
+    }
+  }
+  return res;
+}
+
+
+/**
+ * Convert an array to an object of nulls.
+ * @function arr2obj
+ * @param {Array} arr - input array
+ * @returns {Object} output object
+ */
+function arr2obj(arr) {
+  const n = arr.length;
+  const res = {};
+  for (let i = 0; i < n; i++) {
+    res[arr[i]] = null;
+  }
+  return res;
+}
+
+
+/**
+ * List column names of a specific type.
+ * @function listColsByType
+ * @param {Object} cols - cols object
+ * @param {string} type - column type
+ * @returns {Array} column names
+ */
+function listColsByType(cols, type) {
+  const names = cols.names,
+        types = cols.types;
+  const n = names.length;
+  const res = [];
+  for (let i = 0; i < n; i++) {
+    if (types[i] === type) {
+      res.push(names[i]);
+    }
+  }
+  return res;
 }
 
 
 /**
  * List categories and their frequencies from a category-type column.
  * @function listCats
- * @param {Array} arr - category-type column
- * @returns {Object} - category to frequency map
+ * @param {Array} arr - categorical column
+ * @returns {Object} category to frequency map
  */
 function listCats(arr) {
-  var res = {};
-  arr.forEach(function (datum) {
-    if (datum !== null) {
-      if (datum[0] in res) res[datum[0]] ++;
-      else res[datum[0]] = 1;
+  const res = {};
+  const n = arr.length;
+  let cat;
+  for (let i = 0; i < n; i++) {
+    cat = arr[i];
+    if (cat) {
+      res[cat] = (res[cat] || 0) + 1;
     }
-  });
+  }
   return res;
 }
 
 
 /**
- * List features and their frequencies from a feature-type column.
- * @function listFeats
- * @param {Array} arr - feature-type column
- * @returns {Object} - feature to frequency map
+ * List categories and frequencies from a categorical column as weighted by a
+ * numeric column.
+ * @function listCatsW
+ * @param {Array} arr1 - categorical column
+ * @param {Array} arr2 - numeric column
+ * @returns {[Object, number]} category to weighted frequency map, sum of
+ * weights
+ * @description NaN weights are skipped.
  */
-function listFeats(arr) {
-  var res = {};
-  arr.forEach(function (datum) {
-    if (datum !== null) {
-      Object.keys(datum).forEach(function (key) {
-        if (key in res) res[key] ++;
-        else res[key] = 1;
-      });
+ function listCatsW(arr1, arr2) {
+  const res = {};
+  const n = arr1.length;
+  let cat, wt;
+  let sum = 0;
+  for (let i = 0; i < n; i++) {
+    cat = arr1[i];
+    wt = arr2[i];
+    if (cat && wt === wt) {
+      res[cat] = (res[cat] || 0) + wt;
     }
-  });
+    sum += wt;
+  }
+  return [res, sum];
+}
+
+
+/**
+ * List features and their frequencies from a feature-type column.
+ * @function listFeas
+ * @param {Array} arr - feature set column
+ * @returns {Object} feature to frequency map
+ */
+function listFeas(arr) {
+  const res = {};
+  const n = arr.length;
+  let fea;
+  for (let i = 0; i < n; i++) {
+    for (fea of arr[i]) {
+      res[fea] = (res[fea] || 0) + 1;
+    };
+  }
   return res;
+}
+
+
+/**
+ * Generate a string to summarize a feature frequency map.
+ * @function summFeas
+ * @param {Array} arr - feature set column
+ * @returns {string} features sorted by frequency in descending order, prefixed
+ * by frequency in parentheses if frequency is not 1.
+ * @example 'K00001(5), K00023(2), K01456, K00789'
+ */
+function summFeas(arr) {
+  return Object.entries(listFeas(arr))
+    .sort(([, a],[, b]) => b - a)
+    .map(x => x[1] === 1 ? x[0] : `${x[0]}(${x[1]})`)
+    .join(', ');
 }
 
 
@@ -328,68 +316,12 @@ function listFeats(arr) {
  * @returns {number} - number of digits
  */
 function maxDecimals(arr) {
-  var res = 0;
-  arr.forEach(function (datum) {
+  let res = 0;
+  arr.forEach(datum => {
     if (datum !== null && (datum % 1) != 0) {
       res = Math.max(res, datum.toString().split('.')[1].length);
     }
   });
-  return res;
-}
-
-
-/**
- * Check if a circle and a rectangle collide
- * @function rectCircleColliding
- * @param {Object.<x: number, y: number, r: number>} circle - circle
- * @param {Object.<x: number, y: number, w: number, h: number>} rect - rectangle
- * @description adopted from markE's answer at:
- * @see {@link: https://stackoverflow.com/questions/21089959/}
- */
-function rectCircleColliding(circle, rect){
-  var distX = Math.abs(circle.x - rect.x - rect.w / 2);
-  var distY = Math.abs(circle.y - rect.y - rect.h / 2);
-
-  if (distX > (rect.w / 2 + circle.r)) return false;
-  if (distY > (rect.h / 2 + circle.r)) return false;
-
-  if (distX <= (rect.w / 2)) return true;
-  if (distY <= (rect.h / 2)) return true;
-
-  var dx = distX-rect.w / 2;
-  var dy = distY-rect.h / 2;
-  return (dx * dx + dy * dy <= (circle.r * circle.r));
-}
-
-
-/**
- * Check if a point is within a polygon.
- * @function pnpoly
- * @param {number} x - x-coordinate of point
- * @param {number} y - y-coordinate of point
- * @param {{x: number, y: number}[]} polygon - x- and y-coordinates of vertices
- * of polygon
- * @returns {boolean} whether point is within polygon
- * @description Reimplemented following:
- * PNPOLY - Point Inclusion in Polygon Test
- * @author W Randolph Franklin:
- * {@link https://wrf.ecse.rpi.edu//Research/Short_Notes/pnpoly.html}
- * @license MIT license
- * @see licenses/pnpoly.txt
- */
-function pnpoly(x, y, polygon) {
-  var res = false;
-  var n = polygon.length;
-  for (var i = 0, j = n - 1; i < n; j = i++) {
-    var xi = polygon[i].x,
-      yi = polygon[i].y;
-    var xj = polygon[j].x,
-      yj = polygon[j].y;
-    if (((yi > y) != (yj > y)) &&
-      (x < (xj - xi) * (y - yi) / (yj - yi) + xi)) {
-      res = !res;
-    }
-  }
   return res;
 }
 
@@ -401,8 +333,8 @@ function pnpoly(x, y, polygon) {
  * @param {Array.<string>} classes - candidate class names
  */
 function checkClassName(element, classes) {
-  for (var i = 0; i < classes.length; i++) {
-    if (element.classList.contains(classes[i])) return classes[i];
+  for (let c of classes) {
+    if (element.classList.contains(c)) return c;
   }
 }
 
@@ -414,24 +346,43 @@ function checkClassName(element, classes) {
  * @returns {string[]} - array of 101 "r,g,b"s
  */
 function palette11to101(palette) {
-  var rgbs = [[], [], []];
-  for (var i = 0; i < 11; i++) {
-    for (var j = 0; j < 3; j++) {
-      rgbs[j].push(parseInt(palette[i].substr(j * 2, 2), 16))
+  const rgbs = [[], [], []];
+  let i, j, k, step, rgb;
+  for (i = 0; i < 11; i++) {
+    for (j = 0; j < 3; j++) {
+      rgbs[j].push(parseInt(palette[i].substring(j * 2, j * 2 + 2), 16));
     }
   }
-  var res = [];
-  for (var i = 0; i < 10; i++) {
+  const res = [];
+  for (i = 0; i < 10; i++) {
     res.push([rgbs[0][i], rgbs[1][i], rgbs[2][i]].join());
-    var step = (rgbs[0][i + 1] - rgbs[0][i]) / 10;
-    for (var j = 0; j < 9; j++) {
-      var rgb = [];
-      for (var k = 0; k < 3; k++) {
-        rgb.push(Math.round(rgbs[k][i] + step * j))
+    step = (rgbs[0][i + 1] - rgbs[0][i]) / 10;
+    for (j = 0; j < 9; j++) {
+      rgb = [];
+      for (k = 0; k < 3; k++) {
+        rgb.push(Math.round(rgbs[k][i] + step * j));
       }
       res.push(rgb.join());
     }
   }
   res.push([rgbs[0][10], rgbs[1][10], rgbs[2][10]].join());
+  return res;
+}
+
+
+/**
+ * Return the number of elements that compares true in an array.
+ * @function splitLines
+ * @param {Array} arr - input array
+ * @returns {number} number of true elements
+ * @description Useful to check how many contigs of the `pick`, `mask` and
+ * `bins` arrays are set.
+ */
+function countTrue(arr) {
+  const n = arr.length;
+  let res = 0
+  for (let i = 0; i < n; i++) {
+    if (arr[i]) res++;
+  }
   return res;
 }

@@ -5,3 +5,9 @@
 Gemfile
 Gemfile.lock
 _site/
+
+# Node.js
+node_modules/
+
+# JSHint
+.jshintrc

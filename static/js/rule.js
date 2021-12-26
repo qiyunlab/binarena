@@ -14,173 +14,26 @@
  * @function isMissing
  * @param {string} str - string to check
  * @returns {boolean} check result
+ * @description This is only a subset of Pandas default missing values.
+ * @see {@link https://pandas.pydata.org/docs/reference/api/
+ * pandas.read_table.html}
  */
 function isMissing(str) {
-  var nulls = ['na', 'n/a', 'nan', 'null', ''];
+  const nulls = ['na', 'n/a', 'nan', 'null', ''];
   try {
     str = str.replace(/^[#-]+/, '');
   } catch (e) {
     throw e.message + ' ' + str;
   }
-  return (nulls.indexOf(str.toLowerCase()) !== -1);
+  return nulls.includes(str.toLowerCase());
 }
 
-
-/**
- * Parse field types.
- * This function in overly long, because it attempts to guess the data type of each field.
- * Options are: number, category, feature, description.
- * @function parseFieldType
- * @param {string} name - field name of the column
- * @param {string[]} arr - cell values of the column
- * @throws if field name is invalid
- * @returns {[string, string]} field type, updated field name
- */
-function parseFieldType(name, arr) {
-
-  // look for pre-defined field type
-  var code2type = {
-    'n': 'number',
-    'c': 'category',
-    'f': 'feature',
-    'd': 'description'
-  };
-  var type = '';
-  var i = name.indexOf('|');
-  if (i > -1) {
-    if (i != name.length - 2) {
-      throw 'Invalid field name: "' + name + '".'; 
-    }
-    var code = name.slice(-1);
-    if (!(code in code2type)) {
-      throw 'Invalid field type code: "' + code + '".';
-    }
-    type = code2type[code];
-    name = name.slice(0, i);
-  }
-
-  // description
-  if (type === 'description') {
-    return ['description', name];
-  }
-
-  // check number
-  var areNumbers = true;
-  for (var i = 0; i < arr.length; i++) {
-    if (!isMissing(arr[i]) && isNaN(arr[i])) { // not a number
-      areNumbers = false;
-      break
-    }
-  }
-
-  if ((type === 'number') && !areNumbers) {
-    throw 'Non-numeric value(s) found in number-type field "' + name + '".'
-  }
-
-  // check integer or float
-  if (areNumbers && ((type === '') || (type === 'number'))) {
-    var areIntegers = true;
-    for (var i = 0; i < arr.length; i++) {
-      if (!isMissing(arr[i]) && (arr[i].indexOf('.') !== -1)) { // has float point
-        areIntegers = false;
-        break
-      }
-    }
-
-    // convert to integers
-    if (areIntegers) {
-      for (var i = 0; i < arr.length; i++) {
-        arr[i] = isMissing(arr[i]) ? null : parseInt(arr[i]);
-      }
-    }
-
-    // convert to floats
-    else {
-      for (var i = 0; i < arr.length; i++) {
-        arr[i] = isMissing(arr[i]) ? null : parseFloat(arr[i]);
-      }
-    }
-    return ['number', name];
-  }
-
-  // check category
-  else {
-    var areCategories = true;
-    for (var i = 0; i < arr.length; i++) {
-      arr[i] = arr[i].replace(/\s*,\s*/g, ','); // trim whitespaces
-      if (!isMissing(arr[i]) && (arr[i].indexOf(',') !== -1)) { // has comma
-        areCategories = false;
-        break;
-      }
-    }
-
-    // check weights
-    var areWeightsIntegers = true;
-    for (var i = 0; i < arr.length; i++) {
-      if (!isMissing(arr[i])) {
-        var items = arr[i].split(',');
-        for (var j = 0; j < items.length; j++) {
-          var a = items[j].split(':');
-          if (a.length > 2) {
-            throw 'Invalid expression: "' + items[j] + '": multiple colons.'
-          } else if (a.length === 2) {
-            var weight = a[1];
-            if (isNaN(weight)) {
-              throw 'Invalid expression: "' + items[j] + '": weight must be a number.';
-            } else if (weight.indexOf('.') !== -1) {
-              areWeightsIntegers = false;
-              break;
-            }
-          }
-        }
-      }
-    }
-
-    // convert to categories
-    if (areCategories || (type == 'category')) {
-      for (var i = 0; i < arr.length; i++) {
-        if (isMissing(arr[i])) {
-          arr[i] = null;
-        } else {
-          var a = arr[i].split(':');
-          if (a.length === 1) {
-            arr[i] = [arr[i], null];
-          } else {
-            arr[i] = [a[0], (areWeightsIntegers ? parseInt(a[1]) : parseFloat(a[1]))];
-          }
-        }
-      }
-      return ['category', name];
-    }
-
-    // convert to features
-    else {
-      for (var i = 0; i < arr.length; i++) {
-        if (isMissing(arr[i])) {
-          arr[i] = {}; // empty object
-        } else {
-          var items = arr[i].split(',');
-          arr[i] = {};
-          for (var j = 0; j < items.length; j++) {
-            var a = items[j].split(':');
-            if (a.length === 1) {
-              arr[i][items[j]] = null;
-            } else {
-              arr[i][a[0]] = (areWeightsIntegers ? parseInt(a[1]) : parseFloat(a[1]));
-            }
-          }
-        }
-      }
-      return ['feature', name];
-    }
-  }
-}
 
 /**
  * Define display items based on data.
  * @function guessDisplayFields
- * @param {Object} data - data object
- * @param {Object} view - view object
+ * @param {Object} cols - cols object
+ * @param {Object} cache - cache object
  * @throws if x and y cannot be determined
  * @returns {[number, number, ?number, ?number, ?number]} field indices for
  * x, y, size, opacity, color
@@ -193,22 +46,23 @@ function parseFieldType(name, arr) {
  * n is the top n categories to be colored.
  * Options are: number, category, feature, description.
  */
-function guessDisplayFields(data, view) {
-  var res = {
+function guessDisplayFields(cols, cache) {
+  const res = {
     x: null,
     y: null,
     size: null,
     opacity: null,
     color: null
-  }
+  };  
+  const names = cols.names,
+        types = cols.types;
 
   // first, locate x and y (mandatory)
-  var xyCand = [null, null];
-  for (var i = 1; i < data.cols.length; i++) {
-    if (data.types[i] !== 'number') {
-      continue;
-    }
-    var name = data.cols[i].toLowerCase();
+  const xyCand = [null, null];
+  let name;
+  for (let i = 1; i < names.length; i++) {
+    if (types[i] !== 'num') continue;
+    name = names[i].toLowerCase();
     if (name === 'x') {
       xyCand[0] = i;
     } else if (name === 'y') {
@@ -222,18 +76,18 @@ function guessDisplayFields(data, view) {
     res.y = xyCand[1];
 
     // add other items
-    res.size = view.spcols.len || null;
-    res.opacity = view.spcols.cov || null;
-    res.color = guessRankColumn(data) || view.spcols.gc || null;
+    res.size = cache.speci.len || null;
+    res.opacity = cache.speci.cov || null;
+    res.color = guessRankColumn(cols) || cache.speci.gc || null;
   }
 
   // otherwise, get gc -> coverage -> length
   else {
-    var keys = ['gc', 'cov', 'len'];
-    var avails = [];
-    for (var i = 0; i < keys.length; i++) {
-      var icol = view.spcols[keys[i]];
-      if (icol !== null) avails.push(icol);
+    const avails = [];
+    let icol;
+    for (let key of ['gc', 'cov', 'len']) {
+      icol = cache.speci[key];
+      if (icol) avails.push(icol);
     }
     if (avails.length >= 2) {
       res.x = avails[0];
@@ -248,15 +102,15 @@ function guessDisplayFields(data, view) {
 
 
 /**
- * Guess display scales based on field names.
+ * Guess display scales of items.
  * @function guessDisplayScales
- * @param {string[]} items - field names
- * @returns {Object} field name to scale dict
+ * @param {string[]} items - display items
+ * @returns {Object} display item to scale mapping
  */
 function guessDisplayScales(items) {
-  var res = {};
-  items.forEach(function(item) {
-    switch(item) {
+  const res = {};
+  for (let item of items) {
+    switch (item) {
       case 'x':
       case 'y':
       case 'color':
@@ -269,9 +123,9 @@ function guessDisplayScales(items) {
         res[item] = 'sqrt';
         break;
       default:
-        throw 'Error: invalid display item.';
+        throw `Error: Invalid display item: "${item}".`;
     }
-  });
+  }
   return res;
 }
 
@@ -279,123 +133,84 @@ function guessDisplayScales(items) {
 /**
  * Guess which column represents the "length" property.
  * @function guessLenColumn
- * @param {Object} data - data object
+ * @param {Object} cols - data object
  * @returns {number} - index of "length" column
  */
-function guessLenColumn(data) {
-  var keys = ['length', 'size', 'len', 'bp'];
-  return findColumnByKeys(data, keys, ['number']);
+function guessLenColumn(cols) {
+  const keys = ['length', 'size', 'len', 'bp'];
+  return findColumnByKeys(cols, keys, ['num']);
 }
 
 
 /**
  * Guess which column represents the "coverage" property.
  * @function guessCovColumn
- * @param {Object} data - data object
+ * @param {Object} cols - cols object
  * @returns {number} - index of "coverage" column
  */
-function guessCovColumn(data) {
-  var keys = ['coverage', 'cov', 'depth'];
-  return findColumnByKeys(data, keys, ['number']);
+function guessCovColumn(cols) {
+  const keys = ['coverage', 'cov', 'depth'];
+  return findColumnByKeys(cols, keys, ['num']);
 }
 
 
 /**
  * Guess which column represents the "gc" property.
  * @function guessGCColumn
- * @param {Object} data - data object
+ * @param {Object} cols - cols object
  * @returns {number} - index of "gc" column
  */
-function guessGCColumn(data) {
-  var keys = ['gc', 'g+c', 'gc%', 'gc-content', 'gc-ratio'];
-  return findColumnByKeys(data, keys, ['number']);
+function guessGCColumn(cols) {
+  const keys = ['gc', 'g+c', 'gc%', 'gc-content', 'gc-ratio'];
+  return findColumnByKeys(cols, keys, ['num']);
 }
 
 
 /**
  * Guess which column represents the highest taxonomic rank.
  * @function guessRankColumn
- * @param {Object} data - data object
+ * @param {Object} cols - cols object
  * @returns {number} - index of high rank column
  */
-function guessRankColumn(data) {
+function guessRankColumn(cols) {
   // ignore kingdom/domain and species
-  var keys = ['phylum', 'class', 'order', 'family', 'genus'];
-  return findColumnByKeys(data, keys, ['category']);
+  const keys = ['phylum', 'class', 'order', 'family', 'genus'];
+  return findColumnByKeys(cols, keys, ['cat']);
 }
 
 
 /**
- * Find column name by keywords
- * @function findColName
- * @param {Object} data - data object
+ * Find column by keywords.
+ * @function findColumnByKeys
+ * @param {Object} cols - cols object
  * @param {string[]} keys - keywords
- * @param {string[]} [types=] - data types
- * @returns {number} - index of result column
+ * @param {string[]} [types=] - valid data types
+ * @returns {number} - index of found column, or 0 if not found
+ * @description It first attempts whole-word matching; if not found, it will
+ * try prefix matching, using a fixed list of delimiters.
  */
-function findColumnByKeys(data, keys, types) {
-
-  // get column names
-  var cols = getColNames(data, types);
-
-  // find a column name that is identical to one of the keywords
-  var col = matchWhole(keys, cols);
-  if (col) return data.cols.indexOf(col);
-
-  // if fail, find a column name that starts with one of the keywords
-  col = matchPrefix(keys, cols);
-  if (col) return data.cols.indexOf(col);
-  else return null;
-}
-
-
-/**
- * Get column names by type.
- * @function getColNames
- * @param {Object} data - data object
- * @param {string[]} [types=] - data types
- */
-function getColNames(data, types) {
-  var notype = (typeof masking === 'undefined');
-  var res = [];
-  for (var i = 1; i < data.cols.length; i++) {
-    if (notype || types.indexOf(data.types[i]) !== -1) res.push(data.cols[i]);
-  }
-  return res;
-}
-
-
-/**
- * Match two arrays by whole
- * @function matchWhole
- * @param {string[]} keys - keywords
- * @param {string[]} cols - column names
- */
-function matchWhole(keys, cols) {
-  for (var i = 0; i < cols.length; i++) {
-    if (keys.indexOf(cols[i].toLowerCase()) !== -1) return cols[i];
-  }
-  return null;
-}
-
-
-/**
- * Match two arrays by prefix
- * @function matchWhole
- * @param {string[]} keys - keywords
- * @param {string[]} cols - column names
- */
-function matchPrefix(keys, cols) {
-  var delims = [' ', '/', '_', '.'];
-  for (var i = 0; i < delims.length; i++) {
-    for (var j = 0; j < cols.length; j++) {
-      var prefix = cols[j].toLowerCase().split(delims[i], 1)[0];
-      if (keys.indexOf(prefix) !== -1) {
-        return cols[i];
-      }
+function findColumnByKeys(cols, keys, types) {
+  const delims = [' ', '/', '_', '.'];
+  const n = cols.names.length;
+  let type, whole = 0, prefix = 0;
+  for (let i = 1; i < n; i ++) {
+    type = cols.types[i];
+    if (type.endsWith('wt')) continue;
+    if (types && types.indexOf(type) === -1) continue;
+    let str = cols.names[i].toLowerCase();
+    if (keys.indexOf(str) !== -1) {
+      whole = i;
+      break;
+    }
+    if (prefix) continue;
+    for (let d of delims) {
+      if (keys.indexOf(str.substring(0, str.indexOf(d))) !== -1) {
+        prefix = i;
+        break;
+      };
     }
   }
-  return null;
+  return whole ? whole : prefix;
 }
 
 
@@ -409,7 +224,7 @@ function matchPrefix(keys, cols) {
  * e.g., "gc" and "coverage" => meanby (length)
  */
 function guessColMetric(col) {
-  var res = 'sum';
+  let res = 'sum';
   switch(col.toLowerCase()) {
     case 'x':
     case 'y':
@@ -425,6 +240,33 @@ function guessColMetric(col) {
   return res;
 }
 
+
+/**
+ * Format a cell as string.
+ * @function value2Str
+ * @param {*} val - cell value
+ * @returns {string} formatted string
+ */
+function value2Str(val, type) {
+  let str = '';
+  switch (type) {
+    case 'num':
+      // val === val is false if val is NaN
+      str = (val === val) ? formatNum(val, 5) : '';
+      break;
+    case 'cat':
+      str = val;
+      break;
+    case 'fea':
+      str = val.join(', ');
+      break;
+    default:
+      str = String(val);
+  }
+  return str;
+}
+
+
 /**
  * Format length value.
  * @function FormatLength
@@ -432,7 +274,7 @@ function guessColMetric(col) {
  * @returns {Array.<number, string>} number and unit
  */
 function FormatLength(len) {
-  var abslen = Math.abs(len);
+  const abslen = Math.abs(len);
   if (abslen < 999.5) {
     return [len, 'bp'];
   } else if (abslen < 999500) {
@@ -444,18 +286,40 @@ function FormatLength(len) {
 
 
 /**
- * Generate a new bin name based on existing bin names.
- * Will read like "bin_#", in which "#" is an incremental integer.
- * @function newBinName
- * @param {Object} bins - existing bin names
- * @returns {string} new bin name
+ * Generate a new name that does not conflict with existing names.
+ * Will read like "prefix_#", in which "#" is an incremental integer.
+ * @function newName
+ * @param {Object} exists - existing names
+ * @param {string} prefix - name prefix
+ * @returns {string} new name
  */
-function newBinName(bins) {
-  var i = Object.keys(bins).length + 1;
-  var name;
+function newName(exists, prefix) {
+  let name;
+  let i = 1;
   while (true) {
-    name = 'bin_' + i;
-    if (name in bins) i ++;
+    name = prefix + '_' + i;
+    if (name in exists) i ++;
     else return name;
   }
+}
+
+
+/**
+ * Dictionary of singular to plural transformations.
+ */
+const PLURAL_FORMS = {};
+
+
+/**
+ * Generate a new name that does not conflict with existing names.
+ * Will read like "prefix_#", in which "#" is an incremental integer.
+ * @function plural
+ * @param {Object} exists - existing names
+ * @param {string} prefix - name prefix
+ * @returns {string} new name
+ */
+function plural(noun, n) {
+  if (n <= 1) return n + ' ' + noun;
+  else if (noun in PLURAL_FORMS) return n + ' ' + PLURAL_FORMS[noun];
+  else return n + ' ' + noun + 's';
 }

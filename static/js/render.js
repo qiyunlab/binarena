@@ -2,22 +2,287 @@
 
 /**!
  * @module render
- * @file Rendering functions.
- * @description They may read the master object that is passed to them, but
- * they DO not modify its content. They do NOT directly access the "document"
- * object.
+ * @file Main assembly plot rendering functions.
+ * @description The main plot is a scatter plot of contigs in an assembly.
  */
+
+
+/**
+ * Initialize canvas.
+ * @function initCanvas
+ * @params {Object} mo - main object
+ */
+function initCanvas(mo) {
+
+  // the two main canvases that render the assembly plot
+  mo.rena = byId('arena-canvas');
+  mo.oray = byId('overlay-canvas');
+
+  const view = mo.view,
+        stat = mo.stat,
+        rena = mo.rena;
+
+  resizeArena(mo);
+
+  /** mouse events */
+  rena.addEventListener('mousedown', function (e) {
+    stat.mousedown = true;
+    stat.dragX = e.clientX - view.posX;
+    stat.dragY = e.clientY - view.posY;
+  });
+
+  rena.addEventListener('mouseup', function () {
+    stat.mousedown = false;
+  });
+
+  rena.addEventListener('mouseover', function () {
+    stat.mousedown = false;
+  });
+
+  rena.addEventListener('mouseout', function () {
+    stat.mousedown = false;
+    stat.mousemove = false;
+  });
+
+  rena.addEventListener('mousemove', function (e) {
+    canvasMouseMove(e, mo);
+  });
+
+  rena.addEventListener('mousewheel', function (e) {
+    view.scale *= e.wheelDelta > 0 ? (4 / 3) : 0.75;
+    updateView(mo);
+  });
+
+  rena.addEventListener('DOMMouseScroll', function (e) {
+    view.scale *= e.detail > 0 ? 0.75 : (4 / 3);
+    updateView(mo);
+  });
+
+  rena.addEventListener('contextmenu', function (e) {
+    e.preventDefault();
+    const menu = byId('context-menu');
+    menu.style.top = e.clientY + 'px';
+    menu.style.left = e.clientX + 'px';
+    menu.classList.remove('hidden');
+  });
+
+  rena.addEventListener('click', function (e) {
+    canvasMouseClick(e, mo);
+  });
+
+  /** drag & drop file to upload */
+  rena.addEventListener('dragover', function (e) {
+    e.preventDefault();
+  });
+
+  rena.addEventListener('dragenter', function (e) {
+    e.preventDefault();
+  });
+
+  rena.addEventListener('drop', function (e) {
+    e.stopPropagation();
+    e.preventDefault();
+    uploadFile(e.dataTransfer.files[0], mo);
+  });
+
+  /** keyboard events */
+  rena.addEventListener('keydown', function (e) {
+    const t0 = performance.now();
+    switch (e.key) {
+      case 'Left':
+      case 'ArrowLeft':
+        byId('left-btn').click();
+        break;
+      case 'Up':
+      case 'ArrowUp':
+        byId('up-btn').click();
+        break;
+      case 'Right':
+      case 'ArrowRight':
+        byId('right-btn').click();
+        break;
+      case 'Down':
+      case 'ArrowDown':
+        byId('down-btn').click();
+        break;
+      case '-':
+      case '_':
+        byId('zoomout-btn').click();
+        break;
+      case '=':
+      case '+':
+        byId('zoomin-btn').click();
+        break;
+      case '0':
+        byId('reset-btn').click();
+        break;
+      case 'p':
+      case 'P':
+        byId('screenshot-btn').click();
+        break;
+      case 'Delete':
+      case 'Backspace':
+        byId('mask-btn').click();
+        break;
+      case 'Enter':
+        polygonSelect(mo, e.shiftKey);
+        break;
+      case ' ':
+        byId('as-new-bin-btn').click();
+        break;
+      case '.':
+      case '>':
+        byId('add-to-bin-btn').click();
+        break;
+      case ',':
+      case '<':
+        byId('remove-from-bin-btn').click();
+        break;
+      case '/':
+      case '?':
+        byId('update-bin-btn').click();
+        e.preventDefault(); // otherwise it will open Firefox quick find bar
+        break;
+    }
+    const t1 = performance.now();
+    console.log(t1 - t0);
+  });
+} // end initializing controls
+
+
+/**
+ * Canvas mouse move event.
+ * @function canvasMouseMove
+ * @param {Object} e - event object
+ * @param {Object} mo - main object
+ */
+ function canvasMouseMove(e, mo) {
+  const view = mo.view,
+        stat = mo.stat,
+        rena = mo.rena;
+
+  // drag to move the canvas
+  if (stat.mousedown) {
+    const posX = e.clientX - stat.dragX,
+          posY = e.clientY - stat.dragY;
+
+    // won't move if offset is within a pixel
+    // this is to prevent accidential tiny moves while clicking
+    if (Math.abs(posX - view.posX) > 1 || Math.abs(posY - view.posY) > 1) {
+      stat.mousemove = true;
+      view.posX = posX;
+      view.posY = posY;
+      updateView(mo);
+    }
+  }
+
+  // show current coordinates
+  else if (mo.view.grid) {
+    const x = ((e.offsetX - view.posX) / view.scale / rena.width + 0.5) *
+      (view.x.max - view.x.min) + view.x.min;
+    const y = view.y.max - ((e.offsetY - view.posY) / view.scale /
+      rena.height + 0.5) * (view.y.max - view.y.min);
+    byId('coords-label').innerHTML = x.toFixed(3) + ',' + y.toFixed(3);
+  }
+}
+
+
+/**
+ * Canvas mouse click event.
+ * @function canvasMouseClick
+ * @param {Object} e - event object
+ * @param {Object} mo - main object
+ */
+function canvasMouseClick(e, mo) {
+  const view = mo.view,
+        stat = mo.stat,
+        rena = mo.rena;
+
+  // mouse up after dragging
+  if (stat.mousemove) {
+    stat.mousemove = false;
+  }
+
+  // keep drawing polygon
+  else if (stat.drawing) {
+    stat.polygon.push({
+      x: (e.offsetX - view.posX) / view.scale,
+      y: (e.offsetY - view.posY) / view.scale,
+    });
+    drawPolygon(mo);
+  }
+
+  // determine which contigs are clicked
+  else {
+    const n = mo.cache.nctg;
+    if (!n) return;
+    const pick = mo.pick,
+          mask = mo.mask;
+
+    // clear current selection
+    if (!e.shiftKey) {
+      pick.fill(false);
+      mo.cache.npick = 0;
+    }
+
+    // get canvas size
+    const w = rena.width,
+          h = rena.height;
+
+    // get mouse position    
+    const x0 = (e.offsetX - view.posX) / view.scale,
+          y0 = (e.offsetY - view.posY) / view.scale;
+
+    // transformed data
+    const trans = mo.trans;
+    const X = trans.x,
+          Y = trans.y,
+          S = trans.size;
+
+    const arr = [];
+    let x2y2;
+    for (let i = 0; i < n; i++) {
+      if (mask[i]) continue;
+
+      // calculate distance to center
+      x2y2 = (X[i] * w - x0) ** 2 + (Y[i] * h - y0) ** 2;
+
+      // if mouse is within contig area, consider as a click
+      if (x2y2 < S[i] ** 2) arr.push([i, x2y2]);
+    }
+
+    // if one or more contigs are clicked
+    if (arr.length > 0) {
+
+      // sort clicked contigs by proximity from center to mouse position
+      // no need to square root because it is monotonic
+      arr.sort((a, b) => a[1] - b[1]);
+      let ctg = arr[0][0];
+
+      // if already selected, unselect; else, select
+      if (pick[ctg]) {
+        pick[ctg] = false;
+        mo.cache.npick -= 1;
+      } else {
+        pick[ctg] = true;
+        mo.cache.npick += 1;
+      }
+    }
+    updateSelection(mo);
+  }
+}
 
 
 /**
  * Calculate arena dimensions based on style and container.
  * @function calcArenaDimensions
  * @param {Object} rena - arena canvas DOM
+ * @returns {[number, number]} - width and height of arena
  */
 function calcArenaDimensions(rena) {
-  var w = Math.max(parseInt(getComputedStyle(rena).minWidth),
+  const w = Math.max(parseInt(getComputedStyle(rena).minWidth),
     rena.parentElement.parentElement.offsetWidth);
-  var h = Math.max(parseInt(getComputedStyle(rena).minHeight),
+  const h = Math.max(parseInt(getComputedStyle(rena).minHeight),
     rena.parentElement.parentElement.offsetHeight);
   return [w, h];
 }
@@ -26,15 +291,14 @@ function calcArenaDimensions(rena) {
 /**
  * Update canvas dimensions.
  * @function resizeArena
- * @param {Object} rena - arena canvas DOM
- * @param {Object} oray - overlay canvas DOM
+ * @param {Object} mo - main object
  * @description For an HTML5 canvas, (plot) and style width are two things.
  * @see {@link https://stackoverflow.com/questions/4938346/}
  */
-function resizeArena(rena, oray) {
-  var dims = calcArenaDimensions(rena);
-  var w = dims[0],
-    h = dims[1];
+function resizeArena(mo) {
+  const rena = mo.rena,
+        oray = mo.oray;
+  const [w, h] = calcArenaDimensions(rena);
 
   // update width
   if (rena.style.width !== w) rena.style.width = w;
@@ -47,167 +311,159 @@ function resizeArena(rena, oray) {
   if (rena.height !== h) rena.height = h;
   if (oray.style.height !== h) oray.style.height = h;
   if (oray.height !== h) oray.height = h;
+
+  // re-draw plots
+  updateView(mo);
 }
 
 
 /**
  * Render arena given current data and view.
  * @function renderArena
- * @param {Object} mo - master object
+ * @param {Object} mo - main object
+ * @description This is the main rendering engine of the program. It is also a
+ * computationally expensive task. Several resorts have been adopted to improve
+ * performance, including:
+ * - Minimize fill style changes.
+ * - Minimize number of paths.
+ * - Round numbers to integers.
+ * - For small circles draw squares instead.
+ * - Skip contigs outside the visible region.
+ * 
  * @todo {@link https://stackoverflow.com/questions/21089959/}
- * @todo round floats into integers should improve performance, but may cause
- * problem when zoomin scale is large, needs further thought
+ * 
+ * @todo Rounding floats into integers improves performance. There are more
+ * performant methods than the built-in `Math.round` function. Examples are
+ * bitwise operations like `~~ (0.5 + num)`. However they don't work well
+ * with negative numbers. In this case, x- and y-axis can be negative numbers.
+ * 
+ * A solution may be changing the way the canvas is positioned to make all
+ * coordinates positive.
+ * 
+ * @todo Skipping contigs outside the visible region results in significant
+ * performance gain when zooming in. However it voids another potential
+ * optimization: draw the entire image (not matter how large it is) in an
+ * off-screen canvas and draw part of it as needed to the main canvas using
+ * `drawImage`. Needs further thinking.`
  */
 function renderArena(mo) {
-  var data = mo.data;
-  var view = mo.view;
-  var rena = mo.rena;
+  const view = mo.view,
+        rena = mo.rena,
+        mask = mo.mask;
+  let n = mo.cache.nctg;
 
   // prepare canvas context
   // note: origin (0, 0) is at the upper-left corner
-  var ctx = rena.getContext('2d');
+  const ctx = rena.getContext('2d');
 
   // clear canvas
-  ctx.clearRect(0, 0, rena.width, rena.height);
+  const w = rena.width,
+        h = rena.height;
+  ctx.clearRect(0, 0, w, h);
   ctx.save();
 
   // move to current position
-  ctx.translate(view.pos.x, view.pos.y);
+  ctx.translate(view.posX, view.posY);
 
   // scale canvas
-  var scale = view.scale;
+  const scale = view.scale;
   ctx.scale(scale, scale);
+
+  // cannot render if there is no data, or no x- or y-axis
+  if (!n || !view.x.i || !view.y.i) {
+    ctx.restore();
+    return;
+  }
 
   // alternative: css scale, which is theoretically faster, but it blurs when
   // zoom in
   // rena.style.transformOrigin = '0 0';
   // rena.style.transform = 'scale(' + view.scale + ')';
 
-  var masking = (Object.keys(mo.mask).length > 0);
-
   // cache constants
-  var pi2 = Math.PI * 2;
-  var pi1_2 = Math.sqrt(Math.PI);
-  var min1 = Math.sqrt(1 / Math.PI);
-  var min2 = Math.sqrt(4 / Math.PI);
+  const pi2 = Math.PI * 2,
+        pi1_2 = Math.sqrt(Math.PI),
+        min1 = Math.sqrt(1 / Math.PI),
+        min2 = Math.sqrt(4 / Math.PI);
 
-  // cache parameters
-  var w = rena.width,
-    h = rena.height;
-  // x-coordinate
-  var xi = view.x.i,
-    xscale = view.x.scale,
-    xmin = view.x.min,
-    xmax = view.x.max,
-    dx = xmax - xmin;
-  // y-coordinate
-  var yi = view.y.i,
-    yscale = view.y.scale,
-    ymin = view.y.min,
-    ymax = view.y.max,
-    dy = ymax - ymin;
-  // size
-  var rbase = view.rbase;
-  var si = view.size.i,
-    sscale = view.size.scale,
-    smin = view.size.zero ? 0 : view.size.min,
-    slow = view.size.lower / 100,
-    sfac = (view.size.upper / 100 - slow) / (view.size.max - smin);
-  // opacity
-  var oi = view.opacity.i,
-    oscale = view.opacity.scale,
-    omin = view.opacity.zero ? 0 : view.opacity.min,
-    olow = view.opacity.lower / 100,
-    ofac = (view.opacity.upper / 100 - olow) / (view.opacity.max - omin);
-  // color
-  var ci = view.color.i,
-    discmap = view.color.discmap,
-    contmap = view.color.contmap,
-    ctype = ci ? data.types[ci] : null,
-    cscale = view.color.scale,
-    cmin = view.color.zero ? 0 : view.color.min,
-    clow = view.color.lower,
-    cfac = (view.color.upper - clow) / (view.color.max - cmin);
+  // transformed data
+  const trans = mo.trans;
+  const X = trans.x,
+        Y = trans.y,
+        S = trans.size,
+        O = trans.opacity,
+        C = trans.color;
 
-  // rendering parameters
-  var paths = {};
+  // calculate edges of visible region
+  const vleft = -view.posX / scale,
+        vright = (w - view.posX) / scale,
+        vtop = -view.posY / scale,
+        vbottom = (h - view.posY) / scale;
+
+  // elements to be rendered, grouped by fill style, then by circle or square
+  const paths = {};
+
+  // intermediates
+  let radius, rviz, x, y, fs;
 
   // determine appearance of contig
-  for (var i = 0; i < data.df.length; i++) {
-    if (masking && i in mo.mask) continue;
-    var datum = data.df[i];
+  for (let i = 0; i < n; i++) {
+    if (mask[i]) continue;
 
     // determine radius (size)
-    // var radius = si ? scaleNum(datum[si], sscale) * rbase / smax : rbase;
-    var radius = si ? ((scaleNum(datum[si], sscale) - smin) * sfac + slow)
-      * rbase : rbase;
-    var rviz = radius * scale;
+    radius = S[i];
+    rviz = radius * scale;
 
     // if contig occupies less than one pixel on screen, skip
     if (rviz < min1) continue;
 
     // determine x- and y-coordinates
-    var x = Math.round(((scaleNum(datum[xi], xscale) - xmin) / dx - 0.5) * w);
-    var y = Math.round(((ymax - scaleNum(datum[yi], yscale)) / dy - 0.5) * h);
+    // skip contigs outside visible region
+    x = Math.round(X[i] * w);
+    if (x + radius < vleft || x - radius > vright) continue;
+    y = Math.round(Y[i] * h);
+    if (y + radius < vtop || y - radius > vbottom) continue;
 
-    // determine color
-    var c = '0,0,0';
-    if (ci) {
-      var val = datum[ci];
-      if (val !== null) {
-        // discrete data
-        if (ctype === 'category') {
-          var cat = val[0];
-          if (cat in discmap) c = hexToRgb(discmap[cat]);
-        }
-
-        // continuous data
-        else {
-          c = contmap[Math.round((scaleNum(datum[ci], cscale) - cmin) * cfac
-            + clow)];
-        }
-      }
-    }
-
-    // determine opacity
-    // var alpha = (scaleNum(datum[oi], oscale) / omax).toFixed(2);
-    var alpha = oi ? ((scaleNum(datum[oi], oscale) - omin) * ofac + olow)
-      .toFixed(2) : 1.0;
-
-    // generate fill style string
-    var fs = 'rgba(' + c + ',' + alpha + ')';
+    // determine fill style (color and opacity)
+    fs = `rgba(${C[i]},${O[i]})`;
     if (!(fs in paths)) paths[fs] = { 'square': [], 'circle': [] };
 
-    // if contig occupies less than four pixels on screen, draw a square
+    // if a contig occupies less than four pixels on screen, draw a square
     if (rviz < min2) {
-      paths[fs]['square'].push([x, y, Math.round(radius * pi1_2)]);
+      paths[fs].square.push([x, y, Math.round(radius * pi1_2)]);
     }
 
     // if bigger, draw a circle
     else {
-      paths[fs]['circle'].push([x, y, Math.round(radius)]);
+      paths[fs].circle.push([x, y, Math.round(radius)]);
     }
-  }
+  } // end for i
 
   // render contigs
-  // note: minimizing changes of fill style can improve performance
-  // note: minimizing numbers of paths can improve performance
-  for (var fs in paths) {
+  let squares, sq, circles, circ;
+  for (let fs in paths) {
     ctx.fillStyle = fs;
-    for (var i = 0; i < paths[fs]['square'].length; i++) {
-      var sq = paths[fs]['square'][i];
+
+    // draw squares
+    squares = paths[fs].square;
+    n = squares.length;
+    for (let i = 0; i < n; i++) {
+      sq = squares[i];
       ctx.fillRect(sq[0], sq[1], sq[2], sq[2]);
     }
-    var n = paths[fs]['circle'].length;
+
+    // draw circles
+    circles = paths[fs].circle;
+    n = circles.length;
     if (n === 0) continue;
     ctx.beginPath();
-    for (var i = 0; i < n; i++) {
-      var ci = paths[fs]['circle'][i];
-      ctx.moveTo(ci[0], ci[1]);
-      ctx.arc(ci[0], ci[1], ci[2], 0, pi2, true);
+    for (let i = 0; i < n; i++) {
+      circ = circles[i];
+      ctx.moveTo(circ[0], circ[1]);
+      ctx.arc(circ[0], circ[1], circ[2], 0, pi2, true);
     }
     ctx.fill();
-  }
+  } // end for fs
 
   // draw grid
   if (view.grid) drawGrid(rena, view);
@@ -219,69 +475,54 @@ function renderArena(mo) {
 /**
  * Render shadows around selected contigs.
  * @function renderSelection
- * @param {Object} mo - master object
+ * @param {Object} mo - main object
  * @see renderArena
  */
 function renderSelection(mo) {
-  var data = mo.data;
-  var view = mo.view;
-  var oray = mo.oray;
+  const view = mo.view,
+        oray = mo.oray,
+        pick = mo.pick;
+  const w = oray.width,
+        h = oray.height;
 
-  // get shadow color
-  var color = getComputedStyle(document.getElementById('hilite-color')).color;
+  // clear overlay canvas
+  const ctx = oray.getContext('2d');
+  ctx.clearRect(0, 0, w, h);
 
-  // clear canvas
-  var ctx = oray.getContext('2d');
-  ctx.clearRect(0, 0, oray.width, oray.height);
-
-  var indices = Object.keys(mo.pick);
-  var n = indices.length;
-  if (n === 0) return;
+  if (mo.cache.npick === 0) return;
+  const n = mo.cache.nctg;
+  if (!n) return;
 
   // prepare canvas
   ctx.save();
-  ctx.translate(view.pos.x, view.pos.y);
+  ctx.translate(view.posX, view.posY);
   ctx.scale(view.scale, view.scale);
+
+  // define shadow style
+  const color = mo.theme.selection;
   ctx.fillStyle = color;
   ctx.shadowColor = color;
   ctx.shadowBlur = 10; // note: canvas shadow blur is expensive
   ctx.shadowOffsetX = 0;
   ctx.shadowOffsetY = 0;
 
-  // cache constant
-  var pi2 = Math.PI * 2;
-
-  // cache parameters
-  var rbase = view.rbase;
-  var w = oray.width,
-    h = oray.height;
-  var xi = view.x.i,
-    xscale = view.x.scale,
-    xmin = view.x.min,
-    xmax = view.x.max,
-    dx = xmax - xmin;
-  var yi = view.y.i,
-    yscale = view.y.scale,
-    ymin = view.y.min,
-    ymax = view.y.max,
-    dy = ymax - ymin;
-  var si = view.size.i,
-    sscale = view.size.scale,
-    smin = view.size.zero ? 0 : view.size.min,
-    slow = view.size.lower / 100,
-    sfac = (view.size.upper / 100 - slow) / (view.size.max - smin);
+  // cache data
+  const trans = mo.trans;
+  const X = trans.x,
+        Y = trans.y,
+        S = trans.size;
+  const pi2 = Math.PI * 2;
 
   // render shadows around selected contigs
+  let r, x, y;
   ctx.beginPath();
-  for (var i = 0; i < n; i++) {
-    var datum = data.df[indices[i]];
-    // var radius = Math.round(si ? scaleNum(datum[si], sscale) * sratio : rbase);
-    var radius = Math.round(si ? ((scaleNum(datum[si], sscale) - smin)
-      * sfac + slow) * rbase : rbase);
-    var x = Math.round(((scaleNum(datum[xi], xscale) - xmin) / dx - 0.5) * w);
-    var y = Math.round(((ymax - scaleNum(datum[yi], yscale)) / dy - 0.5) * h);
+  for (let i = 0; i < n; i++) {
+    if (!pick[i]) continue;
+    r = Math.round(S[i]);
+    x = Math.round(X[i] * w);
+    y = Math.round(Y[i] * h);
     ctx.moveTo(x, y);
-    ctx.arc(x, y, radius, 0, pi2, true);
+    ctx.arc(x, y, r, 0, pi2, true);
   }
   ctx.fill();
   ctx.restore();
@@ -291,35 +532,38 @@ function renderSelection(mo) {
 /**
  * Render polygon drawn by user.
  * @function drawPolygon
- * @param {Object} master - master object
+ * @param {Object} mo - main object
  * @see renderArena
  */
 function drawPolygon(mo) {
-  var view = mo.view;
-  var stat = mo.stat;
-  var oray = mo.oray;
-  var vertices = stat.polygon;
-  var pi2 = Math.PI * 2;
-  var radius = 3 / view.scale;
-  var color = getComputedStyle(document.getElementById('polygon-color')).color;
-  var ctx = oray.getContext('2d');
+  const view = mo.view,
+        stat = mo.stat,
+        oray = mo.oray;
+  const vertices = stat.polygon;
+  const pi2 = Math.PI * 2;
+  const radius = 5 / view.scale;
+  const color = mo.theme.polygon;
+  const ctx = oray.getContext('2d');
   ctx.clearRect(0, 0, oray.width, oray.height);
   ctx.save();
-  ctx.translate(view.pos.x, view.pos.y);
+  ctx.translate(view.posX, view.posY);
   ctx.scale(view.scale, view.scale);
   ctx.fillStyle = color;
   ctx.strokeStyle = color;
-  for (var i = 0; i < vertices.length; i++) {
-    ctx.beginPath();
-    ctx.arc(vertices[i].x, vertices[i].y, radius, 0, pi2, true);
-    ctx.closePath();
+  const n = vertices.length;
+  let vertex, j;
+  ctx.beginPath();
+  for (let i = 0; i < n; i++) {
+    vertex = vertices[i];
+    ctx.arc(vertex.x, vertex.y, radius, 0, pi2, true);
     ctx.lineWidth = 1 / view.scale;
-    ctx.moveTo(vertices[i].x, vertices[i].y);
-    var j = i + 1;
-    if (j == vertices.length) j = 0;
-    ctx.lineTo(vertices[j].x, vertices[j].y);
-    ctx.stroke();
+    ctx.moveTo(vertex.x, vertex.y);
+    j = i + 1;
+    if (j == n) j = 0;
+    vertex = vertices[j];
+    ctx.lineTo(vertex.x, vertex.y);
   }
+  ctx.stroke();
   ctx.restore();
 }
 
@@ -332,26 +576,24 @@ function drawPolygon(mo) {
  * @todo needs further work
  */
 function drawGrid(rena, view) {
-  var ctx = rena.getContext('2d');
+  const ctx = rena.getContext('2d');
   ctx.font = (1 / view.scale).toFixed(2) + 'em monospace';
   ctx.fillStyle = 'dimgray';
   ctx.textAlign = 'center';
   ctx.lineWidth = 1 / view.scale;
-  var ig = 5,
-    gp = 10;
-  for (var x = parseInt(view.x.min / ig) * ig; x <= parseInt(view.x.max /
-      ig) * ig; x += ig) {
-    var xx = ((x - view.x.min) / (view.x.max - view.x.min) - 0.5) *
-      rena.width;
+  const ig = 5, gp = 10;
+  let xx, yy;
+  for (let x = parseInt(view.x.min / ig) * ig; x <= parseInt(view.x.max /
+    ig) * ig; x += ig) {
+    xx = ((x - view.x.min) / (view.x.max - view.x.min) - 0.5) * rena.width;
     ctx.moveTo(xx, -rena.height * 0.5);
     ctx.lineTo(xx, rena.height * 0.5);
     ctx.fillText(x.toString(), xx - gp / view.scale, (view.y.max /
       (view.y.max - view.y.min) - 0.5) * rena.height + gp / view.scale);
   }
-  for (var y = parseInt(view.y.min / ig) * ig; y <= parseInt(view.y.max /
+  for (let y = parseInt(view.y.min / ig) * ig; y <= parseInt(view.y.max /
     ig) * ig; y += ig) {
-    var yy = ((view.y.max - y) / (view.y.max - view.y.min) - 0.5) *
-      rena.height;
+    yy = ((view.y.max - y) / (view.y.max - view.y.min) - 0.5) * rena.height;
     ctx.moveTo(-rena.width * 0.5, yy);
     ctx.lineTo(rena.width * 0.5, yy);
     ctx.fillText(y.toString(), (view.x.min / (view.x.min - view.x.max) -
@@ -359,4 +601,71 @@ function drawGrid(rena, view) {
   }
   ctx.strokeStyle = 'lightgray';
   ctx.stroke();
+}
+
+
+/**
+ * Let user draw polygon to select a region of contigs.
+ * @function polygonSelect
+ * @param {Object} mo - main object
+ * @param {boolean} shift - whether Shift key is processed
+ */
+function polygonSelect(mo, shift) {
+  let n = mo.cache.nctg;
+  if (!n) return;
+  const data = mo.data,
+        view = mo.view,
+        stat = mo.stat,
+        oray = mo.oray;
+
+  // change button appearance
+  const btn = byId('polygon-btn');
+  const title = btn.title;
+  btn.title = btn.getAttribute('data-title');
+  btn.setAttribute('data-title', title);
+  btn.classList.toggle('pressed');
+
+  // start drawing
+  if (!stat.drawing) {
+    stat.polygon = [];
+    stat.drawing = true;
+  }
+
+  // finish drawing
+  else {
+    const w = oray.width,
+          h = oray.height;
+    oray.getContext('2d').clearRect(0, 0, w, h);
+
+    // find contigs within polygon
+    const X = mo.trans.x,
+          Y = mo.trans.y;
+    const mask = mo.mask;
+    const ctgs = [];
+    for (let i = 0; i < n; i++) {
+      if (!mask[i]) {
+        if (pnpoly(X[i] * w, Y[i] * h, stat.polygon)) ctgs.push(i);
+      }
+    }
+    stat.polygon = [];
+    stat.drawing = false;
+
+    // treat selected contigs
+    treatSelection(ctgs, mo, shift);
+  }
+}
+
+
+/**
+ * Take a screenshot and export as a PNG image.
+ * @function exportPNG
+ * @param {Object} canvas - canvas DOM to export
+ */
+ function exportPNG(canvas) {
+  const a = document.createElement('a');
+  a.href = canvas.toDataURL('image/png');
+  a.download = 'image.png';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
 }

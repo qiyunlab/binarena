@@ -1,5 +1,31 @@
 <!doctype html>
 
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>BinaRena</title>
+  <link rel="stylesheet" href="static/vendor/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="static/css/style.css">
+  <link rel="stylesheet" href="static/css/theme.css">
+  <script src="static/js/main.js"></script>
+  <script src="static/js/interface.js"></script>
+  <script src="static/js/input.js"></script>
+  <script src="static/js/display.js"></script>
+  <script src="static/js/select.js"></script>
+  <script src="static/js/binning.js"></script>
+  <script src="static/js/search.js"></script>
+  <script src="static/js/miniplot.js"></script>
+  <script src="static/js/datable.js"></script>
+  <script src="static/js/render.js"></script>
+  <script src="static/js/calculate.js"></script>
+  <script src="static/js/util.js"></script>
+  <script src="static/js/numeric.js"></script>
+  <script src="static/js/algorithm.js"></script>
+  <script src="static/js/rule.js"></script>
+  <script src="static/js/resource.js"></script>
+</head>
+
 <!--
   The program interface consists of:
   1. rendering area (main-frame)
@@ -14,6 +40,7 @@
         search-panel
         display-panel
           individual display items have legends
+        mini-panel
     side-frame: right side (toggled by show-side-btn)
       bins-panel (contains hide-side-btn)
       info-panel (for selected)
@@ -36,25 +63,6 @@
   6. hidden elements:
     file upload button
 -->
-
-<html>
-
-<head>
-  <meta charset="utf-8">
-  <title>BinaRena</title>
-  <link rel="stylesheet" href="static/vendor/font-awesome/css/font-awesome.min.css">
-  <link rel="stylesheet" href="static/css/style.css">
-  <link rel="stylesheet" href="static/css/theme.css">
-  <script src="static/js/main.js"></script>
-  <script src="static/js/interface.js"></script>
-  <script src="static/js/control.js"></script>
-  <script src="static/js/render.js"></script>
-  <script src="static/js/operation.js"></script>
-  <script src="static/js/util.js"></script>
-  <script src="static/js/resource.js"></script>
-  <script src="static/js/rule.js"></script>
-  <script src="static/js/silhouette.js"></script>
-</head>
 
 <body>
 
@@ -92,7 +100,7 @@
     <!-- start panel -->
     <div id="start-panel">
       <button id="dash-btn" title="Show dashboard" style="float: right;"></button>
-      <button id="menu-btn" title="Show main menu">BinaRena</button>
+      <button id="menu-btn" class="dropdown" title="Show main menu">BinaRena</button>
     </div>
 
     <!-- dash panel -->
@@ -108,8 +116,8 @@
         <table>
           <tr>
             <td>Field</td>
-            <td><select id="field-list" title="Select a column to search"><option value="0"></option></select></td>
-            <td><button id="search-btn" style="visibility: hidden;" title="Search by criteria"><i class="fa fa-search"></i> Search</button></td>
+            <td><select id="search-field-sel" title="Select a column to search"><option value="0"></option></select></td>
+            <td><button id="search-btn" style="visibility: hidden;" title="Search by criteria">Search</button></td>
           </tr>
           <tr class="hidden" id="num-sel-p">
             <td>in</td>
@@ -144,18 +152,11 @@
           --><button class="square" id="whole-btn" title="Match whole value">&ldquo;&rdquo;</button>
         </span>
 
-        <!-- selection mode -->
-        <!-- <p>
-          <label title="Choose a selection mode">Mode</label>
-          <span class="btn-group">
-            <button id="sel-new-btn" class="square pressed" title="New selection"><i class="fa fa-asterisk"></i></button>
-            <button id="sel-add-btn" class="square" title="Add to selection"><i class="fa fa-plus"></i></button>
-            <button id="sel-remove-btn" class="square" title="Remove from selection"><i class="fa fa-minus"></i></button>
-          </span>
-        </p> -->
       </div>
 
       <!-- display panel -->
+      <!-- It defines five display elements of the main plot: x-axis, y-axis,
+      size, opacity, and color. -->
       <div id="display-head" class="panel-head">
         <span><button title="Show/hide display panel">Display</button></span>
       </div>
@@ -192,9 +193,9 @@
           <tr class="hidden">
             <td colspan="3">
               <div id="size-legend" class="legend" data-item="size" data-ranging="none">
-                <label class="min" data-value="">Hi</label>
+                <label class="min" data-value=""> </label>
                 <div id="size-gradient" class="gradient"> </div>
-                <label class="max" data-value="">All</label>
+                <label class="max" data-value=""> </label>
                 <div class="clip lower"></div>
                 <div class="clip upper"></div>
                 <div class="range lower" data-tick="0"></div>
@@ -268,26 +269,58 @@
         </table>
       </div>
 
-      <!-- tooltip for legend -->
+      <!-- mini plot panel -->
+      <div id="mini-head" class="panel-head">
+        <span><button title="Show/hide plot panel">Plot</button></span>
+      </div>
+      <div id="mini-content" class="dash-content hidden" style="position: relative;">
+
+        <!-- mini plot controls -->
+        <div class="toolbar right hidden">
+          <button id="mini-log-btn" class="square" style="letter-spacing: -0.1em;">log</button>
+          <button id="mini-plus-btn" class="square" title="Increase resolution"><i class="fa fa-plus"></i></button>
+          <button id="mini-minus-btn" class="square" title="Decrease resolution"><i class="fa fa-minus"></i></button>
+        </div>
+
+        <!-- mini plot variable selection -->
+        <table>
+          <tr>
+            <td>Field</td>
+            <td><select id="mini-field-sel" title="Plot a numeric variable"></select></td>
+          </tr>
+        </table>
+
+        <!-- mini plot canvas -->
+        <canvas id="mini-canvas"></canvas>
+      </div>
+
+      <!-- tooltip of legend -->
+      <!-- It is a dialog box floating with the mouse to indicate the current
+        display property and data value. -->
       <div id="legend-tip" class="hidden">
         <span id="legend-circle"></span>
         <span id="legend-value"></span>
       </div>
+
     </div>
   </div>
 
 
   <!--
     widget frame
+    A row of buttons located at the bottom left corner of the window.
   -->
   <div id="widget-frame" class="dock">
 
     <!-- setting panel -->
     <div id="set-panel">
       <button id="set-btn" title="Show settings"><i class="fa fa-sliders fa-lg"></i></button>
-      <div class="dock active">
+      <div class="dock active hidden">
         <div class="panel-head"><span><button disabled>Settings</button></span></div>
         <div class="dash-content">
+          <p><label><b>Filter:</b></label></p>
+          <p><label>Length</label><input type="text" id="len-filt" title="Minimum contig length threshold" style="width: 40%; text-align: right;"></p>
+          <p><label>Coverage</label><input type="text" id="cov-filt" title="Minimum contig coverage threshold" style="width: 40%; text-align: right;"></p>
           <p><label><b>Show:</b></label></p>
           <p><label>Grid</label><input type="checkbox" id="grid-chk"></p>
           <p><label>Navigation bar</label><input type="checkbox" id="nav-chk"></p>
@@ -300,9 +333,15 @@
     <div id="freq-panel">
       <button id="screenshot-btn" title="Take a screenshot (P)"><i class="fa fa-camera"></i></button>
       <button id="polygon-btn" title="Draw polygon with mouse clicks to contain multiple contigs (Enter)" data-title="Finish polygon selection (Enter)"><i class="fa fa-pencil fa-lg"></i></button>
-      <button id="selmode-btn" title="Current selection mode: new selection"><i class="fa fa-asterisk"></i></button>
-      <button id="masking-btn" title="Masking mode: directly add selected contigs to mask (M)"><i class="fa fa-eye-slash fa-lg"></i></button>
-      <!--&#9974;-->
+    </div>
+
+    <!-- calculation panel -->
+    <div id="calc-panel">
+      <button id="calc-btn" class="dropdown" title="Advanced calculations"><i class="fa fa-calculator fa-lg"></i></button>
+      <div id="calc-menu" class="menu active hidden">
+        <a id="silhouet-a" title="Calculate silhouette coefficients of contigs in the current binning plan">Silhouette score</a>
+        <a id="adj-rand-a" class="dropdown" title="Calculate adjusted Rand index of the current vs. an existing binning plan">Adj. Rand index</a>
+      </div>
     </div>
 
     <!-- navigation panel -->
@@ -322,6 +361,7 @@
 
   <!--
     side frame
+    The "bins" and "info" panels that occupy the right side of the window.
   -->
   <!-- show side frame button -->
   <div id="show-frame" class="dock"><div>
@@ -331,61 +371,81 @@
   <!-- side frame: stick to right, and auto-grow -->
   <div id="side-frame" class="hidden">
 
-    <!-- bins panel -->
+    <!--
+      bins panel
+      Displays a table of bins in current binning plan.
+    -->
     <div id="bins-head" class="panel-head">
       <span style="float: right;"><button id="hide-side-btn" title="Hide side frame"></button></span>
       <span><button title="Show/hide bins panel">Bins</button></span>
     </div>
 
-    <div class="side-content">
+    <div id="bins-content" class="side-content">
 
-      <!-- toolbar -->
-      <div class="toolbar">
-        <button id="load-bin-btn" class="square dropdown" title="Load bins from a categorical field"><i class="fa fa-list fa-lg"></i></button><!--
-        --><span class="spacer"></span><!--
-        --><button id="new-bin-btn" class="square" title="New bin"><i class="fa fa-file-o fa-lg"></i></button><!--
-        --><button class="square hidden" id="add-to-bin-btn" title="Add to bin"><i class="fa fa-plus fa-lg"></i></button><!--
-        --><button class="square hidden" id="remove-from-bin-btn" title="Remove from bin"><i class="fa fa-minus fa-lg"></i></button><!--
-        --><button class="square hidden" id="delete-bin-btn" title="Delete bin"><i class="fa fa-trash fa-lg"></i></button><!--
-        --><button class="square hidden" id="merge-bin-btn" title="Merge bins"><i class="fa fa-compress fa-lg"></i></button><!--
-        --><span class="spacer"></span><!--
-        --><button id="save-bin-btn" title="Export current binning plan"><i class="fa fa-floppy-o fa-lg"></i></button><!--
-        --><button id="clear-bin-btn" title="Clear current binning plan"><i class="fa fa-recycle fa-lg"></i></button><!--
-        --><span class="spacer"></span><!--
-        --><button id="silhouette-btn" title="Calculate silhouette scores based on current binning plan"><i class="fa fa-bar-chart-o fa-lg"></i></button>
+      <!-- binning plan selector -->
+      <div class="dash-content">
+        <table>
+          <tr>
+            <td>Plan</td>
+            <td><input type="text" id="plan-sel-txt" class="dropdown" title="Load a binning plan from a categorical field"></td>
+            <td><button id="save-plan-btn" title="Save current binning plan">Save</button></td>
+          </tr>
+        </table>
       </div>
 
-      <!-- bin table -->
-      <table id="bin-table">
-        <thead id="bin-thead" class="hidden">
-          <tr>
-            <th title="Unique bin identifier">Name</th>
-            <th title="Number of contigs">#</th>
-            <th title="Total length of contigs (kbp)">kb</th>
-            <th title="Relative abundance (%) (sum of length x coverage normalized by the entire sample)">%</th>
-          </tr>
-        </thead>
-        <tbody id="bin-tbody"></tbody>
-      </table>
+      <div>
+
+        <!-- toolbar -->
+        <div class="toolbar left hidden">
+          <button id="new-empty-bin-btn" title="Create an empty new bin"><i class="fa fa-plus fa-lg"></i></button>
+          <button id="delete-bin-btn" class="hidden" title="Delete selected bin(s)"><i class="fa fa-minus fa-lg"></i></button>
+          <button id="merge-bins-btn" class="hidden" title="Merge selected bins"><i class="fa fa-compress fa-lg"></i></button>
+          <button id="export-plan-btn" title="Export current binning plan"><i class="fa fa-download fa-lg"></i></button>
+        </div>
+
+        <!-- bins table -->
+        <div id="bin-table-wrap">
+          <table id="bin-table" style="z-index: 1;">
+            <thead id="bin-thead" class="hidden">
+              <tr>
+                <th title="Unique bin identifier">Name</th>
+                <th title="Number of contigs">#</th>
+                <th title="Total length of contigs (kbp)">kb</th>
+                <th title="Relative abundance (%) (sum of length x coverage vs. entire sample)">%</th>
+              </tr>
+            </thead>
+            <tbody id="bin-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
     </div>
 
-    <!-- info panel -->
+    <!--
+      Info panel
+      Summarizes information of currently selected contigs.
+    -->
     <div id="info-head" class="panel-head">
-      <span><button title="Show/hide selected panel">Selected</button></span>
+      <span><button id="info-head-btn" title="Show/hide selected panel">Selected</button></span>
     </div>
     <div class="side-content" style="flex-grow: 1;"><!-- filling remaing height -->
 
       <!-- toolbar -->
-      <div class="toolbar">
-        <button title="Highlight" class="square"><i class="fa fa-star-o fa-lg"></i></button>
-        <button id="mask-btn" title="Mask" class="square"><i class="fa fa-eye-slash fa-lg"></i></button>
+      <div class="toolbar left hidden">
+        <button id="as-new-bin-btn" class="hidden" title="Create a new bin from selected contigs"><i class="fa fa-asterisk fa-lg"></i></button>
+        <button id="add-to-bin-btn" class="hidden" title="Add selected contigs to bin"><i class="fa fa-plus fa-lg"></i></button>
+        <button id="remove-from-bin-btn" class="hidden" title="Remove selected contigs from bin"><i class="fa fa-minus fa-lg"></i></button>
+        <button id="update-bin-btn" class="hidden" title="Update bin with selected contigs"><i class="fa fa-refresh fa-lg"></i></button>
+        <span class="spacer"></span>
+        <button id="invert-btn" class="hidden" title="Invert selection"><i class="fa fa-exchange fa-lg"></i></button>
+        <button id="mask-btn" class="hidden" title="Mask selected contigs"><i class="fa fa-eye-slash fa-lg"></i></button>
       </div>
 
       <!-- info table -->
       <table id="info-table"></table>
 
       <!-- inline controls -->
-      <div id="info-ctrl" class="hidden" data-row="">
+      <div id="info-ctrl" class="hidden" style="z-index: 2;" data-row="">
         <button class="dropdown" id="info-metric-btn" title="Metric">f(x)</button><!--
         --><span id="info-ref-span">&nbsp;by&nbsp;<select id="info-ref-sel" title="Weight by reference field"></select></span><!--
         --><button id="info-plot-btn" title="Plot distribution">&#9684;</button><!--
@@ -395,25 +455,27 @@
 
     <!-- mask panel -->
     <div id="mask-head" class="panel-head" style="margin-top: auto;">
-      <span style="float: right;"><button id="clear-mask-btn" title="Clear mask"><i class="fa fa-recycle"></i> Clear</button></span>
-      <span><button>Masked</button></span>
+      <span style="float: right;"><button id="clear-mask-btn" title="Clear mask">Clear</button></span>
+      <span><button id="mask-head-btn">Masked</button></span>
     </div>
   </div>
 
 
   <!--
-    context menu
+    Context menu
+    i.e., the main menu, can be activated by clicking the program title or
+    right-clicking anywhere in the plot.
   -->
-  <div id="context-menu" style="z-index: 2;" class="hidden">
-    <a id="load-data-a" href="#">Load data</a>
-    <a id="show-data-a" href="#">Show data</a>
-    <a id="close-data-a" href="#">Close data</a>
+  <div id="context-menu" style="z-index: 2;" class="menu hidden">
+    <a id="load-data-a">Load data</a>
+    <a id="show-data-a">Show data</a>
+    <a id="close-data-a">Close data</a>
     <hr>
-    <a id="export-bins-a" href="#">Export bins</a>
-    <a id="export-data-a" href="#">Export data</a>
-    <a id="export-image-a" href="#">Export image</a>
+    <a id="export-bins-a">Export bins</a>
+    <a id="export-data-a">Export data</a>
+    <a id="export-image-a">Export image</a>
     <hr>
-    <a id="help-a" href="#">Help</a>
+    <a id="help-a">Help</a>
   </div>
 
 
@@ -502,7 +564,11 @@
   -->
 
   <!-- toast message -->
-  <div id="toast" class="hidden"></div>
+  <div id="toast" class="hidden">
+    <span id="toast-msg"></span><!--
+    --><span id="loading-dots" class="hidden"><span>&bull;</span> <span>&bull;</span> <span>&bull;</span></span><!--
+    --><button id="toast-close-btn" title="Close message" class="hidden">&times;</button>
+  </div>
 
   <!-- list select dropdown (also for auto-complete textbox) -->
   <div id="list-select" class="popup hidden">
@@ -531,10 +597,12 @@
   <div style="display:none">
     <!-- file I/O cache -->
     <textarea id="text-cache"></textarea>
+
     <!-- file upload button -->
     <input type="file" id="open-file">
+
     <!-- styles defined by CSS -->
-    <label id="hilite-color">hightlight color</label>
+    <label id="selection-color">selected color</label>
     <label id="polygon-color">polygon color</label>
   </div>
 </body>

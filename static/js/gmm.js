@@ -1,137 +1,29 @@
-'use strict'
+"use strict";
 
-// for test use
-function arrSum(arr) {
-  var sum = 0;
-  for (var i = 0; i < arr.length; i++) {
-    sum += arr[i];
-  }
-  return sum;
-}
-
-
-// for test use
-function arrMean(arr) {
-  // to avoid floating point err in js
-  return (arrSum(arr) * 10) / (arr.length * 10);
-}
-
-
-// for test use
-function transpose(df) {
-  var res = [];
-  var n = df[0].length;
-  for (var i = 0; i < n; i++) {
-    res.push([]);
-  }
-  for (var i = 0; i < df.length; i++) {
-    for (var j = 0; j < n; j++) {
-      res[j].push(df[i][j]);
-    }
-  }
-  return res;
-}
-
-
-/**
- * Return a 2D matirx with 1 on the diagonal and 0 elsewhere.
- * @function identity
- * @param {number} n - the number of rows
- * @return {number[]} the identity matrix
+/**!
+ * @module gmm
+ * @file Gaussian mixture model (WIP).
  */
-function identity(n) {
-  let res = Array(n).fill().map(() => Array(n).fill(0));
-  for (let i = 0; i < n; i++) {
-    res[i][i] = 1;
-  }
-  return res;
-}
+
 
 /**
- * Return inverse of given matrix.
- * @function inv
- * @param {number[]} x - the input matrix
- * @return {number[]} inverse of the input matrix
- */
-function inv(x) {
-  if (typeof(x) === 'number') {
-    return 1 / x;
-  }
-  let r = x.length;
-  let c = x[0].length;
-  let a = [];
-  for (let i = 0; i < r; i++) { // deep copy the input array
-    a[i] = x[i].slice();
-  }
-  let res = identity(r);
-  let k, Ii, Ij, temp;
-
-  // row reduction
-  for (let i = 0; i < c; i++) {
-    var idx = i;
-    var max = a[i][i];
-    for (let j = i; j < r; j++) {
-      let cur = Math.abs(a[j][i]);
-      if (cur > max) { // find max element and its index in the ith column
-        idx = j;
-        max = cur;
-      }
-    }
-    // row exchange
-    if (idx !== i) {
-      temp = a[idx];
-      a[idx] = a[i];
-      a[i] = temp;
-      temp = res[idx];
-      res[idx] = res[i];
-      res[i] = temp;
-    }
-    let Aj = a[i];
-    let Ij = res[i];
-
-    let f = Aj[i];
-    for (let j = i; j < c; j++) {
-      Aj[j] /= f;
-    }
-    for (let j = 0; j < c; j++) {
-      Ij[j] /= f;
-    }
-    // eleminate non-zero values on other rows at column c
-    for (let j = 0; j < r; j++) {
-      if (j !== i) {
-        let Ai = a[j];
-        Ii = res[j];
-        f = Ai[i];
-        for (k = i + 1; k < c; k++) {
-          Ai[k] -= Aj[k] * f;
-        }
-        for (k = c - 1; k > 0; k--) {
-          Ii[k] -= Ij[k] * f;
-          k--;
-          Ii[k] -= Ij[k] * f;
-        }
-        if (k===0) {
-          Ii[0] -= Ij[0] * f;
-        }
-      }
-    }
-  }
-  return res;
-}
-
-//console.log(inv([[1,3,2],[1,3,3],[2,7,8]]))
-
-/**
- * Compute the determinant of matrix.
+ * Compute the determinant of a matrix.
  * @function det
  * @param {number[]} x - the input square matrix
  * @return {number} the determinant of the matrix
+ * @see {@link https://en.wikipedia.org/wiki/Determinant}
+ * @see numpy.linalg.det
+ * @todo This function does not generate the same result on SciPy's example:
+ * a = np.array([[1,2,3], [4,5,6], [7,8,9]])
+ * linalg.det(a)
+ * 0.0
+ * Needs double-checking
  */
 function det(x) {
   let r = x.length;
   let res = 1;
-  var Aj, Ai, alpha, i;
-  //var i,j,k,Aj,Ai,alpha,temp,k1,k2,k3;
+  let Aj, Ai, alpha, i;
+  // let i,j,k,Aj,Ai,alpha,temp,k1,k2,k3;
   let m = [];
   for (i = 0; i < r; i++) {
     m[i] = x[i].slice();
@@ -193,13 +85,14 @@ function gaussian(mean, variance) {
 gaussian.prototype.pdf = function(x) {
   let mean = this.mean;
   if (typeof(x) === 'number') {
-    return 1 / (this.variance * Math.sqrt(2 * Math.PI)) * Math.exp((x - mean)**2 / (-2 * this.variance**2));
+    return 1 / (this.variance * Math.sqrt(2 * Math.PI)) * Math.exp((
+      x - mean) ** 2 / (-2 * this.variance ** 2));
   }
   let d = x.map(function(a, i) { // element-wise array substraction
     return a - mean[i];
   });
   let ex = 0; // exponent
-  let invVar = inv(this.variance);
+  let invVar = invMat(this.variance);
   for (let i = 0; i < this.n; i++) {
     let sum = 0;
     for (let j = 0; j < this.n; j++) {
@@ -207,14 +100,9 @@ gaussian.prototype.pdf = function(x) {
     }
     ex += d[i] * sum;
   }
-  return 1 / (Math.pow(Math.sqrt(2 * Math.PI), this.n) * Math.sqrt(det(this.variance))) * Math.exp(ex / -2);
+  return 1 / (Math.pow(Math.sqrt(2 * Math.PI), this.n) * Math.sqrt(
+    det(this.variance))) * Math.exp(ex / -2);
 };
-
-
-var g = new gaussian([1,2], [[1,0],[0,1]]);
-console.log(g.pdf([0,1]));
-var h = new gaussian(2.5, 0.5);
-console.log(h.pdf(1));
 
 
 /*
@@ -324,21 +212,21 @@ function mStep(x, mean, variance, k, z, weight) {
   let n = x[0].length; // n dimension
   for (let j = 0; j < k; j++) {
     // column sum of latent matrix
-    let c = z.map(function(a, i) {return a[j]}).reduce((acc, cur) => acc + cur);
+    let c = z.map((a, i) => { return a[j]; }).reduce((acc, cur) => acc + cur);
     weight[j] = 1 / m * c;
     let mu = Array(n).fill(0);
     let sigma = Array(n).fill().map(() => Array(n).fill(0));
     for (let i = 0; i < m; i++) {
-      mu = mu.map(function(a, idx) {return a + x[i].map(a => a * z[i][j])[idx]});
+      mu = mu.map(function(a, idx) {return a + x[i].map(
+        a => a * z[i][j])[idx]; });
       // matrix element-wise operations need to fix
-      sigma = sigma.map(function(a, idx){return a + cov(x[i], mean[j]).map(a => a * z[i][j])[idx]});
+      sigma = sigma.map(function(a, idx){return a + cov(x[i], mean[j]).map(
+        a => a * z[i][j])[idx]; });
     }
     mean[j] = mu.map(a => a / c);
     variance[j] = sigma.map(a => a / c);
   }
 }
-
-
 
 
 /**
@@ -372,7 +260,7 @@ function eStep(x, mean, variance, z, k, weight) {
 
 
 /**
- * Compute the loglikehood.
+ * Compute the log-likehood.
  * @function loglikelihood
  * @param {number[]} x - array of input
  * @param {number[]} mean - mean vector
@@ -399,7 +287,7 @@ function loglikelihood(x, mean, variance, weight, k) {
  * Fitting the Gaussian mixture model by em algorithm
  * @function fit
  * @param {number[]} x - the input array
- * @param (number} k - the number of clusters
+ * @param {number} k - the number of clusters
  * @param {number} tol - the convergence tolerance
  */
 function fit(x, k=2, tol=1e-5) {
@@ -421,8 +309,8 @@ function fit(x, k=2, tol=1e-5) {
 
   while(cur > prev) {
     prev = loglikelihood(x, mean, variance, weight);
-    eStep;
-    mStep;
+    eStep();
+    mStep();
     cur = loglikelihood(x, mean, variance, weight);
   }
 }

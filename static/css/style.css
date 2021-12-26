@@ -150,7 +150,7 @@ button.inside {
  * shared classes
  */
 
-/* panel head */
+/** panel head */
 
 div.panel-head {
   background-color: dimgray;
@@ -197,6 +197,66 @@ div.panel-head button:hover {
   background: darkgray;
 }
 
+div.panel-head select {
+  position: absolute;
+  color: white;
+  min-width: 50px;
+  max-width: 150px;
+  border-bottom: none;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  left: 25%;
+}
+
+div.panel-head select:hover {
+  border-bottom: 1px solid dimgray;
+}
+
+
+/**
+ * menu
+ */
+
+div.menu {
+  position: fixed;
+  min-width: 160px;
+  padding: 5px 0;
+  border: none;
+  background-color: white;
+  box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.25);
+}
+
+div.menu a {
+  color: black;
+  padding: 6px 12px;
+  text-decoration: none;
+  display: block;
+  position: relative;
+  cursor: pointer;
+}
+
+div.menu a.disabled {
+  color: grey;
+}
+
+div.menu a:not(.disabled):hover {
+  background-color: gainsboro;
+}
+
+div.menu hr {
+  margin-left: 10px;
+  margin-right: 10px;
+}
+
+div.menu a:not(.disabled).dropdown:hover:after {
+  position: absolute;
+  content: "";
+  top: calc(50% - 5px);
+  right: 5px;
+  border: 5px solid transparent;
+  border-color: transparent transparent transparent dimgrey;
+}
+
 
 /**
  * dock
@@ -206,10 +266,12 @@ div.dock {
   z-index: 2;
 }
 
+
 /**
- * toolbar
+ * classical toolbar (obsolete)
  */
 
+ /* 
 div.toolbar {
   color: dimgray;
   background-color: white;
@@ -217,7 +279,7 @@ div.toolbar {
   border-bottom: 1px solid lightgray;
   flex-shrink: 0;
   position: -webkit-sticky;
-  position: sticky; /* IE incompatible */
+  position: sticky;
   top: 0;
   display: flex;
   flex-direction: row;
@@ -242,6 +304,53 @@ div.toolbar span.spacer {
   width: 2px;
   border-left: 1px solid lightgray;
   margin-left: 2px;
+} */
+
+
+
+/**
+ * toolbar (floating)
+ */
+
+div.toolbar {
+  z-index: 2;
+  position: absolute;
+  color: dimgray;
+  background-color: white;
+  align-items: center;
+  padding: 5px;
+  display: flex;
+  flex-direction: column;
+}
+
+div.toolbar.right {
+  right: 0;
+  transform: translateX(calc(100% - 1px));
+  box-shadow: 6px 6px 6px rgba(0, 0, 0, 0.1);
+}
+
+div.toolbar.left {
+  transform: translateX(-100%);
+  box-shadow: -6px 6px 6px rgba(0, 0, 0, 0.1);
+}
+
+div.toolbar button {
+  color: dimgray;
+  background-color: transparent;
+  width: 24px;
+  height: 24px;
+}
+
+div.toolbar button:hover {
+  color: black;
+  background-color: lightgray;
+}
+
+div.toolbar span.spacer {
+  background-color: lightgray;
+  height: 1px;
+  width: 100%;
+  margin: 4px;
 }
 
 
@@ -255,12 +364,37 @@ div.toolbar span.spacer {
   color: white;
   text-align: center;
   border-radius: 4px;
-  padding: 15px;
+  padding: 15px 5px;
   position: fixed;
   z-index: 3;
   left: 50%;
   bottom: 50px;
 }
+
+#toast-msg {
+  margin: 5px 30px;
+  vertical-align: middle;
+}
+
+#toast-close-btn {
+  font-size: 1.5em;
+  background-color: dimgray;
+  color: white;
+  vertical-align: middle;
+}
+
+#toast-close-btn:hover {
+  color: black;
+  background-color: lightgray;
+}
+
+/* loading dots */
+#loading-dots { margin-right: 10px;}
+#loading-dots > span { animation: blinking 1.2s linear infinite; }
+#loading-dots > span:nth-child(1) { animation-delay: 0.4s; }
+#loading-dots > span:nth-child(2) { animation-delay: 0.8s; }
+#loading-dots > span:nth-child(3) { animation-delay: 1.2s; }
+@keyframes blinking { from { opacity: 0; } to { opacity: 1; } }
 
 
 /** modal */
@@ -278,7 +412,7 @@ div.modal {
 
 div.modal-content {
   border: none;
-  box-shadow: 0px 6px 12px rgba(0,0,0,0.25);
+  box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.25);
   background: white;
   max-width: 80%;
   margin: 5% auto;
@@ -440,8 +574,9 @@ canvas.main-plot {
 
 #coords-label {
   position: absolute;
-  left: 20px;
+  left: 50%;
   top: 20px;
+  transform: translate(-50%, 0);
   color:dimgray;
   font-family: monospace;
   background: white;
@@ -516,7 +651,7 @@ canvas.main-plot {
 div.dash-content {
   color: black;
   background-color: white;
-  padding: 10px 15px;
+  padding: 8px 15px;
 }
 
 div.dash-content p {
@@ -611,10 +746,18 @@ div.dash-content > table tr td:last-child > span button:hover {
 }
 
 
-/* 
-div.dash-content table tr td:nth-child(2) select {
+/**
+ * mini plot
+ */
+
+#mini-canvas {
   width: 100%;
-} */
+}
+
+#mini-content:hover #mini-ctrl {
+  display: flex;
+  flex-direction: column;
+}
 
 
 /**
@@ -624,26 +767,6 @@ div.dash-content table tr td:nth-child(2) select {
 #context-menu {
   position: fixed;
   min-width: 160px;
-  padding: 5px 0;
-  border: none;
-  background-color: white;
-  box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.25);
-}
-
-#context-menu a {
-  color: black;
-  padding: 6px 12px;
-  text-decoration: none;
-  display: block;
-}
-
-#context-menu a:hover {
-  background-color: gainsboro;
-}
-
-#context-menu hr {
-  margin-left: 10px;
-  margin-right: 10px;
 }
 
 
@@ -693,18 +816,18 @@ div.dash-content table tr td:nth-child(2) select {
   margin-left: 2px;
 }
 
-/** setting panel */
-
-#set-panel > div.dock {
-  display: none;
+#widget-frame > div > div.dock {
+  display: flex;
   position: fixed;
   left: 0;
   bottom: 32px;
   flex-direction: column;
 }
 
-#set-panel:hover > div.dock {
-  display: flex;
+#widget-frame > div > div.menu {
+  display: block;
+  position: absolute;
+  bottom: 32px;
 }
 
 
@@ -779,31 +902,29 @@ div.side-content {
 
 /* bins panel */
 
+#bin-table-wrap {
+  padding: 0 5px 5px 5px;
+  max-height: 300px;
+}
+
 #bin-table {
   width: 100%;
   border: none;
-  flex-grow: 1;
   table-layout: fixed;
-}
-
-#bin-thead {
-  background-color: #EEE;
-}
-
-#bin-tbody {
-  overflow: auto;
-  /* min-height: 100px; */
+  overflow-y: scroll;
 }
 
 #bin-table th,td {
-  padding: 2px 5px;
+  padding: 3px 5px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 #bin-thead th {
-  overflow: auto;
+  position: sticky;
+  top: 0;
+  background-color: #EEE;
 }
 
 #bin-thead tr th {
