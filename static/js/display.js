@@ -772,5 +772,4 @@ function closeData(mo) {
   mo.data.length = 0; // clear an array in place
   mo.cols.names.length = 0;
   mo.cols.types.length = 0;
-  mo.cols.links.length = 0;
 }

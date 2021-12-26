@@ -95,14 +95,10 @@ function mainObj() {
    * - Missing data are stored as [] (empty array).
    * @param {number}   cwt - weights of categories
    * @param {number[]} fwt - weights of features (same order)
-   * 
-   * @property {number[]} links - indices of corresponding weight columns
-   * Zero stands for not available.
    */
   this.cols = {
     names: [],
-    types: [],
-    links: []
+    types: []
   };
 
 

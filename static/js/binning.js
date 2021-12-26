@@ -160,8 +160,8 @@ function initBinCtrl(mo) {
     updateBinCtrl(mo);
     selectBin(table, name);
     const n = bins.length;
-    if (n === 2) toastMsg(`Merged "${bins[0]}" and "${bins[1]}" into 
-      "${name}".`, stat, 2000);
+    if (n === 2) toastMsg(`Merged "${bins[0]}" and "${bins[1]}" into ` +
+      `"${name}".`, stat, 2000);
     else toastMsg(`Merged ${plural('bin', n)} into "${name}".`, stat, 2000);
   });
 

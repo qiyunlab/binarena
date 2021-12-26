@@ -43,7 +43,6 @@ function calcSilhouette(mo) {
   const X = data[xi],
         Y = data[yi];
   const vals = transpose([X, Y]);
-  // const vals = data.df.map(datum => [datum[xi], datum[yi]]);
 
   // This is a heavy calculation so a progress bar is displayed prior to
   // starting the calculation. This can only be achieved through an async
@@ -98,8 +97,8 @@ function calcSilhouette(mo) {
 
     // summarize scores
     scores = scores.filter(score => score !== null);
-    toastMsg(`Mean silhouette score of contigs of ${n} bins: 
-      ${arrMean(scores).toFixed(3)}.`, mo.stat, 0, false, true);
+    toastMsg(`Mean silhouette score of contigs of ${n} bins: ` +
+      `${arrMean(scores).toFixed(3)}.`, mo.stat, 0, false, true);
 
   }, 0);
 }
@@ -140,6 +139,6 @@ function calcAdjRand(mo, field) {
   // calculation
   const ari = adjustedRandScore(ref, cur);
 
-  toastMsg(`Adjusted Rand index between current binning plan and "${field}": 
-    ${ari.toFixed(3)}.`, mo.stat, 0, false, true);
+  toastMsg(`Adjusted Rand index between current binning plan and ` +
+    `"${field}": ${ari.toFixed(3)}.`, mo.stat, 0, false, true);
 }

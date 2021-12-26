@@ -17,7 +17,7 @@ describe('input.js', function() {
       CTG4	3.197	-4.142	2653	50.2	10.25	Escherichia	K00237,K03852	
       CTG5	-1.755	-0.672	1753	48.8	2.65	Bacteroides	K00012,K01043:2	this is the last one`).replace(/  +/g, '');
     const data = [];
-    const cols = {'names': [], 'types': [], 'links': []};
+    const cols = {'names': [], 'types': []};
     parseTable(text, data, cols);
     exp = [['CTG1', 'CTG2', 'CTG3', 'CTG4', 'CTG5'],
            [1.024, -2.254, 0.365,  3.197, -1.755],
@@ -39,8 +39,6 @@ describe('input.js', function() {
     exp = ['id', 'num', 'num', 'num', 'num', 'num', 'cat', 'fea', 'fwt',
            'des'];
     expect(cols.types).toEqual(exp);
-    exp = [0, 0, 0, 0, 0, 0, 0, 8, 0, 0];
-    expect(cols.links).toEqual(exp);
   });
 
   /** Parse numeric column. */

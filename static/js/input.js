@@ -165,7 +165,6 @@ function parseTable(text, data, cols) {
   data.push(arr2d[0]);
   cols.names.push(names[0]);
   cols.types.push('id');
-  cols.links.push(0);
 
   // parse and append individual columns
   for (let i = 1; i < m; i++) {
@@ -173,17 +172,12 @@ function parseTable(text, data, cols) {
     data.push(parsed);
     cols.names.push(name);
     cols.types.push(type);
-    if (weight === null) {
-      cols.links.push(0);
-    }
 
     // if there is weight, append as a new column
-    else {
-      cols.links.push(data.length);
+    if (weight !== null) {
       data.push(weight);
       cols.names.push(name);
       cols.types.push(type === 'cat' ? 'cwt' : 'fwt');
-      cols.links.push(0);
     }
   }
 
@@ -262,7 +256,7 @@ function parseNumColumn(arr) {
   const n = arr.length;
   const res = Array(n).fill(0);
   for (let i = 0; i < n; i++) {
-    res[i] = parseFloat(arr[i]);
+    res[i] = Number(arr[i]);
   }
   return res;
 }
@@ -287,7 +281,7 @@ function parseCatColumn(arr) {
       wt = val.substring(j + 1);
       if (!isNaN(wt)) { // weight is a number
         parsed[i] = val.substring(0, j);
-        weight[i] = parseFloat(wt);
+        weight[i] = Number(wt);
         weighted = true;
       } else {
         parsed[i] = val;
@@ -322,7 +316,7 @@ function parseFeaColumn(arr) {
         wt = val.substring(j + 1);
         if (!isNaN(wt)) {
           parsed[i].push(val.substring(0, j));
-          weight[i].push(parseFloat(wt));
+          weight[i].push(Number(wt));
           weighted = true;
         } else {
           parsed[i].push(val);
@@ -358,10 +352,7 @@ function parseFeaColumn(arr) {
  * attempts to guess the most plausible data type.
  * 
  * Note: This function uses `isNaN` to check whether a string is a number.
- * Some strings "can" be parsed as numbers but they don't look like so. In
- * the current function (as in contrast to `parseNumColumn`) they will be
- * recognized as non-numbers. For example, `parseFloat('5a') === 5`, but
- * `isNaN('5a') === true`.
+ * Not to be confused with `Number.isNaN`.
  * 
  * Note: This function uses the presence of comman (,) to determine whether
  * the input data are categories, as in contrast to `parseCatColumn`, which
@@ -381,7 +372,7 @@ function guessColumnType(arr) {
     if (areNums) {
       val = arr[i];
       if (!isNaN(val)) {
-        parsed[i] = parseFloat(val);
+        parsed[i] = Number(val);
       } else {
         areNums = false;
         break;
@@ -405,7 +396,7 @@ function guessColumnType(arr) {
           wt = val.substring(j + 1);
           if (!isNaN(wt)) {
             parsed[i] = val.substring(0, j);
-            weight[i] = parseFloat(wt);
+            weight[i] = Number(wt);
             weighted = true;
           } else {
             parsed[i] = val;
@@ -434,7 +425,7 @@ function guessColumnType(arr) {
         wt = val.substring(j + 1);
         if (!isNaN(wt)) {
           parsed[i].push(val.substring(0, j));
-          weight[i].push(parseFloat(wt));
+          weight[i].push(Number(wt));
           weighted = true;
         } else {
           parsed[i].push(val);
@@ -456,13 +447,13 @@ function guessColumnType(arr) {
  * @function parseAssembly
  * @param {String} text - assembly file content (multi-line string)
  * @param {Object} data - data object
+ * @param {Object} cols - cols object
  * @param {Object} filter - data filter (minimum length and coverage)
- * @param {Integer} minCov - minimum contig coverage threshold
- * @returns {Array.<Object, Object, Object>} - decimals, categories, features
  * @throws if no contig reaches length threshold
- * @todo think twice about the hard-coded decimal places
+ * @description It attempts to extract four pieces of information from a
+ * multi-FASTA file: ID, length, GC content, and coverage.
  */
-function parseAssembly(text, data, filter) {
+function parseAssembly(text, data, cols, filter) {
   const lines = splitLines(text);
   const format = getAssemblyFormat(text); // infer assembly file format
 
@@ -470,15 +461,15 @@ function parseAssembly(text, data, filter) {
         minCov = filter.cov;
 
   const df = [];
-  let id = null,
+  let id = '',
       length = 0,
       gc = 0,
       coverage = 0;
 
   // append dataframe with current contig information
   function appendContig() {
-    if (id !== null && length >= minLen && coverage >= minCov) {
-      df.push([id, length, roundNum(100 * gc / length, 3), coverage]);
+    if (id && length >= minLen && coverage >= minCov) {
+      df.push([id, length, roundNum(100 * gc / length, 3), Number(coverage)]);
     }
   }
 
@@ -486,32 +477,27 @@ function parseAssembly(text, data, filter) {
   let line;
   for (let i = 0; i < n; i++) {
     line = lines[i];
-    if (line.charAt() === '>') { // check if the current line is a contig title
+    // check if the current line is a contig title
+    if (line.charAt() === '>') {
       appendContig(); // append previous contig
       [id, coverage] = parseContigTitle(line, format);
       gc = 0;
       length = 0;
     }
+    // add length and gc count of each line to the total counters
     else {
-      // add length and gc count of each line to the total counters
       gc += countGC(line);
       length += line.length;
     }
   }
   appendContig(); // append last contig
 
-  if (df.length === 0) throw (
-    `Error: No contig is ${minLen} bp or larger.`);
+  if (df.length === 0) throw `Error: No contig is ${minLen} bp or larger.`;
 
-  // update data object
-  data.cols = ['id', 'length', 'gc', 'coverage'];
-  data.types = ['id', 'num', 'num', 'num'];
-  data.features = [];
-  data.df = df;
-
-  // return decimals (hard-coded)
-  const deci = { 'length': 0, 'gc': 3, 'coverage': 6 };
-  return [deci, {}, {}];
+  // update data and cols objects
+  for (let arr of transpose(df)) data.push(arr);
+  cols.names = ['id', 'length', 'gc', 'coverage'];
+  cols.types = ['id', 'num', 'num', 'num'];
 }
 
 
@@ -528,8 +514,7 @@ function countGC(line) {
   // iterate through the line to find IUPAC nucleotide codes that have a
   // probability of including 'G' or 'C'
   let base;
-  const n = line.length;
-  for (let i = 0; i < n; i++) {
+  for (let i = 0; i < line.length; i++) {
     base = line.charAt(i);
     // gc count is multiplied by 6 such that it is an integer
     switch (base.toUpperCase()) {
@@ -587,9 +572,9 @@ function getAssemblyFormat(text) {
 /**
  * Parses and retrieves information in a contig title.
  * @function parseContigTitle
- * @param {String} line - one line string of the contig title
- * @param {String} format - assembly file format
- * @returns {Array.<String, String>} - id and coverage of contig
+ * @param {string} line - one line string of the contig title
+ * @param {string} format - assembly file format
+ * @returns {Array.<string, string>} - id and coverage of contig
  * @see getAssemblyFormat
  */
 function parseContigTitle(line, format) {
