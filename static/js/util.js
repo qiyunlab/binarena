@@ -84,7 +84,7 @@ function roundNum(num, digits) {
 function scaleNum(num, scale) {
   if (scale == null) {
     return num;
-  } else if (typeof(scale) === 'num') {
+  } else if (typeof(scale) === 'number') {
     return Math.pow(num, scale);
   } else if (typeof(scale) === 'string') {
     switch(scale) {
@@ -114,7 +114,7 @@ function scaleNum(num, scale) {
         throw `Error: Invalid scale name "${scale}".`;
     }
   } else {
-    throw 'Error: Invalid scale type';
+    throw 'Error: Invalid scale type.';
   }
 }
 
@@ -148,7 +148,7 @@ function unscale(scale) {
   } else if (typeof(scale) === 'string') {
     if (scale in dict) return dict[scale];
   } else {
-    throw 'Error: invalid scale type.';
+    throw 'Error: Invalid scale type.';
   }
 }
 

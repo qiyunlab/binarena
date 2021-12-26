@@ -250,6 +250,28 @@ function mainObj() {
 
 
   /**
+   * Transformed data for visualization.
+   * @member {Object} trans
+   * @property {number[]} x       - x-axis variable
+   * @property {number[]} y       - y-axis variable
+   * @property {number[]} size    - size variable
+   * @property {string[]} opacity - opacity variable
+   * @property {string[]} color   - color variable
+   * They are 1D arrays of the same size as the dataset. They store transformed
+   * data for visualization purpose to avoid duplicated calculations. They need
+   * to be updated when the dataset is updated or the corresponding display
+   * item is changed.
+   */
+  this.trans = {
+    x:       [],
+    y:       [],
+    size:    [],
+    opacity: [],
+    color:   []
+  }
+
+
+  /**
    * Program status.
    * @member {Object} stat
    * @description Transcient status of the program. Used to determine the

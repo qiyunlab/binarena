@@ -87,7 +87,7 @@ function initCanvas(mo) {
 
   /** keyboard events */
   rena.addEventListener('keydown', function (e) {
-    // const t0 = performance.now();
+    const t0 = performance.now();
     switch (e.key) {
       case 'Left':
       case 'ArrowLeft':
@@ -144,8 +144,8 @@ function initCanvas(mo) {
         e.preventDefault(); // otherwise it will open Firefox quick find bar
         break;
     }
-    // const t1 = performance.now();
-    // console.log(t1 - t0);
+    const t1 = performance.now();
+    console.log(t1 - t0);
   });
 } // end initializing controls
 
@@ -194,8 +194,7 @@ function initCanvas(mo) {
  * @param {Object} mo - main object
  */
 function canvasMouseClick(e, mo) {
-  const data = mo.data,
-        view = mo.view,
+  const view = mo.view,
         stat = mo.stat,
         rena = mo.rena;
 
@@ -226,31 +225,30 @@ function canvasMouseClick(e, mo) {
       mo.cache.npick = 0;
     }
 
+    // get canvas size
+    const w = rena.width,
+          h = rena.height;
+
     // get mouse position    
     const x0 = (e.offsetX - view.posX) / view.scale,
           y0 = (e.offsetY - view.posY) / view.scale;
 
-    const si = view.size.i;
-    const S = si ? data[si] : null;
-    const X = data[view.x.i],
-          Y = data[view.y.i];
+    // transformed data
+    const trans = mo.trans;
+    const X = trans.x,
+          Y = trans.y,
+          S = trans.size;
 
     const arr = [];
-    let radius, x, y, x2y2;
+    let x2y2;
     for (let i = 0; i < n; i++) {
       if (mask[i]) continue;
-      radius = si ? scaleNum(S[i], view.size.scale) * view.rbase /
-        view.size.max : view.rbase;
-      x = ((scaleNum(X[i], view.x.scale) - view.x.min) /
-        (view.x.max - view.x.min) - 0.5) * rena.width;
-      y = ((view.y.max - scaleNum(Y[i], view.y.scale)) /
-        (view.y.max - view.y.min) - 0.5) * rena.height;
 
       // calculate distance to center
-      x2y2 = (x - x0) ** 2 + (y - y0) ** 2;
+      x2y2 = (X[i] * w - x0) ** 2 + (Y[i] * h - y0) ** 2;
 
       // if mouse is within contig area, consider as a click
-      if (x2y2 <= radius ** 2) arr.push([i, x2y2]);
+      if (x2y2 < S[i] ** 2) arr.push([i, x2y2]);
     }
 
     // if one or more contigs are clicked
@@ -330,31 +328,38 @@ function resizeArena(mo) {
  * - Minimize number of paths.
  * - Round numbers to integers.
  * - For small circles draw squares instead.
- * - Cache variables and references.
  * - Skip contigs outside the visible region.
+ * 
  * @todo {@link https://stackoverflow.com/questions/21089959/}
- * @todo rectangle-circle collision detection
- * @todo round floats into integers should improve performance, but may cause
- * problem when zoomin scale is large, needs further thought
- * @todo skipping contigs outside the visible region results in significant
+ * 
+ * @todo Rounding floats into integers improves performance. There are more
+ * performant methods than the built-in `Math.round` function. Examples are
+ * bitwise operations like `~~ (0.5 + num)`. However they don't work well
+ * with negative numbers. In this case, x- and y-axis can be negative numbers.
+ * 
+ * A solution may be changing the way the canvas is positioned to make all
+ * coordinates positive.
+ * 
+ * @todo Skipping contigs outside the visible region results in significant
  * performance gain when zooming in. However it voids another potential
  * optimization: draw the entire image (not matter how large it is) in an
  * off-screen canvas and draw part of it as needed to the main canvas using
  * `drawImage`. Needs further thinking.`
  */
 function renderArena(mo) {
-  const data = mo.data,
-        view = mo.view,
+  const view = mo.view,
         rena = mo.rena,
         mask = mo.mask;
-  const types = mo.cols.types;
+  let n = mo.cache.nctg;
 
   // prepare canvas context
   // note: origin (0, 0) is at the upper-left corner
   const ctx = rena.getContext('2d');
 
   // clear canvas
-  ctx.clearRect(0, 0, rena.width, rena.height);
+  const w = rena.width,
+        h = rena.height;
+  ctx.clearRect(0, 0, w, h);
   ctx.save();
 
   // move to current position
@@ -364,8 +369,8 @@ function renderArena(mo) {
   const scale = view.scale;
   ctx.scale(scale, scale);
 
-  // nothing to draw
-  if (data.length === 0) {
+  // cannot render if there is no data, or no x- or y-axis
+  if (!n || !view.x.i || !view.y.i) {
     ctx.restore();
     return;
   }
@@ -381,53 +386,13 @@ function renderArena(mo) {
         min1 = Math.sqrt(1 / Math.PI),
         min2 = Math.sqrt(4 / Math.PI);
 
-  // cache parameters
-  const w = rena.width,
-        h = rena.height;
-  // x-axis
-  const X = data[view.x.i],
-        xscale = view.x.scale,
-        xmin = view.x.min,
-        xmax = view.x.max,
-        dx = xmax - xmin;
-  // y-axis
-  const Y = data[view.y.i],
-        yscale = view.y.scale,
-        ymin = view.y.min,
-        ymax = view.y.max,
-        dy = ymax - ymin;
-  // size
-  const rbase = view.rbase;
-  const si = view.size.i,
-        S = si ? data[si] : null,
-        sscale = view.size.scale,
-        smin = view.size.zero ? 0 : view.size.min,
-        slow = view.size.lower / 100,
-        sfac = (view.size.upper / 100 - slow) / (view.size.max - smin);
-  // opacity
-  const obase = view.obase;
-  const oi = view.opacity.i,
-        O = oi ? data[oi] : null,
-        oscale = view.opacity.scale,
-        omin = view.opacity.zero ? 0 : view.opacity.min,
-        olow = view.opacity.lower / 100,
-        ofac = (view.opacity.upper / 100 - olow) / (view.opacity.max - omin);
-  // color
-  const ci = view.color.i,
-        C = ci ? data[ci] : null,
-        discmap = view.color.discmap,
-        contmap = view.color.contmap,
-        ctype = ci ? types[ci] : null,
-        cscale = view.color.scale,
-        cmin = view.color.zero ? 0 : view.color.min,
-        clow = view.color.lower,
-        cfac = (view.color.upper - clow) / (view.color.max - cmin);
-
-  // cannot render if there is no x- or y-axis
-  if (X === undefined || Y === undefined) {
-    ctx.restore();
-    return;
-  }
+  // transformed data
+  const trans = mo.trans;
+  const X = trans.x,
+        Y = trans.y,
+        S = trans.size,
+        O = trans.opacity,
+        C = trans.color;
 
   // calculate edges of visible region
   const vleft = -view.posX / scale,
@@ -439,53 +404,28 @@ function renderArena(mo) {
   const paths = {};
 
   // intermediates
-  let radius, rviz, x, y, c, val, alpha, fs;
+  let radius, rviz, x, y, fs;
 
   // determine appearance of contig
-  let n = X.length;
   for (let i = 0; i < n; i++) {
     if (mask[i]) continue;
 
     // determine radius (size)
-    radius = si ? ((scaleNum(S[i], sscale) - smin) * sfac + slow) *
-      rbase : rbase;
+    radius = S[i];
     rviz = radius * scale;
 
     // if contig occupies less than one pixel on screen, skip
     if (rviz < min1) continue;
 
     // determine x- and y-coordinates
-    x = Math.round(((scaleNum(X[i], xscale) - xmin) / dx - 0.5) * w);
-    y = Math.round(((ymax - scaleNum(Y[i], yscale)) / dy - 0.5) * h);
-
     // skip contigs outside visible region
+    x = Math.round(X[i] * w);
     if (x + radius < vleft || x - radius > vright) continue;
+    y = Math.round(Y[i] * h);
     if (y + radius < vtop || y - radius > vbottom) continue;
 
-    // determine color
-    c = '0,0,0';
-    if (ci) {
-      val = C[i];
-      if (val) {
-        // discrete data
-        if (ctype === 'cat') {
-          if (val in discmap) c = hexToRgb(discmap[val]);
-        }
-
-        // continuous data
-        else {
-          c = contmap[Math.round((scaleNum(val, cscale) - cmin) *
-            cfac + clow)];
-        }
-      }
-    }
-
-    // determine opacity
-    alpha = oi ? ((scaleNum(O[i], oscale) - omin) * ofac + olow)
-      .toFixed(2) : obase;
-
-    // generate fill style string
-    fs = `rgba(${c},${alpha})`;
+    // determine fill style (color and opacity)
+    fs = `rgba(${C[i]},${O[i]})`;
     if (!(fs in paths)) paths[fs] = { 'square': [], 'circle': [] };
 
     // if a contig occupies less than four pixels on screen, draw a square
@@ -525,7 +465,6 @@ function renderArena(mo) {
     ctx.fill();
   } // end for fs
 
-
   // draw grid
   if (view.grid) drawGrid(rena, view);
 
@@ -540,17 +479,15 @@ function renderArena(mo) {
  * @see renderArena
  */
 function renderSelection(mo) {
-  const data = mo.data,
-        view = mo.view,
+  const view = mo.view,
         oray = mo.oray,
         pick = mo.pick;
-
-  // get shadow color
-  const color = mo.theme.selection;
+  const w = oray.width,
+        h = oray.height;
 
   // clear overlay canvas
   const ctx = oray.getContext('2d');
-  ctx.clearRect(0, 0, oray.width, oray.height);
+  ctx.clearRect(0, 0, w, h);
 
   if (mo.cache.npick === 0) return;
   const n = mo.cache.nctg;
@@ -560,45 +497,30 @@ function renderSelection(mo) {
   ctx.save();
   ctx.translate(view.posX, view.posY);
   ctx.scale(view.scale, view.scale);
+
+  // define shadow style
+  const color = mo.theme.selection;
   ctx.fillStyle = color;
   ctx.shadowColor = color;
   ctx.shadowBlur = 10; // note: canvas shadow blur is expensive
   ctx.shadowOffsetX = 0;
   ctx.shadowOffsetY = 0;
 
-  // cache constant
+  // cache data
+  const trans = mo.trans;
+  const X = trans.x,
+        Y = trans.y,
+        S = trans.size;
   const pi2 = Math.PI * 2;
-
-  // cache parameters
-  const rbase = view.rbase;
-  const w = oray.width,
-        h = oray.height;
-  const X = data[view.x.i],
-        xscale = view.x.scale,
-        xmin = view.x.min,
-        xmax = view.x.max,
-        dx = xmax - xmin;
-  const Y = data[view.y.i],
-        yscale = view.y.scale,
-        ymin = view.y.min,
-        ymax = view.y.max,
-        dy = ymax - ymin;
-  const si = view.size.i,
-        S = si ? data[si] : null,
-        sscale = view.size.scale,
-        smin = view.size.zero ? 0 : view.size.min,
-        slow = view.size.lower / 100,
-        sfac = (view.size.upper / 100 - slow) / (view.size.max - smin);
 
   // render shadows around selected contigs
   let r, x, y;
   ctx.beginPath();
   for (let i = 0; i < n; i++) {
     if (!pick[i]) continue;
-    r = Math.round(si ? ((scaleNum(S[i], sscale) - smin) *
-      sfac + slow) * rbase : rbase);
-    x = Math.round(((scaleNum(X[i], xscale) - xmin) / dx - 0.5) * w);
-    y = Math.round(((ymax - scaleNum(Y[i], yscale)) / dy - 0.5) * h);
+    r = Math.round(S[i]);
+    x = Math.round(X[i] * w);
+    y = Math.round(Y[i] * h);
     ctx.moveTo(x, y);
     ctx.arc(x, y, r, 0, pi2, true);
   }
@@ -694,7 +616,6 @@ function polygonSelect(mo, shift) {
   const data = mo.data,
         view = mo.view,
         stat = mo.stat,
-        rena = mo.rena,
         oray = mo.oray;
 
   // change button appearance
@@ -712,26 +633,24 @@ function polygonSelect(mo, shift) {
 
   // finish drawing
   else {
-    oray.getContext('2d').clearRect(0, 0, oray.width, oray.height);
-    const X = data[view.x.i],
-          Y = data[view.y.i];
+    const w = oray.width,
+          h = oray.height;
+    oray.getContext('2d').clearRect(0, 0, w, h);
 
+    // find contigs within polygon
+    const X = mo.trans.x,
+          Y = mo.trans.y;
     const mask = mo.mask;
     const ctgs = [];
-    let x, y;
     for (let i = 0; i < n; i++) {
       if (!mask[i]) {
-        x = ((scaleNum(X[i], view.x.scale) - view.x.min) /
-          (view.x.max - view.x.min) - 0.5) * rena.width;
-        y = ((view.y.max - scaleNum(Y[i], view.y.scale)) /
-          (view.y.max - view.y.min) - 0.5) * rena.height;
-        if (pnpoly(x, y, stat.polygon)) ctgs.push(i);
+        if (pnpoly(X[i] * w, Y[i] * h, stat.polygon)) ctgs.push(i);
       }
     }
     stat.polygon = [];
     stat.drawing = false;
 
-    // treat selection
+    // treat selected contigs
     treatSelection(ctgs, mo, shift);
   }
 }

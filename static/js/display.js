@@ -55,6 +55,8 @@ function initDisplayCtrl(mo) {
         xx[key] = [yy[key], yy[key] = xx[key]][0];
       }
       updateControls(mo.cols, view);
+      transXForDisplay(mo);
+      transYForDisplay(mo);
       renderArena(mo);
     });
   }
@@ -100,8 +102,9 @@ function initDisplayCtrl(mo) {
           view.discpal = palette;
           updateColorMap(mo);
         }
-        updateLegends(mo, ['color']);
+        transColorForDisplay(mo);
         renderArena(mo);
+        updateLegends(mo, ['color']);
       });
     }
   }
@@ -110,6 +113,7 @@ function initDisplayCtrl(mo) {
   byId('add-color-btn').addEventListener('click', function () {
     view.ncolor += 1;
     updateColorMap(mo);
+    transColorForDisplay(mo);
     renderArena(mo);
     updateLegends(mo, ['color']);
   });
@@ -118,6 +122,7 @@ function initDisplayCtrl(mo) {
     if (view.ncolor === 1) return;
     view.ncolor -= 1;
     updateColorMap(mo);
+    transColorForDisplay(mo);
     renderArena(mo);
     updateLegends(mo, ['color']);
   });
@@ -233,6 +238,7 @@ function initDisplayCtrl(mo) {
         const item = this.parentElement.getAttribute('data-item');
         view[item][ranging]= parseInt(this.parentElement.querySelector(
           '.range.' + ranging).getAttribute('data-tick')) * 10;
+        transDataForDisplay(mo, [item]);
         renderArena(mo);
         updateLegends(mo, [item]);
       }
@@ -258,6 +264,7 @@ function initDisplayCtrl(mo) {
     const item = this.parentElement.getAttribute('data-item');
     view[item][checkClassName(this, ['lower', 'upper'])] =
       this.getAttribute('data-tick') * 10;
+    transDataForDisplay(mo, [item]);
     renderArena(mo);
     updateLegends(mo, [item]);
   }
@@ -267,8 +274,9 @@ function initDisplayCtrl(mo) {
     label.addEventListener('click', function () {
       const item = this.parentElement.getAttribute('data-item');
       view[item].zero = !view[item].zero;
-      updateLegends(mo, [item]);
+      transDataForDisplay(mo, [item]);
       renderArena(mo);
+      updateLegends(mo, [item]);
     });
   }
 
@@ -659,6 +667,12 @@ function updateViewByData(mo) {
     }
   }
 
+  // reset transformed data
+  const trans = mo.trans;
+  for (let item of ['x', 'y', 'size', 'opacity', 'color']) {
+    trans[item] = Array(cache.nctg);
+  }
+
   // manipulate interface
   const view = mo.view;
   initDisplayItems(cols, cache, view);
@@ -681,17 +695,20 @@ function updateViewByData(mo) {
  */
 function resetView(mo) {
 
-  // re-center view
+  // center view
   const view = mo.view;
   view.scale = 1.0;
   const rena = mo.rena;
   view.posX = rena.width / 2;
   view.posY = rena.height / 2;
 
-  // re-calculate display item ranges
+  // calculate display item ranges
   calcDispMinMax(mo);
 
-  // re-render
+  // transforme data for display
+  transDataForDisplay(mo);
+
+  // render plots
   updateView(mo);
 }
 
@@ -707,8 +724,8 @@ function calcDispMinMax(mo, items) {
   const data = mo.data,
         view = mo.view,
         mask = mo.mask;
-  if (data.length === 0) return;
-  const n = data[0].length;
+  const n = mo.cache.nctg;
+  if (n === 0) return;
 
   // calculate min / max for each item
   let v, idx, col, arr, i, scale, min, max;
@@ -736,6 +753,170 @@ function calcDispMinMax(mo, items) {
 
 
 /**
+ * Transform data for visualization purpose.
+ * @function transDataForDisplay
+ * @param {Object} mo - main object
+ * @param {string[]} [items] - item(s) to transform
+ */
+function transDataForDisplay(mo, items) {
+  items = items || ['x', 'y', 'size', 'opacity', 'color'];
+  if (!mo.cache.nctg) return;
+  for (let item of items) {
+    switch (item) {
+      case 'x':
+        transXForDisplay(mo);
+        break;
+      case 'y':
+        transYForDisplay(mo);
+        break;
+      case 'size':
+        transSizeForDisplay(mo);
+        break;
+      case 'opacity':
+        transOpacityForDisplay(mo);
+        break;
+      case 'color':
+        transColorForDisplay(mo);
+        break;
+    }
+  }
+}
+
+
+/**
+ * Transform x-axis data for visualization.
+ * @function transXForDisplay
+ * @param {Object} mo - main object
+ */
+function transXForDisplay(mo) {
+  const v = mo.view.x;
+  const target = mo.trans.x;
+  const source = mo.data[v.i],
+        scale = v.scale,
+        min = v.min,
+        range = v.max - min;
+  const n = mo.cache.nctg;
+  for (let i = 0; i < n; i++) {
+    target[i] = (scaleNum(source[i], scale) - min) / range - 0.5;
+  }
+}
+
+
+/**
+ * Transform y-axis data for visualization.
+ * @function transYForDisplay
+ * @param {Object} mo - main object
+ * @description Note that the formulae for x-axis and y-axis are different.
+ * That's because the y-axis in an HTML5 canvas starts from top rather than
+ * bottom.
+ */
+function transYForDisplay(mo) {
+  const v = mo.view.y;
+  const target = mo.trans.y;
+  const source = mo.data[v.i],
+        scale = v.scale,
+        max = v.max,
+        range = max - v.min;
+  const n = mo.cache.nctg;
+  for (let i = 0; i < n; i++) {
+    target[i] = (max - scaleNum(source[i], scale)) / range - 0.5;
+  }
+}
+
+
+/**
+ * Transform size data for visualization.
+ * @function transSizeForDisplay
+ * @param {Object} mo - main object
+ * @description This function calculates the radius of each data point.
+ */
+function transSizeForDisplay(mo) {
+  const v = mo.view.size;
+  const target = mo.trans.size;
+  const base = mo.view.rbase;
+  if (!v.i) {
+    target.fill(base);
+    return;
+  }
+  const source = mo.data[v.i],
+        scale = v.scale,
+        min = v.zero ? 0 : v.min,
+        low = v.lower / 100,
+        fac = (v.upper / 100 - low) / (v.max - min);
+  const n = mo.cache.nctg;
+  for (let i = 0; i < n; i++) {
+    target[i] = ((scaleNum(source[i], scale) - min) * fac + low) * base;
+  }
+}
+
+
+/**
+ * Transform opacity data for visualization.
+ * @function transOpacityForDisplay
+ * @param {Object} mo - main object
+ * @description This function calculates the alpha value of each data point.
+ */
+function transOpacityForDisplay(mo) {
+  const v = mo.view.opacity;
+  const target = mo.trans.opacity;
+  const base = mo.view.obase;
+  if (!v.i) {
+    target.fill(base);
+    return;
+  }
+  const source = mo.data[v.i],
+        scale = v.scale,
+        min = v.zero ? 0 : v.min,
+        low = v.lower / 100,
+        fac = (v.upper / 100 - low) / (v.max - min);
+  const n = mo.cache.nctg;
+  for (let i = 0; i < n; i++) {
+    target[i] = ((scaleNum(source[i], scale) - min) * fac + low).toFixed(2);
+  }
+}
+
+
+/**
+ * Transform color data for visualization.
+ * @function transColorForDisplay
+ * @param {Object} mo - main object
+ * @description This function calculates the RGB values of each data point.
+ */
+function transColorForDisplay(mo) {
+  const v = mo.view.color;
+  const target = mo.trans.color;
+  target.fill('0,0,0');
+  const vi = v.i;
+  if (!vi) return;
+  const source = mo.data[vi];
+  const n = mo.cache.nctg;
+
+  // discrete color map for numeric data
+  if (mo.cols.types[vi] === 'cat') {
+    const cmap = v.discmap;
+    let val;
+    for (let i = 0; i < n; i++) {
+      val = source[i];
+      if (val in cmap) target[i] = hexToRgb(cmap[val]);
+    }
+  }
+
+  // continuous color map for categorical data
+  else {
+    const cmap = v.contmap;
+    const scale = v.scale,
+          min = v.zero ? 0 : v.min,
+          low = v.lower,
+          fac = (v.upper - low) / (v.max - min);
+    for (let i = 0; i < n; i++) {
+      target[i] = cmap[Math.round((scaleNum(source[i], scale) - min) *
+        fac + low)];
+    }
+  }
+}
+
+
+/**
  * When user changes display item.
  * @function displayItemChange
  * @param {Object} item - display item
@@ -758,7 +939,7 @@ function displayItemChange(item, i, scale, mo) {
   const isCat = (item === 'color' && mo.cols.types[i] === 'cat');
   if (isCat) updateColorMap(mo);
   else calcDispMinMax(mo, [item]);
-
+  transDataForDisplay(mo, [item]);
   renderArena(mo);
   updateLegends(mo, [item]);
 }
