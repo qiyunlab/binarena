@@ -62,6 +62,7 @@ function initSelTools(mo) {
     mo.cache.npick -= m;
     mo.cache.nmask += m;
     toastMsg(`Masked ${plural('contig', m)}.`, mo.stat);
+    renderArena(mo);
     updateSelection(mo);
     mo.rena.focus();
   });
@@ -170,7 +171,7 @@ function treatSelection(ctgs, mo, shift) {
     mo.cache.npick += m;
     toastMsg(`Added ${plural('contig', n)} to selection.`, mo.stat);
   }
-    
+
   updateSelection(mo);
   mo.rena.focus();
 }
@@ -320,11 +321,11 @@ function buildInfoTable(mo) {
           for (let dom of [mbtn, pbtn, span]) dom.classList.remove('hidden');
         }
 
-        // categorical fields need all but metric
+        // categorical fields need only weight
         else if (type === 'cat') {
           sel.value = this.getAttribute('data-ref');
-          mbtn.classList.add('hidden');
-          for (let dom of [pbtn, span]) dom.classList.remove('hidden');
+          span.classList.remove('hidden');
+          for (let dom of [mbtn, pbtn]) dom.classList.add('hidden');
         }
 
         // other types don't
@@ -496,11 +497,11 @@ function summFieldInfo(arr, type, metric='mean', deci=3, rarr, warr) {
     case 'num':
       let val, n, _;
       if (noref) {
-        if (issum) [val, n] = arrSumNaN(arr);
-        else [val, n] = arrMeanNaN(arr);
+        if (issum) [val, n] = arrSumN(arr);
+        else [val, n] = arrMeanN(arr);
       } else {
-        if (issum) [val, _, n] = arrProdSumNaN(arr, rarr);
-        else [val, _, n] = arrProdMeanNaN(arr, rarr);
+        if (issum) [val, _, n] = arrProdSumN(arr, rarr);
+        else [val, _, n] = arrProdMeanN(arr, rarr);
       }
 
       // round number
@@ -516,7 +517,7 @@ function summFieldInfo(arr, type, metric='mean', deci=3, rarr, warr) {
         [top, freq] = objMax(listCats(arr));
         frac = freq / arr.length;
       } else {
-        const [freqs, rsum] = listWtCats(arr, rarr);
+        const [freqs, rsum] = listCatsW(arr, rarr);
         [top, freq] = objMax(freqs);
         frac = freq / rsum;
       }
@@ -541,113 +542,8 @@ function summFieldInfo(arr, type, metric='mean', deci=3, rarr, warr) {
       break;
 
     case 'fea':
-      text = summFea(arr);
+      text = summFeas(arr);
       break;
   }
   return [text, capital(comment)];
-}
-
-
-/**
- * Calculate sum of numbers in an array, while skipping NaN.
- * @function arrSum
- * @param {number[]} arr - input array
- * @returns {[number, number]} sum and count of non-NaN numbers
- */
-function arrSumNaN(arr) {
-  let sum = 0;
-  const n = arr.length;
-  let m = 0;
-  let a;
-  for (let i = 0; i < n; i++) {
-    a = arr[i];
-    if (a === a) {
-      sum += a;
-      m++;
-    }
-  }
-  return [sum, m];
-}
-
-function arrMeanNaN(arr) {
-  const [sum, n] = arrSumNaN(arr);
-  return [(sum * 10) / (n * 10), n];
-}
-
-function arrProdSumNaN(arr1, arr2) {
-  let sum12 = 0, sum2 = 0, m = 0;
-  const n = arr1.length;
-  let a1, a2;
-  for (let i = 0; i < n; i++) {
-    a1 = arr1[i];
-    if (a1 === a1) {
-      a2 = arr2[i];
-      if (a2 === a2) {
-        sum12 += a1 * a2;
-        sum2 += a2;
-        m += 1
-      }
-    }
-  }
-  return [sum12, sum2, m];
-}
-
-function arrProdMeanNaN(arr1, arr2) {
-  const [sum12, sum2, n] = arrProdSumNaN(arr1, arr2);
-  return [(sum12 * 10) / (sum2 * 10), sum2, n];
-}
-
-function objMax(obj) {
-  const arr = Object.keys(obj);
-  const n = arr.length;
-  let key = arr[0];
-  let val = obj[key];
-  let max = [key, val];
-  for (let i = 1; i < n; i++) {
-    key = arr[i];
-    val = obj[key];
-    max = (val > max[1]) ? [key, val] : max;
-  }
-  return max;
-}
-
-
-/**
- * List categories and their frequencies from a category-type column.
- * @function listCats
- * @param {Array} arr - category-type column
- * @returns {Object} - category to frequency map
- */
- function listWtCats(arr1, arr2) {
-  const res = {};
-  const n = arr1.length;
-  let cat, wt;
-  let wtsum = 0;
-  for (let i = 0; i < n; i++) {
-    cat = arr1[i];
-    wt = arr2[i];
-    if (cat && wt === wt) {
-      res[cat] = (res[cat] || 0) + wt;
-    }
-    wtsum += wt;
-  }
-  return [res, wtsum];
-}
-
-
-function summFea(arr) {
-  return Object.entries(listFeas(arr))
-    .sort(([,a],[,b]) => b - a)
-    .map((k, v) => v === 1 ? k : `${k}(${v})`)
-    .join(', ');
-}
-
-
-function countTrue(arr) {
-  const n = arr.length;
-  let res = 0
-  for (let i = 0; i < n; i++) {
-    if (arr[i]) res++;
-  }
-  return res;
 }

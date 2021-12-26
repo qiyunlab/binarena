@@ -361,7 +361,7 @@ function updateLegends(mo, items) {
     legend = byId(item + '-legend');
     grad = legend.querySelector('.gradient');
     if (grad === null) continue;
-  
+
     // refresh labels
     for (let key of ['min', 'max']) {
       const label = legend.querySelector('label.' + key);
@@ -385,7 +385,7 @@ function updateLegends(mo, items) {
       legend.querySelector('.range.' + key).style.left = Math.round(
         rect.left + poses[key]) + 'px';
     }
-  
+
     // position clips
     clip = legend.querySelector('.clip.lower');
     clip.style.left = Math.round(rect.left) + 'px';

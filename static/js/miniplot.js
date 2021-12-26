@@ -151,7 +151,7 @@ function miniPlotMouseMove(e, mo) {
 
     // if before first bin or after last bin, ignore
     if ((i < 0) || (i >= nbin)) i = null;
-    
+
     // if same as saved bin status, skip
     if ((i === mo.mini.bin0) && (i === mo.mini.bin1)) return;
 
@@ -192,7 +192,7 @@ function miniPlotMouseMove(e, mo) {
   const tip = byId('legend-tip');
   tip.classList.add('hidden');
   if (bin0 === null) return;
-  
+
   // determine size of bin(s)
   let n = 0;
   for (i = bin0; i <= bin1; i++) {
@@ -214,7 +214,7 @@ function miniPlotMouseMove(e, mo) {
   tip.style.left = Math.round((10 + ((bin0 + bin1) / 2 + 0.5) * (w - 20) /
     nbin) / w * (rect.right - rect.left) + rect.left) + 'px';
   tip.style.top = Math.round(rect.bottom - 5) + 'px';
-  
+
   // display bin size and range in tooltip
   byId('legend-circle').classList.add('hidden');
   tip.classList.remove('hidden');
@@ -364,7 +364,7 @@ function drawMouseRange(ctx, x0, x1, w, h) {
   ctx.strokeStyle = 'dodgerblue';
   ctx.fillStyle = 'lightcyan';
   ctx.lineWidth = 2;
-  
+
   // draw begin line
   ctx.beginPath();
   ctx.moveTo(beg, 5);

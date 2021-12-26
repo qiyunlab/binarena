@@ -114,7 +114,7 @@ function parseObj(obj, data, cols) {
  * @returns {Array.<Object, Object, Object>} - decimals, categories, features
  * @throws if table is empty
  * @throws if column number is inconsistent
- * @see cacheData
+ * @throws if duplicate contig Ids found
  * 
  * A table file stores properties (metadata) of contigs in an assembly. It will
  * be parsed following these rules.
@@ -150,8 +150,8 @@ function parseTable(text, data, cols) {
   let row;
   for (let i = 1; i < n; i++) {
     row = lines[i].split('\t');
-    if (row.length !== m) throw `Error: Table has ${m} columns but row 
-      ${i + 1} has ${row.length} cells.`;
+    if (row.length !== m) throw `Error: Table has ${m} columns but row ` +
+      `${i + 1} has ${row.length} cells.`;
     arr2d.push(row);
   }
 
@@ -190,12 +190,16 @@ function parseTable(text, data, cols) {
 }
 
 
+/**
+ * @constant FIELD_CODES
+ */
 const FIELD_CODES = {
-  'n': 'num',      // numeric
-  'c': 'cat',    // categorical
-  'f': 'fea',     // feature sets
+  'n': 'num', // numeric
+  'c': 'cat', // categorical
+  'f': 'fea', // feature sets
   'd': 'des'  // descriptive
 };
+
 
 /** Parse a column in the data table.
  * @function parseColumn
@@ -497,7 +501,7 @@ function parseAssembly(text, data, filter) {
   appendContig(); // append last contig
 
   if (df.length === 0) throw (
-    'Error: No contig is ' + minLen + ' bp or larger.');
+    `Error: No contig is ${minLen} bp or larger.`);
 
   // update data object
   data.cols = ['id', 'length', 'gc', 'coverage'];
@@ -524,7 +528,8 @@ function countGC(line) {
   // iterate through the line to find IUPAC nucleotide codes that have a
   // probability of including 'G' or 'C'
   let base;
-  for (let i = 0; i < line.length; i++) {
+  const n = line.length;
+  for (let i = 0; i < n; i++) {
     base = line.charAt(i);
     // gc count is multiplied by 6 such that it is an integer
     switch (base.toUpperCase()) {

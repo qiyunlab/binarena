@@ -140,7 +140,7 @@ function initBinCtrl(mo) {
   byId('delete-bin-btn').addEventListener('click', function () {
     const table = byId('bin-tbody');
     const deleted = deleteBins(table, mo.bins)[0];
-    
+
     // update interface
     updateBinCtrl(mo);
     const n = deleted.length;
@@ -178,7 +178,7 @@ function initBinCtrl(mo) {
   // Create a new bin from selected contigs.
   byId('as-new-bin-btn').addEventListener('click', function () {
     if (mo.cache.npick === 0) return;
-  
+
     // if there is no binning plan, create one
     if (Object.keys(mo.bins).length === 0) {
       byId('plan-sel-txt').value = newName(arr2obj(names), 'plan');
@@ -398,7 +398,7 @@ function updateBinTable(mo) {
       for (let i in bins[bin]) sum += L[i];
       cell.innerHTML = Math.round(sum / 1000);
     } else cell.innerHTML = 'na';
-    
+
     // 4th cell: relative abundance (%)
     cell = row.insertCell(-1);
     if (lencol && covcol) {
@@ -422,7 +422,7 @@ function updateBinRow(row, ctgs, mo) {
 
   // 2nd cell: number of contigs
   cells[1].innerHTML = Object.keys(ctgs).length;
-    
+
   // stop if no length
   const cache = mo.cache;
   const ilen = cache.speci.len;

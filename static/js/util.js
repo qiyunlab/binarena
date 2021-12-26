@@ -155,9 +155,9 @@ function unscale(scale) {
 
 /**
  * Check of all elements in an array are identical.
- * @function arr2obj
+ * @function arrIdent
  * @param {Array} arr - input array
- * @returns {boolean} - whether all identical
+ * @returns {boolean} whether all identical
  */
 function arrIdent(arr) {
   const x0 = arr[0];
@@ -167,9 +167,9 @@ function arrIdent(arr) {
 
 /**
  * Filter an array to unique elements while keeping order.
- * @function arr2obj
+ * @function arrUniq
  * @param {Array} arr - input array
- * @returns {Object} - output object
+ * @returns {Object} output object
  * @see {@link https://stackoverflow.com/questions/9229645/}
  */
 function arrUniq(arr) {
@@ -193,7 +193,7 @@ function arrUniq(arr) {
  * Convert an array to an object of nulls.
  * @function arr2obj
  * @param {Array} arr - input array
- * @returns {Object} - output object
+ * @returns {Object} output object
  */
 function arr2obj(arr) {
   const n = arr.length;
@@ -207,10 +207,10 @@ function arr2obj(arr) {
 
 /**
  * List column names of a specific type.
- * @function arr2obj
+ * @function listColsByType
  * @param {Object} cols - cols object
  * @param {string} type - column type
- * @returns {Array} - column names
+ * @returns {Array} column names
  */
 function listColsByType(cols, type) {
   const names = cols.names,
@@ -229,8 +229,8 @@ function listColsByType(cols, type) {
 /**
  * List categories and their frequencies from a category-type column.
  * @function listCats
- * @param {Array} arr - category-type column
- * @returns {Object} - category to frequency map
+ * @param {Array} arr - categorical column
+ * @returns {Object} category to frequency map
  */
 function listCats(arr) {
   const res = {};
@@ -247,10 +247,37 @@ function listCats(arr) {
 
 
 /**
+ * List categories and frequencies from a categorical column as weighted by a
+ * numeric column.
+ * @function listCatsW
+ * @param {Array} arr1 - categorical column
+ * @param {Array} arr2 - numeric column
+ * @returns {[Object, number]} category to weighted frequency map, sum of
+ * weights
+ * @description NaN weights are skipped.
+ */
+ function listCatsW(arr1, arr2) {
+  const res = {};
+  const n = arr1.length;
+  let cat, wt;
+  let sum = 0;
+  for (let i = 0; i < n; i++) {
+    cat = arr1[i];
+    wt = arr2[i];
+    if (cat && wt === wt) {
+      res[cat] = (res[cat] || 0) + wt;
+    }
+    sum += wt;
+  }
+  return [res, sum];
+}
+
+
+/**
  * List features and their frequencies from a feature-type column.
  * @function listFeas
- * @param {Array} arr - feature-type column
- * @returns {Object} - feature to frequency map
+ * @param {Array} arr - feature set column
+ * @returns {Object} feature to frequency map
  */
 function listFeas(arr) {
   const res = {};
@@ -262,6 +289,22 @@ function listFeas(arr) {
     };
   }
   return res;
+}
+
+
+/**
+ * Generate a string to summarize a feature frequency map.
+ * @function summFeas
+ * @param {Array} arr - feature set column
+ * @returns {string} features sorted by frequency in descending order, prefixed
+ * by frequency in parentheses if frequency is not 1.
+ * @example 'K00001(5), K00023(2), K01456, K00789'
+ */
+function summFeas(arr) {
+  return Object.entries(listFeas(arr))
+    .sort(([, a],[, b]) => b - a)
+    .map(x => x[1] === 1 ? x[0] : `${x[0]}(${x[1]})`)
+    .join(', ');
 }
 
 
@@ -323,5 +366,23 @@ function palette11to101(palette) {
     }
   }
   res.push([rgbs[0][10], rgbs[1][10], rgbs[2][10]].join());
+  return res;
+}
+
+
+/**
+ * Return the number of elements that compares true in an array.
+ * @function splitLines
+ * @param {Array} arr - input array
+ * @returns {number} number of true elements
+ * @description Useful to check how many contigs of the `pick`, `mask` and
+ * `bins` arrays are set.
+ */
+function countTrue(arr) {
+  const n = arr.length;
+  let res = 0
+  for (let i = 0; i < n; i++) {
+    if (arr[i]) res++;
+  }
   return res;
 }

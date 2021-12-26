@@ -32,6 +32,48 @@ function arrMinMax(arr) {
 
 
 /**
+ * Calculate min of a object with numeric values.
+ * @function objMin
+ * @param {Object.<string, number>} obj - input object
+ * @returns {[string, number]} min key-value pair
+ */
+function objMin(obj) {
+  const arr = Object.keys(obj);
+  const n = arr.length;
+  let key = arr[0];
+  let val = obj[key];
+  let min = [key, val];
+  for (let i = 1; i < n; i++) {
+    key = arr[i];
+    val = obj[key];
+    min = (val < min[1]) ? [key, val] : min;
+  }
+  return min;
+}
+
+
+/**
+ * Calculate max of a object with numeric values.
+ * @function objMax
+ * @param {Object.<string, number>} obj - input object
+ * @returns {[string, number]} max key-value pair
+ */
+function objMax(obj) {
+  const arr = Object.keys(obj);
+  const n = arr.length;
+  let key = arr[0];
+  let val = obj[key];
+  let max = [key, val];
+  for (let i = 1; i < n; i++) {
+    key = arr[i];
+    val = obj[key];
+    max = (val > max[1]) ? [key, val] : max;
+  }
+  return max;
+}
+
+
+/**
  * Calculate both min and max of a object with numeric values.
  * @function objMinMax
  * @param {Object.<string, number>} obj - input object
@@ -55,7 +97,7 @@ function objMinMax(obj) {
 
 
 /**
- * Calculate sum of numbers in an array.
+ * Calculate sum of elements in an array.
  * @function arrSum
  * @param {number[]} arr - input array
  * @returns {number} sum
@@ -71,7 +113,7 @@ function arrSum(arr) {
 
 
 /**
- * Calculate the average of all elements in the input array.
+ * Calculate the mean of all elements in an array.
  * @function arrMean
  * @param {number[]} arr - input array
  * returns {number} mean
@@ -83,7 +125,7 @@ function arrMean(arr) {
 
 
 /**
- * Calculate sum of products of paired numbers in two arrays.
+ * Calculate sum of products of paired elements in two arrays.
  * @function arrProdSum
  * @param {number[]} arr1 - input array
  * @param {number[]} arr2 - input array
@@ -100,20 +142,116 @@ function arrProdSum(arr1, arr2) {
 
 
 /**
- * Recursively check whether two arrays are equal.
- * @function arrEqual
+ * Calculate the mean of all elements in an array, while using paired elements
+ * in another array as weights.
+ * @function arrProdMean
  * @param {number[]} arr1 - input array
  * @param {number[]} arr2 - input array
- * @return {boolean} true if input arrays are equal, false otherwise 
+ * @returns {number} weighted mean
  */
-function arrEqual(arr1, arr2) {
+function arrProdMean(arr1, arr2) {
+  let sum12 = 0, sum2 = 0;
+  const n = arr1.length;
+  let a2;
+  for (let i = 0; i < n; i++) {
+    a2 = arr2[i];
+    sum12 += arr1[i] * a2;
+    sum2 += a2;
+  }
+  return (sum12 * 10) / (sum2 * 10);
+}
+
+
+/**
+ * Calculate sum of elements in an array, while skipping NaN.
+ * @function arrSumN
+ * @param {number[]} arr - input array
+ * @returns {[number, number]} sum and count of non-NaN numbers
+ */
+function arrSumN(arr) {
+  let sum = 0;
+  const n = arr.length;
+  let m = 0;
+  let a;
+  for (let i = 0; i < n; i++) {
+    a = arr[i];
+    if (a === a) {
+      sum += a;
+      m++;
+    }
+  }
+  return [sum, m];
+}
+
+
+/**
+ * Calculate the mean of all elements in an array, while skipping NaN.
+ * @function arrMeanN
+ * @param {number[]} arr - input array
+ * @returns {[number, number]} mean and count of non-NaN numbers
+ */
+function arrMeanN(arr) {
+  const [sum, n] = arrSumN(arr);
+  return [(sum * 10) / (n * 10), n];
+}
+
+
+/**
+ * Calculate sum of products of paired elements in two arrays, while skipping
+ * NaN.
+ * @function arrProdSumN
+ * @param {number[]} arr1 - input array
+ * @param {number[]} arr2 - input array
+ * @returns {[number, number, number]} sum of products of both arrays, sum of
+ * elements in the second array, and count of non-NaN number pairs
+ */
+function arrProdSumN(arr1, arr2) {
+  let sum12 = 0, sum2 = 0, m = 0;
+  const n = arr1.length;
+  let a1, a2;
+  for (let i = 0; i < n; i++) {
+    a1 = arr1[i];
+    if (a1 === a1) {
+      a2 = arr2[i];
+      if (a2 === a2) {
+        sum12 += a1 * a2;
+        sum2 += a2;
+        m += 1
+      }
+    }
+  }
+  return [sum12, sum2, m];
+}
+
+
+/**
+ * Calculate the mean of all elements in an array, while using paired elements
+ * in another array as weights, while skipping NaN.
+ * @function arrProdMeanN
+ * @param {number[]} arr1 - input array
+ * @param {number[]} arr2 - input array
+ * @returns {[number, number]} weighted mean and count of non-NaN number pairs
+ */
+function arrProdMeanN(arr1, arr2) {
+  const [sum12, sum2, n] = arrProdSumN(arr1, arr2);
+  return [(sum12 * 10) / (sum2 * 10), sum2, n];
+}
+
+
+/**
+ * Calculate the mean of all elements in an array, while skipping NaN.
+ * @function arrMean
+ * @param {number[]} arr - input array
+ * returns {number} mean
+ */
+function arrEqualDeep(arr1, arr2) {
   if (arr1 instanceof Array && arr2 instanceof Array) {
     const n = arr1.length;
     if (n !== arr2.length) {
       return false;
     }
     for (let i = 0; i < n; i++) {
-      if (!arrEqual(arr1[i], arr2[i])) {
+      if (!arrEqualDeep(arr1[i], arr2[i])) {
         return false;
       }
     }
@@ -195,7 +333,7 @@ function transpose(arr2d) {
  */
 function euclidean(x, y) {
   // check x, y
-  if (arrEqual(x, y)) {
+  if (arrEqualDeep(x, y)) {
     return 0;
   }
   let sum = 0;

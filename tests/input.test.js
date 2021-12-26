@@ -150,5 +150,5 @@ describe('input.js', function() {
     // empty input
     expect(guessColumnType([])).toEqual(['num', [], null]);
   });
-  
+
 });

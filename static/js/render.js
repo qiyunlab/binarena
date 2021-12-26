@@ -160,12 +160,24 @@ function initCanvas(mo) {
   const view = mo.view,
         stat = mo.stat,
         rena = mo.rena;
+
+  // drag to move the canvas
   if (stat.mousedown) {
-    stat.mousemove = true;
-    view.posX = e.clientX - stat.dragX;
-    view.posY = e.clientY - stat.dragY;
-    updateView(mo);
-  } else {
+    const posX = e.clientX - stat.dragX,
+          posY = e.clientY - stat.dragY;
+
+    // won't move if offset is within a pixel
+    // this is to prevent accidential tiny moves while clicking
+    if (Math.abs(posX - view.posX) > 1 || Math.abs(posY - view.posY) > 1) {
+      stat.mousemove = true;
+      view.posX = posX;
+      view.posY = posY;
+      updateView(mo);
+    }
+  }
+
+  // show current coordinates
+  else if (mo.view.grid) {
     const x = ((e.offsetX - view.posX) / view.scale / rena.width + 0.5) *
       (view.x.max - view.x.min) + view.x.min;
     const y = view.y.max - ((e.offsetY - view.posY) / view.scale /
@@ -191,7 +203,7 @@ function canvasMouseClick(e, mo) {
   if (stat.mousemove) {
     stat.mousemove = false;
   }
-  
+
   // keep drawing polygon
   else if (stat.drawing) {
     stat.polygon.push({
@@ -217,7 +229,7 @@ function canvasMouseClick(e, mo) {
     // get mouse position    
     const x0 = (e.offsetX - view.posX) / view.scale,
           y0 = (e.offsetY - view.posY) / view.scale;
-    
+
     const si = view.size.i;
     const S = si ? data[si] : null;
     const X = data[view.x.i],
