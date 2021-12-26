@@ -331,11 +331,16 @@ function resizeArena(mo) {
  * - Round numbers to integers.
  * - For small circles draw squares instead.
  * - Cache variables and references.
+ * - Skip contigs outside the visible region.
  * @todo {@link https://stackoverflow.com/questions/21089959/}
  * @todo rectangle-circle collision detection
  * @todo round floats into integers should improve performance, but may cause
  * problem when zoomin scale is large, needs further thought
- * @todo get rid of masked contigs prior to loop
+ * @todo skipping contigs outside the visible region results in significant
+ * performance gain when zooming in. However it voids another potential
+ * optimization: draw the entire image (not matter how large it is) in an
+ * off-screen canvas and draw part of it as needed to the main canvas using
+ * `drawImage`. Needs further thinking.`
  */
 function renderArena(mo) {
   const data = mo.data,
