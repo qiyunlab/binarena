@@ -391,8 +391,7 @@ function renderArena(mo) {
   const X = trans.x,
         Y = trans.y,
         S = trans.size,
-        O = trans.opacity,
-        C = trans.color;
+        C = trans.rgba;
 
   // calculate edges of visible region
   const vleft = -view.posX / scale,
@@ -425,7 +424,7 @@ function renderArena(mo) {
     if (y + radius < vtop || y - radius > vbottom) continue;
 
     // determine fill style (color and opacity)
-    fs = `rgba(${C[i]},${O[i]})`;
+    fs = `rgba(${C[i]})`;
     if (!(fs in paths)) paths[fs] = { 'square': [], 'circle': [] };
 
     // if a contig occupies less than four pixels on screen, draw a square

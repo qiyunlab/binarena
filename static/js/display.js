@@ -102,7 +102,7 @@ function initDisplayCtrl(mo) {
           view.discpal = palette;
           updateColorMap(mo);
         }
-        transColorForDisplay(mo);
+        prepDataForDisplay(mo, ['color']);
         renderArena(mo);
         updateLegends(mo, ['color']);
       });
@@ -113,7 +113,7 @@ function initDisplayCtrl(mo) {
   byId('add-color-btn').addEventListener('click', function () {
     view.ncolor += 1;
     updateColorMap(mo);
-    transColorForDisplay(mo);
+    prepDataForDisplay(mo, ['color']);
     renderArena(mo);
     updateLegends(mo, ['color']);
   });
@@ -122,7 +122,7 @@ function initDisplayCtrl(mo) {
     if (view.ncolor === 1) return;
     view.ncolor -= 1;
     updateColorMap(mo);
-    transColorForDisplay(mo);
+    prepDataForDisplay(mo, ['color']);
     renderArena(mo);
     updateLegends(mo, ['color']);
   });
@@ -185,7 +185,7 @@ function initDisplayCtrl(mo) {
         circle.classList.remove('hidden');
         if (item === 'size') {
           circle.style.backgroundColor = 'black';
-          const diameter = Math.ceil(view.rbase * 2 * offset / width);
+          const diameter = Math.ceil(view.size.base * 2 * offset / width);
           circle.style.height = diameter + 'px';
           circle.style.width = diameter + 'px';
         }
@@ -238,7 +238,7 @@ function initDisplayCtrl(mo) {
         const item = this.parentElement.getAttribute('data-item');
         view[item][ranging]= parseInt(this.parentElement.querySelector(
           '.range.' + ranging).getAttribute('data-tick')) * 10;
-        transDataForDisplay(mo, [item]);
+        prepDataForDisplay(mo, [item]);
         renderArena(mo);
         updateLegends(mo, [item]);
       }
@@ -264,7 +264,7 @@ function initDisplayCtrl(mo) {
     const item = this.parentElement.getAttribute('data-item');
     view[item][checkClassName(this, ['lower', 'upper'])] =
       this.getAttribute('data-tick') * 10;
-    transDataForDisplay(mo, [item]);
+    prepDataForDisplay(mo, [item]);
     renderArena(mo);
     updateLegends(mo, [item]);
   }
@@ -274,7 +274,7 @@ function initDisplayCtrl(mo) {
     label.addEventListener('click', function () {
       const item = this.parentElement.getAttribute('data-item');
       view[item].zero = !view[item].zero;
-      transDataForDisplay(mo, [item]);
+      prepDataForDisplay(mo, [item]);
       renderArena(mo);
       updateLegends(mo, [item]);
     });
@@ -412,10 +412,10 @@ function updateLegends(mo, items) {
  * cannot accept percentage, thus need to be adjusted specifically.
  */
 function updateSizeGradient(mo) {
-  const rbase = mo.view.rbase;
+  const base = mo.view.size.base;
   const grad = byId('size-gradient');
-  grad.style.height = rbase + 'px';
-  grad.style.borderTopWidth = rbase + 'px';
+  grad.style.height = base + 'px';
+  grad.style.borderTopWidth = base + 'px';
   const rect = grad.getBoundingClientRect();
   grad.style.borderRightWidth = Math.floor(rect.right - rect.left) + 'px';
 }
@@ -669,7 +669,7 @@ function updateViewByData(mo) {
 
   // reset transformed data
   const trans = mo.trans;
-  for (let item of ['x', 'y', 'size', 'opacity', 'color']) {
+  for (let item of ['x', 'y', 'size', 'opacity', 'color', 'rgb', 'rgba']) {
     trans[item] = Array(cache.nctg);
   }
 
@@ -702,10 +702,11 @@ function resetView(mo) {
   view.posY = rena.height / 2;
 
   // calculate display item ranges
-  calcDispMinMax(mo);
+  // calcDispMinMax(mo);
 
   // transforme data for display
-  transDataForDisplay(mo);
+  prepDataForDisplay(mo);
+  updateLegends(mo);
 
   // render plots
   updateView(mo);
@@ -713,208 +714,148 @@ function resetView(mo) {
 
 
 /**
- * Calculate min and max of display items
- * @function calcDispMinMax
- * @param {Object} mo - main object
- * @param {Array.<string>} [items] - display items to calculate
- */
-function calcDispMinMax(mo, items) {
-  items = items || ['x', 'y', 'size', 'opacity', 'color'];
-  const data = mo.data,
-        view = mo.view,
-        mask = mo.masked;
-  const n = mo.cache.nctg;
-  if (n === 0) return;
-
-  // calculate min / max for each item
-  let v, idx, col, arr, i, val, scale, min, max;
-  for (let item of items) {
-    v = view[item];
-    idx = v.i;
-    if (!idx) continue;
-    col = data[idx];
-    arr = [];
-    for (i = 0; i < n; i++) {
-      val = col[i];
-      if (val === val && !mask[i]) arr.push(val);
-    }
-
-    // calculate min and max of display items
-    scale = v.scale;
-    [min, max] = arrMinMax(arr);
-    v.min = scaleNum(min, scale);
-    v.max = scaleNum(max, scale);
-  }
-
-  // update controls
-  updateLegends(mo);
-
-}
-
-
-/**
  * Transform data for visualization purpose.
- * @function transDataForDisplay
+ * @function prepDataForDisplay
  * @param {Object} mo - main object
  * @param {string[]} [items] - item(s) to transform
  */
-function transDataForDisplay(mo, items) {
+function prepDataForDisplay(mo, items) {
   items = items || ['x', 'y', 'size', 'opacity', 'color'];
-  if (!mo.cache.nctg) return;
-  for (let item of items) {
-    switch (item) {
-      case 'x':
-        transXForDisplay(mo);
-        break;
-      case 'y':
-        transYForDisplay(mo);
-        break;
-      case 'size':
-        transSizeForDisplay(mo);
-        break;
-      case 'opacity':
-        transOpacityForDisplay(mo);
-        break;
-      case 'color':
-        transColorForDisplay(mo);
-        break;
-    }
-  }
-}
-
-
-/**
- * Transform x-axis data for visualization.
- * @function transXForDisplay
- * @param {Object} mo - main object
- */
-function transXForDisplay(mo) {
-  const v = mo.view.x;
-  const target = mo.trans.x;
-  const n = mo.cache.nctg,
-        source = mo.data[v.i],
-        scale = v.scale,
-        min = v.min,
-        range = v.max - min;
-  const scaled = scaleArr(source, scale);
-  for (let i = 0; i < n; i++) {
-    target[i] = (scaled[i] - min) / range - 0.5;
-  }
-}
-
-
-/**
- * Transform y-axis data for visualization.
- * @function transYForDisplay
- * @param {Object} mo - main object
- * @description Note that the formulae for x-axis and y-axis are different.
- * That's because the y-axis in an HTML5 canvas starts from top rather than
- * bottom.
- */
-function transYForDisplay(mo) {
-  const v = mo.view.y;
-  const target = mo.trans.y;
-  const n = mo.cache.nctg,
-        source = mo.data[v.i],
-        scale = v.scale,
-        max = v.max,
-        range = max - v.min;
-  const scaled = scaleArr(source, scale);
-  for (let i = 0; i < n; i++) {
-    target[i] = (max - scaled[i]) / range - 0.5;
-  }
-}
-
-
-/**
- * Transform size data for visualization.
- * @function transSizeForDisplay
- * @param {Object} mo - main object
- * @description This function calculates the radius of each data point.
- */
-function transSizeForDisplay(mo) {
-  const v = mo.view.size;
-  const target = mo.trans.size;
-  const base = mo.view.rbase;
-  if (!v.i) {
-    target.fill(base);
-    return;
-  }
-  const n = mo.cache.nctg,
-        source = mo.data[v.i],
-        scale = v.scale,
-        min = v.zero ? 0 : v.min,
-        low = v.lower / 100,
-        fac = (v.upper / 100 - low) / (v.max - min);
-  const scaled = scaleArr(source, scale);
-  for (let i = 0; i < n; i++) {
-    target[i] = ((scaled[i] - min) * fac + low) * base;
-  }
-}
-
-
-/**
- * Transform opacity data for visualization.
- * @function transOpacityForDisplay
- * @param {Object} mo - main object
- * @description This function calculates the alpha value of each data point.
- */
-function transOpacityForDisplay(mo) {
-  const v = mo.view.opacity;
-  const target = mo.trans.opacity;
-  const base = mo.view.obase;
-  if (!v.i) {
-    target.fill(base);
-    return;
-  }
-  const n = mo.cache.nctg,
-        source = mo.data[v.i],
-        scale = v.scale,
-        min = v.zero ? 0 : v.min,
-        low = v.lower / 100,
-        fac = (v.upper / 100 - low) / (v.max - min);
-  const scaled = scaleArr(source, scale);
-  for (let i = 0; i < n; i++) {
-    target[i] = ((scaled[i] - min) * fac + low).toFixed(2);
-  }
-}
-
-
-/**
- * Transform color data for visualization.
- * @function transColorForDisplay
- * @param {Object} mo - main object
- * @description This function calculates the RGB values of each data point.
- */
-function transColorForDisplay(mo) {
-  const v = mo.view.color;
-  const target = mo.trans.color;
-  target.fill('0,0,0');
-  const vi = v.i;
-  if (!vi) return;
-  const source = mo.data[vi];
   const n = mo.cache.nctg;
+  if (!n) return;
+  const view = mo.view,
+        data = mo.data,
+        cols = mo.cols,
+        mask = mo.masked,
+        trans = mo.trans;
 
-  // discrete color map for numeric data
-  if (mo.cols.types[vi] === 'cat') {
-    const cmap = v.discmap;
-    let val;
-    for (let i = 0; i < n; i++) {
-      val = source[i];
-      if (val in cmap) target[i] = hexToRgb(cmap[val]);
+  // transform data for each display item
+  for (let item of items) {
+    const v = view[item];
+    const idx = v.i,
+          scale = v.scale;
+
+    // no data, skip or use default
+    if (!idx) {
+      if (item === 'size' || item === 'opacity') {
+        trans[item].fill(v.base);
+      } else {
+        trans[item].fill(NaN);
+      }
+      continue;
+    }
+
+    // numeric data
+    const type = cols.types[idx];
+    if (type === 'num') {
+
+      // transform data using given scale
+      const scaled = scaleArr(data[idx], scale);
+
+      // gather valid data (not masked, is a number and is finite)
+      const valid = [];
+      let val;
+      for (let i = 0; i < n; i++) {
+        if (!mask[i]) {
+          val = scaled[i];
+          if (isFinite(val)) valid.push(val);
+        }
+      }
+
+      // calculate min / max
+      let [min, max] = arrMinMax(valid);
+      v.min = min;
+      v.max = max;
+      const range = max - min;
+
+      // scale data again using item-specific protocols
+      const target = trans[item];
+      let low, frac;
+      switch (item) {
+
+        // x- and y-axes
+        // note that the formulae for x-axis and y-axis are different
+        // that's because the y-axis in an HTML5 canvas starts from top rather
+        // than bottom
+        case 'x':
+          for (let i = 0; i < n; i++) {
+            target[i] = (scaled[i] - min) / range - 0.5;
+          }
+          break;
+        case 'y':
+          for (let i = 0; i < n; i++) {
+            target[i] = (max - scaled[i]) / range - 0.5
+          }
+          break;
+
+        // radius of marker
+        case 'size':
+          if (v.zero) min = 0;
+          const base = v.base;
+          low = v.lower / 100;
+          frac = (v.upper / 100 - low) / range;
+          for (let i = 0; i < n; i++) {
+            target[i] = ((scaled[i] - min) * frac + low) * base;
+          }
+          break;
+
+        // alpha value of fill color
+        case 'opacity':
+          if (v.zero) min = 0;
+          low = v.lower / 100;
+          frac = (v.upper / 100 - low) / range;
+          for (let i = 0; i < n; i++) {
+            target[i] = (scaled[i] - min) * frac + low;
+          }
+          break;
+
+        // fill color
+        case 'color':
+          if (v.zero) min = 0;
+          low = v.lower;
+          frac = (v.upper - low) / range;
+          for (let i = 0; i < n; i++) {
+            target[i] = (scaled[i] - min) * frac + low;
+          }
+          break;
+      }
+
+      // for color, get RGB value
+      if (item === 'color') {
+        const rgb = trans.rgb;
+        const cmap = v.contmap;
+        for (let i = 0; i < n; i++) {
+          rgb[i] = cmap[Math.round(target[i])];
+        }
+      }
+    }
+
+    // categorical data (color only)
+    else if (type === 'cat' && item === 'color') {
+      const carr = trans.color,
+            rarr = trans.rgb;
+      carr.fill('');
+      rarr.fill('0,0,0');
+      const source = data[idx];
+      const cmap = v.discmap;
+      let val;
+      for (let i = 0; i < n; i++) {
+        val = source[i];
+        if (val in cmap) {
+          carr[i] = val;
+          rarr[i] = hexToRgb(cmap[val]);
+        }
+      }
     }
   }
 
-  // continuous color map for categorical data
-  else {
-    const cmap = v.contmap;
-    const scale = v.scale,
-          min = v.zero ? 0 : v.min,
-          low = v.lower,
-          fac = (v.upper - low) / (v.max - min);
-    const scaled = scaleArr(source, scale);
+  // for opacity and color, combine into RGBA
+  if (items.includes('opacity') || items.includes('color')) {
+    const opacity = trans.opacity,
+          rgb = trans.rgb,
+          rgba = trans.rgba;
     for (let i = 0; i < n; i++) {
-      target[i] = cmap[Math.round((scaled[i] - min) * fac + low)];
+      rgba[i] = rgb[i] + ',' + opacity[i].toFixed(2);
     }
   }
 }
@@ -942,8 +883,8 @@ function displayItemChange(item, i, scale, mo) {
   // otherwise, keep current viewport
   const isCat = (item === 'color' && mo.cols.types[i] === 'cat');
   if (isCat) updateColorMap(mo);
-  else calcDispMinMax(mo, [item]);
-  transDataForDisplay(mo, [item]);
+  // else calcDispMinMax(mo, [item]);
+  prepDataForDisplay(mo, [item]);
   renderArena(mo);
   updateLegends(mo, [item]);
 }

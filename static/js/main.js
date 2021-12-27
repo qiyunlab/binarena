@@ -194,8 +194,6 @@ function mainObj() {
    * @property {Object}  color   - color variable
    * 
    * @property {boolean} grid    - whether show grid
-   * @property {number}  rbase   - base radius (px) of contig
-   * @property {number}  obase   - base opacity (alpha) of contig
    * @property {string}  contpal - continuous palette
    * @property {string}  discpal - discrete palette
    * @property {number}  ncolor  - number of categories to color
@@ -213,8 +211,6 @@ function mainObj() {
     color:   {},
     /** display features */
     grid:    false,
-    rbase:   15,
-    obase:   0.5,
     contpal: DEFAULT_CONTINUOUS_PALETTE,
     discpal: DEFAULT_DISCRETE_PALETTE,
     ncolor:  7
@@ -245,6 +241,8 @@ function mainObj() {
     obj.upper = 100;
     obj.zero = true;
   }
+  this.view.size.base = 15;
+  this.view.opacity.base = 0.5;
   let obj = this.view.color;
   obj.contmap = [];
   obj.discmap = {};
@@ -256,8 +254,10 @@ function mainObj() {
    * @property {number[]} x       - x-axis variable
    * @property {number[]} y       - y-axis variable
    * @property {number[]} size    - size variable
-   * @property {string[]} opacity - opacity variable
-   * @property {string[]} color   - color variable
+   * @property {number[]} opacity - opacity variable
+   * @property {number[]} color   - color variable
+   * @property {string[]} rgb     - RGB value
+   * @property {string[]} rgba    - RGBA value
    * They are 1D arrays of the same size as the dataset. They store transformed
    * data for visualization purpose to avoid duplicated calculations. They need
    * to be updated when the dataset is updated or the corresponding display
@@ -268,7 +268,9 @@ function mainObj() {
     y:       [],
     size:    [],
     opacity: [],
-    color:   []
+    color:   [],
+    rgb:     [],
+    rgba:    []
   }
 
 
