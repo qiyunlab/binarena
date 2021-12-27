@@ -97,19 +97,11 @@ function scaleNum(num, scale) {
       case 'cube':
         return Math.pow(num, 3);
       case 'cbrt':
-        return Math.pow(num, (1 / 3));
+        return Math.cbrt(num);
       case 'log':
         return Math.log(num);
-      case 'log2':
-        return Math.log2(num);
-      case 'log10':
-        return Math.log10(num);
       case 'exp':
         return Math.exp(num);
-      case 'exp2':
-        return Math.pow(2, num);
-      case 'exp10':
-        return Math.pow(10, num);
       default:
         throw `Error: Invalid scale name "${scale}".`;
     }
@@ -136,10 +128,6 @@ function unscale(scale) {
     'cbrt':   'cube',
     'log':    'exp',
     'exp':    'log',
-    'log2':   'exp2',
-    'exp2':   'log2',
-    'log10':  'exp10',
-    'exp10':  'log10'
   };
   if (scale == null) {
     return null;

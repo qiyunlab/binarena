@@ -517,7 +517,7 @@ div.popup {
   position: fixed;
   z-index: 2;
   background-color: white;
-  min-width: 100px;
+  /* min-width: 100px; */
   box-shadow: 3px 3px 15px lightgray;
 }
 
@@ -526,6 +526,12 @@ div.popup p {
 }
 
 /** square table (for scale select) */
+
+#scale-select p {
+  background-color: #EEE;
+  margin: 0;
+  padding: 3px;
+}
 
 table.square td {
   width: 24px;
