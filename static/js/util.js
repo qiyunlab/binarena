@@ -102,6 +102,14 @@ function scaleNum(num, scale) {
         return Math.log(num);
       case 'exp':
         return Math.exp(num);
+      case 'logit':
+        return Math.log(num / (1 - num));
+      case 'expit':
+        return 1 / (1 + Math.exp(-num));
+      case 'asin':
+        return Math.asin(Math.sqrt(num));
+      case 'sin':
+        return Math.sign(num) * Math.sin(num) ** 2;
       default:
         throw `Error: Invalid scale name "${scale}".`;
     }
@@ -128,6 +136,10 @@ function unscale(scale) {
     'cbrt':   'cube',
     'log':    'exp',
     'exp':    'log',
+    'logit':  'expit',
+    'expit':  'logit',
+    'asin':   'sin',
+    'sin':    'asin'
   };
   if (scale == null) {
     return null;

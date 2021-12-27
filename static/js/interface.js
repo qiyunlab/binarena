@@ -407,7 +407,7 @@ function initSideFrame(mo) {
 
       // mouse over to show scale name
       cell.addEventListener('mouseover', function () {
-        byId('current-scale').innerHTML = this.title;
+        byId('current-scale').innerHTML = this.getAttribute('data-scale');
       });
 
       // click to select a scale
@@ -415,10 +415,10 @@ function initSideFrame(mo) {
         const src = byId(byId('scale-select').getAttribute('data-target-id'));
         if (src.innerHTML !== this.innerHTML) {
           src.innerHTML = this.innerHTML;
-          src.setAttribute('data-scale', this.title);
+          const scale = this.getAttribute('data-scale');
+          src.setAttribute('data-scale', scale);
           const item = src.id.split('-')[0];
-          displayItemChange(item, byId(item + '-field-sel').value,
-            this.title, mo);
+          displayItemChange(item, byId(`${item}-field-sel`).value, scale, mo);
         }
       });
     }
@@ -657,7 +657,7 @@ function scale2HTML(scale) {
   const table = byId('scale-options');
   for (let row of table.rows) {
     for (let cell of row.cells) {
-      if (cell.title === scale) return cell.innerHTML;
+      if (cell.getAttribute('data-scale') === scale) return cell.innerHTML;
     }
   }
 }

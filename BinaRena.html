@@ -277,7 +277,7 @@
 
         <!-- mini plot controls -->
         <div class="toolbar right">
-          <button id="mini-log-btn" class="square" style="letter-spacing: -0.1em;">log</button>
+          <button id="mini-log-btn" class="square" title="Logarithm transformation" style="letter-spacing: -0.08em;">log</button>
           <button id="mini-plus-btn" class="square" title="Increase resolution"><i class="fa fa-plus"></i></button>
           <button id="mini-minus-btn" class="square" title="Decrease resolution"><i class="fa fa-minus"></i></button>
         </div>
@@ -534,19 +534,23 @@
     <p><span id="current-scale"></span></p>
     <table class="square" id="scale-options">
       <tr>
-        <td title="none"><i>x</i></td>
+        <td title="None (linear)" data-scale="none"><i>x</i></td>
       </tr>
       <tr>
-        <td title="square"><i>x</i><sup><small>2</small></sup></td>
-        <td title="cube"><i>x</i><sup><small>3</small></sup></td>
+        <td title="Square" data-scale="square"><i>x</i><sup><small>2</small></sup></td>
+        <td title="Cube" data-scale="cube"><i>x</i><sup><small>3</small></sup></td>
       </tr>
       <tr>
-        <td title="sqrt">&radic;<i>x</i></td>
-        <td title="cbrt"><sup><small>3</small></sup>&radic;<i>x</i></td>
+        <td title="Square root" data-scale="sqrt">&radic;<i>x</i></td>
+        <td title="Cube root" data-scale="cbrt"><sup><small>3</small></sup>&radic;<i>x</i></td>
       </tr>
       <tr>
-        <td title="log">log</td>
-        <td title="exp"><i>e</i><sup><small><i>x</i></small></sup></td>
+        <td title="Logarithm" data-scale="log">log</td>
+        <td title="Exponential" data-scale="exp"><i>e</i><sup><small><i>x</i></small></sup></td>
+      </tr>
+      <tr>
+        <td title="Logit = log(x/(1-x))" data-scale="logit" style="letter-spacing: -0.08em;">logit</td>
+        <td title="Arcsine square root" data-scale="asin" style="letter-spacing: -0.05em;">asin</td>
       </tr>
     </table>
   </div>
