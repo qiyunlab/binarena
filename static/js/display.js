@@ -791,13 +791,14 @@ function transDataForDisplay(mo, items) {
 function transXForDisplay(mo) {
   const v = mo.view.x;
   const target = mo.trans.x;
-  const source = mo.data[v.i],
+  const n = mo.cache.nctg,
+        source = mo.data[v.i],
         scale = v.scale,
         min = v.min,
         range = v.max - min;
-  const n = mo.cache.nctg;
+  const scaled = scaleArr(source, scale);
   for (let i = 0; i < n; i++) {
-    target[i] = (scaleNum(source[i], scale) - min) / range - 0.5;
+    target[i] = (scaled[i] - min) / range - 0.5;
   }
 }
 
@@ -813,13 +814,14 @@ function transXForDisplay(mo) {
 function transYForDisplay(mo) {
   const v = mo.view.y;
   const target = mo.trans.y;
-  const source = mo.data[v.i],
+  const n = mo.cache.nctg,
+        source = mo.data[v.i],
         scale = v.scale,
         max = v.max,
         range = max - v.min;
-  const n = mo.cache.nctg;
+  const scaled = scaleArr(source, scale);
   for (let i = 0; i < n; i++) {
-    target[i] = (max - scaleNum(source[i], scale)) / range - 0.5;
+    target[i] = (max - scaled[i]) / range - 0.5;
   }
 }
 
@@ -838,14 +840,15 @@ function transSizeForDisplay(mo) {
     target.fill(base);
     return;
   }
-  const source = mo.data[v.i],
+  const n = mo.cache.nctg,
+        source = mo.data[v.i],
         scale = v.scale,
         min = v.zero ? 0 : v.min,
         low = v.lower / 100,
         fac = (v.upper / 100 - low) / (v.max - min);
-  const n = mo.cache.nctg;
+  const scaled = scaleArr(source, scale);
   for (let i = 0; i < n; i++) {
-    target[i] = ((scaleNum(source[i], scale) - min) * fac + low) * base;
+    target[i] = ((scaled[i] - min) * fac + low) * base;
   }
 }
 
@@ -864,14 +867,15 @@ function transOpacityForDisplay(mo) {
     target.fill(base);
     return;
   }
-  const source = mo.data[v.i],
+  const n = mo.cache.nctg,
+        source = mo.data[v.i],
         scale = v.scale,
         min = v.zero ? 0 : v.min,
         low = v.lower / 100,
         fac = (v.upper / 100 - low) / (v.max - min);
-  const n = mo.cache.nctg;
+  const scaled = scaleArr(source, scale);
   for (let i = 0; i < n; i++) {
-    target[i] = ((scaleNum(source[i], scale) - min) * fac + low).toFixed(2);
+    target[i] = ((scaled[i] - min) * fac + low).toFixed(2);
   }
 }
 
@@ -908,9 +912,9 @@ function transColorForDisplay(mo) {
           min = v.zero ? 0 : v.min,
           low = v.lower,
           fac = (v.upper - low) / (v.max - min);
+    const scaled = scaleArr(source, scale);
     for (let i = 0; i < n; i++) {
-      target[i] = cmap[Math.round((scaleNum(source[i], scale) - min) *
-        fac + low)];
+      target[i] = cmap[Math.round((scaled[i] - min) * fac + low)];
     }
   }
 }

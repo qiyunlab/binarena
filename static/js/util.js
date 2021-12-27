@@ -79,7 +79,6 @@ function roundNum(num, digits) {
  * @param {string|number} scale - scale name or power
  * @throws if scale is invalid
  * @returns {number} scaled number
- * @todo
  */
 function scaleNum(num, scale) {
   if (scale == null) {
@@ -87,7 +86,7 @@ function scaleNum(num, scale) {
   } else if (typeof(scale) === 'number') {
     return Math.pow(num, scale);
   } else if (typeof(scale) === 'string') {
-    switch(scale) {
+    switch (scale) {
       case 'none':
         return num;
       case 'square':
@@ -116,6 +115,72 @@ function scaleNum(num, scale) {
   } else {
     throw 'Error: Invalid scale type.';
   }
+}
+
+
+/**
+ * Scale an array by key.
+ * @function scaleArr
+ * @param {number[]} arr - array to scale
+ * @param {string|number} scale - scale name or power
+ * @throws if scale is invalid
+ * @returns {number[]} scaled array
+ */
+function scaleArr(arr, scale) {
+  const n = arr.length;
+  const res = Array(n).fill(NaN);
+  if (scale == null) {
+    return arr;
+  } else if (typeof(scale) === 'number') {
+    for (let i = 0; i < n; i++) res[i] = arr[i] ** scale;
+  } else if (typeof(scale) === 'string') {
+    let num;
+    switch (scale) {
+      case 'none':
+        return arr;
+      case 'square':
+        for (let i = 0; i < n; i++) res[i] = arr[i] ** 2;
+        break;
+      case 'sqrt':
+        for (let i = 0; i < n; i++) res[i] = Math.sqrt(arr[i]);
+        break;
+      case 'cube':
+        for (let i = 0; i < n; i++) res[i] = arr[i] ** 3;
+        break;
+      case 'cbrt':
+        for (let i = 0; i < n; i++) res[i] = Math.cbrt(arr[i]);
+        break;
+      case 'log':
+        for (let i = 0; i < n; i++) res[i] = Math.log(arr[i]);
+        break;
+      case 'exp':
+        for (let i = 0; i < n; i++) res[i] = Math.exp(arr[i]);
+        break;
+      case 'logit':
+        for (let i = 0; i < n; i++) {
+          num = arr[i];
+          res[i] = Math.log(num / (1 - num));
+        }
+        break;
+      case 'expit':
+        for (let i = 0; i < n; i++) res[i] = 1 / (1 + Math.exp(-arr[i]));
+        break;
+      case 'asin':
+        for (let i = 0; i < n; i++) res[i] = Math.asin(Math.sqrt(arr[i]));
+        break;
+      case 'sin':
+        for (let i = 0; i < n; i++) {
+          num = arr[i];
+          res[i] = Math.sign(num) * Math.sin(num) ** 2;
+        }
+        break;
+      default:
+        throw `Error: Invalid scale name "${scale}".`;
+    }
+  } else {
+    throw 'Error: Invalid scale type.';
+  }
+  return res;
 }
 
 
