@@ -129,7 +129,7 @@ function miniPlotMouseMove(e, mo) {
   // skip if no mini plot is displayed
   if (mo.mini.field === null) return;
   if (mo.mini.hist === null) return;
-  if ((Object.keys(mo.pick)).length === 0) return;
+  if ((Object.keys(mo.picked)).length === 0) return;
 
   // find mouse position in mini plot
   const canvas = mo.mini.canvas;
@@ -248,7 +248,7 @@ function miniPlotSelect(mo) {
   mo.mini.drag = null;
 
   // find within selected contigs which ones are within the range
-  const pick = mo.pick;
+  const pick = mo.picked;
   let npick = mo.cache.npick;
   const col = mo.data[mo.mini.field];
   const n = mo.cache.nctg;
@@ -308,7 +308,7 @@ function updateMiniPlot(mo, keep, x1) {
     // variable values
     const arr = mo.data[col];
     const n = mo.cache.nctg;
-    const pick = mo.pick;
+    const pick = mo.picked;
     let X = [];
     let val;
     for (let i = 0; i < n; i++) {

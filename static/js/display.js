@@ -523,14 +523,12 @@ function populatePaletteSelect() {
  * @description Basically, it is a "guess" process.
  */
 function initDisplayItems(mo) {
-  const items = ['x', 'y', 'size', 'opacity', 'color'];
-  const fields = guessDisplayFields(mo.cols, mo.cache),
-        scales = guessDisplayScales(items);
   const view = mo.view;
-  for (let item of items) {
-    view[item].i = fields[item];
-    view[item].scale = scales[item];
-  }
+  const items = ['x', 'y', 'size', 'opacity', 'color'];
+  const fields = guessDisplayFields(mo);
+  for (let item of items) view[item].i = fields[item];
+  const scales = guessDisplayScales(mo);
+  for (let item of items) view[item].scale = scales[item];
 }
 
 
@@ -600,8 +598,8 @@ function updateViewByData(mo) {
   resetControls();
 
   // clear work
-  mo.pick.length = 0;
-  mo.mask.length = 0;
+  mo.picked.length = 0;
+  mo.masked.length = 0;
   mo.tabled.length = 0;
   mo.bins = {};
 
@@ -724,7 +722,7 @@ function calcDispMinMax(mo, items) {
   items = items || ['x', 'y', 'size', 'opacity', 'color'];
   const data = mo.data,
         view = mo.view,
-        mask = mo.mask;
+        mask = mo.masked;
   const n = mo.cache.nctg;
   if (n === 0) return;
 

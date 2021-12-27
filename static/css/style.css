@@ -312,6 +312,10 @@ div.toolbar span.spacer {
  * toolbar (floating)
  */
 
+div.hastool:hover > div.toolbar {
+  display: flex;
+}
+
 div.toolbar {
   z-index: 2;
   position: absolute;
@@ -319,7 +323,7 @@ div.toolbar {
   background-color: white;
   align-items: center;
   padding: 5px;
-  display: flex;
+  display: none;
   flex-direction: column;
 }
 
@@ -381,6 +385,7 @@ div.toolbar span.spacer {
   background-color: dimgray;
   color: white;
   vertical-align: middle;
+  margin-right: 10px;
 }
 
 #toast-close-btn:hover {
@@ -1148,7 +1153,7 @@ table.sheet th.sortable {
 
 table.sheet thead th.ascending:after,
 table.sheet thead th.descending:after {
-  content: ' ';
+  content: "";
   position: relative;
   left: 2px;
   border: 6px solid transparent;
@@ -1348,7 +1353,7 @@ div.legend:hover div.clip {
 }
 
 #legend-tip::before {
-  content: " ";
+  content: "";
   position: absolute;
   left: calc(50% - 5px);
   bottom: 100%;
@@ -1358,7 +1363,7 @@ div.legend:hover div.clip {
 }
 
 #legend-tip::after {
-  content: " ";
+  content: "";
   position: absolute;
   left: calc(50% - 4px);
   bottom: 100%;

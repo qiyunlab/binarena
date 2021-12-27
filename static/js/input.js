@@ -305,7 +305,7 @@ function parseCatColumn(arr) {
 function parseFeaColumn(arr) {
   const n = arr.length;
   const parsed = Array(n).fill().map(() => []),
-        weight   = Array(n).fill().map(() => []);
+        weight = Array(n).fill().map(() => []);
   let weighted = false;
   let vals, val, j, wt;
   for (let i = 0; i < n; i++) {
@@ -592,22 +592,4 @@ function parseContigTitle(line, format) {
     return [id, coverage];
   }
   return null;
-}
-
-
-/**
- * Export data as a JSON file.
- * @function exportJSON
- * @param {Object} data - data object to export
- * @see {@link https://stackoverflow.com/questions/17527713/}
- * This way avoids saving the lengthy href.
- */
- function exportJSON(data) {
-  const a = document.createElement('a');
-  a.href = 'data:text/json;charset=utf-8,' +
-    encodeURIComponent(JSON.stringify(data, null, 2));
-  a.download = 'data.json';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
 }

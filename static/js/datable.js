@@ -244,3 +244,96 @@ function sortDataTable(mo, idx, order) {
     tabled.sort((a, b) => { return col[a] - col[b]; });
   }
 }
+
+
+/**
+ * Export data table as a TSV file.
+ * @function exportDataTable
+ * @param {Object} mo - main object
+ */
+ function exportDataTable(mo) {
+  const n = mo.cache.nctg;
+  if (!n) return;
+  const data = mo.data,
+        cols = mo.cols;
+  const names = cols.names,
+        types = cols.types;
+  const m = names.length;
+  let tsv = '';
+
+  // populate table header
+  let row = [names[0]];
+  let j;
+  for (j = 1; j < m; j++) {
+    if (types[j].endsWith('wt')) continue;
+    row.push(`${names[j]}|${types[j].charAt(0)}`);
+  }
+  tsv += (row.join('\t') + '\n');
+
+  // populate table body
+  let val, wt, nval, wts, k;
+  for (let i = 0; i < n; i++) {
+    row = [data[0][i]];
+    for (j = 1; j < m; j++) {
+      val = data[j][i];
+      switch (types[j]) {
+
+        case 'id':
+        case 'des':
+          row.push(val);
+          break;
+
+        case 'num':
+          row.push(val === val ? String(val) : '')  // NaN becomes empty cell
+          break;
+        case 'cat':
+          if (val && types[j + 1] === 'cwt') {
+            wt = data[j + 1][i];
+            if (wt === wt) val += `:${wt}`;
+          }
+          row.push(val);
+          break;
+
+        case 'fea':
+          nval = val.length;
+          if (nval && types[j + 1] === 'fwt') {
+            wts = data[j + 1][i];
+            for (k = 0; k < nval; k++) {
+              wt = wts[k];
+              if (wt === wt) val[k] += `:${wt}`;
+            }
+          }
+          row.push(val.join(','));
+          break;
+      }
+    }
+    tsv += (row.join('\t') + '\n');
+  }
+
+  // create file for download
+  const a = document.createElement('a');
+  a.href = "data:text/tab-separated-values;charset=utf-8," +
+    encodeURIComponent(tsv);
+  a.download = 'data.tsv';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
+
+
+/**
+ * Export data table as a JSON file (obsolete).
+ * @function exportJSON
+ * @param {Object} data - data object to export
+ * @see {@link https://stackoverflow.com/questions/17527713/}
+ * This way avoids saving the lengthy href.
+ */
+ function exportJSON(data) {
+  const a = document.createElement('a');
+  a.href = 'data:text/json;charset=utf-8,' +
+    encodeURIComponent(JSON.stringify(data, null, 2));
+  a.download = 'data.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}

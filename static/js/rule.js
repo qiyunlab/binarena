@@ -32,8 +32,7 @@ function isMissing(str) {
 /**
  * Define display items based on data.
  * @function guessDisplayFields
- * @param {Object} cols - cols object
- * @param {Object} cache - cache object
+ * @param {Object} mo - main object
  * @throws if x and y cannot be determined
  * @returns {[number, number, ?number, ?number, ?number]} field indices for
  * x, y, size, opacity, color
@@ -46,26 +45,32 @@ function isMissing(str) {
  * n is the top n categories to be colored.
  * Options are: number, category, feature, description.
  */
-function guessDisplayFields(cols, cache) {
+function guessDisplayFields(mo) {
   const res = {
     x: null,
     y: null,
     size: null,
     opacity: null,
     color: null
-  };  
+  };
+  const cols = mo.cols,
+        cache = mo.cache;
   const names = cols.names,
         types = cols.types;
 
   // first, locate x and y (mandatory)
+  const xaxes = ['x', 'xaxis', 'x1', 'axis1', 'dim1', 'pc1', 'pca1', 'tsne1',
+                 'umap1', 'pcoa1', 'nmds1'];
+  const yaxes = ['y', 'yaxis', 'x2', 'axis2', 'dim2', 'pc2', 'pca2', 'tsne2',
+                 'umap2', 'pcoa2', 'nmds2'];
   const xyCand = [null, null];
   let name;
   for (let i = 1; i < names.length; i++) {
     if (types[i] !== 'num') continue;
-    name = names[i].toLowerCase();
-    if (name === 'x') {
+    name = names[i].toLowerCase().replace(/[\s_-]/g, '');
+    if (xaxes.indexOf(name) !== -1) {
       xyCand[0] = i;
-    } else if (name === 'y') {
+    } else if (yaxes.indexOf(name) !== -1) {
       xyCand[1] = i;
     }
   }
@@ -104,27 +109,24 @@ function guessDisplayFields(cols, cache) {
 /**
  * Guess display scales of items.
  * @function guessDisplayScales
- * @param {string[]} items - display items
+ * @param {string[]} mo - main object
  * @returns {Object} display item to scale mapping
+ * @description Currently it guesses about two special columns:
+ * - length: cubic root
+ * - coverage: square root
  */
-function guessDisplayScales(items) {
+function guessDisplayScales(mo) {
+  const view = mo.view;
+  const speci = mo.cache.speci;
+  const items = ['x', 'y', 'size', 'opacity', 'color'];
   const res = {};
+  let i;
   for (let item of items) {
-    switch (item) {
-      case 'x':
-      case 'y':
-      case 'color':
-        res[item] = 'none';
-        break;
-      case 'size':
-        res[item] = 'cbrt';
-        break;
-      case 'opacity':
-        res[item] = 'sqrt';
-        break;
-      default:
-        throw `Error: Invalid display item: "${item}".`;
-    }
+    i = view[item].i
+    if (!i) res[item] = 'none';
+    else if (speci.len === i) res[item] = 'cbrt';
+    else if (speci.cov === i) res[item] = 'sqrt';
+    else res[item] = 'none';
   }
   return res;
 }

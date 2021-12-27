@@ -116,7 +116,7 @@
         <table>
           <tr>
             <td>Field</td>
-            <td><select id="search-field-sel" title="Select a column to search"><option value="0"></option></select></td>
+            <td><select id="search-field-sel" title="Select a field to search"><option value="0"></option></select></td>
             <td><button id="search-btn" style="visibility: hidden;" title="Search by criteria">Search</button></td>
           </tr>
           <tr class="hidden" id="num-sel-p">
@@ -163,7 +163,7 @@
       <div class="dash-content">
         <table>
           <tr data-item="x">
-            <td>X-axis</td>
+            <td title="Position along the x-axis (left to right)"><i>X</i>-axis</td>
             <td><select id="x-field-sel"></select></td>
             <td><span id="x-param-span" class="hidden">
               <button class="square dropdown scale-btn" id="x-scale-btn"></button><!--
@@ -171,7 +171,7 @@
             </span></td>
           </tr>
           <tr data-item="y">
-            <td>Y-axis</td>
+            <td title="Position along the y-axis (bottom to top)"><i>Y</i>-axis</td>
             <td><select id="y-field-sel"></select></td>
             <td><span id="y-param-span" class="hidden">
               <button class="square dropdown scale-btn" id="y-scale-btn"></button><!--
@@ -181,7 +181,7 @@
 
           <!-- size -->
           <tr data-item="size">
-            <td>Size</td>
+            <td title="Radius of the marker">Size</td>
             <td><select id="size-field-sel"></select></td>
             <td><span id="size-param-span" class="hidden">
               <button class="square dropdown scale-btn" id="size-scale-btn"></button><!--
@@ -206,7 +206,7 @@
 
           <!-- opacity -->
           <tr data-item="opacity">
-            <td>Opacity</td>
+            <td title="Alpha value of the fill color">Opacity</td>
             <td><select id="opacity-field-sel"></select></td>
             <td><span id="opacity-param-span" class="hidden">
               <button class="square dropdown scale-btn" id="opacity-scale-btn"></button><!--
@@ -231,7 +231,7 @@
 
           <!-- color -->
           <tr data-item="color">
-            <td>Color</td>
+            <td title="RGB value of the fill color">Color</td>
             <td>
               <div>
               <select id="color-field-sel"></select><!--
@@ -273,10 +273,10 @@
       <div id="mini-head" class="panel-head">
         <span><button title="Show/hide plot panel">Plot</button></span>
       </div>
-      <div id="mini-content" class="dash-content hidden" style="position: relative;">
+      <div id="mini-content" class="dash-content hastool hidden" style="position: relative;">
 
         <!-- mini plot controls -->
-        <div class="toolbar right hidden">
+        <div class="toolbar right">
           <button id="mini-log-btn" class="square" style="letter-spacing: -0.1em;">log</button>
           <button id="mini-plus-btn" class="square" title="Increase resolution"><i class="fa fa-plus"></i></button>
           <button id="mini-minus-btn" class="square" title="Decrease resolution"><i class="fa fa-minus"></i></button>
@@ -393,10 +393,10 @@
         </table>
       </div>
 
-      <div>
+      <div class="hastool">
 
         <!-- toolbar -->
-        <div class="toolbar left hidden">
+        <div class="toolbar left">
           <button id="new-empty-bin-btn" title="Create an empty new bin"><i class="fa fa-plus fa-lg"></i></button>
           <button id="delete-bin-btn" class="hidden" title="Delete selected bin(s)"><i class="fa fa-minus fa-lg"></i></button>
           <button id="merge-bins-btn" class="hidden" title="Merge selected bins"><i class="fa fa-compress fa-lg"></i></button>
@@ -429,10 +429,10 @@
     <div id="info-head" class="panel-head">
       <span><button id="info-head-btn" title="Show/hide selected panel">Selected</button></span>
     </div>
-    <div class="side-content" style="flex-grow: 1;"><!-- filling remaing height -->
+    <div class="side-content hastool" style="flex-grow: 1;"><!-- filling remaing height -->
 
       <!-- toolbar -->
-      <div class="toolbar left hidden">
+      <div class="toolbar left">
         <button id="as-new-bin-btn" class="hidden" title="Create a new bin from selected contigs"><i class="fa fa-asterisk fa-lg"></i></button>
         <button id="add-to-bin-btn" class="hidden" title="Add selected contigs to bin"><i class="fa fa-plus fa-lg"></i></button>
         <button id="remove-from-bin-btn" class="hidden" title="Remove selected contigs from bin"><i class="fa fa-minus fa-lg"></i></button>
@@ -450,7 +450,7 @@
         <button class="dropdown" id="info-metric-btn" title="Metric">f(x)</button><!--
         --><span id="info-ref-span">&nbsp;by&nbsp;<select id="info-ref-sel" title="Weight by reference field"></select></span><!--
         --><button id="info-plot-btn" title="Plot distribution">&#9684;</button><!--
-        --><button id="info-hide-btn" title="Hide field">&times;</button>
+        --><button id="info-hide-btn" title="Hide field">&#x2715;</button>
       </div>
     </div>
 
@@ -515,23 +515,16 @@
   <div id="help-modal" class="modal hidden">
     <div class="modal-content" style="width: 600px;">
       <div class="modal-head"><span></span><span>Help</span><span></span></div>
-      <table style="border-collapse: separate;">
-        <tr>
-          <td rowspan="4" style="padding-right: 25px;"><img src="path/to/logo.png" alt="BinaRena" width="200" height="176"></td>
-          <td><big>BinaRena</big></td>
-        </tr>
-        <tr><td>Version: 0.0.1</td></tr>
-        <tr><td>Main developer: Qiyun Zhu (<a href="mailto:qiyunzhu@gmail.com">qiyunzhu@gmail.com</a>)</td></tr>
-        <tr><td>Website: <a href="https://github.com/qiyunzhu/binarena">https://github.com/qiyunzhu/binarena</a></td></tr>
-      </table>
-      <br>
-      <div id="quick-help">
-        <p>Quick tips</p>
-        <hr>
-        <ul>
-          <li>Feel like you are with a digital map.</li>
-        </ul>
-        <br>
+      <div class="modal-body">
+        <table style="border-collapse: separate;">
+          <tr>
+            <td rowspan="4" style="padding-right: 25px;"><img src="path/to/logo.png" alt="BinaRena" width="200" height="176"></td>
+            <td><big>BinaRena</big></td>
+          </tr>
+          <tr><td>Version: 0.0.1</td></tr>
+          <tr><td>Main developer: Qiyun Zhu (<a href="mailto:qiyunzhu@gmail.com">qiyunzhu@gmail.com</a>)</td></tr>
+          <tr><td>Website: <a href="https://github.com/qiyunlab/binarena">https://github.com/qiyunlab/binarena</a></td></tr>
+        </table>
       </div>
     </div>
   </div>
@@ -582,7 +575,7 @@
   <div id="toast" class="hidden">
     <span id="toast-msg"></span><!--
     --><span id="loading-dots" class="hidden"><span>&bull;</span> <span>&bull;</span> <span>&bull;</span></span><!--
-    --><button id="toast-close-btn" title="Close message" class="hidden">&times;</button>
+    --><button id="toast-close-btn" title="Close message" class="hidden">&#x2715;</button>
   </div>
 
   <!-- list select dropdown (also for auto-complete textbox) -->

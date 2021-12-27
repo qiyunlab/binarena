@@ -216,8 +216,8 @@ function canvasMouseClick(e, mo) {
   else {
     const n = mo.cache.nctg;
     if (!n) return;
-    const pick = mo.pick,
-          mask = mo.mask;
+    const pick = mo.picked,
+          mask = mo.masked;
 
     // clear current selection
     if (!e.shiftKey) {
@@ -349,7 +349,7 @@ function resizeArena(mo) {
 function renderArena(mo) {
   const view = mo.view,
         rena = mo.rena,
-        mask = mo.mask;
+        mask = mo.masked;
   let n = mo.cache.nctg;
 
   // prepare canvas context
@@ -481,7 +481,7 @@ function renderArena(mo) {
 function renderSelection(mo) {
   const view = mo.view,
         oray = mo.oray,
-        pick = mo.pick;
+        pick = mo.picked;
   const w = oray.width,
         h = oray.height;
 
@@ -640,7 +640,7 @@ function polygonSelect(mo, shift) {
     // find contigs within polygon
     const X = mo.trans.x,
           Y = mo.trans.y;
-    const mask = mo.mask;
+    const mask = mo.masked;
     const ctgs = [];
     for (let i = 0; i < n; i++) {
       if (!mask[i]) {

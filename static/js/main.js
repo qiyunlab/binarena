@@ -32,8 +32,9 @@
  * @property {Object} cache  - data cache
  * @property {Object} view   - current view
  * @property {Object} stat   - transient status
- * @property {Object} pick   - indices of selected contigs
- * @property {Object} mask   - indices of masked contigs
+ * @property {Object} picked - contig selection
+ * @property {Object} masked - contig masking
+ * @property {Object} tabled - indices of contigs in data table
  * @property {Object} bins   - binning plan
  * @property {Object} rena   - arena canvas
  * @property {Object} oray   - overlay canvas
@@ -305,8 +306,8 @@ function mainObj() {
    * @description They are 1D arrays of the same size as data columns. Their
    * elements are true/false values.
    */
-  this.pick = [];
-  this.mask = [];
+  this.picked = [];
+  this.masked = [];
 
 
   /**

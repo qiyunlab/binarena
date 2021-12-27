@@ -27,7 +27,7 @@ function initGUI(mo) {
   initPanelHeads();      // panel heads
   initBtnGroups();       // button groups
   initCloseBtns();       // close buttons
-  initFloatTools();      // floating toolbars
+  // initFloatTools();     // floating toolbars
   initListSel();         // list select table
   initToast();           // toast
 
@@ -191,7 +191,7 @@ function initBtnGroups() {
 function initCloseBtns() {
   for (let div of document.querySelectorAll('.modal-head')) {
     const btn = document.createElement('button');
-    btn.innerHTML = '&times;';
+    btn.innerHTML = '&#x2715;'; // cross mark
     btn.title = 'Close "' + div.firstElementChild.nextElementSibling.
       textContent + '" window';
     btn.addEventListener('click', function () {
@@ -231,7 +231,7 @@ function initListSel() {
 
 
 /**
- * Initialize floating toolbars.
+ * Initialize floating toolbars (obsolete).
  * @function initFloatTools
  * @description This code will let the toolbar appear when the mouse is in
  * the parent panel, and not disappear when move moves into the toolbar.
@@ -328,7 +328,7 @@ function initContextMenu(mo) {
 
   // export data table as JSON
   byId('export-data-a').addEventListener('click', function () {
-    exportJSON(mo.data);
+    exportDataTable(mo);
   });
 
   // export image as PNG

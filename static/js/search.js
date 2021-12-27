@@ -166,7 +166,7 @@ function searchByCriteria(mo, shift) {
   col = parseInt(col);
 
   // filter contigs by currently specified criteria
-  const mask = mo.mask;
+  const mask = mo.masked;
   const hasMask = (Object.keys(mask).length > 0);
 
   // search by threshold

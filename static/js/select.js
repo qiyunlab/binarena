@@ -31,8 +31,8 @@ function initSelTools(mo) {
   /** Invert selection. */
   byId('invert-btn').addEventListener('click', function () {
     if (!mo.cache.npick) return;
-    const pick = mo.pick,
-          mask = mo.mask;
+    const pick = mo.picked,
+          mask = mo.masked;
     let m = 0;
     const n = mo.cache.nctg;
     for (let i = 0; i < n; i++) {
@@ -48,8 +48,8 @@ function initSelTools(mo) {
   /** Mask selection. */
   byId('mask-btn').addEventListener('click', function () {
     if (!mo.cache.npick) return;
-    const pick = mo.pick,
-          mask = mo.mask;
+    const pick = mo.picked,
+          mask = mo.masked;
     let m = 0;
     const n = mo.cache.nctg;
     for (let i = 0; i < n; i++) {
@@ -69,7 +69,7 @@ function initSelTools(mo) {
 
   /** Clear mask. */
   byId('clear-mask-btn').addEventListener('click', function () {
-    mo.mask.fill(false);
+    mo.masked.fill(false);
     mo.cache.nmask = 0;
     updateSelection(mo);
   });
@@ -144,7 +144,7 @@ function initInfoCtrl(mo) {
  * existing selection; otherwise, they will become a new selection.
  */
 function treatSelection(ctgs, mo, shift) {
-  const pick = mo.pick;
+  const pick = mo.picked;
   const n = ctgs.length;
 
   // new selection
@@ -199,7 +199,7 @@ function updateSelection(mo) {
 function updateMaskCtrl(mo) {
   const n = mo.cache.nmask;
   let str = `Masked: ${n}`;
-  if (n === 1) str += ' (ID: ' +  mo.data[0][mo.mask.indexOf(true)] + ')';
+  if (n === 1) str += ' (ID: ' +  mo.data[0][mo.masked.indexOf(true)] + ')';
   byId('mask-head-btn').innerHTML = str;
   byId('clear-mask-btn').classList.toggle('hidden', !n);
 }
@@ -365,7 +365,7 @@ function updateInfoTable(mo) {
   const table = byId('info-table');
   const npick = mo.cache.npick;
   const data = mo.data,
-        pick = mo.pick;
+        pick = mo.picked;
   const types = mo.cols.types;
 
   // display count in info panel head
@@ -427,7 +427,7 @@ function updateInfoRow(row, mo, picked) {
   let n;
   if (picked == null) {
     picked = [];
-    const pick = mo.pick;
+    const pick = mo.picked;
     n = mo.cache.nctg;
     for (let i = 0; i < n; i++) {
       if (pick[i]) picked.push(i);

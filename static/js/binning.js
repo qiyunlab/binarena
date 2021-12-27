@@ -152,7 +152,7 @@ function initBinCtrl(mo) {
     const table = byId('bin-tbody');
     const [bins, ctgs] = deleteBins(table, mo.bins);
     const name = createBin(mo.bins);
-    const pick = Array(mo.pick.length).fill(false);
+    const pick = Array(mo.picked.length).fill(false);
     for (let ctg of ctgs) pick[ctg] = true;
     addToBin(pick, mo.bins[name]);
     updateBinTable(mo);
@@ -211,9 +211,9 @@ function initBinCtrl(mo) {
     const name = createBin(mo.bins);
 
     // if one or multiple contigs are selected, add them to bin
-    const added = addToBin(mo.pick, mo.bins[name]);
+    const added = addToBin(mo.picked, mo.bins[name]);
     const n = added.length;
-    mo.pick.fill(false);
+    mo.picked.fill(false);
     mo.cache.npick = 0;
     updateSelection(mo);
     updateBinTable(mo);
@@ -230,7 +230,7 @@ function initBinCtrl(mo) {
     if (idx == null) return;
     if (mo.cache.npick === 0) return;
     const exist = mo.bins[bin];
-    const added = addToBin(mo.pick, exist);
+    const added = addToBin(mo.picked, exist);
     const n = added.length;
     if (n > 0) updateBinRow(table.rows[idx], exist, mo);
     toastMsg(`Added ${plural('contig', n)} to "${bin}".`, stat);
@@ -244,7 +244,7 @@ function initBinCtrl(mo) {
     if (idx == null) return;
     if (mo.cache.npick === 0) return;
     const exist = mo.bins[bin];
-    const removed = removeFromBin(mo.pick, exist);
+    const removed = removeFromBin(mo.picked, exist);
     updateBinCtrl(mo);
     const n = removed.length;
     if (n > 0) updateBinRow(table.rows[idx], exist, mo);
@@ -260,7 +260,7 @@ function initBinCtrl(mo) {
     if (mo.cache.npick === 0) return;
     mo.bins[bin] = {};
     const ctgs = mo.bins[bin];
-    const pick = mo.pick;
+    const pick = mo.picked;
     let n = pick.length;
     for (let i = 0; i < n; i++) {
       if (pick[i]) ctgs[i] = null;
@@ -311,10 +311,10 @@ function initBinCtrl(mo) {
 
     // select contigs in bin
     if (selected !== undefined) {
-      mo.pick.fill(false);
+      mo.picked.fill(false);
       let npick = 0;
       for (let i in mo.bins[selected]) {
-        mo.pick[i] = true;
+        mo.picked[i] = true;
         npick++;
       }
       mo.cache.npick = npick;
