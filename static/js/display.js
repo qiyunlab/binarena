@@ -310,7 +310,6 @@ function updateDisplayCtrl(cols, view) {
     // add fields to each list
     for (i = 0; i < n; i++) {
       type = types[i];
-      if (type === 'id') continue;
       if (type === 'num' || (type === 'cat' && key === 'color')) {
 
         // create an option
@@ -520,15 +519,14 @@ function populatePaletteSelect() {
 /**
  * Initiate display items based on the dataset.
  * @function initDisplayItems
- * @param {Object} cols - cols object
- * @param {Object} cache - cache object
- * @param {Object} view - view object
+ * @param {Object} mo - main object
  * @description Basically, it is a "guess" process.
  */
-function initDisplayItems(cols, cache, view) {
+function initDisplayItems(mo) {
   const items = ['x', 'y', 'size', 'opacity', 'color'];
-  const fields = guessDisplayFields(cols, cache),
+  const fields = guessDisplayFields(mo.cols, mo.cache),
         scales = guessDisplayScales(items);
+  const view = mo.view;
   for (let item of items) {
     view[item].i = fields[item];
     view[item].scale = scales[item];
@@ -604,6 +602,7 @@ function updateViewByData(mo) {
   // clear work
   mo.pick.length = 0;
   mo.mask.length = 0;
+  mo.tabled.length = 0;
   mo.bins = {};
 
   // clear cache
@@ -637,6 +636,9 @@ function updateViewByData(mo) {
     byId('drop-sign').classList.add('hidden');
     const btn = byId('dash-btn');
     if (!btn.classList.contains('active')) btn.click();
+
+    // show all data in table
+    mo.tabled = [...data[0].keys()];
 
     // guess special columns
     cache.speci = {
@@ -675,12 +677,11 @@ function updateViewByData(mo) {
 
   // manipulate interface
   const view = mo.view;
-  initDisplayItems(cols, cache, view);
+  initDisplayItems(mo);
   updateColorMap(mo);
   updateControls(cols, view);
   buildInfoTable(mo);
-  buildDataTable(cols);
-  fillDataTable(data, cols);
+  buildDataTable(mo);
   byId('bin-tbody').innerHTML = '';
 
   // reset view
@@ -728,7 +729,7 @@ function calcDispMinMax(mo, items) {
   if (n === 0) return;
 
   // calculate min / max for each item
-  let v, idx, col, arr, i, scale, min, max;
+  let v, idx, col, arr, i, val, scale, min, max;
   for (let item of items) {
     v = view[item];
     idx = v.i;
@@ -736,7 +737,8 @@ function calcDispMinMax(mo, items) {
     col = data[idx];
     arr = [];
     for (i = 0; i < n; i++) {
-      if (!mask[i]) arr.push(col[i]);
+      val = col[i];
+      if (val === val && !mask[i]) arr.push(val);
     }
 
     // calculate min and max of display items

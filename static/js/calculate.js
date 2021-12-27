@@ -58,7 +58,7 @@ function calcSilhouette(mo) {
     let scores = silhouetteSample(vals, labels, cache.pdist);
 
     // remove unbinned contigs
-    scores = scores.map((score, i) => labels[i] ? score : null);
+    scores = scores.map((score, i) => labels[i] ? score : NaN);
 
     // add scores to data table
     let col = cols.names.indexOf('silhouette');
@@ -75,6 +75,7 @@ function calcSilhouette(mo) {
       cols.types.push('num');
       updateControls(cols, view);
       buildInfoTable(mo);
+      buildDataTable(mo);
     }
 
     // update existing column
@@ -96,7 +97,7 @@ function calcSilhouette(mo) {
     sel.dispatchEvent(new Event('change'));
 
     // summarize scores
-    scores = scores.filter(score => score !== null);
+    scores = scores.filter(score => score === score);
     toastMsg(`Mean silhouette score of contigs of ${n} bins: ` +
       `${arrMean(scores).toFixed(3)}.`, mo.stat, 0, false, true);
 

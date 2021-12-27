@@ -105,7 +105,7 @@ function initBinCtrl(mo) {
       names.push(plan);
       types.push('cat');
       updateControls(cols, view);
-      fillDataTable(data, cols, n);
+      buildDataTable(mo);
       toastMsg(`Saved to new binning plan "${plan}".`, stat);
     }
 
@@ -116,7 +116,6 @@ function initBinCtrl(mo) {
         arr[i] = (i in map) ? map[i] : '';
       }
       updateControls(cols, view);
-      fillDataTable(data, cols, n);
       toastMsg(`Overwritten binning plan "${plan}".`, stat);
     }
   });
@@ -136,7 +135,7 @@ function initBinCtrl(mo) {
     toastMsg(`Created "${name}".`, stat);
   });
 
-  // delete current bin
+  // delete current bin(s)
   byId('delete-bin-btn').addEventListener('click', function () {
     const table = byId('bin-tbody');
     const deleted = deleteBins(table, mo.bins)[0];
@@ -163,6 +162,30 @@ function initBinCtrl(mo) {
     if (n === 2) toastMsg(`Merged "${bins[0]}" and "${bins[1]}" into ` +
       `"${name}".`, stat, 2000);
     else toastMsg(`Merged ${plural('bin', n)} into "${name}".`, stat, 2000);
+  });
+
+  // show contig data in bins
+  byId('bin-data-btn').addEventListener('click', function () {
+    const table = byId('bin-tbody');
+    const toshow = [];
+    const rows = table.rows;
+    let row;
+    for (let i = rows.length - 1; i >= 0; i--) {
+      row = rows[i];
+      if (row.classList.contains('selected')) {
+        toshow.push(row.cells[0].firstElementChild.innerHTML);
+      }
+    }
+    if (toshow.length === 0) return;
+    let ctgs = [];
+    for (let bin of toshow) {
+      ctgs = ctgs.concat(Object.keys(mo.bins[bin]));
+    }
+    mo.tabled = arrUniq(ctgs.sort());
+
+    // mo.tabled = Object.values(mo.bins).map(Object.keys).flat().sort();
+    fillDataTable(mo);
+    byId('data-table-modal').classList.remove('hidden');
   });
 
   // export current binning plan
@@ -334,6 +357,7 @@ function updateBinCtrl(mo) {
 
   byId('delete-bin-btn').classList.toggle('hidden', !m);
   byId('merge-bins-btn').classList.toggle('hidden', (m < 2));
+  byId('bin-data-btn').classList.toggle('hidden', !m);
 
   const k = mo.cache.npick;
   byId('as-new-bin-btn').classList.toggle('hidden', !k);

@@ -305,8 +305,18 @@ function mainObj() {
    * @description They are 1D arrays of the same size as data columns. Their
    * elements are true/false values.
    */
-   this.pick = [];
-   this.mask = [];
+  this.pick = [];
+  this.mask = [];
+
+
+  /**
+   * Contigs displayed in data table
+   * @member {Array.<number>} tabled
+   * @description They are indices of contigs that should be displayed in the
+   * data table. They are not a boolean array as above because the order of
+   * indices matters.
+   */
+  this.tabled = [];
 
 
   /**

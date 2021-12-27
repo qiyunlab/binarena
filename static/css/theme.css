@@ -78,10 +78,11 @@ div.dock > div > button:enabled:hover {
 
 /* color scheme */
 
-#selection-color {
-  color: royalblue;
-}
+#selection-color { color: royalblue; }
 
-#polygon-color {
-  color: royalblue;
-}
+#polygon-color { color: royalblue; }
+
+#type-num-color { background-color: paleturquoise; }
+#type-cat-color { background-color: peachpuff; }
+#type-fea-color { background-color: thistle; }
+#type-des-color { background-color: seashell; }

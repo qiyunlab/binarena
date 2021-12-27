@@ -190,7 +190,7 @@ function parseTable(text, data, cols) {
 const FIELD_CODES = {
   'n': 'num', // numeric
   'c': 'cat', // categorical
-  'f': 'fea', // feature sets
+  'f': 'fea', // feature set
   'd': 'des'  // descriptive
 };
 

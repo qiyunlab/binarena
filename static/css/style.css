@@ -201,7 +201,7 @@ div.panel-head select {
   position: absolute;
   color: white;
   min-width: 50px;
-  max-width: 150px;
+  width: 150px;
   border-bottom: none;
   top: 50%;
   transform: translate(-50%, -50%);
@@ -414,7 +414,7 @@ div.modal-content {
   border: none;
   box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.25);
   background: white;
-  max-width: 80%;
+  width: 80%;
   margin: 5% auto;
   /* padding: 10px; */
   overflow: hidden;
@@ -424,25 +424,64 @@ div.modal-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-direction: row;
   height: 32px;
-  padding-left: 10px;
   font-weight: bold;
   color: white;
   background-color: dimgray;
 }
 
-div.modal-head button:last-child {
+div.modal-head > span:first-child {
+  height: 100%;
+}
+
+div.modal-head > span:last-child {
+  height: 100%;
+}
+
+div.modal-head > span:nth-child(2) {
+  text-align: center;
+}
+
+div.modal-head button {
   height: 100%;
   min-width: 32px;
   color: white;
-  font-size: 16px;
+  /* font-size: 16px; */
   background-color: transparent;
 }
 
-div.modal-head button:last-child:hover {
+div.modal-head button:hover {
   background-color: darkgray;
 }
 
+div.modal-head input[type=text] {
+  text-align: center;
+  background-color: lightgray;
+  border-bottom: none;
+}
+
+div.modal-head input[type=text]:hover {
+  background-color: white;
+}
+
+div.modal-head input[type=text]:focus {
+  background-color: white;
+  border-bottom: none;
+}
+
+
+
+div.modal-body {
+  max-height: 600px;
+  overflow: auto;
+  margin: 10px;
+}
+
+div.modal-body > div {
+  padding: 8px 15px;
+  padding-top: 0 !important;
+}
 
 /** button group (currently not used) */
 
@@ -1036,7 +1075,7 @@ div.side-content {
   padding: 0;
   border: none;
   min-width: 30px;
-  max-width: 50px;
+  width: 50px;
   cursor: pointer;
 }
 
@@ -1045,12 +1084,7 @@ div.side-content {
 }
 
 
-/* data table */
-
-#data-table-container {
-  max-height: 600px;
-  overflow: auto;
-}
+/** data table */
 
 table.sheet {
   border: none;
@@ -1058,20 +1092,33 @@ table.sheet {
   table-layout: fixed;
 }
 
+/* 
 table.sheet thead {
-  border-top: 1px solid black;
-  border-bottom: 1px solid black;
-}
+  position: sticky;
+  inset-block-start: 0;
+} */
 
-table.sheet thead td {
+table.sheet thead th {
+  background-color: lightgray;
   font-weight: bold;
   text-align: center;
   line-height: 200%;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  padding-left: 5px;
+  padding-right: 5px;
 }
+/* 
+table.sheet thead th:hover {
+  color: white;
+  cursor: pointer;
+} */
 
 table.sheet tbody td {
   text-align: left;
   /* overflow-wrap: break-word; */
+  word-wrap: break-word;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1093,35 +1140,60 @@ table.sheet tbody tr td:nth-last-child(2)+td {
   text-align: left;
 }
 
-/* column widths by data type */
-
-table.sheet thead td[data-type="id"] {
-  max-width: 50px;
-}
-
-table.sheet thead td[data-type="number"] {
-  max-width: 75px;
-}
-
-table.sheet thead td[data-type="category"] {
-  max-width: 100px;
-}
-
-table.sheet thead td[data-type="feature"] {
-  max-width: 150px;
-}
-
-table.sheet thead td[data-type="description"] {
-  max-width: 150px;
-}
-
+/** sorting arrow */
 
 table.sheet th.sortable {
-  background-color: lightgray;
   cursor: pointer;
 }
 
-table.sheet td.key {
+table.sheet thead th.ascending:after,
+table.sheet thead th.descending:after {
+  content: ' ';
+  position: relative;
+  left: 2px;
+  border: 6px solid transparent;
+}
+
+table.sheet thead th.ascending:after {
+  bottom: 8px;
+  border-bottom-color: dimgray;
+}
+
+table.sheet thead th.descending:after {
+  top: 10px;
+  border-top-color: dimgray;
+}
+
+table.sheet thead th.ascending,
+table.sheet thead th.descending {
+  padding-right: 5px;
+}
+
+
+/** column widths by data type */
+/* 
+table.sheet thead th[data-type="id"] {
+  width: 50px;
+}
+
+table.sheet thead th[data-type="num"] {
+  width: 75px;
+}
+
+table.sheet thead th[data-type="cat"] {
+  width: 100px;
+}
+
+table.sheet thead th[data-type="fea"] {
+  width: 150px;
+}
+
+table.sheet thead th[data-type="des"] {
+  width: 150px;
+} */
+
+
+/* table.sheet td.key {
   text-align: right;
   font-weight: bold;
   padding-right: 5px;
@@ -1146,7 +1218,7 @@ table.sheet td.detail {
   padding: 10px;
   background-color: lightyellow;
   font-size: 80%;
-}
+} */
 
 
 /**

@@ -400,6 +400,7 @@
           <button id="new-empty-bin-btn" title="Create an empty new bin"><i class="fa fa-plus fa-lg"></i></button>
           <button id="delete-bin-btn" class="hidden" title="Delete selected bin(s)"><i class="fa fa-minus fa-lg"></i></button>
           <button id="merge-bins-btn" class="hidden" title="Merge selected bins"><i class="fa fa-compress fa-lg"></i></button>
+          <button id="bin-data-btn" class="hidden" title="Show data of contigs in selected bin(s)"><i class="fa fa-table fa-lg"></i></button>
           <button id="export-plan-btn" title="Export current binning plan"><i class="fa fa-download fa-lg"></i></button>
         </div>
 
@@ -466,7 +467,7 @@
     i.e., the main menu, can be activated by clicking the program title or
     right-clicking anywhere in the plot.
   -->
-  <div id="context-menu" style="z-index: 2;" class="menu hidden">
+  <div id="context-menu" style="z-index: 5;" class="menu hidden">
     <a id="load-data-a">Load data</a>
     <a id="show-data-a">Show data</a>
     <a id="close-data-a">Close data</a>
@@ -486,12 +487,26 @@
   <!-- data table -->
   <div id="data-table-modal" class="modal hidden">
     <div class="modal-content">
-      <div class="modal-head">Data</div>
-      <div class="toolbar">
-        <button id="load-data-btn" title="Load data"><i class="fa fa-folder-open-o fa-lg"></i></button>
+      <div class="modal-head">
+        <span>
+          <button id="data-menu-btn" class="dropdown" title="Show data table menu"><i class="fa fa-bars"></i></button>
+        </span>
+        <span id="data-title-span">Data</span>
+        <span>
+          <button id="data-prev-btn" title="Previous page">&lt;</button>
+          <input type="text" id="data-page-txt" title="Page number" style="width: 40px;">
+          <button id="data-next-btn" title="Next page">&gt;</button>
+        </span>
       </div>
-      <div id="data-table-container">
+      <div class="modal-body">
         <table id="data-table" class="sheet"></table>
+      </div>
+      <div class="hidden">
+        <label>Data type:</label>
+        <span id="type-num-color">numeric</span>
+        <span id="type-cat-color">categorical</span>
+        <span id="type-fea-color">feature set</span>
+        <span id="type-des-color">descriptive</span>
       </div>
     </div>
   </div>
@@ -499,7 +514,7 @@
   <!-- help window -->
   <div id="help-modal" class="modal hidden">
     <div class="modal-content" style="width: 600px;">
-      <div class="modal-head">Help</div>
+      <div class="modal-head"><span></span><span>Help</span><span></span></div>
       <table style="border-collapse: separate;">
         <tr>
           <td rowspan="4" style="padding-right: 25px;"><img src="path/to/logo.png" alt="BinaRena" width="200" height="176"></td>
@@ -578,9 +593,11 @@
   <!-- modals -->
   <div id="myModal" class="modal hidden">
     <div class="modal-content">
-      <p class="title-bar"><span>Test</span><button class="close">&times;</button></p>
-      <br>
-      <hr>
+      <div class="modal-head">
+        <span>Left controls</span>
+        <span>Title</span>
+        <span>Right controls</span>
+      </div>
       <p>Some text in the Modal..</p>
     </div>
   </div>

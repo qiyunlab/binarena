@@ -163,6 +163,7 @@ function initPanelHeads() {
 /**
  * Initialize button groups.
  * @function initBtnGroups
+ * @description Currently there are no button groups.
  */
 function initBtnGroups() {
   const groups = document.getElementsByClassName('btn-group');
@@ -188,21 +189,22 @@ function initBtnGroups() {
  * @function initCloseBtns
  */
 function initCloseBtns() {
-  for (let div of document.querySelectorAll(".modal-head")) {
+  for (let div of document.querySelectorAll('.modal-head')) {
     const btn = document.createElement('button');
     btn.innerHTML = '&times;';
-    btn.title = 'Close ' + div.textContent.toLowerCase() + ' window';
+    btn.title = 'Close "' + div.firstElementChild.nextElementSibling.
+      textContent + '" window';
     btn.addEventListener('click', function () {
       div.parentElement.parentElement.classList.add('hidden');
     });
-    div.appendChild(btn);
+    div.lastElementChild.appendChild(btn);
   }
 }
 
 
 /**
  * Initialize list select table.
- * @function initCloseBtns
+ * @function initListSel
  * @description The list select table is like a dropdown menu. It is launched
  * by a source DOM. The user clicks an item, and this code will transfer the
  * selection back to the source DOM and trigger an event of it.
@@ -308,6 +310,8 @@ function initContextMenu(mo) {
 
   // show data table
   byId('show-data-a').addEventListener('click', function () {
+    if (mo.cache.nctg) mo.tabled = [...mo.data[0].keys()];
+    fillDataTable(mo);
     byId('data-table-modal').classList.remove('hidden');
   });
 
@@ -788,5 +792,11 @@ function loadTheme() {
   const theme = {};
   theme.selection = getComputedStyle(byId('selection-color')).color;
   theme.polygon = getComputedStyle(byId('polygon-color')).color;
+  theme.typecolors = {
+    num: getComputedStyle(byId('type-num-color')).backgroundColor,
+    cat: getComputedStyle(byId('type-cat-color')).backgroundColor,
+    fea: getComputedStyle(byId('type-fea-color')).backgroundColor,
+    des: getComputedStyle(byId('type-des-color')).backgroundColor
+  }
   return theme;
 }
