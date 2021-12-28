@@ -155,6 +155,8 @@ function mainObj() {
    * @property {number} npick - number of contigs selected
    * @property {number} nmask - number of contigs masked
    * 
+   * @property {Set.<string>} - current bin names
+   * 
    * @property {Object.<Array>} locis - locations of contigs in the plot
    * They are transformed values that can be directly rendered in the plot.
    * @todo Currently not in use.
@@ -173,6 +175,7 @@ function mainObj() {
     freqs: {},
     npick: 0,
     nmask: 0,
+    binns: new Set(),
     locis: {},
     pdist: []
   };
@@ -226,6 +229,7 @@ function mainObj() {
    * @property {number}  max     - maximum after scaling
    * @property {number}  lower   - lower bound of visual parameter
    * @property {number}  upper   - upper bound of visual parameter
+   * @property {number}  base    - default value 
    * @property {boolean} zero    - whether lower bound is zero or minimum
    * @property {boolean} contmap - continuous color map
    * @property {boolean} discmap - discrete color map
@@ -241,11 +245,13 @@ function mainObj() {
     obj.upper = 100;
     obj.zero = true;
   }
-  this.view.size.base = 15;
-  this.view.opacity.base = 0.5;
   let obj = this.view.color;
   obj.contmap = [];
   obj.discmap = {};
+
+  this.view.size.base = 15;       // radius = 15px
+  this.view.opacity.base = 0.5;   // grey scale = 50%
+  this.view.color.base = '0,0,0'; // black
 
 
   /**
@@ -313,6 +319,14 @@ function mainObj() {
 
 
   /**
+   * Binning plan.
+   * @member {Array.<string>} binned
+   * @description Indices of contigs included in each bin.
+   */
+  this.binned = [];
+
+
+  /**
    * Contigs displayed in data table
    * @member {Array.<number>} tabled
    * @description They are indices of contigs that should be displayed in the
@@ -320,14 +334,6 @@ function mainObj() {
    * indices matters.
    */
   this.tabled = [];
-
-
-  /**
-   * Binning plan.
-   * @member {Object.<Object.<Object.<number>>>} bins
-   * @description Indices of contigs included in each bin.
-   */
-  this.bins = {};
 
 
   /**

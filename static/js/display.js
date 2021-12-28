@@ -54,7 +54,7 @@ function initDisplayCtrl(mo) {
       for (let key of ['i', 'scale', 'min', 'max']) {
         xx[key] = [yy[key], yy[key] = xx[key]][0];
       }
-      updateControls(mo.cols, view);
+      updateControls(mo);
       transXForDisplay(mo);
       transYForDisplay(mo);
       renderArena(mo);
@@ -597,27 +597,37 @@ function updateView(mo) {
 function updateViewByData(mo) {
   resetControls();
 
-  // clear work
-  mo.picked.length = 0;
-  mo.masked.length = 0;
-  mo.tabled.length = 0;
-  mo.bins = {};
+  // check whether there is data
+  const data = mo.data,
+        cache = mo.cache;
+  if (data.length === 0) cache.nctg = 0;
+  else cache.nctg = data[0].length;
+  const N = cache.nctg;
+
+  // reset working progress
+  mo.picked = Array(N).fill(false);
+  mo.masked = Array(N).fill(false);
+  mo.binned = Array(N).fill('');
+  mo.tabled = N ? [...data[0].keys()] : [];
+
+  // reset transformed data
+  const trans = mo.trans;
+  for (let item of ['x', 'y', 'size', 'opacity', 'color', 'rgb', 'rgba']) {
+    trans[item] = Array(N);
+  }
 
   // clear cache
-  const cache = mo.cache;
   cache.abund = 0;
   cache.speci = {};
   cache.freqs = {};
   cache.npick = 0;
   cache.nmask = 0;
+  cache.binns.clear();
   cache.locis = {};
   cache.pdist = [];
 
   // data is closed
-  const data = mo.data,
-        cols = mo.cols;
-  if (data.length === 0) {
-    cache.nctg = 0;
+  if (!N) {
     byId('hide-side-btn').click();
     byId('show-side-btn').disabled = true;
     byId('drop-sign').classList.remove('hidden');
@@ -628,17 +638,14 @@ function updateViewByData(mo) {
 
   // data is open
   else {
-    cache.nctg = data[0].length;
     byId('show-side-btn').disabled = false;
     byId('show-side-btn').click();
     byId('drop-sign').classList.add('hidden');
     const btn = byId('dash-btn');
     if (!btn.classList.contains('active')) btn.click();
 
-    // show all data in table
-    mo.tabled = [...data[0].keys()];
-
     // guess special columns
+    const cols = mo.cols;
     cache.speci = {
       len: guessLenColumn(cols),
       cov: guessCovColumn(cols),
@@ -667,17 +674,10 @@ function updateViewByData(mo) {
     }
   }
 
-  // reset transformed data
-  const trans = mo.trans;
-  for (let item of ['x', 'y', 'size', 'opacity', 'color', 'rgb', 'rgba']) {
-    trans[item] = Array(cache.nctg);
-  }
-
   // manipulate interface
-  const view = mo.view;
   initDisplayItems(mo);
   updateColorMap(mo);
-  updateControls(cols, view);
+  updateControls(mo);
   buildInfoTable(mo);
   buildDataTable(mo);
   byId('bin-tbody').innerHTML = '';
@@ -700,9 +700,6 @@ function resetView(mo) {
   const rena = mo.rena;
   view.posX = rena.width / 2;
   view.posY = rena.height / 2;
-
-  // calculate display item ranges
-  // calcDispMinMax(mo);
 
   // transforme data for display
   prepDataForDisplay(mo);
@@ -739,6 +736,9 @@ function prepDataForDisplay(mo, items) {
     if (!idx) {
       if (item === 'size' || item === 'opacity') {
         trans[item].fill(v.base);
+      } else if (item === 'color') {
+        trans[item].fill(NaN);
+        trans.rgb.fill(v.base);
       } else {
         trans[item].fill(NaN);
       }
@@ -868,7 +868,6 @@ function prepDataForDisplay(mo, items) {
  * @param {Object} i - new field index
  * @param {Object} scale - new scaling factor
  * @param {Object} mo - main object
- * @todo throw if max === min
  */
 function displayItemChange(item, i, scale, mo) {
   mo.view[item].i = i;
@@ -883,7 +882,6 @@ function displayItemChange(item, i, scale, mo) {
   // otherwise, keep current viewport
   const isCat = (item === 'color' && mo.cols.types[i] === 'cat');
   if (isCat) updateColorMap(mo);
-  // else calcDispMinMax(mo, [item]);
   prepDataForDisplay(mo, [item]);
   renderArena(mo);
   updateLegends(mo, [item]);

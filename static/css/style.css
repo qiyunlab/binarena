@@ -311,13 +311,36 @@ div.toolbar span.spacer {
 /**
  * toolbar (floating)
  */
+/* 
+div.hastool {
+  transition-property: all;
+  transition-delay: 1s;
+}
+
+div.hastool:hover {
+  background-color: red;
+  transition-delay: 0s;
+}
+
+
+div.hastool > div.toolbar {
+  transition-delay: 1s;
+} */
+/* 
+div.hastool {
+  z-index: 2;
+} */
 
 div.hastool:hover > div.toolbar {
   display: flex;
 }
 
+div.toolbar:hover {
+  display: flex;
+}
+
 div.toolbar {
-  z-index: 2;
+  z-index: 3;
   position: absolute;
   color: dimgray;
   background-color: white;
@@ -334,7 +357,7 @@ div.toolbar.right {
 }
 
 div.toolbar.left {
-  transform: translateX(-100%);
+  transform: translateX(calc(-100% + 1px));
   box-shadow: -6px 6px 6px rgba(0, 0, 0, 0.1);
 }
 
@@ -974,11 +997,15 @@ div.side-content {
 #bin-thead th {
   position: sticky;
   top: 0;
-  background-color: #EEE;
+  background-color: #EEE;}
+
+#bin-thead th {
+  font-weight: normal;
+  cursor: pointer;
 }
 
-#bin-thead tr th {
-  font-weight: normal;
+#bin-thead th:hover {
+  background-color: lightgray;
 }
 
 #bin-tbody tr:hover {

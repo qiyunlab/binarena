@@ -18,24 +18,8 @@ function calcSilhouette(mo) {
   const data = mo.data,
         cols = mo.cols,
         view = mo.view,
-        bins = mo.bins,
+        binned = mo.binned,
         cache = mo.cache;
-
-  // validate binning plan
-  const names = Object.keys(bins);
-  const n = names.length;
-  if (n === 0) {
-    toastMsg('Must define at least one bin.', mo.stat);
-    return;
-  }
-
-  // get bin labels
-  const labels = Array(data[0].length).fill(0);
-  names.forEach(function (name, i) {
-    Object.keys(bins[name]).forEach(idx => {
-      labels[idx] = i + 1;
-    });
-  });
 
   // get contig positions
   const xi = view.x.i,
@@ -55,10 +39,10 @@ function calcSilhouette(mo) {
     if (cache.pdist.length === 0) cache.pdist = pdist(vals);
 
     // calculate silhouette scores
-    let scores = silhouetteSample(vals, labels, cache.pdist);
+    let scores = silhouetteSample(vals, binned, cache.pdist);
 
     // remove unbinned contigs
-    scores = scores.map((score, i) => labels[i] ? score : NaN);
+    scores = scores.map((score, i) => binned[i] ? score : NaN);
 
     // add scores to data table
     let col = cols.names.indexOf('silhouette');
@@ -73,7 +57,7 @@ function calcSilhouette(mo) {
       data.push(arr);
       cols.names.push('silhouette');
       cols.types.push('num');
-      updateControls(cols, view);
+      updateControls(mo);
       buildInfoTable(mo);
       buildDataTable(mo);
     }
@@ -112,33 +96,37 @@ function calcSilhouette(mo) {
  * @param {string} field - categorical field to serve as reference
  */
 function calcAdjRand(mo, field) {
-  const data = mo.data;
-  const n = data[0].length;
+  if (!mo.cache.nctg) return;
+  const ari = adjustedRandScore(mo.binned.filter(Boolean),
+    mo.data[mo.cols.names.indexOf(field)].filter(Boolean));
 
-  // current labels
-  const cur = Array(n).fill(0);
-  const bins = mo.bins;
-  let ctg;
-  for (let bin in bins) {
-    for (ctg in bins[bin]) {
-      cur[ctg] = bin;
-    }
-  }
+  // const data = mo.data;
+  // const n = data[0].length;
 
-  // reference labels
-  const ref = Array(n).fill(0);
-  const idx = mo.cols.names.indexOf(field);
-  const datum = data[idx];
-  let val;
-  for (let i = 0; i < n; i++) {
-    val = datum[i];
-    if (val !== null) {
-      ref[i] = val;
-    }
-  }
+  // // current labels
+  // const cur = Array(n).fill(0);
+  // const bins = mo.bins;
+  // let ctg;
+  // for (let bin in bins) {
+  //   for (ctg in bins[bin]) {
+  //     cur[ctg] = bin;
+  //   }
+  // }
 
-  // calculation
-  const ari = adjustedRandScore(ref, cur);
+  // // reference labels
+  // const ref = Array(n).fill(0);
+  // const idx = mo.cols.names.indexOf(field);
+  // const datum = data[idx];
+  // let val;
+  // for (let i = 0; i < n; i++) {
+  //   val = datum[i];
+  //   if (val !== null) {
+  //     ref[i] = val;
+  //   }
+  // }
+
+  // // calculation
+  // const ari = adjustedRandScore(ref, cur);
 
   toastMsg(`Adjusted Rand index between current binning plan and ` +
     `"${field}": ${ari.toFixed(3)}.`, mo.stat, 0, false, true);

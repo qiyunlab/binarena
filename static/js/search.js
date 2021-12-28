@@ -167,7 +167,6 @@ function searchByCriteria(mo, shift) {
 
   // filter contigs by currently specified criteria
   const mask = mo.masked;
-  const hasMask = (Object.keys(mask).length > 0);
 
   // search by threshold
   const arr = mo.data[col];
@@ -201,7 +200,7 @@ function searchByCriteria(mo, shift) {
     // compare values to threshold(s)
     let val;
     for (let i = 0; i < n; i++) {
-      if (hasMask && i in mask) continue;
+      if (!mask[i]) continue;
       val = arr[i];
       if ((val !== NaN) &&
         (min === null || (minIn ? (val >= min) : (val > min))) &&

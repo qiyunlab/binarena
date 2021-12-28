@@ -291,16 +291,16 @@ function FormatLength(len) {
  * Generate a new name that does not conflict with existing names.
  * Will read like "prefix_#", in which "#" is an incremental integer.
  * @function newName
- * @param {Object} exists - existing names
+ * @param {Set} exist - existing names
  * @param {string} prefix - name prefix
  * @returns {string} new name
  */
-function newName(exists, prefix) {
+function newName(exist, prefix) {
   let name;
   let i = 1;
   while (true) {
-    name = prefix + '_' + i;
-    if (name in exists) i ++;
+    name = `${prefix}_${i}`;
+    if (exist.has(name)) i ++;
     else return name;
   }
 }

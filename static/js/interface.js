@@ -65,10 +65,11 @@ function resetControls() {
 /**
  * Update controls based on new data.
  * @function updateControls
- * @param {Object} cols - cols object
- * @param {Object} view - view object
+ * @param {Object} mo - main object
  */
- function updateControls(cols, view) {
+function updateControls(mo) {
+  const cols = mo.cols,
+        view = mo.view;
   updateSearchCtrl(cols);
   updateDisplayCtrl(cols, view);
   updateMiniPlotCtrl(cols);
@@ -323,7 +324,7 @@ function initContextMenu(mo) {
 
   // export bins
   byId('export-bins-a').addEventListener('click', function () {
-    exportBins(mo.bins, mo.data);
+    exportBinPlan(mo.binned);
   });
 
   // export data table as JSON
@@ -541,7 +542,7 @@ function initWidgets(mo) {
   byId('calc-btn').addEventListener('click', function () {
     const menu = byId('calc-menu');
     if (menu.classList.contains('hidden')) {
-      const n = Object.keys(mo.bins).length;
+      const n = mo.cache.binns.size;
       byId('silhouet-a').classList.toggle('disabled', !n);
       byId('adj-rand-a').classList.toggle('disabled', !n);
       menu.classList.remove('hidden');
@@ -638,10 +639,10 @@ function listSelect(lst, src, direc, same) {
   const table = byId('list-options');
   table.setAttribute('data-target-id', src.id);
   table.innerHTML = '';
-  for (let itm of lst) {
+  for (let item of lst) {
     const row = table.insertRow(-1);
     const cell = row.insertCell(-1);
-    cell.innerHTML = itm;
+    cell.innerHTML = item;
   }
   div.classList.remove('hidden');
 }

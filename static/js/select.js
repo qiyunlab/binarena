@@ -71,7 +71,7 @@ function initSelTools(mo) {
   byId('clear-mask-btn').addEventListener('click', function () {
     mo.masked.fill(false);
     mo.cache.nmask = 0;
-    updateSelection(mo);
+    renderArena(mo);
   });
 
 }

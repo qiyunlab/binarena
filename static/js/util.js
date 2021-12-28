@@ -255,6 +255,46 @@ function arrUniq(arr) {
 
 
 /**
+ * Group indices of an array by unique elements.
+ * @function arrGroupBy
+ * @param {Array} arr - input array
+ * @returns {Object} output object
+ */
+function arrGroupBy(arr) {
+  const res = {};
+  const n = arr.length;
+  let item;
+  for (let i = 0; i < n; i++) {
+    item = arr[i];
+    if (item in res) res[item].push(i);
+    else res[item] = [i];
+  }
+  return res;
+}
+
+
+/**
+ * Group indices of an array by unique elements, while skipping false values
+ * @function arrGroupBy
+ * @param {Array} arr - input array
+ * @returns {Object} output object
+ */
+ function arrGroupByF(arr) {
+  const res = {};
+  const n = arr.length;
+  let item;
+  for (let i = 0; i < n; i++) {
+    item = arr[i];
+    if (item) {
+      if (item in res) res[item].push(i);
+      else res[item] = [i];
+    }
+  }
+  return res;
+}
+
+
+/**
  * Convert an array to an object of nulls.
  * @function arr2obj
  * @param {Array} arr - input array
@@ -440,12 +480,13 @@ function palette11to101(palette) {
  * @function splitLines
  * @param {Array} arr - input array
  * @returns {number} number of true elements
- * @description Useful to check how many contigs of the `pick`, `mask` and
- * `bins` arrays are set.
+ * @description Useful to check how many contigs are set in `picked`, `masked`
+ * and `binned` arrays. The same result can be achieved using arr.filter(
+ * Boolean).length, but I guess that this function is faster.
  */
 function countTrue(arr) {
   const n = arr.length;
-  let res = 0
+  let res = 0;
   for (let i = 0; i < n; i++) {
     if (arr[i]) res++;
   }

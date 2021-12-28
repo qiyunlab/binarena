@@ -15,7 +15,6 @@
 function initBinCtrl(mo) {
   const data = mo.data,
         cols = mo.cols,
-        view = mo.view,
         stat = mo.stat;
   const names = cols.names,
         types = cols.types;
@@ -27,17 +26,18 @@ function initBinCtrl(mo) {
   // load bins from a categorical field
   byId('plan-sel-txt').addEventListener('click', function () {
     const lst = listColsByType(cols, 'cat');
-    listSelect(['(clear)'].concat(lst), this, 'down', true);
+    listSelect(['&nbsp;'].concat(lst), this, 'down', true);
   });
 
   byId('plan-sel-txt').addEventListener('focus', function () {
     const plan = this.value;
 
     // empty option: unload any binning plan
-    if (plan === '(clear)') {
+    if (plan.match(/\s/)) {
       this.value = '';
       this.setAttribute('data-col', '');
-      mo.bins = {};
+      mo.binned.fill('');
+      mo.cache.binns.clear();
     }
 
     // load an existing binning plan
@@ -46,78 +46,68 @@ function initBinCtrl(mo) {
       if (idx === -1) return;
       if (idx == this.getAttribute('data-col')) return;
       this.setAttribute('data-col', idx);
-      mo.bins = loadBins(data[idx]);
+      mo.binned = [...data[idx]];
+      mo.cache.binns = new Set(mo.binned.filter(Boolean));
     }
 
     // update interface
     updateBinTable(mo);
     updateBinCtrl(mo);
-    byId('save-plan-btn').classList.add('hidden');
-    const n = Object.keys(mo.bins).length;
+    updateSavePlanBtn(mo, false);
+    const n = mo.cache.binns.size;
     if (n === 0) return;
     toastMsg(`Loaded ${n} bins from "${plan}".`, stat);
+    mo.rena.focus();
   });
 
   byId('plan-sel-txt').addEventListener('input', function () {
-    byId('save-plan-btn').classList.remove('hidden');
+    updateSavePlanBtn(mo);
   });
 
   // save current binning plan
   byId('save-plan-btn').addEventListener('click', function () {
     const plan = byId('plan-sel-txt').value;
     if (plan === '') return;
-    const bins = mo.bins;
-    if (Object.keys(bins).length === 0) {
+    if (mo.cache.binns.size === 0) {
       toastMsg('Error: The current binning plan has no bin.', stat);
-      return;
-    }
-
-    // generate a contig-to-bin map
-    const map = {};
-    let bin, ctg;
-    let dups = [];
-    for (bin in bins) {
-      for (ctg in bins[bin]) {
-        if (ctg in map) dups.push(ctg);
-        else map[ctg] = bin;
-      }
-    }
-
-    // report ambiguous assignments
-    dups = arrUniq(dups);
-    let n = dups.length;
-    if (n > 0) {
-      treatSelection(dups, mo);
-      toastMsg(`Error: ${n} contigs were assigned to non-unique bins ` +
-        '(see selected).', stat);
       return;
     }
 
     // create a new categorical field
     const idx = names.indexOf(plan);
-    n = data[0].length;
     if (idx === -1) {
-      const arr = Array(n).fill('');
-      for (let i = 0; i < n; i++) {
-        if (i in map) arr[i] = map[i];
-      }
-      data.push(arr);
+      data.push([...mo.binned]);
       names.push(plan);
       types.push('cat');
-      updateControls(cols, view);
+      updateControls(mo);
       buildDataTable(mo);
       toastMsg(`Saved to new binning plan "${plan}".`, stat);
     }
 
     // overwrite an existing categorical field
     else {
-      const arr = data[idx];
-      for (let i = 0; i < n; i++) {
-        arr[i] = (i in map) ? map[i] : '';
-      }
-      updateControls(cols, view);
+      // take care of weights
+      // todo: make it nicer
+      if (mo.cols.types[idx + 1] === 'cwt') {
+        const n = mo.cache.nctg;
+        const binned = mo.binned;
+        const arr = data[idx];
+        const wts = data[idx + 1];
+        for (let i = 0; i < n; i++) {
+          if (arr[i] !== binned[i]) {
+            arr[i] = binned[i];
+            wts[i] = NaN;
+          }
+        }
+      } else data[idx] = [...mo.binned];
+      updateControls(mo);
       toastMsg(`Overwritten binning plan "${plan}".`, stat);
     }
+
+    // hide itself when done
+    this.setAttribute('data-edit', 0);
+    this.classList.add('hidden');
+    mo.rena.focus();
   });
 
 
@@ -127,70 +117,70 @@ function initBinCtrl(mo) {
 
   // create an empty new bin
   byId('new-empty-bin-btn').addEventListener('click', function () {
-    const name = createBin(mo.bins);
+    const name = createBin(mo.cache.binns);
     updateBinTable(mo);
     updateBinCtrl(mo);
     const table = byId('bin-tbody');
     selectBin(table, name);
     toastMsg(`Created "${name}".`, stat);
+    mo.rena.focus();
   });
 
   // delete current bin(s)
   byId('delete-bin-btn').addEventListener('click', function () {
     const table = byId('bin-tbody');
-    const deleted = deleteBins(table, mo.bins)[0];
+    const [deleted, unbinned] = deleteBins(table, mo.cache.binns, mo.binned);
 
     // update interface
     updateBinCtrl(mo);
+    updateSavePlanBtn(mo, true);
     const n = deleted.length;
-    if (n === 1) toastMsg(`Deleted "${deleted[0]}".`, stat);
-    else toastMsg(`Deleted ${plural('bin', n)}.`, stat);
+    const suffix = plural('contig', unbinned.length);
+    if (n === 1) toastMsg(`Deleted "${deleted[0]}" (${suffix}).`, stat);
+    else toastMsg(`Deleted ${plural('bin', n)} (${suffix}).`, stat);
+    mo.rena.focus();
   });
 
   // merge currently selected bins
   byId('merge-bins-btn').addEventListener('click', function () {
     const table = byId('bin-tbody');
-    const [bins, ctgs] = deleteBins(table, mo.bins);
-    const name = createBin(mo.bins);
-    const pick = Array(mo.picked.length).fill(false);
-    for (let ctg of ctgs) pick[ctg] = true;
-    addToBin(pick, mo.bins[name]);
+    const [deleted, unbinned] = deleteBins(table, mo.cache.binns, mo.binned);
+    const name = createBin(mo.cache.binns);
+    const picked = Array(mo.cache.nctg).fill(false);
+    for (let ctg of unbinned) picked[ctg] = true;
+    addToBin(name, picked, mo.binned);
     updateBinTable(mo);
     updateBinCtrl(mo);
+    updateSavePlanBtn(mo, true);
     selectBin(table, name);
-    const n = bins.length;
-    if (n === 2) toastMsg(`Merged "${bins[0]}" and "${bins[1]}" into ` +
-      `"${name}".`, stat, 2000);
-    else toastMsg(`Merged ${plural('bin', n)} into "${name}".`, stat, 2000);
+    const n = deleted.length;
+    const suffix = plural('contig', unbinned.length);
+    if (n === 2) toastMsg(`Merged "${deleted[0]}" and "${deleted[1]}" into ` +
+      `"${name}" (${suffix}).`, stat);
+    else toastMsg(`Merged ${plural('bin', n)} into "${name}" (${suffix}).`,
+      stat,);
+    mo.rena.focus();
   });
 
   // show contig data in bins
   byId('bin-data-btn').addEventListener('click', function () {
     const table = byId('bin-tbody');
-    const toshow = [];
-    const rows = table.rows;
-    let row;
-    for (let i = rows.length - 1; i >= 0; i--) {
-      row = rows[i];
-      if (row.classList.contains('selected')) {
-        toshow.push(row.cells[0].firstElementChild.innerHTML);
-      }
+    const [idxes, names] = selectedBins(table);
+    if (idxes.length === 0) return;
+    const binned = mo.binned,
+          tabled = mo.tabled;
+    tabled.length = 0;
+    const n = mo.cache.nctg;
+    for (let i = 1; i < n; i++) {
+      if (names.indexOf(binned[i]) !== -1) tabled.push(i);
     }
-    if (toshow.length === 0) return;
-    let ctgs = [];
-    for (let bin of toshow) {
-      ctgs = ctgs.concat(Object.keys(mo.bins[bin]));
-    }
-    mo.tabled = arrUniq(ctgs.sort());
-
-    // mo.tabled = Object.values(mo.bins).map(Object.keys).flat().sort();
     fillDataTable(mo);
     byId('data-table-modal').classList.remove('hidden');
   });
 
   // export current binning plan
   byId('export-plan-btn').addEventListener('click', function () {
-    exportBins(mo.bins, data);
+    exportBinPlan(mo.binned);
   });
 
 
@@ -203,78 +193,92 @@ function initBinCtrl(mo) {
     if (mo.cache.npick === 0) return;
 
     // if there is no binning plan, create one
-    if (Object.keys(mo.bins).length === 0) {
-      byId('plan-sel-txt').value = newName(arr2obj(names), 'plan');
+    if (mo.cache.binns.size === 0) {
+      byId('plan-sel-txt').value = newName(new Set(names), 'plan');
     }
 
     // create a new bin
-    const name = createBin(mo.bins);
+    const name = createBin(mo.cache.binns);
 
     // if one or multiple contigs are selected, add them to bin
-    const added = addToBin(mo.picked, mo.bins[name]);
-    const n = added.length;
+    const [added,] = addToBin(name, mo.picked, mo.binned);
     mo.picked.fill(false);
     mo.cache.npick = 0;
     updateSelection(mo);
     updateBinTable(mo);
     updateBinCtrl(mo);
+    updateSavePlanBtn(mo, true);
     const table = byId('bin-tbody');
     selectBin(table, name);
-    toastMsg(`Created "${name}" (with ${plural('contig', n)}).`, stat);
+    toastMsg(`Created "${name}" (${plural('contig', added.length)}).`, stat);
+    mo.rena.focus();
   });
 
   // Add selected contigs to current bin.
   byId('add-to-bin-btn').addEventListener('click', function () {
     const table = byId('bin-tbody');
-    const [idx, bin] = currentBin(table);
+    const [idx, name] = currentBin(table);
     if (idx == null) return;
     if (mo.cache.npick === 0) return;
-    const exist = mo.bins[bin];
-    const added = addToBin(mo.picked, exist);
+    const [added, existing] = addToBin(name, mo.picked, mo.binned);
     const n = added.length;
-    if (n > 0) updateBinRow(table.rows[idx], exist, mo);
-    toastMsg(`Added ${plural('contig', n)} to "${bin}".`, stat);
+    if (n > 0) {
+      updateSavePlanBtn(mo, true);
+      updateBinRow(table.rows[idx], added.concat(existing), mo);
+    }
+    toastMsg(`Added ${plural('contig', n)} to "${name}".`, stat);
+    mo.rena.focus();
   });
 
 
   // Remove selected contigs from current bin.
   byId('remove-from-bin-btn').addEventListener('click', function () {
     const table = byId('bin-tbody');
-    const [idx, bin] = currentBin(table);
+    const [idx, name] = currentBin(table);
     if (idx == null) return;
     if (mo.cache.npick === 0) return;
-    const exist = mo.bins[bin];
-    const removed = removeFromBin(mo.picked, exist);
+    const [removed, remaining] = removeFromBin(name, mo.picked, mo.binned);
     updateBinCtrl(mo);
+    updateSavePlanBtn(mo, true);
     const n = removed.length;
-    if (n > 0) updateBinRow(table.rows[idx], exist, mo);
-    toastMsg(`Removed ${plural('contig', n)} from "${bin}".`, stat);
+    if (n > 0) {
+      updateSavePlanBtn(mo, true);
+      updateBinRow(table.rows[idx], remaining, mo);
+    }
+    toastMsg(`Removed ${plural('contig', n)} from "${name}".`, stat);
+    mo.rena.focus();
   });
 
 
-  /** Update current bin with selected contigs. */
+  // Update current bin with selected contigs.
   byId('update-bin-btn').addEventListener('click', function () {
     const table = byId('bin-tbody');
-    const [idx, bin] = currentBin(table);
+    const [idx, name] = currentBin(table);
     if (idx == null) return;
     if (mo.cache.npick === 0) return;
-    mo.bins[bin] = {};
-    const ctgs = mo.bins[bin];
-    const pick = mo.picked;
-    let n = pick.length;
-    for (let i = 0; i < n; i++) {
-      if (pick[i]) ctgs[i] = null;
-    }
+    const [added, removed, unchanged] = updateBinWith(
+      name, mo.picked, mo.binned);
     updateBinCtrl(mo);
-    n = Object.keys(ctgs).length;
-    updateBinRow(table.rows[idx], ctgs, mo);
-    toastMsg(`Updated "${bin}" (now has ${plural('contig', n)}).`, stat);
+    const n = added.length, m = removed.length;
+    if (n > 0 || m > 0) {
+      updateBinRow(table.rows[idx], added.concat(unchanged), mo);
+      updateSavePlanBtn(mo, true);
+    }
+    toastMsg(`Updated "${name}" (added ${plural('contig', n)}, removed ${
+      plural('contig', m)}).`, stat);
+    mo.rena.focus();
   });
 
 
   /**
    * Bin table events.
    */
+
+  for (let head of byId('bin-thead').rows[0].cells) {
+    head.addEventListener('click' , function() {
+      sortBinTable(this.cellIndex);
+    });
+  }
 
   byId('bin-tbody').addEventListener('click', function (e) {
     // prevent table text from being selected
@@ -311,11 +315,15 @@ function initBinCtrl(mo) {
 
     // select contigs in bin
     if (selected !== undefined) {
-      mo.picked.fill(false);
+      const picked = mo.picked,
+            binned = mo.binned;
       let npick = 0;
-      for (let i in mo.bins[selected]) {
-        mo.picked[i] = true;
-        npick++;
+      const n = mo.cache.nctg;
+      for (let i = 0; i < n; i++) {
+        if (binned[i] === selected) {
+          picked[i] = true;
+          npick++;
+        } else picked[i] = false;
       }
       mo.cache.npick = npick;
       updateSelection(mo);
@@ -332,15 +340,7 @@ function initBinCtrl(mo) {
  */
 function updateBinCtrl(mo) {
   // number of bins
-  const n = Object.keys(mo.bins).length;
-
-  // update save plan button
-  const txt = byId('plan-sel-txt');
-  const btn = byId('save-plan-btn');
-  btn.classList.toggle('hidden', !n);
-  const col = mo.cols.names[txt.getAttribute('data-col')];
-  if (col == txt.value) btn.title = `Overwrite binning plan "${col}"`;
-  else btn.title = `Save current binning plan as "${txt.value}"`;
+  const n = mo.cache.binns.size;
 
   // update bins panel head
   byId('bins-head').lastElementChild.firstElementChild
@@ -375,62 +375,51 @@ function updateBinCtrl(mo) {
  * @param {Object} mo - main object
  */
 function updateBinTable(mo) {
-  const data = mo.data,
-        bins = mo.bins,
-        cache = mo.cache;
-  const abund = cache.abund;
-  const lencol = cache.speci.len,
-        covcol = cache.speci.cov;
-  const L = lencol ? data[lencol] : null,
-        C = covcol ? data[covcol] : null;
-
   const table = byId('bin-tbody');
   table.innerHTML = '';
 
-  Object.keys(bins).sort().forEach(function (bin) {
+  // group contigs by bin
+  const bin2ctgs = arrGroupByF(mo.binned);
+
+  // add empty bins
+  for (let bin of mo.cache.binns) {
+    if (!(bin in bin2ctgs)) bin2ctgs[bin] = [];
+  }
+
+  for (const [name, ctgs] of Object.entries(bin2ctgs)) {
+
+    // create new row
     const row = table.insertRow(-1);
 
     // 1st cell: bin name
-    let cell = row.insertCell(-1);
+    const cell = row.insertCell(-1);
 
     // name label
     const label = document.createElement('span');
-    label.title = label.innerHTML = bin;
+    label.title = label.innerHTML = name;
     cell.appendChild(label);
 
     // rename text box
     const text = document.createElement('input');
     text.type = 'text';
-    text.value = bin;
+    text.value = name;
     text.classList.add('hidden');
     text.addEventListener('focus', function () {
       this.select();
     });
     text.addEventListener('keyup', function (e) {
-      binNameKeyUp(e, mo.stat, mo.bins);
+      binNameKeyUp(e, mo);
     });
     cell.appendChild(text);
 
-    // 2nd cell: number of contigs
-    cell = row.insertCell(-1);
-    cell.innerHTML = Object.keys(bins[bin]).length;
+    // create 2nd, 3rd and 4th cells
+    row.insertCell(-1);
+    row.insertCell(-1);
+    row.insertCell(-1);
 
-    // 3rd cell: total length (kb)
-    cell = row.insertCell(-1);
-    if (lencol) {
-      let sum = 0;
-      for (let i in bins[bin]) sum += L[i];
-      cell.innerHTML = Math.round(sum / 1000);
-    } else cell.innerHTML = 'na';
-
-    // 4th cell: relative abundance (%)
-    cell = row.insertCell(-1);
-    if (lencol && covcol) {
-      let sum = 0;
-      for (let i in bins[bin]) sum += L[i] * C[i];
-      cell.innerHTML = (sum * 100 / abund).toFixed(2);
-    } else cell.innerHTML = 'na';
-  });
+    // populate these cells
+    updateBinRow(row, ctgs, mo);
+  }
 }
 
 
@@ -438,14 +427,15 @@ function updateBinTable(mo) {
  * Update one row in the bin table.
  * @function updateBinRow
  * @param {Object} row - row in the bin table
- * @param {Object} ctgs - contigs in the bin
+ * @param {Array} ctgs - indices of contigs in the bin
  * @param {Object} mo - main object
  */
 function updateBinRow(row, ctgs, mo) {
   const cells = row.cells;
 
   // 2nd cell: number of contigs
-  cells[1].innerHTML = Object.keys(ctgs).length;
+  const n = ctgs.length;
+  cells[1].innerHTML = n;
 
   // stop if no length
   const cache = mo.cache;
@@ -462,7 +452,7 @@ function updateBinRow(row, ctgs, mo) {
   const icov = cache.speci.cov;
   let sumlen = 0;
   if (!icov) {
-    for (let ctg in ctgs) sumlen += L[ctg];
+    for (let i = 0; i < n; i++) sumlen += L[ctgs[i]];
     cells[2].innerHTML = Math.round(sumlen / 1000);
     cells[3].innerHTML = 'na';
     return;
@@ -472,8 +462,9 @@ function updateBinRow(row, ctgs, mo) {
   const C = data[icov];
   const totabd = cache.abund;
   let sumabd = 0;
-  let len;
-  for (let ctg in ctgs) {
+  let ctg, len;
+  for (let i = 0; i < n; i++) {
+    ctg = ctgs[i];
     len = L[ctg];
     sumlen += len;
     sumabd += len * C[ctg];
@@ -487,28 +478,32 @@ function updateBinRow(row, ctgs, mo) {
  * Bin name textbox keyup event.
  * @function binNameKeyUp
  * @param {Object} e - event object
- * @param {Object} stat - status object
- * @param {Object} bins - binning plan
+ * @param {Object} mo - main object
+ * @description Checks binning plan names in real time while the user is
+ * typing.
  */
-function binNameKeyUp(e, stat, bins) {
+function binNameKeyUp(e, mo) {
   const text = e.target;
   const label = text.parentElement.firstElementChild;
   const name = label.innerHTML;
   if (e.key === 'Enter') { // save new name
-    if (text.value === '') {
+    const val = text.value;
+    if (val === '') {
       text.value = name;
-      toastMsg('Bin name must not be empty.', stat);
-    } else if (text.value === name) {
+      toastMsg('Error: Bin name must not be empty.', mo.stat);
+    } else if (val === name) {
       text.classList.add('hidden');
       label.classList.remove('hidden');
     } else {
-      const success = renameBin(bins, name, text.value);
-      if (success) {
+      try {
+        renameBin(name, val, mo.cache.binns, mo.binned);
         text.classList.add('hidden');
-        label.innerHTML = text.value;
+        label.innerHTML = val;
         label.classList.remove('hidden');
-      } else {
-        toastMsg(`Bin name "${text.value}" already exists.`, stat);
+        updateSavePlanBtn(mo, true);
+        mo.rena.focus();
+      } catch (ex) {
+        toastMsg(ex.message, mo.stat);
         text.value = name;
       }
     }
@@ -520,31 +515,20 @@ function binNameKeyUp(e, stat, bins) {
 
 
 /**
- * @summary Binning operations
- * - Create a new bin.
- * - Rename a bin.
- * - Find current bin.
- * - Add contigs to a bin.
- * - Remove contigs from a bin.
- * - Delete selected bins.
- * - Load bins from a categorical field.
- */
-
-/**
  * Create a new bin.
  * @function createBin
- * @param {Object} bins - current bins
+ * @param {Set.<string>} binns - current bin names
  * @param {string} [name] - bin name
  * @throws if bin name exists
  * @returns {string} bin name
  */
-function createBin(bins, name) {
+function createBin(binns, name) {
   if (name === undefined) {
-    name = newName(bins, 'bin');
-  } else if (name in bins) {
-    throw `Error: bin name "${name}" already exists.`;
+    name = newName(binns, 'bin');
+  } else if (binns.has(name)) {
+    throw `Error: Bin name "${name}" already exists.`;
   }
-  bins[name] = {};
+  binns.add(name);
   return name;
 }
 
@@ -552,19 +536,36 @@ function createBin(bins, name) {
 /**
  * Rename a bin.
  * @function renameBin
- * @param {Object} bins - bins
  * @param {string} oldname - old bin name
  * @param {string} newname - new bin name
+ * @param {Set} binns - current bin names
+ * @param {string[]} binned - current binning plan
  * @returns {boolean} whether renaming is successful
  */
-function renameBin(bins, oldname, newname) {
-  if (newname in bins) return false;
-  bins[newname] = {};
-  for (let ctg in bins[oldname]) {
-    bins[newname][ctg] = null;
+function renameBin(old, neo, binns, binned) {
+  if (binns.has(neo)) throw `Error: Bin name ${neo} already exists.`;
+  binns.add(neo);
+  binns.delete(old);
+  const n = binned.length;
+  for (let i = 0; i < n; i++) {
+    if (binned[i] === old) binned[i] = neo;
   }
-  delete bins[oldname];
-  return true;
+}
+
+
+/**
+ * Programmatically select a bin in the bin table.
+ * @function selectBin
+ * @param {Object} table - bin table
+ * @param {string} bin - bin name
+ */
+ function selectBin(table, bin) {
+  for (let row of table.rows) {
+    if (row.cells[0].firstElementChild.innerHTML === bin) {
+      row.click();
+      break;
+    }
+  }
 }
 
 
@@ -574,6 +575,8 @@ function renameBin(bins, oldname, newname) {
  * @param {Object} table - bin table
  * @returns {[number, string]} row index and name of current bin, or both null
  * if no bin is current
+ * @description At most one bin can be current; meanwhile there can be multiple
+ * selected bins.
  */
 function currentBin(table) {
   let idx;
@@ -586,52 +589,104 @@ function currentBin(table) {
     }
   }
   if (idx === undefined) return [null, null];
-  const bin = rows[idx].cells[0].firstElementChild.innerHTML;
-  return [idx, bin];
+  const name = rows[idx].cells[0].firstElementChild.innerHTML;
+  return [idx, name];
+}
+
+
+/**
+ * Find selected bins.
+ * @function selectedBins
+ * @param {Object} table - bin table
+ * @returns {number[], string[]} row indices and names of selected bins
+ */
+function selectedBins(table) {
+  let idxes = [], names = [];
+  const rows = table.rows;
+  const n = rows.length;
+  for (let i = 0; i < n; i++) {
+    if (rows[i].classList.contains('selected')) {
+      idxes.push(i);
+      names.push(rows[i].cells[0].firstElementChild.innerHTML);
+    }
+  }
+  return [idxes, names]
 }
 
 
 /**
  * Add selected contigs to a bin.
  * @function addToBin
- * @param {number[]} pick - contig selection
- * @param {Object} bin - target bin
- * @returns {number[]} indices of added contigs
+ * @param {string} name - target bin name
+ * @param {number[]} picked - contig selection
+ * @param {string[]} binned - binning plan
+ * @returns {number[], number[]} indices of added and existing contigs
  */
-function addToBin(pick, bin) {
-  const added = [];
-  const n = pick.length;
+function addToBin(name, picked, binned) {
+  const added = [], existing = [];
+  const n = picked.length;
   for (let i = 0; i < n; i++) {
-    if (pick[i]) {
-      if (!(i in bin)) {
-        bin[i] = null;
-        added.push(i);
-      }
+    if (binned[i] === name) {
+      existing.push(i);
+    } else if (picked[i]) {
+      binned[i] = name;
+      added.push(i);
     }
   }
-  return added;
+  return [added, existing];
 }
 
 
 /**
  * Remove selected contigs from a bin.
  * @function removeFromBin
- * @param {number[]} pick - contig selection
- * @param {Object} bin - target bin
- * @returns {number[]} indices of removed contigs
+ * @param {string} name - target bin name
+ * @param {number[]} picked - contig selection
+ * @param {string[]} binned - binning plan
+ * @returns {number[], number[]} indices of removed and remaining contigs
  */
-function removeFromBin(pick, bin) {
-  const removed = [];
-  const n = pick.length;
+function removeFromBin(name, picked, binned) {
+  const removed = [], remaining = [];
+  const n = picked.length;
   for (let i = 0; i < n; i++) {
-    if (pick[i]) {
-      if (i in bin) {
-        delete bin[i];
+    if (binned[i] === name) {
+      if (picked[i]) {
+        binned[i] = '';
         removed.push(i);
+      } else {
+        remaining.push(i);
       }
     }
   }
-  return removed;
+  return [removed, remaining];
+}
+
+
+/**
+ * Update a bin with selected contigs.
+ * @function updateBinWith
+ * @param {string} name - target bin name
+ * @param {number[]} picked - contig selection
+ * @param {string[]} binned - binning plan
+ * @returns {number[], number[]} indices of added and removed contigs
+ */
+ function updateBinWith(name, picked, binned) {
+  const added = [], removed = [], unchanged = [];
+  const n = picked.length;
+  for (let i = 0; i < n; i++) {
+    if (binned[i] === name) {
+      if (!picked[i]) {
+        binned[i] = '';
+        removed.push(i);
+      } else {
+        unchanged.push(i);
+      }
+    } else if (picked[i]) {
+      binned[i] = name;
+      added.push(i);
+    }
+  }
+  return [added, removed, unchanged];
 }
 
 
@@ -639,93 +694,127 @@ function removeFromBin(pick, bin) {
  * Delete selected bins.
  * @function deleteBins
  * @param {Object} table - bin table
- * @param {Object} bins - bins object
+ * @param {Set} binns - bin names
+ * @param {Array} binned - binning plan
  * @throws error if no bin is selected
- * @returns {[string[]], [number[]]} deleted bins and their contigs
+ * @returns {string[], number[]} deleted bins and their contigs
  */
-function deleteBins(table, bins) {
+function deleteBins(table, binns, binned) {
+  const [idxes, deleted] = selectedBins(table);
+  if (idxes.length === 0) throw 'Error: No bin is selected.';
 
-  // identify bins to delete (from bottom to top of the table)
-  const todel = [];
-  const rows = table.rows;
-  let row;
-  for (let i = rows.length - 1; i >= 0; i--) {
-    row = rows[i];
-    if (row.classList.contains('selected')) {
-      todel.push(row.cells[0].firstElementChild.innerHTML);
-      table.deleteRow(i);
-    }
-  }
-  if (todel.length === 0) throw 'Error: No bin is selected.';
+  // delete rows from bottom to top so that row indices won't change
+  for (let i = idxes.length - 1; i >= 0; i--) table.deleteRow(idxes[i]);
 
-  // delete bins while listing affected bins and contigs
-  const ctgs = {};
-  const n = todel.length;
-  let bin, ctg;
+  // delete bin names
+  for (let name of deleted) binns.delete(name);
+
+  // unbin contigs
+  const unbinned = [];
+  const n = binned.length;
   for (let i = 0; i < n; i++) {
-    bin = todel[i];
-    for (ctg in bins[bin]) ctgs[ctg] = null;
-    delete bins[bin];
+    if (binned[i] && deleted.indexOf(binned[i]) !== -1) {
+      binned[i] = '';
+      unbinned.push(i);
+    }
   }
-  return [todel, Object.keys(ctgs).sort()];
+  return [deleted, unbinned];
+}
+
+
+function updateSavePlanBtn(mo, edited) {
+  const btn = byId('save-plan-btn');
+  if (edited !== undefined) btn.setAttribute('data-changed', Number(edited));
+  else edited = Boolean(parseInt(btn.getAttribute('data-changed')));
+  btn.classList.add('hidden');
+  if (!edited) return;
+  if (!mo.cache.binns.size) return;
+  const name = byId('plan-sel-txt').value;
+  if (!name) return;
+  const cols = mo.cols;
+  const names = cols.names,
+        types = cols.types;
+  const idx = names.indexOf(name);
+  if (idx !== -1) {
+    if (types[idx] === 'cat') {
+      btn.title = `Overwrite binning plan "${name}"`;
+      btn.disabled = false;
+      btn.classList.remove('hidden');
+    } else {
+      btn.title = `Cannot overwrite non-categorical field "${name}"`;
+      btn.disabled = true;
+      btn.classList.remove('hidden');
+    }
+  } else {
+    btn.title = `Save current binning plan as "${name}"`;
+    btn.disabled = false;
+    btn.classList.remove('hidden');
+  }
 }
 
 
 /**
- * Programmatically select a bin in the bin table.
- * @function selectBin
- * @param {Object} table - bin table
- * @param {string} bin - bin name
+ * Sort bin table by clicking header.
+ * @function exportBinPlan
+ * @param {number} idx - index of table column to sort with
+ * @description Modified based on:
+ * @see {@link https://www.w3schools.com/howto/howto_js_sort_table.asp}
  */
-function selectBin(table, bin) {
-  for (let row of table.rows) {
-    if (row.cells[0].firstElementChild.innerHTML === bin) {
-      row.click();
-      break;
+function sortBinTable(idx) {
+  const table = byId('bin-tbody');
+  let switching = true;
+  let ascending = false;
+  let switchcount = 0;
+  let rows, i, a, b, shouldSwitch;
+  while (switching) {
+    switching = false;
+    rows = table.rows;
+    for (i = 0; i < (rows.length - 1); i++) {
+      shouldSwitch = false;
+      a = rows[i].cells[idx].textContent;
+      b = rows[i + 1].cells[idx].textContent;
+      if (ascending) {
+        if (a.localeCompare(b, undefined, {numeric: true}) > 0) {
+          shouldSwitch = true;
+          break;
+        }
+      } else {
+        if (a.localeCompare(b, undefined, {numeric: true}) < 0) {
+          shouldSwitch = true;
+          break;
+        }
+      }
+    }
+    if (shouldSwitch) {
+      rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+      switching = true;
+      switchcount ++;
+    } else {
+      if (switchcount === 0 && !ascending) {
+        ascending = true;
+        switching = true;
+      }
     }
   }
 }
 
 
 /**
- * Load bins from a categorical field.
- * @function loadBins
- * @param {Object} arr - data column
- * @returns {Object} bins object
- */
-function loadBins(arr) {
-  let n = arr.length;
-  const bins = {};
-  let cat;
-  for (let i = 0; i < n; i++) {
-    cat = arr[i];
-    if (cat) {
-      if (!(cat in bins)) bins[cat] = {};
-      bins[cat][i] = null;
-    }
-  }
-  return bins;
-}
-
-
-/**
- * Export bins as a plain text file.
- * @function exportBins
- * @param {Object} bins - bins object to export
- * @param {Object} data - data object to refer to
+ * Export binning plan as a plain text file.
+ * @function exportBinPlan
+ * @param {string[]} binned - binning plan
  * @description The output file format is like:
  * bin1 <tab> ctg4,ctg15,ctg23
  * bin2 <tab> ctg12,ctg18
  * bin4 <tab> ctg3,ctg5,ctg20
  * ...
  */
- function exportBins(bins, data) {
-  const ids = data[0];
+function exportBinPlan(binned) {
+  const bin2ctgs = arrGroupByF(binned);
   let tsv = '';
-  Object.keys(bins).sort().forEach(name => {
-    tsv += (name + '\t' + Object.keys(bins[name]).sort().map(
-      i => ids[i]).join(',') + '\n');
-  });
+  for (const [name, ctgs] of Object.entries(bin2ctgs)) {
+    tsv += (name + '\t' + ctgs.sort().join(',') + '\n');
+  }
   const a = document.createElement('a');
   a.href = "data:text/tab-separated-values;charset=utf-8," +
     encodeURIComponent(tsv);
