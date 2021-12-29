@@ -1133,6 +1133,11 @@ div.side-content {
   width: 80%;
 }
 
+#export-table-btn {
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
 table.sheet {
   border: none;
   background-color: white;

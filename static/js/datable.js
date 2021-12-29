@@ -14,12 +14,8 @@
 function initDataTableCtrl(mo) {
 
   // menu button click (same as context menu)
-  byId('data-menu-btn').addEventListener('click', function () {
-    const rect = this.getBoundingClientRect();
-    const menu = byId('context-menu');
-    menu.style.top = rect.bottom + 'px';
-    menu.style.left = rect.left + 'px';
-    menu.classList.toggle('hidden');
+  byId('export-table-btn').addEventListener('click', function () {
+    exportDataTable(mo);
   });
 
   // move to previous page
@@ -257,14 +253,20 @@ function sortDataTable(mo, idx, order) {
  * @param {Object} mo - main object
  */
  function exportDataTable(mo) {
-  const n = mo.cache.nctg;
-  if (!n) return;
+  if (!mo.cache.nctg) return;
   const data = mo.data,
         cols = mo.cols;
   const names = cols.names,
         types = cols.types;
   const m = names.length;
   let tsv = '';
+
+  // get indices to export
+  if (byId('data-table-modal').classList.contains(
+    'hidden')) mo.tabled = [...data[0].keys()];
+  const tabled = mo.tabled;
+  const n = tabled.length;
+  if (!n) return;
 
   // populate table header
   let row = [names[0]];
@@ -276,11 +278,13 @@ function sortDataTable(mo, idx, order) {
   tsv += (row.join('\t') + '\n');
 
   // populate table body
-  let val, wt, nval, wts, k;
+  const ids = data[0];
+  let idx, val, wt, nval, wts, k;
   for (let i = 0; i < n; i++) {
-    row = [data[0][i]];
+    idx = tabled[i];
+    row = [ids[idx]];
     for (j = 1; j < m; j++) {
-      val = data[j][i];
+      val = data[j][idx];
       switch (types[j]) {
 
         case 'id':
@@ -293,7 +297,7 @@ function sortDataTable(mo, idx, order) {
           break;
         case 'cat':
           if (val && types[j + 1] === 'cwt') {
-            wt = data[j + 1][i];
+            wt = data[j + 1][idx];
             if (wt === wt) val += `:${wt}`;
           }
           row.push(val);
@@ -302,7 +306,7 @@ function sortDataTable(mo, idx, order) {
         case 'fea':
           nval = val.length;
           if (nval && types[j + 1] === 'fwt') {
-            wts = data[j + 1][i];
+            wts = data[j + 1][idx];
             for (k = 0; k < nval; k++) {
               wt = wts[k];
               if (wt === wt) val[k] += `:${wt}`;
