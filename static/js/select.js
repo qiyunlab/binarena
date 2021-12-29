@@ -93,7 +93,7 @@ function initSelTools(mo) {
  */
 function initInfoCtrl(mo) {
 
-  /** Toggle summary metric (sum or mean). */
+  // Toggle summary metric (sum or mean).
   byId('info-metric-btn').addEventListener('click', function () {
     const row = byId('info-table').rows[
       this.parentElement.getAttribute('data-row')];
@@ -108,7 +108,7 @@ function initInfoCtrl(mo) {
     updateInfoRow(row, mo);
   });
 
-  /** Weight variable by reference. */
+  // Weight variable by reference.
   byId('info-ref-sel').addEventListener('change', function () {
     const row = byId('info-table').rows[this.parentElement
       .parentElement.getAttribute('data-row')];
@@ -117,7 +117,7 @@ function initInfoCtrl(mo) {
     this.blur();
   });
 
-  /** Plot variable. */
+  // Plot variable.
   byId('info-plot-btn').addEventListener('click', function () {
     const div = this.parentElement;
     const idx = byId('info-table').rows[div.getAttribute('data-row')]
@@ -128,7 +128,7 @@ function initInfoCtrl(mo) {
     byId('mini-canvas').parentElement.classList.remove('hidden');
   });
 
-  /** Hide variable */
+  // Hide variable
   byId('info-hide-btn').addEventListener('click', function () {
     const div = this.parentElement;
     const row = byId('info-table').rows[div.getAttribute('data-row')];

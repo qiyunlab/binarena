@@ -101,9 +101,10 @@ function updateSearchCtrl(cols) {
 function searchFieldChange(e, mo) {
   const cols = mo.cols,
         view = mo.view;
+  const freqs = mo.cache.freqs;
 
   for (let key of ['num', 'cat', 'fea', 'des']) {
-    byId(key + '-sel-p').classList.add('hidden');
+    byId(`${key}-sel-p`).classList.add('hidden');
   }
   byId('search-btn').style.visibility = 'hidden';
   const span = byId('str-match-span');
@@ -123,25 +124,22 @@ function searchFieldChange(e, mo) {
     case 'cat':
       p = byId('cat-sel-p');
       p.lastElementChild.appendChild(span);
-      // p.appendChild(span);
       span.classList.remove('hidden');
       p.classList.remove('hidden');
-      autoComplete(byId('cat-sel-txt'), Object.keys(mo.cache.freqs[i]).sort());
+      autoComplete(byId('cat-sel-txt'), Object.keys(freqs[i]).sort());
       break;
 
     case 'fea':
       p = byId('fea-sel-p');
       p.lastElementChild.appendChild(span);
-      // p.appendChild(span);
       span.classList.remove('hidden');
       p.classList.remove('hidden');
-      autoComplete(byId('fea-sel-txt'), Object.keys(mo.cache.freqs[i]).sort());
+      autoComplete(byId('fea-sel-txt'), Object.keys(freqs[i]).sort());
       break;
 
     case 'des':
       p = byId('des-sel-p');
       p.lastElementChild.appendChild(span);
-      // p.appendChild(span);
       span.classList.remove('hidden');
       p.classList.remove('hidden');
       break;
@@ -200,7 +198,7 @@ function searchByCriteria(mo, shift) {
     // compare values to threshold(s)
     let val;
     for (let i = 0; i < n; i++) {
-      if (!mask[i]) continue;
+      if (mask[i]) continue;
       val = arr[i];
       if ((val !== NaN) &&
         (min === null || (minIn ? (val >= min) : (val > min))) &&
@@ -221,9 +219,9 @@ function searchByCriteria(mo, shift) {
     if (!mcase) text = text.toUpperCase();
     const mwhole = byId('whole-btn').classList.contains('pressed');
 
-    let val;
+    let val, m, j;
     for (let i = 0; i < n; i++) {
-      if (hasMask && i in mask) continue;
+      if (mask[i]) continue;
       val = arr[i];
 
       // category or description
@@ -236,8 +234,9 @@ function searchByCriteria(mo, shift) {
 
       // feature
       else {
-        for (let key in val) {
-          if (mwhole ? (key === text) : (key.indexOf(text) > -1)) {
+        m = val.length;
+        for (j = 0; j < m; j++) {
+          if (mwhole ? (val[j] === text) : (val[j].indexOf(text) > -1)) {
             ctgs.push(i);
             break;
           }

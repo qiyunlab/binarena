@@ -907,7 +907,7 @@ function prepDataForDisplay(mo, items) {
  * @param {Object} mo - main object
  */
 function displayItemChange(item, i, scale, mo) {
-  mo.view[item].i = i;
+  mo.view[item].i = parseInt(i);
   mo.view[item].scale = scale;
 
   // if x- or y-coordinates change, reset view
