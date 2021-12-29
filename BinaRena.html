@@ -380,20 +380,30 @@
       <span><button title="Show/hide bins panel">Bins</button></span>
     </div>
 
-    <div id="bins-content" class="side-content">
+    <div id="bins-content" class="side-content hastool">
 
-      <!-- binning plan selector -->
-      <div class="dash-content">
-        <table>
-          <tr>
-            <td>Plan</td>
-            <td><input type="text" id="plan-sel-txt" class="dropdown" title="Load a binning plan from a categorical field"></td>
-            <td><button id="save-plan-btn" class="hidden" title="Save current binning plan">Save</button></td>
-          </tr>
-        </table>
+      <!-- binning plan -->
+      <div class="hastool">
+
+        <!-- toolbar -->
+        <div class="toolbar left">
+          <button id="export-plan-btn" class="hidden" title="Export current binning plan"><i class="fa fa-download fa-lg"></i></button>
+        </div>
+
+        <!-- plan selector -->
+        <div class="dash-content">
+          <table>
+            <tr>
+              <td>Plan</td>
+              <td><input type="text" id="plan-sel-txt" class="dropdown" title="Load a binning plan from a categorical field"></td>
+              <td><button id="save-plan-btn" class="hidden" title="Save current binning plan">Save</button></td>
+            </tr>
+          </table>
+        </div>
       </div>
 
-      <div class="hastool">
+      <!-- bin table -->
+      <div class="hastool" style="overflow: auto; resize: vertical;">
 
         <!-- toolbar -->
         <div class="toolbar left">
@@ -401,8 +411,6 @@
           <button id="delete-bin-btn" class="hidden" title="Delete selected bin(s)"><i class="fa fa-minus fa-lg"></i></button>
           <button id="merge-bins-btn" class="hidden" title="Merge selected bins"><i class="fa fa-compress fa-lg"></i></button>
           <button id="bin-data-btn" class="hidden" title="Show data of selected bin(s)"><i class="fa fa-table fa-lg"></i></button>
-          <span class="spacer"></span>
-          <button id="export-plan-btn" class="hidden" title="Export current binning plan"><i class="fa fa-download fa-lg"></i></button>
         </div>
 
         <!-- bins table -->
@@ -430,7 +438,7 @@
     <div id="info-head" class="panel-head">
       <span><button id="info-head-btn" title="Show/hide selected panel">Selected</button></span>
     </div>
-    <div class="side-content hastool" style="flex-grow: 1;"><!-- filling remaing height -->
+    <div class="side-content hastool" style="overflow: auto; flex-grow: 1;"><!-- filling remaing height -->
 
       <!-- toolbar -->
       <div class="toolbar left">
@@ -438,7 +446,6 @@
         <button id="add-to-bin-btn" class="hidden" title="Add selected contigs to bin"><i class="fa fa-plus fa-lg"></i></button>
         <button id="remove-from-bin-btn" class="hidden" title="Remove selected contigs from bin"><i class="fa fa-minus fa-lg"></i></button>
         <button id="update-bin-btn" class="hidden" title="Update bin with selected contigs"><i class="fa fa-refresh fa-lg"></i></button>
-        <span class="spacer"></span>
         <button id="invert-btn" class="hidden" title="Invert selection"><i class="fa fa-exchange fa-lg"></i></button>
         <button id="mask-btn" class="hidden" title="Mask selected contigs"><i class="fa fa-eye-slash fa-lg"></i></button>
       </div>
@@ -477,7 +484,7 @@
     <a id="export-data-a">Export data</a>
     <a id="export-image-a">Export image</a>
     <hr>
-    <a id="reset-view-a">Re-center view</a>
+    <a id="reset-view-a">Re-center</a>
     <hr>
     <a id="help-a">Help</a>
   </div>

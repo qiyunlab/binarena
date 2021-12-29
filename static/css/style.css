@@ -639,7 +639,7 @@ table.square td:hover {
 
 canvas.main-plot {
   min-width: 800px;
-  min-height: 800px;
+  min-height: 600px;
   position: absolute;
 }
 
@@ -951,8 +951,6 @@ div.dash-content > table tr td:last-child > span button:hover {
 
 div.side-content {
   border-top: 0;
-  resize: vertical; /* IE incompatible */
-  overflow: auto;
   display: flex;
   flex-direction: column;
   background-color: white;
