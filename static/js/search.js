@@ -12,7 +12,7 @@
 /**
  * Initialize search panel controls.
  * @function initMiniPlotCtrl
- * @params {Object} mo - main object
+ * @param {Object} mo - main object
  */
 function initSearchCtrl(mo) {
 
@@ -67,7 +67,7 @@ function initSearchCtrl(mo) {
 /**
  * Update search panel controls by data columns.
  * @function updateSearchCtrl
- * @params {Object} cols - cols object
+ * @param {Object} cols - cols object
  */
 function updateSearchCtrl(cols) {
   const names = cols.names,

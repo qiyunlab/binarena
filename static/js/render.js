@@ -10,7 +10,7 @@
 /**
  * Initialize canvas.
  * @function initCanvas
- * @params {Object} mo - main object
+ * @param {Object} mo - main object
  */
 function initCanvas(mo) {
 
@@ -24,7 +24,7 @@ function initCanvas(mo) {
 
   resizeArena(mo);
 
-  /** mouse events */
+  // mouse events
   rena.addEventListener('mousedown', function (e) {
     stat.mousedown = true;
     stat.dragX = e.clientX - view.posX;
@@ -85,7 +85,7 @@ function initCanvas(mo) {
     uploadFile(e.dataTransfer.files[0], mo);
   });
 
-  /** keyboard events */
+  // keyboard events
   rena.addEventListener('keydown', function (e) {
     // const t0 = performance.now();
     switch (e.key) {

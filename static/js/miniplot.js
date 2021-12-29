@@ -13,7 +13,7 @@
 /**
  * Initialize mini plot controls.
  * @function initMiniPlotCtrl
- * @params {Object} mo - main object
+ * @param {Object} mo - main object
  */
 function initMiniPlotCtrl(mo) {
 
@@ -88,7 +88,7 @@ function initMiniPlotCtrl(mo) {
 /**
  * Update mini plot controls by data columns.
  * @function updateMiniPlotCtrl
- * @params {Object} cols - cols object
+ * @param {Object} cols - cols object
  */
 function updateMiniPlotCtrl(cols) {
   const names = cols.names,

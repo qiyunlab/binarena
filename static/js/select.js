@@ -62,6 +62,8 @@ function initSelTools(mo) {
     mo.cache.npick -= m;
     mo.cache.nmask += m;
     toastMsg(`Masked ${plural('contig', m)}.`, mo.stat);
+    prepDataForDisplay(mo);
+    updateLegends(mo);
     renderArena(mo);
     updateSelection(mo);
     mo.rena.focus();
@@ -71,7 +73,10 @@ function initSelTools(mo) {
   byId('clear-mask-btn').addEventListener('click', function () {
     mo.masked.fill(false);
     mo.cache.nmask = 0;
+    prepDataForDisplay(mo);
+    updateLegends(mo);
     renderArena(mo);
+    updateMaskCtrl(mo);
   });
 
 }

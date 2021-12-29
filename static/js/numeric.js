@@ -305,6 +305,20 @@ function arrLog(arr, clip) {
 
 
 /**
+ * Min-max scaling of an array in place.
+ * @param {number[]} arr - input array
+ */
+function arrMinMaxScale(arr) {
+  const [min, max] = arrMinMax(arr);
+  const range = max - min;
+  const n = arr.length;
+  for (let i = 0; i < n; i++) {
+    arr[i] = (arr[i] - min) / range;
+  }
+}
+
+
+/**
  * Transpose a 2D array.
  * @function transpose
  * @param {Array.<Array>} arr2d - input 2D array
@@ -396,17 +410,46 @@ function pdist(arr) {
 
 
 /**
+ * Convert a categorical variable to incremental integers.
+ * @param {string[]} arr - input array
+ * @returns {number[], string[]} factorized variable and unique values
+ * @description Categories are coded as 0, 1, 2, 3... based on the order of
+ * occurrence. Missing values (empty strings) are coded as -1.
+ * @see pandas.factorize
+ */
+function factorize(arr) {
+  const n = arr.length;
+  const codes = Array(n).fill(NaN);
+  const uniques = new Map();
+  let code = -1;
+  let cat;
+  for (let i = 0; i < n; i++) {
+    cat = arr[i];
+    if (cat) {
+      if (!uniques.has(cat)) {
+        uniques.set(cat, ++code);
+        codes[i] = code;
+      } else codes[i] = uniques.get(cat);
+    } else codes[i] = -1;
+  }
+  return [codes, [...uniques.keys()]];
+}
+
+
+/**
  * Return the occurrence of each entry in the input data.
  * @function bincount
- * @param {number[]} x - the input data array
+ * @param {number[]} arr - input array
  * @return {number[]} the occurrence of each entry in the input data
+ * @description Input data must consist of incremental integers (0, 1, 2,...).
+ * Output is an array with index as input data and value as frequency.
  * @see numpy.bincount
  */
-function bincount(x) {
-  const res = Array(Math.max.apply(null, x) + 1).fill(0);
-  const n = x.length;
+function bincount(arr) {
+  const res = Array(Math.max(...arr) + 1).fill(0);
+  const n = arr.length;
   for (let i = 0; i < n; i++) {
-    res[x[i]]++;
+    res[arr[i]]++;
   }
   return res;
 }

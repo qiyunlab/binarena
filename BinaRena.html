@@ -400,8 +400,9 @@
           <button id="new-empty-bin-btn" title="Create an empty new bin"><i class="fa fa-plus fa-lg"></i></button>
           <button id="delete-bin-btn" class="hidden" title="Delete selected bin(s)"><i class="fa fa-minus fa-lg"></i></button>
           <button id="merge-bins-btn" class="hidden" title="Merge selected bins"><i class="fa fa-compress fa-lg"></i></button>
-          <button id="bin-data-btn" class="hidden" title="Show data of contigs in selected bin(s)"><i class="fa fa-table fa-lg"></i></button>
-          <button id="export-plan-btn" title="Export current binning plan"><i class="fa fa-download fa-lg"></i></button>
+          <button id="bin-data-btn" class="hidden" title="Show data of selected bin(s)"><i class="fa fa-table fa-lg"></i></button>
+          <span class="spacer"></span>
+          <button id="export-plan-btn" class="hidden" title="Export current binning plan"><i class="fa fa-download fa-lg"></i></button>
         </div>
 
         <!-- bins table -->
@@ -476,6 +477,8 @@
     <a id="export-data-a">Export data</a>
     <a id="export-image-a">Export image</a>
     <hr>
+    <a id="reset-view-a">Re-center view</a>
+    <hr>
     <a id="help-a">Help</a>
   </div>
 
@@ -507,6 +510,51 @@
         <span id="type-cat-color">categorical</span>
         <span id="type-fea-color">feature set</span>
         <span id="type-des-color">descriptive</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Silhouette calculation -->
+  <div id="silh-modal" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-head">
+        <span>
+          <button id="silh-calc-btn">Calculate</button><!--
+          --><button id="silh-done-btn">Done</button>
+        </span>
+        <span>
+          <span id="silh-title">Silhouette coefficient</span>
+          <span id="silh-progress">Calculating&nbsp;&nbsp;<span id="calc-dots"><span>&bull;</span> <span>&bull;</span> <span>&bull;</span></span></span>
+        </span>
+        <span><button id="silh-help-btn">&quest;</button></span>
+      </div>
+      <div id="silh-body-div" class="modal-body">
+        <div id="silh-msg-div">
+          <div>
+            <p>Use variables:</p>
+            <table id="silh-var-sel">
+              <tr><td><input type="checkbox" id="x-calc-chk" checked>&nbsp;<i>X</i>-axis:</td><td id="x-calc-var"></td></tr>
+              <tr><td><input type="checkbox" id="y-calc-chk" checked>&nbsp;<i>Y</i>-axis:</td><td id="y-calc-var"></td></tr>
+              <tr><td><input type="checkbox" id="size-calc-chk">&nbsp;Size:</td><td id="size-calc-var"></td></tr>
+              <tr><td><input type="checkbox" id="opacity-calc-chk">&nbsp;Opacity:</td><td id="opacity-calc-var"></td></tr>
+              <tr><td><input type="checkbox" id="color-calc-chk">&nbsp;Color:</td><td id="color-calc-var"></td></tr>
+            </table>
+            <div id="silh-done-div" class="hidden">
+              <p>Calculation completed.</p>
+              <table id="silh-res-todo">
+                <tr><td><input type="checkbox" id="silh-save-chk" checked>&nbsp;Save result to field: <input type="text" id="silh-col-text"></td></tr>
+                <tr><td><input type="checkbox" id="silh-export-chk">&nbsp;Export result to file.</td></tr>
+              </table>
+            </div>
+          </div>
+          <div></div>
+        </div>
+        <div id="silh-table-wrap" class="hidden">
+          <table id="silh-table">
+            <thead id="silh-thead"><tr><th>Bin</th><th>#</th><th>Mean</th></tr></thead>
+            <tbody id="silh-tbody"></tbody>
+          </table>
+        </div>
       </div>
     </div>
   </div>
@@ -572,7 +620,7 @@
   <!-- toast message -->
   <div id="toast" class="hidden">
     <span id="toast-msg"></span><!--
-    --><span id="loading-dots" class="hidden"><span>&bull;</span> <span>&bull;</span> <span>&bull;</span></span><!--
+    --><span id="toast-dots" class="hidden"><span>&bull;</span> <span>&bull;</span> <span>&bull;</span></span><!--
     --><button id="toast-close-btn" title="Close message" class="hidden">&#x2715;</button>
   </div>
 

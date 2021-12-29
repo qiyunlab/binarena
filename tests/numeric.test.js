@@ -73,6 +73,14 @@ describe('numeric.js', function() {
     expect(pdist([[0, 0], [0, 1], [1, 0]])).toEqual([1, 1, Math.sqrt(2)]);
   });
 
+  it('factorize', function() {
+    // https://pandas.pydata.org/docs/reference/api/pandas.factorize.html
+    expect(factorize(['b', 'b', 'a', 'c', 'b'])).toEqual(
+      [[0, 0, 1, 2, 0], ['b', 'a', 'c']]);
+    expect(factorize(['b', '', 'a', 'c', 'b'])).toEqual(
+      [[0, -1, 1, 2, 0], ['b', 'a', 'c']]);
+  });
+
   it('bincount', function() {
     expect(bincount([0])).toEqual([1]);
     expect(bincount([1, 0, 0, 1, 1])).toEqual([2, 3]);

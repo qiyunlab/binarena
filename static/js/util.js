@@ -275,7 +275,7 @@ function arrGroupBy(arr) {
 
 /**
  * Group indices of an array by unique elements, while skipping false values
- * @function arrGroupBy
+ * @function arrGroupByF
  * @param {Array} arr - input array
  * @returns {Object} output object
  */
@@ -477,7 +477,7 @@ function palette11to101(palette) {
 
 /**
  * Return the number of elements that compares true in an array.
- * @function splitLines
+ * @function countTrue
  * @param {Array} arr - input array
  * @returns {number} number of true elements
  * @description Useful to check how many contigs are set in `picked`, `masked`
@@ -489,6 +489,22 @@ function countTrue(arr) {
   let res = 0;
   for (let i = 0; i < n; i++) {
     if (arr[i]) res++;
+  }
+  return res;
+}
+
+
+/**
+ * Return the indices of elements that compares true in an array.
+ * @function indexTrue
+ * @param {Array} arr - input array
+ * @returns {number} indices of true elements
+ */
+ function indexTrue(arr) {
+  const n = arr.length;
+  const res = [];
+  for (let i = 0; i < n; i++) {
+    if (arr[i]) res.push(i);
   }
   return res;
 }

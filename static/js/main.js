@@ -177,7 +177,8 @@ function mainObj() {
     nmask: 0,
     binns: new Set(),
     locis: {},
-    pdist: []
+    pdist: [],
+    silhs: []
   };
 
 

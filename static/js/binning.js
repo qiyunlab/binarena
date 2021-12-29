@@ -10,7 +10,7 @@
 /**
  * Initialize binning controls.
  * @function initBinCtrl
- * @params {Object} mo - main object
+ * @param {Object} mo - main object
  */
 function initBinCtrl(mo) {
   const data = mo.data,
@@ -18,6 +18,10 @@ function initBinCtrl(mo) {
         stat = mo.stat;
   const names = cols.names,
         types = cols.types;
+
+  // prevent table text from being selected
+  byId('bin-tbody').onselectstart = () => false;
+
 
   /**
    * Top bar of bin panel, including binning plan and save button.
@@ -117,6 +121,9 @@ function initBinCtrl(mo) {
 
   // create an empty new bin
   byId('new-empty-bin-btn').addEventListener('click', function () {
+    if (mo.cache.binns.size === 0) {
+      byId('plan-sel-txt').value = newName(new Set(names), 'plan');
+    }
     const name = createBin(mo.cache.binns);
     updateBinTable(mo);
     updateBinCtrl(mo);
@@ -230,7 +237,6 @@ function initBinCtrl(mo) {
     mo.rena.focus();
   });
 
-
   // Remove selected contigs from current bin.
   byId('remove-from-bin-btn').addEventListener('click', function () {
     const table = byId('bin-tbody');
@@ -248,7 +254,6 @@ function initBinCtrl(mo) {
     toastMsg(`Removed ${plural('contig', n)} from "${name}".`, stat);
     mo.rena.focus();
   });
-
 
   // Update current bin with selected contigs.
   byId('update-bin-btn').addEventListener('click', function () {
@@ -274,16 +279,15 @@ function initBinCtrl(mo) {
    * Bin table events.
    */
 
+  // Click column header to sort data.
   for (let head of byId('bin-thead').rows[0].cells) {
     head.addEventListener('click' , function() {
       sortBinTable(this.cellIndex);
     });
   }
 
+  // Click bin to select; click again to edit its name.
   byId('bin-tbody').addEventListener('click', function (e) {
-    // prevent table text from being selected
-    this.onselectstart = () => false;
-
     let cell, label, text, selected;
     for (let row of this.rows) {
       cell = row.cells[0];
@@ -316,17 +320,19 @@ function initBinCtrl(mo) {
     // select contigs in bin
     if (selected !== undefined) {
       const picked = mo.picked,
+            masked = mo.masked,
             binned = mo.binned;
       let npick = 0;
       const n = mo.cache.nctg;
       for (let i = 0; i < n; i++) {
-        if (binned[i] === selected) {
+        if (binned[i] === selected && !masked[i]) {
           picked[i] = true;
           npick++;
         } else picked[i] = false;
       }
       mo.cache.npick = npick;
       updateSelection(mo);
+      mo.rena.focus();
     }
   });
 
@@ -379,13 +385,19 @@ function updateBinTable(mo) {
   table.innerHTML = '';
 
   // group contigs by bin
-  const bin2ctgs = arrGroupByF(mo.binned);
-
-  // add empty bins
+  const bin2ctgs = {};
   for (let bin of mo.cache.binns) {
-    if (!(bin in bin2ctgs)) bin2ctgs[bin] = [];
+    bin2ctgs[bin] = [];
+  }
+  const binned = mo.binned;
+  const n = mo.cache.nctg;
+  let bin;
+  for (let i = 0; i < n; i++) {
+    bin = binned[i];
+    if (bin) bin2ctgs[bin].push(i);
   }
 
+  // create rows
   for (const [name, ctgs] of Object.entries(bin2ctgs)) {
 
     // create new row
@@ -503,7 +515,7 @@ function binNameKeyUp(e, mo) {
         updateSavePlanBtn(mo, true);
         mo.rena.focus();
       } catch (ex) {
-        toastMsg(ex.message, mo.stat);
+        toastMsg(ex, mo.stat);
         text.value = name;
       }
     }
@@ -562,6 +574,7 @@ function renameBin(old, neo, binns, binned) {
  function selectBin(table, bin) {
   for (let row of table.rows) {
     if (row.cells[0].firstElementChild.innerHTML === bin) {
+      row.scrollIntoView();
       row.click();
       break;
     }
@@ -800,7 +813,7 @@ function sortBinTable(idx) {
 
 
 /**
- * Export binning plan as a plain text file.
+ * Export binning plan as a text file.
  * @function exportBinPlan
  * @param {string[]} binned - binning plan
  * @description The output file format is like:

@@ -11,7 +11,7 @@
 /**
  * Initialize display controls.
  * @function initDisplayCtrl
- * @params {Object} mo - main object
+ * @param {Object} mo - main object
  */
 function initDisplayCtrl(mo) {
   const view = mo.view;
@@ -55,8 +55,7 @@ function initDisplayCtrl(mo) {
         xx[key] = [yy[key], yy[key] = xx[key]][0];
       }
       updateControls(mo);
-      transXForDisplay(mo);
-      transYForDisplay(mo);
+      prepDataForDisplay(mo, ['x', 'y']);
       renderArena(mo);
     });
   }
@@ -345,16 +344,19 @@ function updateDisplayCtrl(cols, view) {
  * @todo other items
  */
 function updateLegends(mo, items) {
+  const view = mo.view;
+  const types = mo.cols.types;
   items = items || ['size', 'opacity', 'color'];
-  let icol, isCat, scale, legend, grad, rect, step, poses, clip;
+  let v, icol, isCat, scale, legend, grad, rect, step, poses, clip;
 
   for (let item of items) {
-    icol = mo.view[item].i;
+    v = view[item];
+    icol = v.i;
     if (!icol) continue;
 
     // discrete colors
     if (item === 'color') {
-      isCat = (mo.cols.types[icol] === 'cat');
+      isCat = (types[icol] === 'cat');
       byId('color-legend').classList.toggle('hidden', isCat);
       byId('color-legend-2').classList.toggle('hidden', !isCat);
       if (isCat) {
@@ -364,18 +366,18 @@ function updateLegends(mo, items) {
     }
 
     // continuous data
-    scale = unscale(mo.view[item].scale);
+    scale = unscale(v.scale);
     legend = byId(item + '-legend');
     grad = legend.querySelector('.gradient');
     if (grad === null) continue;
 
     // refresh labels
     for (let key of ['min', 'max']) {
-      const label = legend.querySelector('label.' + key);
-      let value = scaleNum(mo.view[item][key], scale);
+      const label = legend.querySelector(`label.${key}`);
+      let value = scaleNum(v[key], scale);
       value = formatValueLabel(value, icol, 3, false, mo);
       label.setAttribute('data-value', value);
-      label.innerHTML = (key === 'min' && mo.view[item].zero) ? 0 : value;
+      label.innerHTML = (key === 'min' && v.zero) ? 0 : value;
     }
 
     // item-specific operations
@@ -387,9 +389,9 @@ function updateLegends(mo, items) {
     step = (rect.right - rect.left) / 10;
     poses = {};
     for (let key of ['lower', 'upper']) {
-      poses[key] = legend.querySelector('.range.' + key).getAttribute(
+      poses[key] = legend.querySelector(`.range.${key}`).getAttribute(
         'data-tick') * step;
-      legend.querySelector('.range.' + key).style.left = Math.round(
+      legend.querySelector(`.range.${key}`).style.left = Math.round(
         rect.left + poses[key]) + 'px';
     }
 
@@ -711,10 +713,10 @@ function resetView(mo) {
 
 
 /**
- * Transform data for visualization purpose.
+ * Prepare data for visualization.
  * @function prepDataForDisplay
  * @param {Object} mo - main object
- * @param {string[]} [items] - item(s) to transform
+ * @param {string[]} [items] - display item(s) to prepare
  */
 function prepDataForDisplay(mo, items) {
   items = items || ['x', 'y', 'size', 'opacity', 'color'];
@@ -732,7 +734,7 @@ function prepDataForDisplay(mo, items) {
     const idx = v.i,
           scale = v.scale;
 
-    // no data, skip or use default
+    // no data, fill default and skip
     if (!idx) {
       if (item === 'size' || item === 'opacity') {
         trans[item].fill(v.base);
@@ -753,12 +755,17 @@ function prepDataForDisplay(mo, items) {
       const scaled = scaleArr(data[idx], scale);
 
       // gather valid data (not masked, is a number and is finite)
-      const valid = [];
+      const valid = [],
+            index = [],
+            inval = [];
       let val;
       for (let i = 0; i < n; i++) {
         if (!mask[i]) {
           val = scaled[i];
-          if (isFinite(val)) valid.push(val);
+          if (isFinite(val)) {
+            index.push(i);
+            valid.push(val);
+          } else inval.push(i);
         }
       }
 
@@ -766,11 +773,20 @@ function prepDataForDisplay(mo, items) {
       let [min, max] = arrMinMax(valid);
       v.min = min;
       v.max = max;
+
+      // do maximum scaling instead of min-max scaling
+      if (v.zero) min = 0;
+
+      // calculate range (to normalize againt)
       const range = max - min;
 
-      // scale data again using item-specific protocols
+      // perform min-max scaling while applying item-specific protocols
       const target = trans[item];
       let low, frac;
+
+      const n_ = index.length;
+      let i_;
+
       switch (item) {
 
         // x- and y-axes
@@ -778,54 +794,75 @@ function prepDataForDisplay(mo, items) {
         // that's because the y-axis in an HTML5 canvas starts from top rather
         // than bottom
         case 'x':
-          for (let i = 0; i < n; i++) {
-            target[i] = (scaled[i] - min) / range - 0.5;
+          for (let i = 0; i < n_; i++) {
+            i_ = index[i];
+            target[i_] = (scaled[i_] - min) / range - 0.5;
           }
           break;
         case 'y':
-          for (let i = 0; i < n; i++) {
-            target[i] = (max - scaled[i]) / range - 0.5
+          for (let i = 0; i < n_; i++) {
+            i_ = index[i];
+            target[i_] = (max - scaled[i_]) / range - 0.5;
           }
           break;
 
         // radius of marker
         case 'size':
-          if (v.zero) min = 0;
           const base = v.base;
           low = v.lower / 100;
           frac = (v.upper / 100 - low) / range;
-          for (let i = 0; i < n; i++) {
-            target[i] = ((scaled[i] - min) * frac + low) * base;
+          for (let i = 0; i < n_; i++) {
+            i_ = index[i];
+            target[i_] = ((scaled[i_] - min) * frac + low) * base;
           }
           break;
 
         // alpha value of fill color
         case 'opacity':
-          if (v.zero) min = 0;
           low = v.lower / 100;
           frac = (v.upper / 100 - low) / range;
-          for (let i = 0; i < n; i++) {
-            target[i] = (scaled[i] - min) * frac + low;
+          for (let i = 0; i < n_; i++) {
+            i_ = index[i];
+            target[i_] = (scaled[i_] - min) * frac + low;
           }
           break;
 
         // fill color
         case 'color':
-          if (v.zero) min = 0;
           low = v.lower;
           frac = (v.upper - low) / range;
-          for (let i = 0; i < n; i++) {
-            target[i] = (scaled[i] - min) * frac + low;
+          for (let i = 0; i < n_; i++) {
+            i_ = index[i];
+            target[i_] = (scaled[i_] - min) * frac + low;
           }
           break;
+      }
+
+      // fill invalid values with defaults
+      const ni = inval.length;
+      if (ni > 0) {
+        let nanval;
+        if (['size', 'opacity'].includes(item)) nanval = v.base;
+        else nanval = NaN;
+        for (let i = 0; i < ni; i++) {
+          target[inval[i]] = nanval;
+        }
       }
 
       // for color, get RGB value
       if (item === 'color') {
         const rgb = trans.rgb;
         const cmap = v.contmap;
-        for (let i = 0; i < n; i++) {
-          rgb[i] = cmap[Math.round(target[i])];
+        const base = v.base;
+        for (let i = 0; i < n_; i++) {
+          i_ = index[i];
+          rgb[i_] = cmap[Math.round(target[i_])] || base;
+        }
+        if (ni > 0) {
+          let nanval = v.base;
+          for (let i = 0; i < ni; i++) {
+            rgb[inval[i]] = nanval;
+          } 
         }
       }
     }
@@ -835,7 +872,7 @@ function prepDataForDisplay(mo, items) {
       const carr = trans.color,
             rarr = trans.rgb;
       carr.fill('');
-      rarr.fill('0,0,0');
+      rarr.fill(view.color.base);
       const source = data[idx];
       const cmap = v.discmap;
       let val;

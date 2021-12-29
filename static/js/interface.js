@@ -39,13 +39,14 @@ function initGUI(mo) {
   initWidgets(mo);       // widgets
 
   // initialize significant components defined in external modules
-  initDisplayCtrl(mo);   // display controls    ( 'display.js'  )
-  initSelectCtrl(mo);    // select controls     ( 'select.js'   )
-  initBinCtrl(mo);       // binning controls    ( 'binning.js'  )
-  initSearchCtrl(mo);    // search controls     ( 'search.js'   )
-  initMiniPlotCtrl(mo);  // mini plot controls  ( 'miniplot.js' )
-  initDataTableCtrl(mo); // data table controls ( 'datable.js'  )
-  initCanvas(mo);        // main canvas         ( 'render.js'   )
+  initDisplayCtrl(mo);   // display controls    ( 'display.js'   )
+  initSelectCtrl(mo);    // select controls     ( 'select.js'    )
+  initBinCtrl(mo);       // binning controls    ( 'binning.js'   )
+  initSearchCtrl(mo);    // search controls     ( 'search.js'    )
+  initMiniPlotCtrl(mo);  // mini plot controls  ( 'miniplot.js'  )
+  initDataTableCtrl(mo); // data table controls ( 'datable.js'   )
+  initCalcBoxCtrl(mo);   // calculator controls ( 'calculate.js' )
+  initCanvas(mo);        // main canvas         ( 'render.js'    )
 
 }
 
@@ -193,8 +194,7 @@ function initCloseBtns() {
   for (let div of document.querySelectorAll('.modal-head')) {
     const btn = document.createElement('button');
     btn.innerHTML = '&#x2715;'; // cross mark
-    btn.title = 'Close "' + div.firstElementChild.nextElementSibling.
-      textContent + '" window';
+    btn.title = 'Close window';
     btn.addEventListener('click', function () {
       div.parentElement.parentElement.classList.add('hidden');
     });
@@ -335,6 +335,11 @@ function initContextMenu(mo) {
   // export image as PNG
   byId('export-image-a').addEventListener('click', function () {
     exportPNG(mo.rena);
+  });
+
+  // reset view
+  byId('reset-view-a').addEventListener('click', function () {
+    byId('reset-btn').click();
   });
 
   // show help information
@@ -554,7 +559,8 @@ function initWidgets(mo) {
   // calculate silhouette coefficients
   byId('silhouet-a').addEventListener('click', function () {
     if (this.classList.contains('disabled')) return;
-    calcSilhouette(mo);
+    updateCalcBoxCtrl(mo);
+    byId('silh-modal').classList.remove('hidden');
   });
 
   // calculate adjusted Rand index
@@ -678,7 +684,7 @@ function toastMsg(msg, stat, duration, loading, toclose) {
   if (duration === undefined) duration = 2000;
   const toast = byId('toast');
   toast.firstElementChild.innerHTML = msg;
-  byId('loading-dots').classList.toggle('hidden', !loading);
+  byId('toast-dots').classList.toggle('hidden', !loading);
   byId('toast-close-btn').classList.toggle('hidden', !toclose);
   toast.classList.remove('hidden');
   if (duration) {
@@ -780,6 +786,21 @@ function formatValueLabel(value, icol, digits, unit, mo) {
   } else {
     return formatNum(value, digits);
   }
+}
+
+
+/**
+ * Append an element to a container with inner HTML
+ * @function appendHTML
+ * @param {Object} dom - container DOM
+ * @param {string} tag - element tag
+ * @param {string} html - inner HTML of element
+ */
+
+function appendHTML(dom, tag, html) {
+  let e = document.createElement(tag);
+  e.innerHTML = html;
+  dom.appendChild(e);
 }
 
 
