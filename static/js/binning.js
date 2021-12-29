@@ -181,7 +181,9 @@ function initBinCtrl(mo) {
     for (let i = 1; i < n; i++) {
       if (names.indexOf(binned[i]) !== -1) tabled.push(i);
     }
-    fillDataTable(mo);
+    const m = names.length;
+    const title = (m === 1) ? names[0] : `${m} bins`;
+    fillDataTable(mo, title);
     byId('data-table-modal').classList.remove('hidden');
   });
 
@@ -611,7 +613,7 @@ function currentBin(table) {
  * Find selected bins.
  * @function selectedBins
  * @param {Object} table - bin table
- * @returns {number[], string[]} row indices and names of selected bins
+ * @returns {[number[], string[]]} row indices and names of selected bins
  */
 function selectedBins(table) {
   let idxes = [], names = [];

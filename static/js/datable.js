@@ -27,7 +27,7 @@ function initDataTableCtrl(mo) {
     const table = byId('data-table');
     let n = parseInt(table.getAttribute('data-nctg')),
         p = parseInt(table.getAttribute('data-ipage'));
-    fillDataTable(mo, n, p - 1);
+    fillDataTable(mo, undefined, n, p - 1);
   });
 
   // move to next page
@@ -35,7 +35,7 @@ function initDataTableCtrl(mo) {
     const table = byId('data-table');
     let n = parseInt(table.getAttribute('data-nctg')),
         p = parseInt(table.getAttribute('data-ipage'));
-    fillDataTable(mo, n, p + 1);
+    fillDataTable(mo, undefined, n, p + 1);
   });
 
   // enter page number and jump
@@ -46,7 +46,7 @@ function initDataTableCtrl(mo) {
       const P = parseInt(table.getAttribute('data-npage'));
       if (!Number.isNaN(p) && p >= 1 && p <= P) {
         const n = parseInt(table.getAttribute('data-nctg'));
-        fillDataTable(mo, n, p - 1);
+        fillDataTable(mo, undefined, n, p - 1);
       } else {
         this.value = parseInt(table.getAttribute('data-ipage')) + 1;
       }
@@ -161,7 +161,7 @@ function buildDataTable(mo) {
 
     // sort by column and update table
     sortDataTable(mo, idx, order);
-    fillDataTable(mo);
+    fillDataTable(mo, 'Dataset');
   }
 
 }
@@ -171,10 +171,11 @@ function buildDataTable(mo) {
  * Populate data table by data.
  * @function fillDataTable
  * @param {Object} mo - main object
+ * @param {string} [title] - title of data table (use current if omitted)
  * @param {number} [n=100] - number of contigs to show per page
  * @param {number} [p=0] - page number (starting from 0)
  */
-function fillDataTable(mo, n, p) {
+function fillDataTable(mo, title, n, p) {
   const data = mo.data,
         cols = mo.cols;
   const tabled = mo.tabled;
@@ -191,6 +192,9 @@ function fillDataTable(mo, n, p) {
 
   // clear existing content
   const table = byId('data-table');
+  if (!title) title = table.getAttribute('data-title');
+  else table.setAttribute('data-title', title);
+
   const tbody = table.tBodies[0];
   tbody.innerHTML = '';
 
@@ -216,7 +220,8 @@ function fillDataTable(mo, n, p) {
   table.setAttribute('data-nctg', n);
   table.setAttribute('data-ipage', p);
   table.setAttribute('data-npage', P);
-  byId('data-title-span').innerHTML = `Data (${start + 1} to ${end})`;
+  byId('data-title-span').innerHTML =
+    `${title} (${start + 1} to ${end}) of ${N}`;
   const text = byId('data-page-txt');
   text.value = p + 1;
   text.title = `Page ${p + 1} of ${P}`;

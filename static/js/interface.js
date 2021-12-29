@@ -312,7 +312,7 @@ function initContextMenu(mo) {
   // show data table
   byId('show-data-a').addEventListener('click', function () {
     if (mo.cache.nctg) mo.tabled = [...mo.data[0].keys()];
-    fillDataTable(mo);
+    fillDataTable(mo, 'Dataset');
     byId('data-table-modal').classList.remove('hidden');
   });
 
