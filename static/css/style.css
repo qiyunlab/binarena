@@ -340,7 +340,7 @@ div.toolbar:hover {
 }
 
 div.toolbar {
-  z-index: 3;
+  z-index: 2;
   position: absolute;
   color: dimgray;
   background-color: white;
@@ -429,7 +429,7 @@ div.toolbar span.spacer {
 
 div.modal {
   position: fixed;
-  z-index: 2;
+  z-index: 3;
   left: 0;
   top: 0;
   width: 100%;
