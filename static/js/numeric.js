@@ -319,6 +319,33 @@ function arrMinMaxScale(arr) {
 
 
 /**
+ * Convert an array of numbers into ranks.
+ * @param {number[]} arr - input array
+ * @returns {number[]} output array
+ * @description Ties will be assigned as averages.
+ * @see scipy.stats.rankdata
+ */
+function rankdata(arr) {
+  const group = arrGroupBy(arr);
+  const order = Object.entries(group).sort((a, b) => a[0] - b[0]);
+  const res = Array(arr.length).fill(0);
+  const n = order.length;
+  let current = 1;
+  let idxes, m, rank, j;
+  for (let i = 0; i < n; i++) {
+    idxes = order[i][1];
+    m = idxes.length;
+    rank = current + (m - 1) / 2;
+    for (let j = 0; j < m; j++) {
+      res[idxes[j]] = rank;
+    }
+    current += m;
+  }
+  return res;
+}
+
+
+/**
  * Transpose a 2D array.
  * @function transpose
  * @param {Array.<Array>} arr2d - input 2D array

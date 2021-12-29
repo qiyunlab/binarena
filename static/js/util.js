@@ -89,6 +89,8 @@ function scaleNum(num, scale) {
     switch (scale) {
       case 'none':
         return num;
+      case 'rank':
+        return NaN;
       case 'square':
         return Math.pow(num, 2);
       case 'sqrt':
@@ -138,6 +140,8 @@ function scaleArr(arr, scale) {
     switch (scale) {
       case 'none':
         return arr;
+      case 'rank':
+        return rankdata(arr);
       case 'square':
         for (let i = 0; i < n; i++) res[i] = arr[i] ** 2;
         break;
@@ -190,11 +194,11 @@ function scaleArr(arr, scale) {
  * @param {string|number} scale - scale name or power
  * @throws if scale is invalid
  * @returns {number} scaled number
- * @todo
  */
 function unscale(scale) {
   const dict = {
     'none':   'none',
+    'rank':   'none', // cannot unscale a rank
     'square': 'sqrt',
     'sqrt':   'square',
     'cube':   'cbrt',

@@ -45,6 +45,11 @@ describe('numeric.js', function() {
     expect(arrEqualDeep([[0, 0], [[1, 0], [1, 1]]], [[0, 0], [[1, 0], [1, 1]]])).toBeTruthy();
   });
 
+  it('rankdata', function () {
+    expect(rankdata([50, 30, 20, 60])).toEqual([3, 2, 1, 4]);
+    expect(rankdata([0, 2, 3, 2])).toEqual([1, 2.5, 4, 2.5]);
+  })
+
   it('transpose', function() {
     const before = [
       [1, 2, 4, 2],

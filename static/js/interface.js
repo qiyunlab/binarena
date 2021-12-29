@@ -423,6 +423,7 @@ function initSideFrame(mo) {
           src.innerHTML = this.innerHTML;
           const scale = this.getAttribute('data-scale');
           src.setAttribute('data-scale', scale);
+          src.title = `Scale: ${scale}`;
           const item = src.id.split('-')[0];
           displayItemChange(item, byId(`${item}-field-sel`).value, scale, mo);
         }

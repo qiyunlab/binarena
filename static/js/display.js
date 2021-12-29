@@ -298,7 +298,7 @@ function updateDisplayCtrl(cols, view) {
   const n = names.length;
   let sel, i, type, opt, idx, span, scale, btn;
   for (let key of keys) {
-    sel = byId(key + '-field-sel');
+    sel = byId(`${key}-field-sel`);
     sel.innerHTML = '';
 
     // all but coordinates can be empty
@@ -320,13 +320,13 @@ function updateDisplayCtrl(cols, view) {
         // pre-defined index
         idx = view[key].i;
         if (idx) sel.value = idx;
-        span = byId(key + '-param-span');
+        span = byId(`${key}-param-span`);
         if (idx) span.classList.remove('hidden');
         else span.classList.add('hidden');
 
         // pre-defined scale
         scale = view[key].scale;
-        btn = byId(key + '-scale-btn');
+        btn = byId(`${key}-scale-btn`);
         btn.setAttribute('data-scale', scale);
         btn.title = 'Scale: ' + scale;
         btn.innerHTML = scale2HTML(scale);
