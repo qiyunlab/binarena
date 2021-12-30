@@ -1100,6 +1100,7 @@ div.side-content {
   table-layout: fixed;
   border: none;
   width: 100%;
+  margin: 5px;
 }
 
 #info-table tr {

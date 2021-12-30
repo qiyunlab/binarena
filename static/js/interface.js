@@ -27,7 +27,6 @@ function initGUI(mo) {
   initPanelHeads();      // panel heads
   initBtnGroups();       // button groups
   initCloseBtns();       // close buttons
-  // initFloatTools();     // floating toolbars
   initListSel();         // list select table
   initToast();           // toast
 
@@ -228,39 +227,6 @@ function initListSel() {
     }
   });
 
-}
-
-
-/**
- * Initialize floating toolbars (obsolete).
- * @function initFloatTools
- * @description This code will let the toolbar appear when the mouse is in
- * the parent panel, and not disappear when move moves into the toolbar.
- * It is a workaround as I couldn't find a pure-CSS way.
- * @todo Improve it.
- */
-function initFloatTools() {
-  for (let bar of document.querySelectorAll('.toolbar')) {
-    const div = bar.parentElement;
-    div.addEventListener('mouseenter', function () {
-      bar.classList.remove("hidden");
-    });
-    div.addEventListener('mouseleave', function (e) {
-      const rect = bar.getBoundingClientRect();
-      if (e.clientX >= rect.left && e.clientX <= rect.right &&
-          e.clientY >= rect.top  && e.clientY <= rect.bottom) return;
-      bar.classList.add("hidden");
-    });
-    bar.addEventListener('mouseenter', function () {
-      bar.classList.remove("hidden");
-    });
-    bar.addEventListener('mouseleave', function (e) {
-      const rect = div.getBoundingClientRect();
-      if (e.clientX >= rect.left && e.clientX <= rect.right &&
-          e.clientY >= rect.top  && e.clientY <= rect.bottom) return;
-      bar.classList.add("hidden");
-    });
-  }
 }
 
 

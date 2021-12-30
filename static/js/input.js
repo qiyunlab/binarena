@@ -94,7 +94,7 @@ function updateDataFromText(text, data, cols, filter) {
  * @param {Object} obj - input object
  * @param {Object} data - dataset
  * @param {Object} cols - columns
- * @todo xxxxx
+ * @description Obsolete.
  */
 function parseObj(obj, data, cols) {
   // enumerate valid keys only

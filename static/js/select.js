@@ -361,8 +361,6 @@ function buildInfoTable(mo) {
  * @param {Object} mo - main object
  * @description It re-fills the info table with information of selected
  * contigs. It does not re-define rows and metrics.
- * @todo Currently this function is very inefficient because it involves data
- * table splicing, transposing, etc.
  */
 function updateInfoTable(mo) {
   const table = byId('info-table');

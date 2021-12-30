@@ -31,6 +31,11 @@ function initCalcBoxCtrl(mo) {
       mo, byId('silh-col-text').value);
     if (byId('silh-export-chk').checked) exportSilh(mo);
   });
+
+  byId('silh-help-btn').addEventListener('click', function () {
+    window.open('https://github.com/qiyunlab/binarena#readme#' +
+      'binning-confidence-evaluation', '_blank');
+  });
 }
 
 

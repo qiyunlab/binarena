@@ -36,7 +36,7 @@ function isMissing(str) {
  * @throws if x and y cannot be determined
  * @returns {[number, number, ?number, ?number, ?number]} field indices for
  * x, y, size, opacity, color
- * @todo Specifically, five display items are to be inferred:
+ * @description Specifically, five display items are to be inferred:
  *    x, y, size, opacity : {idx, factor, scale, min, max}
  * factor is a number to be multiplied.
  * scale can be: null, square, sqrt, cube, cbrt, log, log10, exp, exp10

@@ -594,7 +594,6 @@ function updateView(mo) {
  * @function updateViewByData
  * @param {Object} mo - main object
  * @description Singling out cache is for performance consideration.
- * @todo to fix
  */
 function updateViewByData(mo) {
   resetControls();
@@ -708,6 +707,7 @@ function resetView(mo) {
 
   // render plots
   updateView(mo);
+  resizeArena(mo);
 }
 
 
