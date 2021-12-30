@@ -99,6 +99,10 @@ function scaleNum(num, scale) {
         return Math.pow(num, 3);
       case 'cbrt':
         return Math.cbrt(num);
+      case '4pow':
+        return Math.pow(num, 4);
+      case '4rt':
+        return Math.pow(num, 0.25);
       case 'log':
         return Math.log(num);
       case 'exp':
@@ -154,6 +158,12 @@ function scaleArr(arr, scale) {
       case 'cbrt':
         for (let i = 0; i < n; i++) res[i] = Math.cbrt(arr[i]);
         break;
+      case '4pow':
+        for (let i = 0; i < n; i++) res[i] = arr[i] ** 4;
+        break;
+      case '4rt':
+        for (let i = 0; i < n; i++) res[i] = arr[i] ** 0.25;
+        break;
       case 'log':
         for (let i = 0; i < n; i++) res[i] = Math.log(arr[i]);
         break;
@@ -203,6 +213,8 @@ function unscale(scale) {
     'sqrt':   'square',
     'cube':   'cbrt',
     'cbrt':   'cube',
+    '4pow':   '4rt',
+    '4rt':    '4pow',
     'log':    'exp',
     'exp':    'log',
     'logit':  'expit',
