@@ -2,7 +2,6 @@
 
 [![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
 ![javascript](https://badges.aleen42.com/src/javascript.svg)
-![jasmine](https://badges.aleen42.com/src/jasmine.svg)
 
 **Binarena** ("bin arena") is an interative visualizer of metagenomic assembly that facilitates observation, semi-manual and semi-automatic binning of metagenomic contigs.
 

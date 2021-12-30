@@ -342,11 +342,6 @@ function initContextMenu(mo) {
     byId('reset-btn').click();
   });
 
-  // show help information
-  byId('help-a').addEventListener('click', function () {
-    byId('help-modal').classList.remove('hidden');
-  });
-
 }
 
 
