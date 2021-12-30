@@ -13,13 +13,13 @@ Please check out this [live demo](https://qiyunlab.github.io/binarena/demo.html)
 
 ## Contents
 
-- [Installation](#noinstallation), [Main interface](#main-interface), [System requirements](#system-requirements), [Mouse and keyboard shortcuts](#mouse-and-keyboard-shortcuts)
-- [Input files](#input-files): [Data table](#data-table), [Table view](#table-view), [Special columns](#special-columns), [Additional data](#additional-data)
-- [Display items](#display-items): [Legends and data scaling](#legends-and-data-scaling), [Data transformation](#data-transformation), [Color coding](#color-coding)
-- [Contig selection](#contig-selection), [Contig summary](#contig-summary), [Contig masking](#contig-masking), [Contig searching](#contig-searching), [Mini plot](#mini-plot)
-- [Binning plan](#binning-plan), [Table of bins](#table-of-bins), [Selection to bin](#selection-to-bin)
-- [Binning confidence evaluation](#binning-confidence-evaluation), [Binning plan comparison](#binning-plan-comparison)
-- [FAQ](#faq), [Contact](#contact)
+- [Installation](#noinstallation) | [Main interface](#main-interface) | [System requirements](#system-requirements) | [Mouse and keyboard shortcuts](#mouse-and-keyboard-shortcuts)
+- [Input files](#input-files): [Data table](#data-table) | [Table view](#table-view) | [Special columns](#special-columns) | [Additional data](#additional-data)
+- [Display items](#display-items): [Legends and data scaling](#legends-and-data-scaling) | [Data transformation](#data-transformation) | [Color coding](#color-coding)
+- [Contig selection](#contig-selection) | [Contig summary](#contig-summary) | [Contig masking](#contig-masking) | [Contig searching](#contig-searching) | [Mini plot](#mini-plot)
+- [Binning plan](#binning-plan) | [Table of bins](#table-of-bins) | [Selection to bin](#selection-to-bin)
+- [Binning confidence evaluation](#binning-confidence-evaluation) | [Binning plan comparison](#binning-plan-comparison)
+- [FAQ](#faq) | [Contact](#contact)
 
 
 ## (No)Installation
