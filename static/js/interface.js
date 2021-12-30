@@ -27,7 +27,6 @@ function initGUI(mo) {
   initPanelHeads();      // panel heads
   initBtnGroups();       // button groups
   initCloseBtns();       // close buttons
-  initFloatTools();      // floating toolbars
   initListSel();         // list select table
   initToast();           // toast
 
@@ -39,13 +38,14 @@ function initGUI(mo) {
   initWidgets(mo);       // widgets
 
   // initialize significant components defined in external modules
-  initDisplayCtrl(mo);   // display controls    ( 'display.js'  )
-  initSelectCtrl(mo);    // select controls     ( 'select.js'   )
-  initBinCtrl(mo);       // binning controls    ( 'binning.js'  )
-  initSearchCtrl(mo);    // search controls     ( 'search.js'   )
-  initMiniPlotCtrl(mo);  // mini plot controls  ( 'miniplot.js' )
-  initDataTableCtrl(mo); // data table controls ( 'datable.js'  )
-  initCanvas(mo);        // main canvas         ( 'render.js'   )
+  initDisplayCtrl(mo);   // display controls    ( 'display.js'   )
+  initSelectCtrl(mo);    // select controls     ( 'select.js'    )
+  initBinCtrl(mo);       // binning controls    ( 'binning.js'   )
+  initSearchCtrl(mo);    // search controls     ( 'search.js'    )
+  initMiniPlotCtrl(mo);  // mini plot controls  ( 'miniplot.js'  )
+  initDataTableCtrl(mo); // data table controls ( 'datable.js'   )
+  initCalcBoxCtrl(mo);   // calculator controls ( 'calculate.js' )
+  initCanvas(mo);        // main canvas         ( 'render.js'    )
 
 }
 
@@ -56,22 +56,23 @@ function initGUI(mo) {
  * @description I didn't find a way to do this automatically...
  */
 function resetControls() {
-  document.querySelectorAll('input, select').forEach(dom => {
+  for (let dom of document.querySelectorAll('input, select')) {
     dom.value = '';
-  });
+  }
 }
 
 
 /**
  * Update controls based on new data.
  * @function updateControls
- * @param {Object} data - data object
- * @param {Object} view - view object
+ * @param {Object} mo - main object
  */
- function updateControls(data, view) {
-  updateSearchCtrl(data);
-  updateDisplayCtrl(data, view);
-  updateMiniPlotCtrl(data);
+function updateControls(mo) {
+  const cols = mo.cols,
+        view = mo.view;
+  updateSearchCtrl(cols);
+  updateDisplayCtrl(cols, view);
+  updateMiniPlotCtrl(cols);
 }
 
 
@@ -119,9 +120,9 @@ function initWindow(mo) {
         }
       }
       if (hideDropdown) {
-        document.querySelectorAll('div.popup, div.menu').forEach(div => {
+        for (let div of document.querySelectorAll('div.popup')) {
           div.classList.add('hidden');
-        });
+        }
       }
     }
   });
@@ -140,8 +141,7 @@ function resizeWindow(mo) {
   toastMsg(`Plot size: ${w} x ${h}`, mo.stat);
   clearTimeout(mo.stat.resizing);
   mo.stat.resizing = setTimeout(function () {
-    resizeArena(mo.rena, mo.oray);
-    updateView(mo);
+    resizeArena(mo);
   }, 250); // redraw canvas after 0.25 sec
 }
 
@@ -151,19 +151,20 @@ function resizeWindow(mo) {
  * @function initPanelHeads
  */
 function initPanelHeads() {
-  document.querySelectorAll('.panel-head span:last-of-type button').forEach(
-    function (btn) {
+  for (let btn of document.querySelectorAll(
+    '.panel-head span:last-of-type button')) {
     btn.addEventListener('click', function () {
       const panel = this.parentElement.parentElement.nextElementSibling;
       if (panel !== null) panel.classList.toggle("hidden");
     });
-  });
+  }
 }
 
 
 /**
  * Initialize button groups.
  * @function initBtnGroups
+ * @description Currently there are no button groups.
  */
 function initBtnGroups() {
   const groups = document.getElementsByClassName('btn-group');
@@ -189,21 +190,21 @@ function initBtnGroups() {
  * @function initCloseBtns
  */
 function initCloseBtns() {
-  document.querySelectorAll(".modal-head").forEach(function (div) {
+  for (let div of document.querySelectorAll('.modal-head')) {
     const btn = document.createElement('button');
-    btn.innerHTML = '&times;';
-    btn.title = 'Close ' + div.textContent.toLowerCase() + ' window';
+    btn.innerHTML = '&#x2715;'; // cross mark
+    btn.title = 'Close window';
     btn.addEventListener('click', function () {
       div.parentElement.parentElement.classList.add('hidden');
     });
-    div.appendChild(btn);
-  });
+    div.lastElementChild.appendChild(btn);
+  }
 }
 
 
 /**
  * Initialize list select table.
- * @function initCloseBtns
+ * @function initListSel
  * @description The list select table is like a dropdown menu. It is launched
  * by a source DOM. The user clicks an item, and this code will transfer the
  * selection back to the source DOM and trigger an event of it.
@@ -226,39 +227,6 @@ function initListSel() {
     }
   });
 
-}
-
-
-/**
- * Initialize floating toolbars.
- * @function initFloatTools
- * @description This code will let the toolbar appear when the mouse is in
- * the parent panel, and not disappear when move moves into the toolbar.
- * It is a workaround as I couldn't find a pure-CSS way.
- * @todo Improve it.
- */
-function initFloatTools() {
-   document.querySelectorAll('.toolbar').forEach(function (bar) {
-    const div = bar.parentElement;
-    div.addEventListener('mouseenter', function () {
-      bar.classList.remove("hidden");
-    });
-    div.addEventListener('mouseleave', function (e) {
-      const rect = bar.getBoundingClientRect();
-      if (e.clientX >= rect.left && e.clientX <= rect.right &&
-          e.clientY >= rect.top  && e.clientY <= rect.bottom) return;
-      bar.classList.add("hidden");
-    });
-    bar.addEventListener('mouseenter', function () {
-      bar.classList.remove("hidden");
-    });
-    bar.addEventListener('mouseleave', function (e) {
-      const rect = div.getBoundingClientRect();
-      if (e.clientX >= rect.left && e.clientX <= rect.right &&
-          e.clientY >= rect.top  && e.clientY <= rect.bottom) return;
-      bar.classList.add("hidden");
-    });
-  });
 }
 
 
@@ -309,27 +277,25 @@ function initContextMenu(mo) {
 
   // show data table
   byId('show-data-a').addEventListener('click', function () {
+    if (mo.cache.nctg) mo.tabled = [...mo.data[0].keys()];
+    fillDataTable(mo, 'Dataset');
     byId('data-table-modal').classList.remove('hidden');
   });
 
   // close current data
   byId('close-data-a').addEventListener('click', function () {
-    mo.data = { cols: [], types: [], dicts: {}, df: [] };
-    mo.pick = {};
-    mo.mask = {};
-    mo.bins = {};
-    mo.dist = null;
+    closeData(mo);
     updateViewByData(mo);
   });
 
   // export bins
   byId('export-bins-a').addEventListener('click', function () {
-    exportBins(mo.bins, mo.data);
+    exportBinPlan(mo.binned);
   });
 
   // export data table as JSON
   byId('export-data-a').addEventListener('click', function () {
-    exportJSON(mo.data);
+    exportDataTable(mo);
   });
 
   // export image as PNG
@@ -337,9 +303,9 @@ function initContextMenu(mo) {
     exportPNG(mo.rena);
   });
 
-  // show help information
-  byId('help-a').addEventListener('click', function () {
-    byId('help-modal').classList.remove('hidden');
+  // reset view
+  byId('reset-view-a').addEventListener('click', function () {
+    byId('reset-btn').click();
   });
 
 }
@@ -359,8 +325,7 @@ function initSideFrame(mo) {
     const mf = byId('main-frame');
     mf.style.resize = 'none';
     mf.style.width = '100%';
-    resizeArena(mo.rena, mo.oray);
-    updateView(mo);
+    resizeArena(mo);
   });
 
   byId('show-side-btn').addEventListener('click', function () {
@@ -370,8 +335,7 @@ function initSideFrame(mo) {
     mf.style.resize = 'horizontal';
     const w = mf.getAttribute('data-width');
     if (w) mf.style.width = w;
-    resizeArena(mo.rena, mo.oray);
-    updateView(mo);
+    resizeArena(mo);
   });
 
 }
@@ -392,7 +356,7 @@ function initSideFrame(mo) {
   // scale select buttons
   // It is a dropdown menu of various scaling methods.
   let lst = byId('scale-select');
-  document.querySelectorAll('button.scale-btn').forEach(function (btn) {
+  for (let btn of document.querySelectorAll('button.scale-btn')) {
     btn.addEventListener('click', function () {
       byId('current-scale').innerHTML = this.getAttribute('data-scale');
       lst.setAttribute('data-target-id', this.id);
@@ -401,7 +365,7 @@ function initSideFrame(mo) {
       lst.style.left = rect.left + 'px';
       lst.classList.toggle('hidden');
     });
-  });
+  }
 
   // scale select options
   let table = byId('scale-options');
@@ -410,7 +374,7 @@ function initSideFrame(mo) {
 
       // mouse over to show scale name
       cell.addEventListener('mouseover', function () {
-        byId('current-scale').innerHTML = this.title;
+        byId('current-scale').innerHTML = this.getAttribute('data-scale');
       });
 
       // click to select a scale
@@ -418,10 +382,11 @@ function initSideFrame(mo) {
         const src = byId(byId('scale-select').getAttribute('data-target-id'));
         if (src.innerHTML !== this.innerHTML) {
           src.innerHTML = this.innerHTML;
-          src.setAttribute('data-scale', this.title);
+          const scale = this.getAttribute('data-scale');
+          src.setAttribute('data-scale', scale);
+          src.title = `Scale: ${scale}`;
           const item = src.id.split('-')[0];
-          displayItemChange(item, byId(item + '-field-sel').value,
-            this.title, mo);
+          displayItemChange(item, byId(`${item}-field-sel`).value, scale, mo);
         }
       });
     }
@@ -445,29 +410,29 @@ function initSettings(mo) {
 
   // Change length filter.
   let btn = byId('len-filt');
-  btn.value = mo.view.filter.len;
+  btn.value = mo.filter.len;
   btn.addEventListener('blur', function () {
     const val = parseInt(this.value);
-    if (val !== mo.view.filter.len) {
-      mo.view.filter.len = val;
+    if (val !== mo.filter.len) {
+      mo.filter.len = val;
       toastMsg(`Changed contig length threshold to ${val}.`, mo.stat);
     }
   });
 
   // Change coverage filter.
   btn = byId('cov-filt');
-  btn.value = mo.view.filter.cov;
+  btn.value = mo.filter.cov;
   btn.addEventListener('blur', function () {
     const val = parseFloat(this.value);
-    if (val != mo.view.filter.cov) {
-      mo.view.filter.cov = val;
+    if (val != mo.filter.cov) {
+      mo.filter.cov = val;
       toastMsg(`Changed contig coverage threshold to ${val}.`, mo.stat);
     }
   });
 
   // Show/hide grid.
   byId('grid-chk').addEventListener('change', function () {
-    view.grid = this.checked;
+    mo.view.grid = this.checked;
     byId('coords-label').classList.toggle('hidden', !this.checked);
     renderArena(mo);
   });
@@ -491,27 +456,11 @@ function initSettings(mo) {
  * @param {Object} mo - main object
  */
 function initWidgets(mo) {
+  const view = mo.view;
 
   // draw polygon to select contigs
-  byId('polygon-btn').addEventListener('click', function () {
-    polygonSelect(mo);
-  });
-
-  // toggle selection mode
-  byId('selmode-btn').addEventListener('click', function () {
-    const modes = ['new', 'add', 'remove'],
-          icons = ['asterisk', 'plus', 'minus'],
-          titles = ['new', 'add to', 'remove from'];
-    const i = (modes.indexOf(stat.selmode) + 1) % 3;
-    stat.selmode = modes[i];
-    this.innerHTML = '<i class="fa fa-' + icons[i] + '"></i>';
-    this.title = 'Current selection mode: ' + titles[i] + ' selection';
-  });
-
-  // toggle selecting or masking
-  byId('masking-btn').addEventListener('click', function () {
-    this.classList.toggle('pressed');
-    stat.masking = this.classList.contains('pressed');
+  byId('polygon-btn').addEventListener('click', function (e) {
+    polygonSelect(mo, e.shiftKey);
   });
 
   // take screenshot
@@ -537,54 +486,23 @@ function initWidgets(mo) {
 
   // move around
   byId('left-btn').addEventListener('click', function () {
-    view.pos.x -= 15;
+    view.posX -= 15;
     updateView(mo);
   });
 
   byId('up-btn').addEventListener('click', function () {
-    view.pos.y -= 15;
+    view.posY -= 15;
     updateView(mo);
   });
 
   byId('right-btn').addEventListener('click', function () {
-    view.pos.x += 15;
+    view.posX += 15;
     updateView(mo);
   });
 
   byId('down-btn').addEventListener('click', function () {
-    view.pos.y += 15;
+    view.posY += 15;
     updateView(mo);
-  });
-
-  // show calculation menu
-  byId('calc-btn').addEventListener('click', function () {
-    const menu = byId('calc-menu');
-    if (menu.classList.contains('hidden')) {
-      const n = Object.keys(mo.bins).length;
-      byId('silhouet-a').classList.toggle('disabled', !n);
-      byId('adj-rand-a').classList.toggle('disabled', !n);
-      menu.classList.remove('hidden');
-    } else {
-      menu.classList.add('hidden');
-    }
-  });
-
-  // calculate silhouette coefficients
-  byId('silhouet-a').addEventListener('click', function () {
-    if (this.classList.contains('disabled')) return;
-    calcSilhouette(mo);
-  });
-
-  // calculate adjusted Rand index
-  byId('adj-rand-a').addEventListener('click', function () {
-    if (this.classList.contains('disabled')) return;
-    if (!this.value) {
-      listSelect(Object.keys(mo.view.categories).sort(), this, 'right');
-    } else {
-      calcAdjRand(mo, this.value);
-      this.value = null;
-      this.parentElement.classList.add('hidden');      
-    }
   });
 
 }
@@ -607,10 +525,8 @@ function popupPos(source, target, direc, same) {
         ts = target.style;
   const rect = source.getBoundingClientRect();
 
-  // pop up toward right
-  if (direc === 'right') {
-    ts.left = rect.right + 'px';
-    ts.right = '';
+  // pop up toward right or left
+  if (['left', 'right'].includes(direc)) {
     if (same) {
       ts.top = rect.top + 'px';
       ts.height = (rect.top - rect.bottom) + 'px';
@@ -620,6 +536,13 @@ function popupPos(source, target, direc, same) {
     } else {
       ts.top = '';
       ts.bottom = (vh - rect.bottom) + 'px';
+    }
+    if (direc === 'right') {
+      ts.left = rect.right + 'px';
+      ts.right = '';
+    } else if (direc === 'left') {
+      ts.right = (vw - rect.left) + 'px';
+      ts.left = '';
     }
   }
 
@@ -656,11 +579,11 @@ function listSelect(lst, src, direc, same) {
   const table = byId('list-options');
   table.setAttribute('data-target-id', src.id);
   table.innerHTML = '';
-  lst.forEach(itm => {
+  for (let item of lst) {
     const row = table.insertRow(-1);
     const cell = row.insertCell(-1);
-    cell.innerHTML = itm;
-  });
+    cell.innerHTML = item;
+  }
   div.classList.remove('hidden');
 }
 
@@ -675,7 +598,7 @@ function scale2HTML(scale) {
   const table = byId('scale-options');
   for (let row of table.rows) {
     for (let cell of row.cells) {
-      if (cell.title === scale) return cell.innerHTML;
+      if (cell.getAttribute('data-scale') === scale) return cell.innerHTML;
     }
   }
 }
@@ -695,7 +618,7 @@ function toastMsg(msg, stat, duration, loading, toclose) {
   if (duration === undefined) duration = 2000;
   const toast = byId('toast');
   toast.firstElementChild.innerHTML = msg;
-  byId('loading-dots').classList.toggle('hidden', !loading);
+  byId('toast-dots').classList.toggle('hidden', !loading);
   byId('toast-close-btn').classList.toggle('hidden', !toclose);
   toast.classList.remove('hidden');
   if (duration) {
@@ -728,16 +651,17 @@ function autoComplete(src, arr) {
     const VAL = val.toUpperCase();
     const l = val.length;
     const lst = [];
-    arr.forEach(itm => {
+    for (let itm of arr) {
       const prefix = itm.substring(0, l);
       if (prefix.toUpperCase() === VAL) {
         lst.push('<strong>' + prefix + '</strong>' + itm.substring(l));
       }
-    });
+    }
     listSelect(lst, src, 'down', true);
     focus = -1;
   }
 
+  // keyboard controls
   src.addEventListener('keydown', keydownEvent);
   function keydownEvent(e) {
     const table = byId('list-options');
@@ -761,13 +685,18 @@ function autoComplete(src, arr) {
 
   function addActive(table) {
     removeActive(table);
-    if (focus >= table.rows.length) focus = 0;
-    else if (focus < 0) focus = (table.rows.length - 1);
+    if (focus >= table.rows.length) {
+      focus = 0;
+    } else if (focus < 0) {
+      focus = (table.rows.length - 1);
+    }
     table.rows[focus].cells[0].classList.add('active');
   }
 
   function removeActive(table) {
-    for (let row of table.rows) row.cells[0].classList.remove('active');
+    for (let row of table.rows) {
+      row.cells[0].classList.remove('active');
+    }
   }
 }
 
@@ -782,7 +711,7 @@ function autoComplete(src, arr) {
  * @param {Object} mo - main object
  */
 function formatValueLabel(value, icol, digits, unit, mo) {
-  const ilen = mo.view.spcols.len;
+  const ilen = mo.cache.speci.len;
   if (ilen && icol === ilen) {
     const fmtlen = FormatLength(value);
     let res = formatNum(fmtlen[0], digits);
@@ -791,6 +720,21 @@ function formatValueLabel(value, icol, digits, unit, mo) {
   } else {
     return formatNum(value, digits);
   }
+}
+
+
+/**
+ * Append an element to a container with inner HTML
+ * @function appendHTML
+ * @param {Object} dom - container DOM
+ * @param {string} tag - element tag
+ * @param {string} html - inner HTML of element
+ */
+
+function appendHTML(dom, tag, html) {
+  let e = document.createElement(tag);
+  e.innerHTML = html;
+  dom.appendChild(e);
 }
 
 
@@ -804,5 +748,11 @@ function loadTheme() {
   const theme = {};
   theme.selection = getComputedStyle(byId('selection-color')).color;
   theme.polygon = getComputedStyle(byId('polygon-color')).color;
+  theme.typecolors = {
+    num: getComputedStyle(byId('type-num-color')).backgroundColor,
+    cat: getComputedStyle(byId('type-cat-color')).backgroundColor,
+    fea: getComputedStyle(byId('type-fea-color')).backgroundColor,
+    des: getComputedStyle(byId('type-des-color')).backgroundColor
+  };
   return theme;
 }

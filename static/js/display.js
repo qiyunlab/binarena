@@ -11,7 +11,7 @@
 /**
  * Initialize display controls.
  * @function initDisplayCtrl
- * @params {Object} mo - main object
+ * @param {Object} mo - main object
  */
 function initDisplayCtrl(mo) {
   const view = mo.view;
@@ -21,7 +21,7 @@ function initDisplayCtrl(mo) {
    */
 
   // show/hide legend
-  document.querySelectorAll('.legend-btn').forEach(btn => {
+  for (let btn of document.querySelectorAll('.legend-btn')) {
     btn.addEventListener('click', function () {
       const tr = this.parentElement.parentElement.parentElement;
       const legend = tr.nextElementSibling;
@@ -32,10 +32,10 @@ function initDisplayCtrl(mo) {
         updateLegends(mo, [tr.getAttribute('data-item')]);
       }
     });
-  });
+  }
 
   // change display item
-  ['x', 'y', 'size', 'opacity', 'color'].forEach(function (key) {
+  for (let key of ['x', 'y', 'size', 'opacity', 'color']) {
     byId(key + '-field-sel').addEventListener('change', function () {
       byId(key + '-param-span').classList.toggle('hidden', !this.value);
       if (!this.value) {
@@ -44,20 +44,21 @@ function initDisplayCtrl(mo) {
       }
       displayItemChange(key, this.value, view[key].scale, mo);
     });
-  });
+  }
 
   // swap x- and y-axes
-  document.querySelectorAll('button.swap-btn').forEach(function (btn) {
+  for (let btn of document.querySelectorAll('button.swap-btn')) {
     btn.addEventListener('click', function () {
       const xx = view.x,
             yy = view.y;
-      ['i', 'scale', 'min', 'max'].forEach(key => {
+      for (let key of ['i', 'scale', 'min', 'max']) {
         xx[key] = [yy[key], yy[key] = xx[key]][0];
-      });
-      updateControls(mo.data, view);
+      }
+      updateControls(mo);
+      prepDataForDisplay(mo, ['x', 'y']);
       renderArena(mo);
     });
-  });
+  }
 
   // populate palettes
   populatePaletteSelect();
@@ -71,13 +72,13 @@ function initDisplayCtrl(mo) {
     if (lst.classList.contains('hidden')) {
       const val = byId('color-field-sel').value;
       if (!val) return;
-      const isNum = (mo.data.types[val] === 'number');
-      lst.querySelectorAll('.disc').forEach(div => {
+      const isNum = (mo.cols.types[val] === 'num');
+      for (let div of lst.querySelectorAll('.disc')) {
         div.classList.toggle('hidden', isNum);
-      });
-      lst.querySelectorAll('.cont').forEach(div => {
+      }
+      for (let div of lst.querySelectorAll('.cont')) {
         div.classList.toggle('hidden', !isNum);
-      });
+      }
       const rect = this.getBoundingClientRect();
       lst.style.top = rect.bottom + 'px';
       lst.style.left = rect.left + 'px';
@@ -88,8 +89,7 @@ function initDisplayCtrl(mo) {
   });
 
   // select palette
-  byId('palette-select').querySelectorAll('table').forEach(
-    function (table) {
+  for (let table of byId('palette-select').querySelectorAll('table')) {
     for (let row of table.rows) {
       row.addEventListener('click', function () {
         const palette = this.firstElementChild.innerHTML;
@@ -101,16 +101,18 @@ function initDisplayCtrl(mo) {
           view.discpal = palette;
           updateColorMap(mo);
         }
-        updateLegends(mo, ['color']);
+        prepDataForDisplay(mo, ['color']);
         renderArena(mo);
+        updateLegends(mo, ['color']);
       });
     }
-  });
+  }
 
   // add/remove discrete color
   byId('add-color-btn').addEventListener('click', function () {
     view.ncolor += 1;
     updateColorMap(mo);
+    prepDataForDisplay(mo, ['color']);
     renderArena(mo);
     updateLegends(mo, ['color']);
   });
@@ -119,6 +121,7 @@ function initDisplayCtrl(mo) {
     if (view.ncolor === 1) return;
     view.ncolor -= 1;
     updateColorMap(mo);
+    prepDataForDisplay(mo, ['color']);
     renderArena(mo);
     updateLegends(mo, ['color']);
   });
@@ -128,23 +131,23 @@ function initDisplayCtrl(mo) {
    * Legends of display items.
    */
 
-  document.querySelectorAll('.legend').forEach(function (leg) {
+  for (let leg of document.querySelectorAll('.legend')) {
 
     leg.addEventListener('mouseenter', function () {
-      this.querySelectorAll('.clip').forEach(function (clip) {
+      for (let clip of this.querySelectorAll('.clip')) {
         clip.classList.add('hidden');
-      });
+      }
     });
 
     leg.addEventListener('mouseleave', function () {
       this.setAttribute('data-ranging', 'none');
-      this.querySelectorAll('.clip').forEach(function (clip) {
+      for (let clip of this.querySelectorAll('.clip')) {
         clip.classList.remove('hidden');
-      });
+      }
     });
-  });
+  }
 
-  document.querySelectorAll('.gradient').forEach(function (grad) {
+  for (let grad of document.querySelectorAll('.gradient')) {
 
     grad.addEventListener('mousemove', function (e) {
       const item = this.parentElement.getAttribute('data-item');
@@ -181,7 +184,7 @@ function initDisplayCtrl(mo) {
         circle.classList.remove('hidden');
         if (item === 'size') {
           circle.style.backgroundColor = 'black';
-          const diameter = Math.ceil(view.rbase * 2 * offset / width);
+          const diameter = Math.ceil(view.size.base * 2 * offset / width);
           circle.style.height = diameter + 'px';
           circle.style.width = diameter + 'px';
         }
@@ -234,18 +237,19 @@ function initDisplayCtrl(mo) {
         const item = this.parentElement.getAttribute('data-item');
         view[item][ranging]= parseInt(this.parentElement.querySelector(
           '.range.' + ranging).getAttribute('data-tick')) * 10;
+        prepDataForDisplay(mo, [item]);
         renderArena(mo);
         updateLegends(mo, [item]);
       }
     });
-  });
+  }
 
-  document.querySelectorAll('.legend .range').forEach(function (range) {
+  for (let range of document.querySelectorAll('.legend .range')) {
     range.title = 'Adjust ' + checkClassName(range, ['lower', 'upper']) +
       ' bound of ' + range.parentElement.getAttribute('data-item');
     range.addEventListener('mousedown', rangeMouseDown);
     range.addEventListener('mouseup', rangeMouseUp);
-  });
+  }
 
   function rangeMouseDown(e) {
     e.preventDefault();
@@ -259,19 +263,21 @@ function initDisplayCtrl(mo) {
     const item = this.parentElement.getAttribute('data-item');
     view[item][checkClassName(this, ['lower', 'upper'])] =
       this.getAttribute('data-tick') * 10;
+    prepDataForDisplay(mo, [item]);
     renderArena(mo);
     updateLegends(mo, [item]);
   }
 
-  document.querySelectorAll('.legend .min').forEach(function (label) {
+  for (let label of document.querySelectorAll('.legend .min')) {
     label.title = 'Toggle zero or minimum value';
     label.addEventListener('click', function () {
       const item = this.parentElement.getAttribute('data-item');
       view[item].zero = !view[item].zero;
-      updateLegends(mo, [item]);
+      prepDataForDisplay(mo, [item]);
       renderArena(mo);
+      updateLegends(mo, [item]);
     });
-  });
+  }
 
 }
 
@@ -279,20 +285,20 @@ function initDisplayCtrl(mo) {
 /**
  * Update display panel controls by data.
  * @function updateDisplayCtrl
- * @param {Object} data - data object
+ * @param {Object} cols - cols object
  * @param {Object} view - view object
  */
-function updateDisplayCtrl(data, view) {
-  const cols = data.cols,
-        types = data.types;
+function updateDisplayCtrl(cols, view) {
+  const names = cols.names,
+        types = cols.types;
 
   // display items to be updated
   const keys = ['x', 'y', 'size', 'opacity', 'color'];
 
-  const n = cols.length;
+  const n = names.length;
   let sel, i, type, opt, idx, span, scale, btn;
   for (let key of keys) {
-    sel = byId(key + '-field-sel');
+    sel = byId(`${key}-field-sel`);
     sel.innerHTML = '';
 
     // all but coordinates can be empty
@@ -303,25 +309,24 @@ function updateDisplayCtrl(data, view) {
     // add fields to each list
     for (i = 0; i < n; i++) {
       type = types[i];
-      if (type === 'id') continue;
-      if (type === 'number' || (type === 'category' && key === 'color')) {
+      if (type === 'num' || (type === 'cat' && key === 'color')) {
 
         // create an option
         opt = document.createElement('option');
         opt.value = i;
-        opt.text = cols[i];
+        opt.text = names[i];
         sel.add(opt);
 
         // pre-defined index
         idx = view[key].i;
         if (idx) sel.value = idx;
-        span = byId(key + '-param-span');
+        span = byId(`${key}-param-span`);
         if (idx) span.classList.remove('hidden');
         else span.classList.add('hidden');
 
         // pre-defined scale
         scale = view[key].scale;
-        btn = byId(key + '-scale-btn');
+        btn = byId(`${key}-scale-btn`);
         btn.setAttribute('data-scale', scale);
         btn.title = 'Scale: ' + scale;
         btn.innerHTML = scale2HTML(scale);
@@ -339,16 +344,19 @@ function updateDisplayCtrl(data, view) {
  * @todo other items
  */
 function updateLegends(mo, items) {
+  const view = mo.view;
+  const types = mo.cols.types;
   items = items || ['size', 'opacity', 'color'];
-  let icol, isCat, scale, legend, grad, rect, step, poses, clip;
+  let v, icol, isCat, scale, legend, grad, rect, step, poses, clip;
 
   for (let item of items) {
-    icol = mo.view[item].i;
+    v = view[item];
+    icol = v.i;
     if (!icol) continue;
 
     // discrete colors
     if (item === 'color') {
-      isCat = (mo.data.types[icol] === 'category');
+      isCat = (types[icol] === 'cat');
       byId('color-legend').classList.toggle('hidden', isCat);
       byId('color-legend-2').classList.toggle('hidden', !isCat);
       if (isCat) {
@@ -358,19 +366,19 @@ function updateLegends(mo, items) {
     }
 
     // continuous data
-    scale = unscale(mo.view[item].scale);
+    scale = unscale(v.scale);
     legend = byId(item + '-legend');
     grad = legend.querySelector('.gradient');
     if (grad === null) continue;
-  
+
     // refresh labels
-    ['min', 'max'].forEach(key => {
-      const label = legend.querySelector('label.' + key);
-      let value = scaleNum(mo.view[item][key], scale);
+    for (let key of ['min', 'max']) {
+      const label = legend.querySelector(`label.${key}`);
+      let value = scaleNum(v[key], scale);
       value = formatValueLabel(value, icol, 3, false, mo);
       label.setAttribute('data-value', value);
-      label.innerHTML = (key === 'min' && mo.view[item].zero) ? 0 : value;
-    });
+      label.innerHTML = (key === 'min' && v.zero) ? 0 : value;
+    }
 
     // item-specific operations
     if (item === 'size') updateSizeGradient(mo);
@@ -380,13 +388,13 @@ function updateLegends(mo, items) {
     rect = grad.getBoundingClientRect();
     step = (rect.right - rect.left) / 10;
     poses = {};
-    ['lower', 'upper'].forEach(key => {
-      poses[key] = legend.querySelector('.range.' + key).getAttribute(
+    for (let key of ['lower', 'upper']) {
+      poses[key] = legend.querySelector(`.range.${key}`).getAttribute(
         'data-tick') * step;
-      legend.querySelector('.range.' + key).style.left = Math.round(
+      legend.querySelector(`.range.${key}`).style.left = Math.round(
         rect.left + poses[key]) + 'px';
-    });
-  
+    }
+
     // position clips
     clip = legend.querySelector('.clip.lower');
     clip.style.left = Math.round(rect.left) + 'px';
@@ -406,10 +414,10 @@ function updateLegends(mo, items) {
  * cannot accept percentage, thus need to be adjusted specifically.
  */
 function updateSizeGradient(mo) {
-  const rbase = mo.view.rbase;
+  const base = mo.view.size.base;
   const grad = byId('size-gradient');
-  grad.style.height = rbase + 'px';
-  grad.style.borderTopWidth = rbase + 'px';
+  grad.style.height = base + 'px';
+  grad.style.borderTopWidth = base + 'px';
   const rect = grad.getBoundingClientRect();
   grad.style.borderRightWidth = Math.floor(rect.right - rect.left) + 'px';
 }
@@ -423,7 +431,7 @@ function updateSizeGradient(mo) {
 function updateColorGradient(mo) {
   const ci = mo.view.color.i;
   if (!ci) return;
-  if (mo.data.types[ci] === 'category') return;
+  if (mo.cols.types[ci] === 'cat') return;
   byId('color-gradient').style.backgroundImage =
     'linear-gradient(to right, ' + PALETTES[mo.view.contpal].map(
     function (e) { return '#' + e; }).join(', ') + ')';
@@ -471,14 +479,14 @@ function updateColorTable(mo) {
  */
 function populatePaletteSelect() {
   const popup = byId('palette-select');
-  popup.querySelectorAll('div').forEach(function (div) {
+  for (let div of popup.querySelectorAll('div')) {
     const table = document.createElement('table');
     const pals = div.classList.contains('sequ') ? SEQUENTIAL_PALETTES
       : (div.classList.contains('dive') ? DIVERGING_PALETTES
       : QUALITATIVE_PALETTES);
 
     // create palette list
-    pals.forEach(function (pal) {
+    for (let pal of pals) {
       const row = table.insertRow(-1);
       let cell = row.insertCell(-1);
       cell.innerHTML = pal;
@@ -489,7 +497,7 @@ function populatePaletteSelect() {
       if (div.classList.contains('cont')) {
         box.innerHTML = '&nbsp;';
         box.style.backgroundImage = 'linear-gradient(to right, ' +
-          PALETTES[pal].map(function (e) { return '#' + e; }).join(', ') + ')';
+          PALETTES[pal].map(e => '#' + e).join(', ') + ')';
       }
 
       // discrete color
@@ -503,27 +511,26 @@ function populatePaletteSelect() {
         }
       }
       cell.appendChild(box);
-    });
+    }
+
     div.appendChild(table);
-  });
+  }
 }
 
 
 /**
  * Initiate display items based on the dataset.
  * @function initDisplayItems
- * @param {Object} data - data object
- * @param {Object} view - view object
+ * @param {Object} mo - main object
  * @description Basically, it is a "guess" process.
  */
-function initDisplayItems(data, view) {
+function initDisplayItems(mo) {
+  const view = mo.view;
   const items = ['x', 'y', 'size', 'opacity', 'color'];
-  const indices = guessDisplayFields(data, view),
-        scales = guessDisplayScales(items);
-  items.forEach(item => {
-    view[item].i = indices[item];
-    view[item].scale = scales[item];
-  });
+  const fields = guessDisplayFields(mo);
+  for (let item of items) view[item].i = fields[item];
+  const scales = guessDisplayScales(mo);
+  for (let item of items) view[item].scale = scales[item];
 }
 
 
@@ -536,18 +543,17 @@ function initDisplayItems(data, view) {
 function updateColorMap(mo) {
   const icol = mo.view.color.i;
   if (!icol) return;
-  if (mo.data.types[icol] !== 'category') return;
-  mo.view.color.discmap = {};
+  if (mo.cols.types[icol] !== 'cat') return;
 
   // get categories and their frequencies
   let cats = {};
-  const df = mo.data.df;
-  const n = df.length;
+  const C = mo.data[icol];
+  const n = C.length;
   let val;
   for (let i = 0; i < n; i++) {
-    val = df[i][icol];
-    if (val === undefined || val === null) continue;
-    cats[val[0]] = (cats[val[0]] || 0) + 1;
+    val = C[i];
+    if (!val) continue;
+    cats[val] = (cats[val] || 0) + 1;
   }
 
   // convert object to array of key: value pairs
@@ -562,9 +568,11 @@ function updateColorMap(mo) {
   // obtain colors from palette (allow repeats if palette is shorter)
   const palette = PALETTES[mo.view.discpal];
   const m = palette.length;
+  const res = {};
   for (let i = 0; i < ncolor; i++) {
-    mo.view.color.discmap[cats[i][0]] = palette[i % m];
+    res[cats[i][0]] = palette[i % m];
   }
+  mo.view.color.discmap = res;
 }
 
 
@@ -575,8 +583,9 @@ function updateColorMap(mo) {
  */
 function updateView(mo) {
   renderArena(mo);
-  updateSelection(mo);
+  renderSelection(mo);
   if (mo.stat.drawing) drawPolygon(mo);
+  mo.rena.focus();
 }
 
 
@@ -584,21 +593,41 @@ function updateView(mo) {
  * Update view based on data.
  * @function updateViewByData
  * @param {Object} mo - main object
- * @param {Array.<Object, Object, Object>} [cache] - decimals, categories and
- * features
  * @description Singling out cache is for performance consideration.
- * @todo to fix
  */
-function updateViewByData(mo, cache) {
+function updateViewByData(mo) {
   resetControls();
 
+  // check whether there is data
   const data = mo.data,
-        view = mo.view;
-  const df = data.df;
-  const n = df.length;
+        cache = mo.cache;
+  if (data.length === 0) cache.nctg = 0;
+  else cache.nctg = data[0].length;
+  const N = cache.nctg;
+
+  // reset working progress
+  mo.picked = Array(N).fill(false);
+  mo.masked = Array(N).fill(false);
+  mo.binned = Array(N).fill('');
+  mo.tabled = N ? [...data[0].keys()] : [];
+
+  // reset transformed data
+  const trans = mo.trans;
+  for (let item of ['x', 'y', 'size', 'opacity', 'color', 'rgb', 'rgba']) {
+    trans[item] = Array(N);
+  }
+
+  // clear cache
+  cache.abund = 0;
+  cache.speci = {};
+  cache.freqs = {};
+  cache.npick = 0;
+  cache.nmask = 0;
+  cache.binns.clear();
+  cache.pdist = [];
 
   // data is closed
-  if (n === 0) {
+  if (!N) {
     byId('hide-side-btn').click();
     byId('show-side-btn').disabled = true;
     byId('drop-sign').classList.remove('hidden');
@@ -614,36 +643,43 @@ function updateViewByData(mo, cache) {
     byId('drop-sign').classList.add('hidden');
     const btn = byId('dash-btn');
     if (!btn.classList.contains('active')) btn.click();
-  }
 
-  // cache data
-  cache = cache || cacheData(data);
-  view.decimals = cache[0];
-  view.categories = cache[1];
-  view.features = cache[2];
-  view.spcols.len = guessLenColumn(data);
-  view.spcols.cov = guessCovColumn(data);
-  view.spcols.gc = guessGCColumn(data);
+    // guess special columns
+    const cols = mo.cols;
+    cache.speci = {
+      len: guessLenColumn(cols),
+      cov: guessCovColumn(cols),
+      gc:  guessGCColumn(cols)
+    };
 
-  // calculate total abundance
-  if (view.spcols.len && view.spcols.cov) {
-    const len = view.spcols.len,
-          cov = view.spcols.cov;
-    view.abundance = 0;
-    let row;
-    for (let i = 0; i < n; i++) {
-      row = df[i];
-      view.abundance += row[len] * row[cov];
+    // calculate category and feature frequencies
+    const types = cols.types;
+    for (let i = 0; i < types.length; i++) {
+      const type = types[i];
+      if (type === 'cat') {
+        cache.freqs[i] = listCats(data[i]);
+      } else if (type === 'fea') {
+        cache.freqs[i] = listFeas(data[i]);
+      }
+    }
+
+    // calculate total abundance
+    if (cache.speci.len && cache.speci.cov) {
+      const L = data[cache.speci.len],
+            C = data[cache.speci.cov];
+      const n = L.length;
+      for (let i = 0; i < n; i++) {
+        cache.abund += L[i] * C[i];
+      }
     }
   }
 
   // manipulate interface
-  initDisplayItems(mo.data, mo.view);
+  initDisplayItems(mo);
   updateColorMap(mo);
-  updateControls(mo.data, mo.view);
-  buildInfoTable(mo.data, mo.view.spcols.len, mo.pick);
-  buildDataTable(mo.data.cols, mo.data.types);
-  fillDataTable(data, data.df.length);
+  updateControls(mo);
+  buildInfoTable(mo);
+  buildDataTable(mo);
   byId('bin-tbody').innerHTML = '';
 
   // reset view
@@ -655,106 +691,246 @@ function updateViewByData(mo, cache) {
  * Initiate or restore default view given data.
  * @function resetView
  * @param {Object} mo - main object
- * @param {boolean} [keep=false] - whether keep selection and masked
  */
-function resetView(mo, keep) {
-  const view = mo.view,
-        rena = mo.rena,
-        oray = mo.oray;
+function resetView(mo) {
 
-  // reset view parameters
-  keep = keep || false;
-  if (!keep) {
-    view.pick = {};
-    view.mask = {};
-  }
+  // center view
+  const view = mo.view;
   view.scale = 1.0;
+  const rena = mo.rena;
+  view.posX = rena.width / 2;
+  view.posY = rena.height / 2;
 
-  // re-center view
-  view.pos.x = rena.width / 2;
-  view.pos.y = rena.height / 2;
+  // transforme data for display
+  prepDataForDisplay(mo);
+  updateLegends(mo);
 
-  // re-calculate display item ranges
-  calcDispMinMax(mo);
-
-  // clear overlay canvas
-  oray.getContext('2d').clearRect(0, 0, oray.width, oray.height);
-
-  // re-render
+  // render plots
   updateView(mo);
+  resizeArena(mo);
 }
 
 
 /**
- * Calculate min and max of display items
- * @function calcDispMinMax
+ * Prepare data for visualization.
+ * @function prepDataForDisplay
  * @param {Object} mo - main object
- * @param {Array.<string>} [items] - display items to calculate
+ * @param {string[]} [items] - display item(s) to prepare
  */
-function calcDispMinMax(mo, items) {
+function prepDataForDisplay(mo, items) {
   items = items || ['x', 'y', 'size', 'opacity', 'color'];
-  const m = items.length;
-  const data = mo.data,
-        view = mo.view;
+  const n = mo.cache.nctg;
+  if (!n) return;
+  const view = mo.view,
+        data = mo.data,
+        cols = mo.cols,
+        mask = mo.masked,
+        trans = mo.trans;
 
-  const indices = [],
-        values = [];
-  for (let i = 0; i < m; i++) {
-    indices.push(view[items[i]].i);
-    values.push([]);
-  }
+  // transform data for each display item
+  for (let item of items) {
+    const v = view[item];
+    const idx = v.i,
+          scale = v.scale;
 
-  // exclude masked contigs
-  const hasMask = (Object.keys(mo.mask).length > 0);
-  const df = data.df;
-  const n = df.length;
-  let j;
-  for (let i = 0; i < n; i++) {
-    if (hasMask && i in mo.mask) continue;
-    for (j = 0; j < m; j++) {
-      values[j].push(df[i][indices[j]]);
+    // no data, fill default and skip
+    if (!idx) {
+      if (item === 'size' || item === 'opacity') {
+        trans[item].fill(v.base);
+      } else if (item === 'color') {
+        trans[item].fill(NaN);
+        trans.rgb.fill(v.base);
+      } else {
+        trans[item].fill(NaN);
+      }
+      continue;
+    }
+
+    // numeric data
+    const type = cols.types[idx];
+    if (type === 'num') {
+
+      // transform data using given scale
+      const scaled = scaleArr(data[idx], scale);
+
+      // gather valid data (not masked, is a number and is finite)
+      const valid = [],
+            index = [],
+            inval = [];
+      let val;
+      for (let i = 0; i < n; i++) {
+        if (!mask[i]) {
+          val = scaled[i];
+          if (isFinite(val)) {
+            index.push(i);
+            valid.push(val);
+          } else inval.push(i);
+        }
+      }
+
+      // calculate min / max
+      let [min, max] = arrMinMax(valid);
+      v.min = min;
+      v.max = max;
+
+      // do maximum scaling instead of min-max scaling
+      if (v.zero) min = 0;
+
+      // calculate range (to normalize againt)
+      const range = max - min;
+
+      // perform min-max scaling while applying item-specific protocols
+      const target = trans[item];
+      let low, frac;
+
+      const n_ = index.length;
+      let i_;
+
+      switch (item) {
+
+        // x- and y-axes
+        // note that the formulae for x-axis and y-axis are different
+        // that's because the y-axis in an HTML5 canvas starts from top rather
+        // than bottom
+        case 'x':
+          for (let i = 0; i < n_; i++) {
+            i_ = index[i];
+            target[i_] = (scaled[i_] - min) / range - 0.5;
+          }
+          break;
+        case 'y':
+          for (let i = 0; i < n_; i++) {
+            i_ = index[i];
+            target[i_] = (max - scaled[i_]) / range - 0.5;
+          }
+          break;
+
+        // radius of marker
+        case 'size':
+          const base = v.base;
+          low = v.lower / 100;
+          frac = (v.upper / 100 - low) / range;
+          for (let i = 0; i < n_; i++) {
+            i_ = index[i];
+            target[i_] = ((scaled[i_] - min) * frac + low) * base;
+          }
+          break;
+
+        // alpha value of fill color
+        case 'opacity':
+          low = v.lower / 100;
+          frac = (v.upper / 100 - low) / range;
+          for (let i = 0; i < n_; i++) {
+            i_ = index[i];
+            target[i_] = (scaled[i_] - min) * frac + low;
+          }
+          break;
+
+        // fill color
+        case 'color':
+          low = v.lower;
+          frac = (v.upper - low) / range;
+          for (let i = 0; i < n_; i++) {
+            i_ = index[i];
+            target[i_] = (scaled[i_] - min) * frac + low;
+          }
+          break;
+      }
+
+      // fill invalid values with defaults
+      const ni = inval.length;
+      if (ni > 0) {
+        let nanval;
+        if (['size', 'opacity'].includes(item)) nanval = v.base;
+        else nanval = NaN;
+        for (let i = 0; i < ni; i++) {
+          target[inval[i]] = nanval;
+        }
+      }
+
+      // for color, get RGB value
+      if (item === 'color') {
+        const rgb = trans.rgb;
+        const cmap = v.contmap;
+        const base = v.base;
+        for (let i = 0; i < n_; i++) {
+          i_ = index[i];
+          rgb[i_] = cmap[Math.round(target[i_])] || base;
+        }
+        if (ni > 0) {
+          let nanval = v.base;
+          for (let i = 0; i < ni; i++) {
+            rgb[inval[i]] = nanval;
+          } 
+        }
+      }
+    }
+
+    // categorical data (color only)
+    else if (type === 'cat' && item === 'color') {
+      const carr = trans.color,
+            rarr = trans.rgb;
+      carr.fill('');
+      rarr.fill(view.color.base);
+      const source = data[idx];
+      const cmap = v.discmap;
+      let val;
+      for (let i = 0; i < n; i++) {
+        val = source[i];
+        if (val in cmap) {
+          carr[i] = val;
+          rarr[i] = hexToRgb(cmap[val]);
+        }
+      }
     }
   }
 
-  // calculate min and max of display items
-  let v, scale, min, max;
-  for (let i = 0; i < m; i++) {
-    v = view[items[i]];
-    scale = v.scale;
-    [min, max] = arrMinMax(values[i]);
-    v.min = scaleNum(min, scale);
-    v.max = scaleNum(max, scale);
+  // for opacity and color, combine into RGBA
+  if (items.includes('opacity') || items.includes('color')) {
+    const opacity = trans.opacity,
+          rgb = trans.rgb,
+          rgba = trans.rgba;
+    for (let i = 0; i < n; i++) {
+      rgba[i] = rgb[i] + ',' + opacity[i].toFixed(2);
+    }
   }
-
-  // update controls
-  updateLegends(mo);
 }
 
 
 /**
  * When user changes display item.
  * @function displayItemChange
- * @param {Object} item - display variable
- * @param {Object} i - field index
- * @param {Object} scale - scaling factor
+ * @param {Object} item - display item
+ * @param {Object} i - new field index
+ * @param {Object} scale - new scaling factor
  * @param {Object} mo - main object
- * @todo throw if max === min
  */
 function displayItemChange(item, i, scale, mo) {
-  mo.view[item].i = i;
+  mo.view[item].i = parseInt(i);
   mo.view[item].scale = scale;
-  const isCat = (item === 'color' && mo.data.types[i] === 'category');
 
   // if x- or y-coordinates change, reset view
   if (item === 'x' || item === 'y') {
-    resetView(mo, true);
+    resetView(mo);
+    return;
   }
-  
+
   // otherwise, keep current viewport
-  else {
-    if (isCat) updateColorMap(mo);
-    else calcDispMinMax(mo, [item]);
-    renderArena(mo);
-    updateLegends(mo, [item]);
-  }
+  const isCat = (item === 'color' && mo.cols.types[i] === 'cat');
+  if (isCat) updateColorMap(mo);
+  prepDataForDisplay(mo, [item]);
+  renderArena(mo);
+  updateLegends(mo, [item]);
+}
+
+
+/**
+ * Close current dataset.
+ * @function closeData
+ * @param {Object} mo - main object
+ */
+function closeData(mo) {
+  mo.data.length = 0; // clear an array in place
+  mo.cols.names.length = 0;
+  mo.cols.types.length = 0;
 }

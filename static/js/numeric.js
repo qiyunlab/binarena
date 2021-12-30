@@ -32,6 +32,48 @@ function arrMinMax(arr) {
 
 
 /**
+ * Calculate min of a object with numeric values.
+ * @function objMin
+ * @param {Object.<string, number>} obj - input object
+ * @returns {[string, number]} min key-value pair
+ */
+function objMin(obj) {
+  const arr = Object.keys(obj);
+  const n = arr.length;
+  let key = arr[0];
+  let val = obj[key];
+  let min = [key, val];
+  for (let i = 1; i < n; i++) {
+    key = arr[i];
+    val = obj[key];
+    min = (val < min[1]) ? [key, val] : min;
+  }
+  return min;
+}
+
+
+/**
+ * Calculate max of a object with numeric values.
+ * @function objMax
+ * @param {Object.<string, number>} obj - input object
+ * @returns {[string, number]} max key-value pair
+ */
+function objMax(obj) {
+  const arr = Object.keys(obj);
+  const n = arr.length;
+  let key = arr[0];
+  let val = obj[key];
+  let max = [key, val];
+  for (let i = 1; i < n; i++) {
+    key = arr[i];
+    val = obj[key];
+    max = (val > max[1]) ? [key, val] : max;
+  }
+  return max;
+}
+
+
+/**
  * Calculate both min and max of a object with numeric values.
  * @function objMinMax
  * @param {Object.<string, number>} obj - input object
@@ -55,7 +97,7 @@ function objMinMax(obj) {
 
 
 /**
- * Calculate sum of numbers in an array.
+ * Calculate sum of elements in an array.
  * @function arrSum
  * @param {number[]} arr - input array
  * @returns {number} sum
@@ -71,7 +113,7 @@ function arrSum(arr) {
 
 
 /**
- * Calculate the average of all elements in the input array.
+ * Calculate the mean of all elements in an array.
  * @function arrMean
  * @param {number[]} arr - input array
  * returns {number} mean
@@ -83,7 +125,7 @@ function arrMean(arr) {
 
 
 /**
- * Calculate sum of products of paired numbers in two arrays.
+ * Calculate sum of products of paired elements in two arrays.
  * @function arrProdSum
  * @param {number[]} arr1 - input array
  * @param {number[]} arr2 - input array
@@ -100,20 +142,116 @@ function arrProdSum(arr1, arr2) {
 
 
 /**
- * Recursively check whether two arrays are equal.
- * @function arrEqual
+ * Calculate the mean of all elements in an array, while using paired elements
+ * in another array as weights.
+ * @function arrProdMean
  * @param {number[]} arr1 - input array
  * @param {number[]} arr2 - input array
- * @return {boolean} true if input arrays are equal, false otherwise 
+ * @returns {number} weighted mean
  */
-function arrEqual(arr1, arr2) {
+function arrProdMean(arr1, arr2) {
+  let sum12 = 0, sum2 = 0;
+  const n = arr1.length;
+  let a2;
+  for (let i = 0; i < n; i++) {
+    a2 = arr2[i];
+    sum12 += arr1[i] * a2;
+    sum2 += a2;
+  }
+  return (sum12 * 10) / (sum2 * 10);
+}
+
+
+/**
+ * Calculate sum of elements in an array, while skipping NaN.
+ * @function arrSumN
+ * @param {number[]} arr - input array
+ * @returns {[number, number]} sum and count of non-NaN numbers
+ */
+function arrSumN(arr) {
+  let sum = 0;
+  const n = arr.length;
+  let m = 0;
+  let a;
+  for (let i = 0; i < n; i++) {
+    a = arr[i];
+    if (a === a) {
+      sum += a;
+      m++;
+    }
+  }
+  return [sum, m];
+}
+
+
+/**
+ * Calculate the mean of all elements in an array, while skipping NaN.
+ * @function arrMeanN
+ * @param {number[]} arr - input array
+ * @returns {[number, number]} mean and count of non-NaN numbers
+ */
+function arrMeanN(arr) {
+  const [sum, n] = arrSumN(arr);
+  return [(sum * 10) / (n * 10), n];
+}
+
+
+/**
+ * Calculate sum of products of paired elements in two arrays, while skipping
+ * NaN.
+ * @function arrProdSumN
+ * @param {number[]} arr1 - input array
+ * @param {number[]} arr2 - input array
+ * @returns {[number, number, number]} sum of products of both arrays, sum of
+ * elements in the second array, and count of non-NaN number pairs
+ */
+function arrProdSumN(arr1, arr2) {
+  let sum12 = 0, sum2 = 0, m = 0;
+  const n = arr1.length;
+  let a1, a2;
+  for (let i = 0; i < n; i++) {
+    a1 = arr1[i];
+    if (a1 === a1) {
+      a2 = arr2[i];
+      if (a2 === a2) {
+        sum12 += a1 * a2;
+        sum2 += a2;
+        m += 1;
+      }
+    }
+  }
+  return [sum12, sum2, m];
+}
+
+
+/**
+ * Calculate the mean of all elements in an array, while using paired elements
+ * in another array as weights, while skipping NaN.
+ * @function arrProdMeanN
+ * @param {number[]} arr1 - input array
+ * @param {number[]} arr2 - input array
+ * @returns {[number, number]} weighted mean and count of non-NaN number pairs
+ */
+function arrProdMeanN(arr1, arr2) {
+  const [sum12, sum2, n] = arrProdSumN(arr1, arr2);
+  return [(sum12 * 10) / (sum2 * 10), sum2, n];
+}
+
+
+/**
+ * Calculate the mean of all elements in an array, while skipping NaN.
+ * @function arrMean
+ * @param {number[]} arr - input array
+ * returns {number} mean
+ */
+function arrEqualDeep(arr1, arr2) {
   if (arr1 instanceof Array && arr2 instanceof Array) {
     const n = arr1.length;
     if (n !== arr2.length) {
       return false;
     }
     for (let i = 0; i < n; i++) {
-      if (!arrEqual(arr1[i], arr2[i])) {
+      if (!arrEqualDeep(arr1[i], arr2[i])) {
         return false;
       }
     }
@@ -167,27 +305,65 @@ function arrLog(arr, clip) {
 
 
 /**
+ * Min-max scaling of an array in place.
+ * @param {number[]} arr - input array
+ */
+function arrMinMaxScale(arr) {
+  const [min, max] = arrMinMax(arr);
+  const range = max - min;
+  const n = arr.length;
+  for (let i = 0; i < n; i++) {
+    arr[i] = (arr[i] - min) / range;
+  }
+}
+
+
+/**
+ * Convert an array of numbers into ranks.
+ * @param {number[]} arr - input array
+ * @returns {number[]} output array
+ * @description Ties will be assigned as averages.
+ * @see scipy.stats.rankdata
+ */
+function rankdata(arr) {
+  const group = arrGroupBy(arr);
+  const order = Object.entries(group).sort((a, b) => a[0] - b[0]);
+  const res = Array(arr.length).fill(0);
+  const n = order.length;
+  let current = 1;
+  let idxes, m, rank, j;
+  for (let i = 0; i < n; i++) {
+    idxes = order[i][1];
+    m = idxes.length;
+    rank = current + (m - 1) / 2;
+    for (let j = 0; j < m; j++) {
+      res[idxes[j]] = rank;
+    }
+    current += m;
+  }
+  return res;
+}
+
+
+/**
  * Transpose a 2D array.
  * @function transpose
- * @param {Array.<Array>} df - input 2D array
+ * @param {Array.<Array>} arr2d - input 2D array
  * @returns {Array.<Array>} transposed 2D array
  */
-function transpose(df) {
-  const res = [];
-  const m = df[0].length;
-  for (let i = 0; i < m; i++) {
-    res.push([]);
-  }
+function transpose(arr2d) {
+  const n = arr2d.length;
+  const m = arr2d[0].length;
+  const res = Array(m).fill().map(() => Array(n));
   let j;
-  const n = df.length;
   for (let i = 0; i < n; i++) {
     for (j = 0; j < m; j++) {
-      res[j].push(df[i][j]);
+      res[j][i] = arr2d[i][j];
     }
   }
   return res;
 }
-  
+
 
 /**
  * Calculate euclidean distance between two points.
@@ -198,7 +374,7 @@ function transpose(df) {
  */
 function euclidean(x, y) {
   // check x, y
-  if (arrEqual(x, y)) {
+  if (arrEqualDeep(x, y)) {
     return 0;
   }
   let sum = 0;
@@ -261,17 +437,46 @@ function pdist(arr) {
 
 
 /**
+ * Convert a categorical variable to incremental integers.
+ * @param {string[]} arr - input array
+ * @returns {number[], string[]} factorized variable and unique values
+ * @description Categories are coded as 0, 1, 2, 3... based on the order of
+ * occurrence. Missing values (empty strings) are coded as -1.
+ * @see pandas.factorize
+ */
+function factorize(arr) {
+  const n = arr.length;
+  const codes = Array(n).fill(NaN);
+  const uniques = new Map();
+  let code = -1;
+  let cat;
+  for (let i = 0; i < n; i++) {
+    cat = arr[i];
+    if (cat) {
+      if (!uniques.has(cat)) {
+        uniques.set(cat, ++code);
+        codes[i] = code;
+      } else codes[i] = uniques.get(cat);
+    } else codes[i] = -1;
+  }
+  return [codes, [...uniques.keys()]];
+}
+
+
+/**
  * Return the occurrence of each entry in the input data.
  * @function bincount
- * @param {number[]} x - the input data array
+ * @param {number[]} arr - input array
  * @return {number[]} the occurrence of each entry in the input data
+ * @description Input data must consist of incremental integers (0, 1, 2,...).
+ * Output is an array with index as input data and value as frequency.
  * @see numpy.bincount
  */
-function bincount(x) {
-  const res = Array(Math.max.apply(null, x) + 1).fill(0);
-  const n = x.length;
+function bincount(arr) {
+  const res = Array(Math.max(...arr) + 1).fill(0);
+  const n = arr.length;
   for (let i = 0; i < n; i++) {
-    res[x[i]]++;
+    res[arr[i]]++;
   }
   return res;
 }

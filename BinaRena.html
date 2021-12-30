@@ -5,9 +5,7 @@
 <head>
   <meta charset="utf-8">
   <title>BinaRena</title>
-  <link rel="stylesheet" href="static/vendor/font-awesome/css/font-awesome.min.css">
   <link rel="stylesheet" href="static/css/style.css">
-  <link rel="stylesheet" href="static/css/theme.css">
   <script src="static/js/main.js"></script>
   <script src="static/js/interface.js"></script>
   <script src="static/js/input.js"></script>
@@ -30,7 +28,7 @@
   The program interface consists of:
   1. rendering area (main-frame)
     arena-canvas: scatter plot
-    overlay-canvas: selection highlight etc.
+    overlay-canvas: selection etc.
   2. docked panel:
     dashboard (dash-frame): top left
       start-panels:
@@ -44,9 +42,8 @@
     side-frame: right side (toggled by show-side-btn)
       bins-panel (contains hide-side-btn)
       info-panel (for selected)
-      mask-head (no body)
     widget-frame: bottom left
-      set-panel (expand on set-btn hover)
+      set-panel
       freq-panel
       nav-panel
   3. context menu:
@@ -116,8 +113,8 @@
         <table>
           <tr>
             <td>Field</td>
-            <td><select id="search-field-sel" title="Select a column to search"><option value="0"></option></select></td>
-            <td><button id="search-btn" style="visibility: hidden;" title="Search by criteria">Search</button></td>
+            <td><select id="search-field-sel" title="Select a field to search"><option value="0"></option></select></td>
+            <td><button id="search-btn" style="visibility: hidden;" title="Search by criteria (hold Shift to append)">Search</button></td>
           </tr>
           <tr class="hidden" id="num-sel-p">
             <td>in</td>
@@ -135,13 +132,13 @@
             <td></td>
           </tr>
           <tr class="hidden" id="fea-sel-p">
-            <td>is</td>
+            <td>has</td>
             <td><input type="text" id="fea-sel-txt" class="dropdown" title="Enter a feature" style="width: 100%;"></td>
             <td></td>
           </tr>
           <tr class="hidden" id="des-sel-p">
             <td>is</td>
-            <td><input type="text" id="des-sel-txt" title="Enter description" style="width: 100%;"></td>
+            <td><input type="text" id="des-sel-txt" title="Enter text" style="width: 100%;"></td>
             <td></td>
           </tr>
         </table>
@@ -152,15 +149,6 @@
           --><button class="square" id="whole-btn" title="Match whole value">&ldquo;&rdquo;</button>
         </span>
 
-        <!-- selection mode -->
-        <!-- <p>
-          <label title="Choose a selection mode">Mode</label>
-          <span class="btn-group">
-            <button id="sel-new-btn" class="square pressed" title="New selection"><i class="fa fa-asterisk"></i></button>
-            <button id="sel-add-btn" class="square" title="Add to selection"><i class="fa fa-plus"></i></button>
-            <button id="sel-remove-btn" class="square" title="Remove from selection"><i class="fa fa-minus"></i></button>
-          </span>
-        </p> -->
       </div>
 
       <!-- display panel -->
@@ -172,7 +160,7 @@
       <div class="dash-content">
         <table>
           <tr data-item="x">
-            <td>X-axis</td>
+            <td title="Position along the x-axis (left to right)"><i>X</i>-axis</td>
             <td><select id="x-field-sel"></select></td>
             <td><span id="x-param-span" class="hidden">
               <button class="square dropdown scale-btn" id="x-scale-btn"></button><!--
@@ -180,7 +168,7 @@
             </span></td>
           </tr>
           <tr data-item="y">
-            <td>Y-axis</td>
+            <td title="Position along the y-axis (bottom to top)"><i>Y</i>-axis</td>
             <td><select id="y-field-sel"></select></td>
             <td><span id="y-param-span" class="hidden">
               <button class="square dropdown scale-btn" id="y-scale-btn"></button><!--
@@ -190,11 +178,11 @@
 
           <!-- size -->
           <tr data-item="size">
-            <td>Size</td>
+            <td title="Radius of the marker">Size</td>
             <td><select id="size-field-sel"></select></td>
             <td><span id="size-param-span" class="hidden">
               <button class="square dropdown scale-btn" id="size-scale-btn"></button><!--
-              --><button class="square legend-btn" title="Show/hide legend">&#9783;</button>
+              --><button class="square legend-btn" title="Show/hide legend" style="transform: rotate(-90deg)">&#8562;</button>
             </span></td>
           </tr>
 
@@ -215,11 +203,11 @@
 
           <!-- opacity -->
           <tr data-item="opacity">
-            <td>Opacity</td>
+            <td title="Alpha value of the fill color">Opacity</td>
             <td><select id="opacity-field-sel"></select></td>
             <td><span id="opacity-param-span" class="hidden">
               <button class="square dropdown scale-btn" id="opacity-scale-btn"></button><!--
-              --><button class="square legend-btn" title="Show/hide legend">&#9783;</button>
+              --><button class="square legend-btn" title="Show/hide legend" style="transform: rotate(-90deg)">&#8562;</button>
             </span></td>
           </tr>
 
@@ -240,7 +228,7 @@
 
           <!-- color -->
           <tr data-item="color">
-            <td>Color</td>
+            <td title="RGB value of the fill color">Color</td>
             <td>
               <div>
               <select id="color-field-sel"></select><!--
@@ -249,7 +237,7 @@
             </td>
             <td><span id="color-param-span" class="hidden">
               <button class="square dropdown scale-btn" id="color-scale-btn"></button><!--
-              --><button class="square legend-btn" title="Show/hide legend">&#9783;</button>
+              --><button class="square legend-btn" title="Show/hide legend" style="transform: rotate(-90deg)">&#8562;</button>
             </span></td>
           </tr>
 
@@ -269,8 +257,8 @@
               <div id="color-legend-2">
                 <table id="color-table"></table>
                 <div id="color-table-ctrl">
-                  <button id="add-color-btn" class="square" title="Add a color"><i class="fa fa-plus"></i></button><!--
-                  --><br><button id="remove-color-btn" class="square" title="Remove a color"><i class="fa fa-minus"></i></button>
+                  <button id="add-color-btn" class="square" title="Add a color">&plus;</button><!--
+                  --><button id="remove-color-btn" class="square" title="Remove a color">&minus;</button>
                 </div>
               </div>
             </td>
@@ -282,13 +270,13 @@
       <div id="mini-head" class="panel-head">
         <span><button title="Show/hide plot panel">Plot</button></span>
       </div>
-      <div id="mini-content" class="dash-content hidden" style="position: relative;">
+      <div id="mini-content" class="dash-content hastool hidden" style="position: relative;">
 
         <!-- mini plot controls -->
-        <div class="toolbar right hidden">
-          <button id="mini-log-btn" class="square" style="letter-spacing: -0.1em;">log</button>
-          <button id="mini-plus-btn" class="square" title="Increase resolution"><i class="fa fa-plus"></i></button>
-          <button id="mini-minus-btn" class="square" title="Decrease resolution"><i class="fa fa-minus"></i></button>
+        <div class="toolbar right">
+          <button id="mini-log-btn" class="square" title="Logarithm transformation" style="letter-spacing: -0.08em; font-size: 1em;">log</button>
+          <button id="mini-plus-btn" class="square" title="Increase resolution">&plus;</button>
+          <button id="mini-minus-btn" class="square" title="Decrease resolution">&minus;</button>
         </div>
 
         <!-- mini plot variable selection -->
@@ -323,7 +311,7 @@
 
     <!-- setting panel -->
     <div id="set-panel">
-      <button id="set-btn" title="Show settings"><i class="fa fa-sliders fa-lg"></i></button>
+      <button id="set-btn" title="Show settings">&vellip;</button>
       <div class="dock active hidden">
         <div class="panel-head"><span><button disabled>Settings</button></span></div>
         <div class="dash-content">
@@ -340,32 +328,31 @@
 
     <!-- frequent panel -->
     <div id="freq-panel">
-      <button id="screenshot-btn" title="Take a screenshot (P)"><i class="fa fa-camera"></i></button>
-      <button id="polygon-btn" title="Draw polygon with mouse clicks to contain multiple contigs (Enter)" data-title="Finish polygon selection (Enter)"><i class="fa fa-pencil fa-lg"></i></button>
-      <button id="selmode-btn" title="Current selection mode: new selection"><i class="fa fa-asterisk"></i></button>
-      <button id="masking-btn" title="Masking mode: directly add selected contigs to mask (M)"><i class="fa fa-eye-slash fa-lg"></i></button>
+      <button id="screenshot-btn" title="Take a screenshot (P)">&#8889;</button>
+      <button id="polygon-btn" title="Draw polygon with mouse clicks to contain multiple contigs (Enter)" data-title="Finish polygon selection (Enter) (hold Shift to append)">&#11040;</button>
+      <!-- unused unicode symbols: &imof; &hercon; &rHar; &boxbox; -->
     </div>
 
-    <!-- calculation panel -->
-    <div id="calc-panel">
-      <button id="calc-btn" class="dropdown" title="Advanced calculations"><i class="fa fa-calculator fa-lg"></i></button>
-      <div id="calc-menu" class="menu active hidden">
-        <a id="silhouet-a" title="Calculate silhouette coefficients of contigs in the current binning plan">Silhouette score</a>
-        <a id="adj-rand-a" class="dropdown" title="Calculate adjusted Rand index of the current vs. an existing binning plan">Adj. Rand index</a>
+    <div>
+      <button id="mask-btn" title="Mask selected contigs (Delete)">&empty;</button>
+      <div id="mask-menu" class="expand dash-content">
+        <p><span id="masked-span">Masked</span><!--
+        --><button id="clear-mask-btn" class="hidden" title="Unmask all contigs">&#10005;</button>
       </div>
     </div>
 
     <!-- navigation panel -->
     <div id="nav-panel" class="hidden">
-      <button id="zoomin-btn" title="Zoom in (+)"><i class="fa fa-plus"></i></button>
-      <button id="zoomout-btn" title="Zoom out (-)"><i class="fa fa-minus"></i></button>
       <span class="spacer"></span>
-      <button id="left-btn" title="Move left (&larr;)"><i class="fa fa-arrow-left"></i></button>
-      <button id="up-btn" title="Move up (&uarr;)"><i class="fa fa-arrow-up"></i></button>
-      <button id="right-btn" title="Move right (&rarr;)"><i class="fa fa-arrow-right"></i></button>
-      <button id="down-btn" title="Move down (&darr;)"><i class="fa fa-arrow-down"></i></button>
+      <button id="zoomin-btn" title="Zoom in (+)">&plus;</button>
+      <button id="zoomout-btn" title="Zoom out (-)">&minus;</button>
       <span class="spacer"></span>
-      <button id="reset-btn" title="Reset view (0)"><i class="fa fa-refresh"></i></button>
+      <button id="left-btn" title="Move left (&larr;)">&larr;</button>
+      <button id="up-btn" title="Move up (&uarr;)">&uarr;</button>
+      <button id="right-btn" title="Move right (&rarr;)">&rarr;</button>
+      <button id="down-btn" title="Move down (&darr;)">&darr;</button>
+      <span class="spacer"></span>
+      <button id="reset-btn" title="Reset view (0)">&#10227;</button>
     </div>
   </div>
 
@@ -391,27 +378,42 @@
       <span><button title="Show/hide bins panel">Bins</button></span>
     </div>
 
-    <div id="bins-content" class="side-content">
+    <div id="bins-content" class="side-content hastool">
 
-      <!-- binning plan selector -->
-      <div class="dash-content">
-        <table>
-          <tr>
-            <td>Plan</td>
-            <td><input type="text" id="plan-sel-txt" class="dropdown" title="Load a binning plan from a categorical field"></td>
-            <td><button id="save-plan-btn" title="Save current binning plan">Save</button></td>
-          </tr>
-        </table>
-      </div>
-
-      <div>
+      <!-- binning plan -->
+      <div class="hastool">
 
         <!-- toolbar -->
-        <div class="toolbar left hidden">
-          <button id="new-empty-bin-btn" title="Create an empty new bin"><i class="fa fa-plus fa-lg"></i></button>
-          <button id="delete-bin-btn" class="hidden" title="Delete selected bin(s)"><i class="fa fa-minus fa-lg"></i></button>
-          <button id="merge-bins-btn" class="hidden" title="Merge selected bins"><i class="fa fa-compress fa-lg"></i></button>
-          <button id="export-plan-btn" title="Export current binning plan"><i class="fa fa-download fa-lg"></i></button>
+        <div class="toolbar left">
+          <button id="silhouet-btn" class="hidden" title="Evaluate binning confidence using silhouette coefficient">&#9739;</button>
+          <button id="adj-rand-btn" class="dropdown hidden" title="Compare with another binning plan using adjusted Rand index">&harr;</button>
+          <span class="spacer"></span>
+          <button id="export-plan-btn" class="hidden" title="Export current binning plan" style="transform: rotate(90deg)">&rarrb;</button>
+        </div>
+
+        <!-- plan selector -->
+        <div class="dash-content">
+          <table>
+            <tr>
+              <td>Plan</td>
+              <td><input type="text" id="plan-sel-txt" class="dropdown" title="Load a binning plan from a categorical field"></td>
+              <td><button id="save-plan-btn" class="hidden" title="Save current binning plan">Save</button></td>
+            </tr>
+          </table>
+        </div>
+      </div>
+
+      <!-- bin table -->
+      <div class="hastool" style="overflow: auto; resize: vertical;">
+
+        <!-- toolbar -->
+        <div class="toolbar left">
+          <button id="new-empty-bin-btn" title="Create an empty new bin">&plus;</button>
+          <button id="delete-bin-btn" class="hidden" title="Delete selected bin(s)">&minus;</button>
+          <button id="merge-bin-btn" class="hidden" title="Merge selected bins">&cup;</button>
+          <span class="spacer"></span>
+          <button id="mask-bin-btn" class="hidden" title="Removed masked contigs from all bins" style="font-size: 22px">&empty;</button>
+          <button id="bin-data-btn" class="hidden" title="Show data of selected bin(s)" style="font-size: 22px">&#9707;</button>
         </div>
 
         <!-- bins table -->
@@ -422,7 +424,7 @@
                 <th title="Unique bin identifier">Name</th>
                 <th title="Number of contigs">#</th>
                 <th title="Total length of contigs (kbp)">kb</th>
-                <th title="Relative abundance (%) (sum of length x coverage normalized by the entire sample)">%</th>
+                <th title="Relative abundance (%) (sum of length x coverage vs. entire sample)">%</th>
               </tr>
             </thead>
             <tbody id="bin-tbody"></tbody>
@@ -439,36 +441,30 @@
     <div id="info-head" class="panel-head">
       <span><button id="info-head-btn" title="Show/hide selected panel">Selected</button></span>
     </div>
-    <div class="side-content" style="flex-grow: 1;"><!-- filling remaing height -->
+    <div class="side-content hastool" style="overflow: auto; flex-grow: 1;"><!-- filling remaing height -->
 
       <!-- toolbar -->
-      <div class="toolbar left hidden">
-        <button id="as-new-bin-btn" class="hidden" title="Create a new bin from selected contigs"><i class="fa fa-asterisk fa-lg"></i></button>
-        <button id="add-to-bin-btn" class="hidden" title="Add selected contigs to bin"><i class="fa fa-plus fa-lg"></i></button>
-        <button id="remove-from-bin-btn" class="hidden" title="Remove selected contigs from bin"><i class="fa fa-minus fa-lg"></i></button>
-        <button id="update-bin-btn" class="hidden" title="Update bin with selected contigs"><i class="fa fa-refresh fa-lg"></i></button>
+      <div class="toolbar left">
+        <button id="as-new-bin-btn" class="hidden" title="Create a new bin from selected contigs (Space)">&lowast;</button>
+        <button id="add-to-bin-btn" class="hidden" title="Add selected contigs to bin (.)">&plus;</button>
+        <button id="remove-from-bin-btn" class="hidden" title="Remove selected contigs from bin (,)">&minus;</button>
+        <button id="update-bin-btn" class="hidden" title="Update bin with selected contigs (/)">&#8634;</button>
         <span class="spacer"></span>
-        <button id="invert-btn" class="hidden" title="Invert selection"><i class="fa fa-exchange fa-lg"></i></button>
-        <button id="mask-btn" class="hidden" title="Mask selected contigs"><i class="fa fa-eye-slash fa-lg"></i></button>
+        <button id="invert-btn" class="hidden" title="Invert selection">&#9680;</button>
       </div>
 
       <!-- info table -->
       <table id="info-table"></table>
 
       <!-- inline controls -->
-      <div id="info-ctrl" class="hidden" data-row="">
+      <div id="info-ctrl" class="hidden" style="z-index: 2;" data-row="">
         <button class="dropdown" id="info-metric-btn" title="Metric">f(x)</button><!--
         --><span id="info-ref-span">&nbsp;by&nbsp;<select id="info-ref-sel" title="Weight by reference field"></select></span><!--
         --><button id="info-plot-btn" title="Plot distribution">&#9684;</button><!--
-        --><button id="info-hide-btn" title="Hide field">&times;</button>
+        --><button id="info-hide-btn" title="Hide field">&#10005;</button>
       </div>
     </div>
 
-    <!-- mask panel -->
-    <div id="mask-head" class="panel-head" style="margin-top: auto;">
-      <span style="float: right;"><button id="clear-mask-btn" title="Clear mask"><i class="fa fa-repeat"></i> Clear</button></span>
-      <span><button id="mask-head-btn">Masked</button></span>
-    </div>
   </div>
 
 
@@ -477,7 +473,7 @@
     i.e., the main menu, can be activated by clicking the program title or
     right-clicking anywhere in the plot.
   -->
-  <div id="context-menu" style="z-index: 2;" class="menu hidden">
+  <div id="context-menu" class="menu popup hidden">
     <a id="load-data-a">Load data</a>
     <a id="show-data-a">Show data</a>
     <a id="close-data-a">Close data</a>
@@ -486,7 +482,9 @@
     <a id="export-data-a">Export data</a>
     <a id="export-image-a">Export image</a>
     <hr>
-    <a id="help-a">Help</a>
+    <a id="reset-view-a">Re-center</a>
+    <hr>
+    <a id="help-a" href="https://github.com/qiyunlab/binarena#readme" target="_blank">Help</a>
   </div>
 
 
@@ -497,12 +495,71 @@
   <!-- data table -->
   <div id="data-table-modal" class="modal hidden">
     <div class="modal-content">
-      <div class="modal-head">Data</div>
-      <div class="toolbar">
-        <button id="load-data-btn" title="Load data"><i class="fa fa-folder-open-o fa-lg"></i></button>
+      <div class="modal-head">
+        <span>
+          <button id="export-table-btn" title="Export data table">Export</button>
+        </span>
+        <span id="data-title-span">Data</span>
+        <span>
+          <button id="data-prev-btn" title="Previous page">&lt;</button>
+          <input type="text" id="data-page-txt" title="Page number" style="width: 40px;">
+          <button id="data-next-btn" title="Next page">&gt;</button>
+        </span>
       </div>
-      <div id="data-table-container">
+      <div class="modal-body">
         <table id="data-table" class="sheet"></table>
+      </div>
+      <div class="hidden">
+        <label>Data type:</label>
+        <span id="type-num-color">numeric</span>
+        <span id="type-cat-color">categorical</span>
+        <span id="type-fea-color">feature set</span>
+        <span id="type-des-color">descriptive</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Silhouette calculation -->
+  <div id="silh-modal" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-head">
+        <span>
+          <button id="silh-calc-btn">Calculate</button><!--
+          --><button id="silh-done-btn">Done</button>
+        </span>
+        <span>
+          <span id="silh-title">Silhouette coefficient</span>
+          <span id="silh-progress">Calculating&nbsp;&nbsp;<span id="calc-dots"><span>&bull;</span> <span>&bull;</span> <span>&bull;</span></span></span>
+        </span>
+        <span><button id="silh-help-btn">&quest;</button></span>
+      </div>
+      <div id="silh-body-div" class="modal-body">
+        <div id="silh-msg-div">
+          <div>
+            <p>Use variables:</p>
+            <table id="silh-var-sel">
+              <tr><td><input type="checkbox" id="x-calc-chk" checked>&nbsp;<i>X</i>-axis:</td><td id="x-calc-var"></td></tr>
+              <tr><td><input type="checkbox" id="y-calc-chk" checked>&nbsp;<i>Y</i>-axis:</td><td id="y-calc-var"></td></tr>
+              <tr><td><input type="checkbox" id="size-calc-chk">&nbsp;Size:</td><td id="size-calc-var"></td></tr>
+              <tr><td><input type="checkbox" id="opacity-calc-chk">&nbsp;Opacity:</td><td id="opacity-calc-var"></td></tr>
+              <tr><td><input type="checkbox" id="color-calc-chk">&nbsp;Color:</td><td id="color-calc-var"></td></tr>
+            </table>
+            <div id="silh-done-div" class="hidden">
+              <p>Calculation completed.</p>
+              <table id="silh-res-todo">
+                <tr><td><input type="checkbox" id="silh-save-chk" checked>&nbsp;Save result to field: <input type="text" id="silh-col-text"></td></tr>
+                <tr><td><input type="checkbox" id="silh-export-chk">&nbsp;Export result to file.</td></tr>
+              </table>
+            </div>
+          </div>
+          <div></div>
+        </div>
+        <div id="silh-table-wrap" class="hidden">
+          <table id="silh-table">
+            <thead id="silh-thead"><tr><th>Bin</th><th>#</th><th>Mean</th></tr></thead>
+            <tbody id="silh-tbody"></tbody>
+          </table>
+        </div>
       </div>
     </div>
   </div>
@@ -510,52 +567,48 @@
   <!-- help window -->
   <div id="help-modal" class="modal hidden">
     <div class="modal-content" style="width: 600px;">
-      <div class="modal-head">Help</div>
-      <table style="border-collapse: separate;">
-        <tr>
-          <td rowspan="4" style="padding-right: 25px;"><img src="path/to/logo.png" alt="BinaRena" width="200" height="176"></td>
-          <td><big>BinaRena</big></td>
-        </tr>
-        <tr><td>Version: 0.0.1</td></tr>
-        <tr><td>Main developer: Qiyun Zhu (<a href="mailto:qiyunzhu@gmail.com">qiyunzhu@gmail.com</a>)</td></tr>
-        <tr><td>Website: <a href="https://github.com/qiyunzhu/binarena">https://github.com/qiyunzhu/binarena</a></td></tr>
-      </table>
-      <br>
-      <div id="quick-help">
-        <p>Quick tips</p>
-        <hr>
-        <ul>
-          <li>Feel like you are with a digital map.</li>
-        </ul>
-        <br>
+      <div class="modal-head"><span></span><span>Help</span><span></span></div>
+      <div class="modal-body">
+        <table style="border-collapse: separate;">
+          <tr>
+            <td rowspan="4" style="padding-right: 25px;"><img src="path/to/logo.png" alt="BinaRena" width="200" height="176"></td>
+            <td><big>BinaRena</big></td>
+          </tr>
+          <tr><td>Version: 0.0.1</td></tr>
+          <tr><td>Main developer: Qiyun Zhu (<a href="mailto:qiyunzhu@gmail.com">qiyunzhu@gmail.com</a>)</td></tr>
+          <tr><td>Website: <a href="https://github.com/qiyunlab/binarena">https://github.com/qiyunlab/binarena</a></td></tr>
+        </table>
       </div>
     </div>
   </div>
 
   <!-- scale select dropdown -->
   <div id="scale-select" class="popup hidden">
-    <p>Scale: <span id="current-scale"></span></p>
+    <p><span id="current-scale"></span></p>
     <table class="square" id="scale-options">
       <tr>
-        <td title="none"><i>x</i></td>
+        <td title="None (linear)" data-scale="none"><i>x</i></td>
+        <td title="Rank" data-scale="rank">R</td>
       </tr>
       <tr>
-        <td title="square"><i>x</i><sup><small>2</small></sup></td>
-        <td title="cube"><i>x</i><sup><small>3</small></sup></td>
+        <td title="Square" data-scale="square"><i>x</i><sup><small>2</small></sup></td>
+        <td title="Square root" data-scale="sqrt">&radic;<i>x</i></td>
       </tr>
       <tr>
-        <td title="sqrt">&radic;<i>x</i></td>
-        <td title="cbrt"><sup><small>3</small></sup>&radic;<i>x</i></td>
+        <td title="Cube" data-scale="cube"><i>x</i><sup><small>3</small></sup></td>
+        <td title="Cube root" data-scale="cbrt">&#8731;<i>x</i></td>
       </tr>
       <tr>
-        <td title="log">log</td>
-        <td title="log2">log<sub><small>2</small></sub></td>
-        <td title="log10">log<sub><small>10</small></sub></td>
+        <td title="Fourth power" data-scale="4pow"><i>x</i><sup><small>4</small></sup></td>
+        <td title="Fourth root" data-scale="4rt">&#8732;<i>x</i></td>
       </tr>
       <tr>
-        <td title="exp"><i>e</i><sup><small><i>x</i></small></sup></td>
-        <td title="exp2">2<sup><small><i>x</i></small></sup></td>
-        <td title="exp10">10<sup><small><i>x</i></small></sup></td>
+        <td title="Logarithm" data-scale="log">log</td>
+        <td title="Exponential" data-scale="exp"><i>e</i><sup><small><i>x</i></small></sup></td>
+      </tr>
+      <tr>
+        <td title="Logit = log(x/(1-x))" data-scale="logit" style="letter-spacing: -0.08em;">logit</td>
+        <td title="Arcsine square root" data-scale="asin" style="letter-spacing: -0.05em;">asin</td>
       </tr>
     </table>
   </div>
@@ -577,8 +630,8 @@
   <!-- toast message -->
   <div id="toast" class="hidden">
     <span id="toast-msg"></span><!--
-    --><span id="loading-dots" class="hidden"><span>&bull;</span> <span>&bull;</span> <span>&bull;</span></span><!--
-    --><button id="toast-close-btn" title="Close message" class="hidden">&times;</button>
+    --><span id="toast-dots" class="hidden"><span>&bull;</span> <span>&bull;</span> <span>&bull;</span></span><!--
+    --><button id="toast-close-btn" title="Close message" class="hidden">&#10005;</button>
   </div>
 
   <!-- list select dropdown (also for auto-complete textbox) -->
@@ -589,10 +642,12 @@
   <!-- modals -->
   <div id="myModal" class="modal hidden">
     <div class="modal-content">
-      <p class="title-bar"><span>Test</span><button class="close">&times;</button></p>
-      <br>
-      <hr>
-      <p>Some text in the Modal..</p>
+      <div class="modal-head">
+        <span>Left controls</span>
+        <span>Title</span>
+        <span>Right controls</span>
+      </div>
+      <p>Some text in the Modal...</p>
     </div>
   </div>
 

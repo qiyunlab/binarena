@@ -100,7 +100,8 @@ gaussian.prototype.pdf = function(x) {
     }
     ex += d[i] * sum;
   }
-  return 1 / (Math.pow(Math.sqrt(2 * Math.PI), this.n) * Math.sqrt(det(this.variance))) * Math.exp(ex / -2);
+  return 1 / (Math.pow(Math.sqrt(2 * Math.PI), this.n) * Math.sqrt(
+    det(this.variance))) * Math.exp(ex / -2);
 };
 
 

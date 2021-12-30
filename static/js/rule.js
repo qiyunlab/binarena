@@ -14,6 +14,9 @@
  * @function isMissing
  * @param {string} str - string to check
  * @returns {boolean} check result
+ * @description This is only a subset of Pandas default missing values.
+ * @see {@link https://pandas.pydata.org/docs/reference/api/
+ * pandas.read_table.html}
  */
 function isMissing(str) {
   const nulls = ['na', 'n/a', 'nan', 'null', ''];
@@ -22,178 +25,18 @@ function isMissing(str) {
   } catch (e) {
     throw e.message + ' ' + str;
   }
-  return (nulls.indexOf(str.toLowerCase()) !== -1);
-}
-
-
-/**
- * Guess field types.
- * This function in overly long, because it attempts to guess the data type of
- * each field.
- * Options are: number, category, feature, description.
- * @function guessFieldType
- * @param {string} name - field name of the column
- * @param {string[]} arr - cell values of the column
- * @throws if field name is invalid
- * @returns {[string, string]} field type, updated field name
- */
-function guessFieldType(name, arr) {
-
-  // look for pre-defined field type
-  const code2type = {
-    'n': 'number',
-    'c': 'category',
-    'f': 'feature',
-    'd': 'description'
-  };
-  let type = '';
-  let i = name.indexOf('|');
-  if (i > -1) {
-    if (i != name.length - 2) {
-      throw `Invalid field name: "${name}".`;
-    }
-    const code = name.slice(-1);
-    if (!(code in code2type)) {
-      throw `Invalid field type code: "${code}".`;
-    }
-    type = code2type[code];
-    name = name.slice(0, i);
-  }
-
-  // description
-  if (type === 'description') {
-    return ['description', name];
-  }
-
-  // check number
-  let areNumbers = true;
-  for (i = 0; i < arr.length; i++) {
-    if (!isMissing(arr[i]) && isNaN(arr[i])) { // not a number
-      areNumbers = false;
-      break;
-    }
-  }
-
-  if ((type === 'number') && !areNumbers) {
-    throw `Non-numeric value(s) found in number-type field "${name}".`;
-  }
-
-  // check integer or float
-  if (areNumbers && ((type === '') || (type === 'number'))) {
-    let areIntegers = true;
-    for (i = 0; i < arr.length; i++) {
-      // if it has float point
-      if (!isMissing(arr[i]) && (arr[i].indexOf('.') !== -1)) {
-        areIntegers = false;
-        break;
-      }
-    }
-
-    // convert to integers
-    if (areIntegers) {
-      for (i = 0; i < arr.length; i++) {
-        arr[i] = isMissing(arr[i]) ? null : parseInt(arr[i]);
-      }
-    }
-
-    // convert to floats
-    else {
-      for (i = 0; i < arr.length; i++) {
-        arr[i] = isMissing(arr[i]) ? null : parseFloat(arr[i]);
-      }
-    }
-    return ['number', name];
-  }
-
-  // check category
-  else {
-    let areCategories = true;
-    for (i = 0; i < arr.length; i++) {
-      arr[i] = arr[i].replace(/\s*,\s*/g, ','); // trim whitespaces
-      if (!isMissing(arr[i]) && (arr[i].indexOf(',') !== -1)) { // has comma
-        areCategories = false;
-        break;
-      }
-    }
-
-    // check weights
-    let areWeightsIntegers = true;
-    let items, j, a, weight;
-    for (i = 0; i < arr.length; i++) {
-      if (!isMissing(arr[i])) {
-        items = arr[i].split(',');
-        for (j = 0; j < items.length; j++) {
-          a = items[j].split(':');
-          if (a.length > 2) {
-            throw `Invalid expression: "${items[j]}": multiple colons.`;
-          } else if (a.length === 2) {
-            weight = a[1];
-            if (isNaN(weight)) {
-              throw `Invalid expression: "${items[j]}": weight must be a 
-                number.`;
-            } else if (weight.indexOf('.') !== -1) {
-              areWeightsIntegers = false;
-              break;
-            }
-          }
-        }
-      }
-    }
-
-    // convert to categories
-    if (areCategories || (type == 'category')) {
-      let a;
-      for (i = 0; i < arr.length; i++) {
-        if (isMissing(arr[i])) {
-          arr[i] = null;
-        } else {
-          a = arr[i].split(':');
-          if (a.length === 1) {
-            arr[i] = [arr[i], null];
-          } else {
-            arr[i] = [a[0], (areWeightsIntegers ?
-              parseInt(a[1]) : parseFloat(a[1]))];
-          }
-        }
-      }
-      return ['category', name];
-    }
-
-    // convert to features
-    else {
-      let items, j, a;
-      for (i = 0; i < arr.length; i++) {
-        if (isMissing(arr[i])) {
-          arr[i] = {}; // empty object
-        } else {
-          items = arr[i].split(',');
-          arr[i] = {};
-          for (j = 0; j < items.length; j++) {
-            a = items[j].split(':');
-            if (a.length === 1) {
-              arr[i][items[j]] = null;
-            } else {
-              arr[i][a[0]] = (areWeightsIntegers ?
-                parseInt(a[1]) : parseFloat(a[1]));
-            }
-          }
-        }
-      }
-      return ['feature', name];
-    }
-  }
+  return nulls.includes(str.toLowerCase());
 }
 
 
 /**
  * Define display items based on data.
  * @function guessDisplayFields
- * @param {Object} data - data object
- * @param {Object} view - view object
+ * @param {Object} mo - main object
  * @throws if x and y cannot be determined
  * @returns {[number, number, ?number, ?number, ?number]} field indices for
  * x, y, size, opacity, color
- * @todo Specifically, five display items are to be inferred:
+ * @description Specifically, five display items are to be inferred:
  *    x, y, size, opacity : {idx, factor, scale, min, max}
  * factor is a number to be multiplied.
  * scale can be: null, square, sqrt, cube, cbrt, log, log10, exp, exp10
@@ -202,7 +45,7 @@ function guessFieldType(name, arr) {
  * n is the top n categories to be colored.
  * Options are: number, category, feature, description.
  */
-function guessDisplayFields(data, view) {
+function guessDisplayFields(mo) {
   const res = {
     x: null,
     y: null,
@@ -210,18 +53,24 @@ function guessDisplayFields(data, view) {
     opacity: null,
     color: null
   };
+  const cols = mo.cols,
+        cache = mo.cache;
+  const names = cols.names,
+        types = cols.types;
 
   // first, locate x and y (mandatory)
+  const xaxes = ['x', 'xaxis', 'x1', 'axis1', 'dim1', 'pc1', 'pca1', 'tsne1',
+                 'umap1', 'pcoa1', 'nmds1'];
+  const yaxes = ['y', 'yaxis', 'x2', 'axis2', 'dim2', 'pc2', 'pca2', 'tsne2',
+                 'umap2', 'pcoa2', 'nmds2'];
   const xyCand = [null, null];
   let name;
-  for (let i = 1; i < data.cols.length; i++) {
-    if (data.types[i] !== 'number') {
-      continue;
-    }
-    name = data.cols[i].toLowerCase();
-    if (name === 'x') {
+  for (let i = 1; i < names.length; i++) {
+    if (types[i] !== 'num') continue;
+    name = names[i].toLowerCase().replace(/[\s_-]/g, '');
+    if (xaxes.indexOf(name) !== -1) {
       xyCand[0] = i;
-    } else if (name === 'y') {
+    } else if (yaxes.indexOf(name) !== -1) {
       xyCand[1] = i;
     }
   }
@@ -232,19 +81,18 @@ function guessDisplayFields(data, view) {
     res.y = xyCand[1];
 
     // add other items
-    res.size = view.spcols.len || null;
-    res.opacity = view.spcols.cov || null;
-    res.color = guessRankColumn(data) || view.spcols.gc || null;
+    res.size = cache.speci.len || null;
+    res.opacity = cache.speci.cov || null;
+    res.color = guessRankColumn(cols) || cache.speci.gc || null;
   }
 
   // otherwise, get gc -> coverage -> length
   else {
-    const keys = ['gc', 'cov', 'len'];
     const avails = [];
     let icol;
-    for (let i = 0; i < keys.length; i++) {
-      icol = view.spcols[keys[i]];
-      if (icol !== null) avails.push(icol);
+    for (let key of ['gc', 'cov', 'len']) {
+      icol = cache.speci[key];
+      if (icol) avails.push(icol);
     }
     if (avails.length >= 2) {
       res.x = avails[0];
@@ -259,30 +107,27 @@ function guessDisplayFields(data, view) {
 
 
 /**
- * Guess display scales based on field names.
+ * Guess display scales of items.
  * @function guessDisplayScales
- * @param {string[]} items - field names
- * @returns {Object} field name to scale dict
+ * @param {string[]} mo - main object
+ * @returns {Object} display item to scale mapping
+ * @description Currently it guesses about two special columns:
+ * - length: cubic root
+ * - coverage: square root
  */
-function guessDisplayScales(items) {
+function guessDisplayScales(mo) {
+  const view = mo.view;
+  const speci = mo.cache.speci;
+  const items = ['x', 'y', 'size', 'opacity', 'color'];
   const res = {};
-  items.forEach(item => {
-    switch(item) {
-      case 'x':
-      case 'y':
-      case 'color':
-        res[item] = 'none';
-        break;
-      case 'size':
-        res[item] = 'cbrt';
-        break;
-      case 'opacity':
-        res[item] = 'sqrt';
-        break;
-      default:
-        throw 'Error: invalid display item.';
-    }
-  });
+  let i;
+  for (let item of items) {
+    i = view[item].i
+    if (!i) res[item] = 'none';
+    else if (speci.len === i) res[item] = 'cbrt';
+    else if (speci.cov === i) res[item] = 'sqrt';
+    else res[item] = 'none';
+  }
   return res;
 }
 
@@ -290,126 +135,84 @@ function guessDisplayScales(items) {
 /**
  * Guess which column represents the "length" property.
  * @function guessLenColumn
- * @param {Object} data - data object
+ * @param {Object} cols - data object
  * @returns {number} - index of "length" column
  */
-function guessLenColumn(data) {
+function guessLenColumn(cols) {
   const keys = ['length', 'size', 'len', 'bp'];
-  return findColumnByKeys(data, keys, ['number']);
+  return findColumnByKeys(cols, keys, ['num']);
 }
 
 
 /**
  * Guess which column represents the "coverage" property.
  * @function guessCovColumn
- * @param {Object} data - data object
+ * @param {Object} cols - cols object
  * @returns {number} - index of "coverage" column
  */
-function guessCovColumn(data) {
+function guessCovColumn(cols) {
   const keys = ['coverage', 'cov', 'depth'];
-  return findColumnByKeys(data, keys, ['number']);
+  return findColumnByKeys(cols, keys, ['num']);
 }
 
 
 /**
  * Guess which column represents the "gc" property.
  * @function guessGCColumn
- * @param {Object} data - data object
+ * @param {Object} cols - cols object
  * @returns {number} - index of "gc" column
  */
-function guessGCColumn(data) {
+function guessGCColumn(cols) {
   const keys = ['gc', 'g+c', 'gc%', 'gc-content', 'gc-ratio'];
-  return findColumnByKeys(data, keys, ['number']);
+  return findColumnByKeys(cols, keys, ['num']);
 }
 
 
 /**
  * Guess which column represents the highest taxonomic rank.
  * @function guessRankColumn
- * @param {Object} data - data object
+ * @param {Object} cols - cols object
  * @returns {number} - index of high rank column
  */
-function guessRankColumn(data) {
+function guessRankColumn(cols) {
   // ignore kingdom/domain and species
   const keys = ['phylum', 'class', 'order', 'family', 'genus'];
-  return findColumnByKeys(data, keys, ['category']);
+  return findColumnByKeys(cols, keys, ['cat']);
 }
 
 
 /**
- * Find column name by keywords
- * @function findColName
- * @param {Object} data - data object
+ * Find column by keywords.
+ * @function findColumnByKeys
+ * @param {Object} cols - cols object
  * @param {string[]} keys - keywords
- * @param {string[]} [types=] - data types
- * @returns {number} - index of result column
+ * @param {string[]} [types=] - valid data types
+ * @returns {number} - index of found column, or 0 if not found
+ * @description It first attempts whole-word matching; if not found, it will
+ * try prefix matching, using a fixed list of delimiters.
  */
-function findColumnByKeys(data, keys, types) {
-
-  // get column names
-  const cols = getColNames(data, types);
-
-  // find a column name that is identical to one of the keywords
-  let col = matchWhole(keys, cols);
-  if (col) return data.cols.indexOf(col);
-
-  // if fail, find a column name that starts with one of the keywords
-  col = matchPrefix(keys, cols);
-  if (col) return data.cols.indexOf(col);
-  else return null;
-}
-
-
-/**
- * Get column names by type.
- * @function getColNames
- * @param {Object} data - data object
- * @param {string[]} [types=] - data types
- */
-function getColNames(data, types) {
-  const cols = data.cols;
-        types = data.types;
-  const notype = (typeof masking === 'undefined');
-  const res = [];
-  for (let i = 1; i < cols.length; i++) {
-    if (notype || types.indexOf(types[i]) !== -1) res.push(cols[i]);
-  }
-  return res;
-}
-
-
-/**
- * Match two arrays by whole
- * @function matchWhole
- * @param {string[]} keys - keywords
- * @param {string[]} cols - column names
- */
-function matchWhole(keys, cols) {
-  for (let i = 0; i < cols.length; i++) {
-    if (keys.indexOf(cols[i].toLowerCase()) !== -1) return cols[i];
-  }
-  return null;
-}
-
-
-/**
- * Match two arrays by prefix
- * @function matchWhole
- * @param {string[]} keys - keywords
- * @param {string[]} cols - column names
- */
-function matchPrefix(keys, cols) {
+function findColumnByKeys(cols, keys, types) {
   const delims = [' ', '/', '_', '.'];
-  let j, prefix;
-  for (let i = 0; i < delims.length; i++) {
-    for (j = 0; j < cols.length; j++) {
-      prefix = cols[j].toLowerCase().split(delims[i], 1)[0];
-      if (keys.indexOf(prefix) !== -1) {
-        return cols[i];
-      }
+  const n = cols.names.length;
+  let type, whole = 0, prefix = 0;
+  for (let i = 1; i < n; i ++) {
+    type = cols.types[i];
+    if (type.endsWith('wt')) continue;
+    if (types && types.indexOf(type) === -1) continue;
+    let str = cols.names[i].toLowerCase();
+    if (keys.indexOf(str) !== -1) {
+      whole = i;
+      break;
+    }
+    if (prefix) continue;
+    for (let d of delims) {
+      if (keys.indexOf(str.substring(0, str.indexOf(d))) !== -1) {
+        prefix = i;
+        break;
+      };
     }
   }
-  return null;
+  return whole ? whole : prefix;
 }
 
 
@@ -441,28 +244,6 @@ function guessColMetric(col) {
 
 
 /**
- * Format a category cell as string.
- * @function category2Str
- * @param {Array} val - cell value (array of [category, weight])
- * @returns {string} formatted string
- */
-function category2Str(val) {
-  return (val === null ? '' : val[0]);
-}
-
-
-/**
- * Format a feature cell as string.
- * @function feature2Str
- * @param {Object} val - cell value (object of feature: weight pairs)
- * @returns {string} formatted string
- */
-function feature2Str(val) {
-  return (val === null ? '' : Object.keys(val).sort().join(', '));
-}
-
-
-/**
  * Format a cell as string.
  * @function value2Str
  * @param {*} val - cell value
@@ -471,17 +252,18 @@ function feature2Str(val) {
 function value2Str(val, type) {
   let str = '';
   switch (type) {
-    case 'number':
-      str = (val === null) ? 'na' : formatNum(val, 5);
+    case 'num':
+      // val === val is false if val is NaN
+      str = (val === val) ? formatNum(val, 5) : '';
       break;
-    case 'category':
-      str = category2Str(val);
+    case 'cat':
+      str = val;
       break;
-    case 'feature':
-      str = feature2Str(val);
+    case 'fea':
+      str = val.join(', ');
       break;
     default:
-      str = (val === null) ? 'na' : val.toString();
+      str = String(val);
   }
   return str;
 }
@@ -509,34 +291,34 @@ function FormatLength(len) {
  * Generate a new name that does not conflict with existing names.
  * Will read like "prefix_#", in which "#" is an incremental integer.
  * @function newName
- * @param {Object} exists - existing names
+ * @param {Set} exist - existing names
  * @param {string} prefix - name prefix
  * @returns {string} new name
  */
-function newName(exists, prefix) {
+function newName(exist, prefix) {
   let name;
   let i = 1;
   while (true) {
-    name = prefix + '_' + i;
-    if (name in exists) i ++;
+    name = `${prefix}_${i}`;
+    if (exist.has(name)) i ++;
     else return name;
   }
 }
 
 
 /**
- * Dictionary of singular to plural transformations.
+ * @constant {Object} PLURAL_FORMS - Dictionary of singular to plural
+ * transformations.
  */
 const PLURAL_FORMS = {};
 
 
 /**
- * Generate a new name that does not conflict with existing names.
- * Will read like "prefix_#", in which "#" is an incremental integer.
+ * Convert a noun and a number into the appropriate form.
  * @function plural
- * @param {Object} exists - existing names
- * @param {string} prefix - name prefix
- * @returns {string} new name
+ * @param {Object} noun - noun
+ * @param {string} n - number
+ * @returns {string} formatted phrase
  */
 function plural(noun, n) {
   if (n <= 1) return n + ' ' + noun;

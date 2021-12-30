@@ -6,189 +6,359 @@
  * @version 0.0.1
  * @license BSD 3-Clause
  *
- * @description The program does not dependent on any third-party libraries.
- * The code is intended to be compatible with ES5 (ECMAScript 5.1). Please
- * refrain from using any ES6+ syntax. The program is intended to be compatible
- * with Internet Explorer 10 and later. Please consider when using more recent
- * features.
- *
  * @module main
  * @file Definition and initiation of the main object.
- * @description The whole program has only one top-level entry: the window load
- * event. It initializes the main object and passes it to functions. There is
- * no global variable.
+ * @description
+ * 
+ * The whole program has only one top-level entry: the window load event. It
+ * initializes the main object and passes it to functions. 
+ * 
+ * The main object stores all information of the program. There is no global
+ * variable.
+ * 
+ * The main object is merely for storing information, but it does not have
+ * methods. The codebase is data-oriented.
  */
 
 
 /**
- * main object.
+ * Main object.
  * @class
  * @function mainObj
- * @property {Object} data - contig data and metadata
- * @property {Object} view - current view
- * @property {Object} stat - transient status
- * @property {Object.<number, null>} pick - indices of picked contigs
- * @property {Object.<number, null>} mask - indices of masked contigs
- * @property {Object.<string, Object.<number, null>>} bins - binning plan
- * @property {Object} rena - arena canvas DOM
- * @property {Object} oray - overlay canvas DOM
- * @property {Object} mini - mini plot
- * @property {number[]} dist - pairwise distances among all contigs 
- * @property {Object} theme - program theme
+ * @property {Array}  data   - contig data
+ * @property {Object} cols   - column metadata
+ * @property {Object} dict   - dictionary
+ * @property {Object} filter - contig filter
+ * @property {Object} cache  - data cache
+ * @property {Object} view   - current view
+ * @property {Object} stat   - transient status
+ * @property {Object} picked - contig selection
+ * @property {Object} masked - contig masking
+ * @property {Object} tabled - indices of contigs in data table
+ * @property {Object} bins   - binning plan
+ * @property {Object} rena   - arena canvas
+ * @property {Object} oray   - overlay canvas
+ * @property {Object} mini   - mini plot
+ * @property {Object} theme  - program theme
  */
 function mainObj() {
 
   /**
-   * Data object.
-   * @member {Object} data
-   * @property {string[]} cols - field names
-   * @property {string[]} types - field types
-   * @property {Object.<string, Object.<string, string>>} dicts - dictionaries
-   * @property {Array.<Array.<*>>} df - data frame (2D array)
+   * Dataset.
+   * @member {Array} data
+   * @description The data object stores the raw data of the assembly.
+   * 
+   * It is a 2D array. Each child array stores the data of a column (field).
+   * The array index is the index of each contig.
+   * 
+   * This structure ensures the homogeneity of data type in each child array.
+   * Modern JavaScript engines can identify such property and optimize the
+   * array performance accordingly.
+   * 
+   * This data structure is also used in common data table libraries, such as
+   * Pandas.
+   * @see {@link https://pandas.pydata.org/pandas-docs/stable/user_guide/
+   * dsintro.html}
+   * 
+   * Theoretically, a potential further optimization is to replace normal
+   * arrays with typed arrays, which are more efficient in both memory and
+   * access.
+   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/
+   * Typed_arrays}
+   * 
+   * However, the hassle of detecting and assigning data types may or may not
+   * be worth since modern JavaScript engines have similar optimizations under
+   * the hood for regular arrays of homogeneous data type. Therefore, this
+   * remains for further investigation.
    */
-  this.data = {
-    cols: [], 
-    types: [],
-    dicts: {},
-    df: [],
-  };
+  this.data = [];
+
 
   /**
-   * View object.
+   * Data columns.
+   * @member {Object} cols
+   * @description The metadata of columns (fields) of the dataset.
+   * 
+   * @property {string[]} names - column names
+   * Must be unique except for weight columns, which have the same column name
+   * as the original column.
+   * 
+   * @property {string[]} types - column types
+   * May have the following values:
+   * @param {string}   id  - unique contig identifier, must be the 1st column
+   * @param {number}   num - numeric variable
+   * - Missing data are stored as NaN.
+   * @param {string}   cat - categorical variable
+   * - Missing data are stored as '' (empty string).
+   * @param {string[]} fea - feature sets
+   * - Missing data are stored as [] (empty array).
+   * @param {string[]} des - description
+   * - Missing data are stored as [] (empty array).
+   * @param {number}   cwt - weights of categories
+   * @param {number[]} fwt - weights of features (same order)
+   */
+  this.cols = {
+    names: [],
+    types: []
+  };
+
+
+  /**
+   * Dictionary of categories and features.
+   * @member {Object.<Map>} dict
+   * @description Mappings of category and feature IDs to descriptions.
+   * Examples include taxID to taxon name, gene ID to product name, etc.
+   * Key: column index, value: mapping.
+   * @todo This feature is currently not in use.
+   */
+  this.dict = {};
+
+
+  /**
+   * Contig filter.
+   * @member {Object.<Map>} filt
+   * @description Filter of input contigs by their properties, currently
+   * including length and coverage. Contigs that don't meet the criteria
+   * will not be read into the dataset.
+   * @property {number} len - minimum length threshold
+   * @property {number} cov - minimum coverage threshold
+   */
+  this.filter = {
+    len: 1000,
+    cov: 1.0
+  };
+
+
+  /**
+   * Data cache.
+   * @member {Object} cache
+   * @description Reusable calculation results based on the dataset.
+   * 
+   * @property {number} nctg - number of contigs in the dataset
+   * Equivalent to data[0].length. Stored in case dataset is closed.
+   * 
+   * @property {Object.<number>} speci - indices of special columns
+   * Three contig properties are special in the analysis:
+   * @param len - length
+   * @param cov - coverage
+   * @param gc  - GC content
+   * 
+   * @property {number} abund - total abundance of contigs
+   * Equals to the sum of (length x coverage) of all contigs.
+   * Used to calculate the relative abundance of individual contigs and bins.
+   *
+   * @property {Object.<Map>} freqs - category and feature frequencies
+   * Used to determine the most frequent categories or features to display.
+   * Key: column index, value: frequency map.
+   * @todo Feature frequency is currently not in use.
+   * 
+   * @property {number} npick - number of contigs selected
+   * @property {number} nmask - number of contigs masked
+   * 
+   * @property {Set.<string>} binns - current bin names
+   * Note: Bin names is a superset of actual bins in the dataset, because there
+   * can be empty bins.
+   * 
+   * @param {number[][]} pdist - pairwise distance among all contigs
+   * Stored as a condensed distance matrix (i.e., a 1D array).
+   * Calculating such a matrix is expensive, therefore it is cached here to
+   * avoid duplicated calculations.
+   * @see {@link https://docs.scipy.org/doc/scipy/reference/generated/scipy.
+   * spatial.distance.pdist.html}
+   */
+  this.cache = {
+    nctg:  0,
+    speci: {},
+    abund: 0,
+    freqs: {},
+    npick: 0,
+    nmask: 0,
+    binns: new Set(),
+    pdist: [],
+    silhs: []
+  };
+
+
+  /**
+   * Display properties.
    * @member {Object} view
-   * @property {{x: number, y: number}} pos - viewport position
-   * @property {number} scale - scaling factor
-   * @property {Object} x - x-axis variable
-   * @property {Object} y - y-axis variable
-   * @property {Object} size - size variable
-   * @property {Object} opacity - opacity variable
-   * @property {boolean} grid - whether show grid
-   * @property {number} rbase - base radius (px) of contig
-   * @property {string} contpal - continuous palette
-   * @property {string} discpal - discrete palette
-   * @property {number} ncolor - number of categories to color
-   * @property {{len: number, cov: number}} filter - contig filter
+   * @description Visual properties of the main plot.
+   * 
+   * @property {number}  posX    - viewport position x
+   * @property {number}  posY    - viewport position y
+   * @property {number}  scale   - scaling factor
+   * 
+   * @property {Object}  x       - x-axis variable
+   * @property {Object}  y       - y-axis variable
+   * @property {Object}  size    - size variable
+   * @property {Object}  opacity - opacity variable
+   * @property {Object}  color   - color variable
+   * 
+   * @property {boolean} grid    - whether show grid
+   * @property {string}  contpal - continuous palette
+   * @property {string}  discpal - discrete palette
+   * @property {number}  ncolor  - number of categories to color
    */
   this.view = {
     /** canvas rendering */
-    pos: {
-      x: 0,
-      y: 0
-    },
-    scale: 1.0,
-
+    posX:    0,
+    posY:    0,
+    scale:   1.0,
     /** display variables */
     x:       {},
     y:       {},
     size:    {},
     opacity: {},
     color:   {},
-
     /** display features */
     grid:    false,
-    rbase:   15,
     contpal: DEFAULT_CONTINUOUS_PALETTE,
     discpal: DEFAULT_DISCRETE_PALETTE,
-    ncolor:  7,
-
-    /** contig filter */
-    filter: {
-      len: 1000,
-      cov: 1.0
-    },
-
-    /** indices of special columns */
-    spcols: {
-      len: null,
-      cov: null,
-      gc:  null
-    },
-
-    /** pre-cached data info */
-    categories: {},  // column to category to frequency map
-    features:   {},  // column to category to frequency map
-    decimals:   {},  // column to maximum decimals map
-    abundance:  null // total abundance (sum of len * cov)
+    ncolor:  7
   };
+
 
   /**
    * Display item properties.
    * @member {Object} * 
-   * @property {number} i - data column index
-   * @property {string} scale - scale key
-   * @property {number} min - minimum after scaling
-   * @property {number} max - maximum after scaling
-   * @property {number} lower - lower bound of visual parameter
-   * @property {number} upper - upper bound of visual parameter
-   * @property {boolean} zero - whether lower bound is zero or minimum
+   * @property {number}  i       - data column index
+   * @property {string}  scale   - scale key
+   * @property {number}  min     - minimum after scaling
+   * @property {number}  max     - maximum after scaling
+   * @property {number}  lower   - lower bound of visual parameter
+   * @property {number}  upper   - upper bound of visual parameter
+   * @property {number}  base    - default value 
+   * @property {boolean} zero    - whether lower bound is zero or minimum
+   * @property {boolean} contmap - continuous color map
+   * @property {boolean} discmap - discrete color map
    */
-  let item, param, obj;
-  for (item of ['x', 'y', 'size', 'opacity', 'color']) {
-    for (param of ['i', 'scale', 'min', 'max']) {
+  for (let item of ['x', 'y', 'size', 'opacity', 'color']) {
+    for (let param of ['i', 'scale', 'min', 'max']) {
       this.view[item][param] = null;
     }
   }
-  for (item of ['size', 'opacity', 'color']) {
-    obj = this.view[item];
+  for (let item of ['size', 'opacity', 'color']) {
+    let obj = this.view[item];
     obj.lower = 0;
     obj.upper = 100;
     obj.zero = true;
   }
+  let obj = this.view.color;
+  obj.contmap = [];
+  obj.discmap = {};
+
+  this.view.size.base = 15;       // radius = 15px
+  this.view.opacity.base = 0.5;   // grey scale = 50%
+  this.view.color.base = '0,0,0'; // black
+
 
   /**
-   * Item-specific properties
+   * Transformed data for visualization.
+   * @member {Object} trans
+   * @property {number[]} x       - x-axis variable
+   * @property {number[]} y       - y-axis variable
+   * @property {number[]} size    - size variable
+   * @property {number[]} opacity - opacity variable
+   * @property {number[]} color   - color variable
+   * @property {string[]} rgb     - RGB value
+   * @property {string[]} rgba    - RGBA value
+   * They are 1D arrays of the same size as the dataset. They store transformed
+   * data for visualization purpose to avoid duplicated calculations. They need
+   * to be updated when the dataset is updated or the corresponding display
+   * item is changed.
    */
-  this.view.color.contmap = [];
-  this.view.color.discmap = {};
+  this.trans = {
+    x:       [],
+    y:       [],
+    size:    [],
+    opacity: [],
+    color:   [],
+    rgb:     [],
+    rgba:    []
+  };
+
 
   /**
-   * Stat object
+   * Program status.
    * @member {Object} stat
+   * @description Transcient status of the program. Used to determine the
+   * correct behavior of the program.
+   * 
    * @property {boolean} mousedown - mouse is down
    * @property {boolean} mousemove - mouse is moving
-   * @property {{x: number, y: number}} drag - dragging position
-   * @property {string} selmode - selection mode (new, add, remove)
-   * @property {boolean} masking - masking mode is on
-   * @property {boolean} drawing - polygon drawing is ongoing
+   * @property {number}  dragX     - dragging position X
+   * @property {number}  dragY     - dragging position Y
+   * @property {boolean} drawing   - polygon drawing is ongoing
    * @property {Array.<{x: number, y: number}>} polygon - vertices of polygon
-   * @property {number} resizing - window resizing is ongoing
-   * @property {number} toasting - toasting is ongoing
+   * @property {number}  resizing  - window resizing is ongoing
+   * @property {number}  toasting  - toasting is ongoing
    */
   this.stat = {
     mousedown: false,
     mousemove: false,
-    drag:      {},
-    selmode:   'new',
-    masking:   false,
+    dragX:     0,
+    dragY:     0,
     drawing:   false,
     polygon:   [],
     resizing:  null,
     toasting:  null
   };
 
-  /** Current picked and masked contigs. */
-  this.pick = {};
-  this.mask = {};
 
-  /** Current binning plan. */
-  this.bins = {};
+  /**
+   * Contig selection and masking
+   * @member {Array.<boolean>} pick
+   * @member {Array.<boolean>} mask
+   * @description They are 1D arrays of the same size as data columns. Their
+   * elements are true/false values.
+   */
+  this.picked = [];
+  this.masked = [];
 
-  /** Main canvases for rendering. */
+
+  /**
+   * Binning plan.
+   * @member {Array.<string>} binned
+   * @description Indices of contigs included in each bin. Is a 1D array of
+   * strings. Unbinned contigs are empty strings.
+   */
+  this.binned = [];
+
+
+  /**
+   * Contigs displayed in data table
+   * @member {Array.<number>} tabled
+   * @description They are indices of contigs that should be displayed in the
+   * data table. They are not a boolean array as above because the order of
+   * indices matters.
+   */
+  this.tabled = [];
+
+
+  /**
+   * Main and overlay plots.
+   * @member {Object} rena
+   * @member {Object} oray
+   */
   this.rena = null;
   this.oray = null;
 
+
   /**
-   * Mini object
+   * Mini plot.
    * @member {Object} mini
-   * @property {number} canvas - mini canvas to plot data
-   * @property {number} field - field index of data to plot
-   * @property {boolean} log - whether log-transform data
-   * @property {number} nbin - number of bins in histogram
-   * @property {number[]} hist - saved bin sizes
-   * @property {number[]} edges - saved bin edges
-   * @property {number} bin0 - first bin in selection range
-   * @property {number} bin0 - last bin in selection range
-   * @property {number} drag - mouse dragging starting position
+   * @description Properties of the mini plot showing a histogram of a given
+   * numeric column of the selected contigs.
+   * 
+   * @property {number}   canvas - mini canvas to plot data
+   * @property {number}   field  - field index of data to plot
+   * @property {boolean}  log    - whether log-transform data
+   * @property {number}   nbin   - number of bins in histogram
+   * @property {number[]} hist   - saved bin sizes
+   * @property {number[]} edges  - saved bin edges
+   * @property {number}   bin0   - first bin in selection range
+   * @property {number}   bin0   - last bin in selection range
+   * @property {number}   drag   - mouse dragging starting position
    */
   this.mini = {
     canvas: null,
@@ -202,19 +372,18 @@ function mainObj() {
     drag:   null,
   };
 
+
   /**
-   * Pairwise distances
-   * @member {Array} dist
-   * @description Pairwise distances among all contigs, stored as a condensed
-   * distance matrix (a 1D array). Calculating such a matrix is expensive,
-   * therefore it is cached here to avoid duplicated calculations.
+   * Program theme.
+   * @member {Object} theme
    */
-  this.dist = null;
-}
+  this.theme = null;
+
+} // end of mainObj
 
 
 /**
- * Shorthand for DOM selection.
+ * @summary Shorthand for DOM selection.
  */
 const byId = (id) => document.getElementById(id);
 

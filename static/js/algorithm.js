@@ -29,7 +29,7 @@ function rectCircleColliding(circle, rect){
 
   const dx = distX - rect.w / 2,
         dy = distY - rect.h / 2;
-  return (dx * dx + dy * dy <= (circle.r * circle.r));
+  return (dx ** 2 + dy ** 2 <= (circle.r ** 2));
 }
 
 
@@ -167,23 +167,20 @@ function coordinateMatrix(row, col, data, shape, sparse=false) {
   for (i = 0; i < n; i++) {
     res[row[i]][col[i]] += data[i];
   }  
-  if (!sparse) {
-    return res;
-  } else {
-    const key = [],
-          value = [];
-    const n = res[0].length,
-          m = res[1].length;
-    for (i = 0; i < n; i++) {
-      for (j = 0; j < m; j++) {
-        if (res[i][j] !== 0) {
-          key.push([i, j]);
-          value.push(res[i][j]);
-        }
+  if (!sparse) return res;
+  const key = [],
+        value = [];
+  const n0 = res[0].length,
+        n1 = res[1].length;
+  for (i = 0; i < n0; i++) {
+    for (j = 0; j < n1; j++) {
+      if (res[i][j] !== 0) {
+        key.push([i, j]);
+        value.push(res[i][j]);
       }
     }
-    return [key, value];
   }
+  return [key, value];
 }
 
 

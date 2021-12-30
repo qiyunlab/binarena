@@ -1,5 +1,5 @@
 /**
- * global setting
+ * Global settings.
  */
 
 body {
@@ -16,7 +16,7 @@ body {
 
 
 /**
- * default styles
+ * Default style of DOMs.
  */
 
 input, textarea, select, button, a {
@@ -104,8 +104,9 @@ sub {
 }
 
 
-
-/* general classes */
+/**
+ * General classes.
+ */
 
 .hidden {
   display: none !important;
@@ -122,6 +123,8 @@ sub {
   -webkit-transform: rotate(-90deg);
   -o-transform: rotate(-90deg);
 }
+
+/** button styles */
 
 button.static {
   background-color: transparent;
@@ -147,7 +150,7 @@ button.inside {
 
 
 /**
- * shared classes
+ * Shared classes.
  */
 
 /** panel head */
@@ -201,7 +204,7 @@ div.panel-head select {
   position: absolute;
   color: white;
   min-width: 50px;
-  max-width: 150px;
+  width: 150px;
   border-bottom: none;
   top: 50%;
   transform: translate(-50%, -50%);
@@ -214,11 +217,11 @@ div.panel-head select:hover {
 
 
 /**
- * menu
+ * Menu (currently includes context menu only).
  */
 
 div.menu {
-  position: fixed;
+  z-index: 2;
   min-width: 160px;
   padding: 5px 0;
   border: none;
@@ -259,16 +262,36 @@ div.menu a:not(.disabled).dropdown:hover:after {
 
 
 /**
- * dock
+ * Dock.
  */
 
 div.dock {
   z-index: 2;
+  background-color: dimgray;
+  opacity: 0.5;
+}
+
+div.dock.active {
+  opacity: 1.0;
+  box-shadow: 0 0 25px 5px rgba(0, 0, 0, 0.2);
+}
+
+div.dock > div > button {
+  cursor: pointer;
+  border: none;
+  margin: 0;
+  color: white;
+  background-color: transparent;
+  height: 100%;
+}
+
+div.dock > div > button:enabled:hover {
+  background-color: darkgray;
 }
 
 
 /**
- * classical toolbar (obsolete)
+ * Classical toolbar (obsolete).
  */
 
  /* 
@@ -307,10 +330,17 @@ div.toolbar span.spacer {
 } */
 
 
-
 /**
- * toolbar (floating)
+ * Toolbar (floating).
  */
+
+div.hastool:hover > div.toolbar {
+  display: flex;
+}
+
+div.toolbar:hover {
+  display: flex;
+}
 
 div.toolbar {
   z-index: 2;
@@ -319,7 +349,7 @@ div.toolbar {
   background-color: white;
   align-items: center;
   padding: 5px;
-  display: flex;
+  display: none;
   flex-direction: column;
 }
 
@@ -330,7 +360,7 @@ div.toolbar.right {
 }
 
 div.toolbar.left {
-  transform: translateX(-100%);
+  transform: translateX(calc(-100% + 1px));
   box-shadow: -6px 6px 6px rgba(0, 0, 0, 0.1);
 }
 
@@ -339,6 +369,10 @@ div.toolbar button {
   background-color: transparent;
   width: 24px;
   height: 24px;
+  display: inline-flex; /* this trick puts big text in the middle of small button */
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
 }
 
 div.toolbar button:hover {
@@ -354,7 +388,9 @@ div.toolbar span.spacer {
 }
 
 
-/** toast */
+/**
+ * Toast (auto-hiding message box in the lower middle of the window).
+ */
 
 #toast {
   min-width: 250px;
@@ -381,6 +417,7 @@ div.toolbar span.spacer {
   background-color: dimgray;
   color: white;
   vertical-align: middle;
+  margin-right: 10px;
 }
 
 #toast-close-btn:hover {
@@ -389,19 +426,21 @@ div.toolbar span.spacer {
 }
 
 /* loading dots */
-#loading-dots { margin-right: 10px;}
-#loading-dots > span { animation: blinking 1.2s linear infinite; }
-#loading-dots > span:nth-child(1) { animation-delay: 0.4s; }
-#loading-dots > span:nth-child(2) { animation-delay: 0.8s; }
-#loading-dots > span:nth-child(3) { animation-delay: 1.2s; }
-@keyframes blinking { from { opacity: 0; } to { opacity: 1; } }
+#toast-dots { margin-right: 10px;}
+#toast-dots > span { animation: toast-blink 1.2s linear infinite; }
+#toast-dots > span:nth-child(1) { animation-delay: 0.4s; }
+#toast-dots > span:nth-child(2) { animation-delay: 0.8s; }
+#toast-dots > span:nth-child(3) { animation-delay: 1.2s; }
+@keyframes toast-blink { from { opacity: 0; } to { opacity: 1; } }
 
 
-/** modal */
+/**
+ * Modal (separate window opened on top of the window).
+ */
 
 div.modal {
   position: fixed;
-  z-index: 2;
+  z-index: 3;
   left: 0;
   top: 0;
   width: 100%;
@@ -414,37 +453,78 @@ div.modal-content {
   border: none;
   box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.25);
   background: white;
-  max-width: 80%;
   margin: 5% auto;
-  /* padding: 10px; */
   overflow: hidden;
 }
+
+/* title bar of modal */
 
 div.modal-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-direction: row;
   height: 32px;
-  padding-left: 10px;
   font-weight: bold;
   color: white;
   background-color: dimgray;
 }
 
-div.modal-head button:last-child {
+div.modal-head > span:first-child {
+  height: 100%;
+}
+
+div.modal-head > span:last-child {
+  height: 100%;
+}
+
+/* modal title */
+
+div.modal-head > span:nth-child(2) {
+  text-align: center;
+}
+
+div.modal-head button {
   height: 100%;
   min-width: 32px;
   color: white;
-  font-size: 16px;
   background-color: transparent;
 }
 
-div.modal-head button:last-child:hover {
+div.modal-head button:hover {
   background-color: darkgray;
 }
 
+div.modal-head input[type=text] {
+  text-align: center;
+  background-color: lightgray;
+  border-bottom: none;
+}
 
-/** button group (currently not used) */
+div.modal-head input[type=text]:hover {
+  background-color: white;
+}
+
+div.modal-head input[type=text]:focus {
+  background-color: white;
+  border-bottom: none;
+}
+
+div.modal-body {
+  max-height: 600px;
+  overflow: auto;
+  margin: 10px;
+}
+
+div.modal-body > div {
+  padding: 8px 15px;
+  padding-top: 0 !important;
+}
+
+
+/**
+ * Button group (currently not used).
+ */
 
 /* span.btn-group button {
   height: 22px;
@@ -465,16 +545,18 @@ span.btn-group button:not(:first-child):not(:last-child) {
 */
 
 
-/* shared elements */
+/**
+ * Popup selects.
+ */
 
-/** popup selects */
+/* Popups are floating boxes opened by mouse clicks, and closed by mouse
+clicking in the blank area. */
 
 div.popup {
   position: fixed;
   z-index: 2;
   background-color: white;
-  min-width: 100px;
-  box-shadow: 3px 3px 15px lightgray;
+  box-shadow: 3px 3px 15px rgba(0, 0, 0, 0.15);
 }
 
 div.popup p {
@@ -482,6 +564,12 @@ div.popup p {
 }
 
 /** square table (for scale select) */
+
+#scale-select p {
+  background-color: #EEE;
+  margin: 0;
+  padding: 3px;
+}
 
 table.square td {
   width: 24px;
@@ -564,13 +652,17 @@ table.square td:hover {
 }
 
 
-/* main plot */
+/**
+ * Main plot.
+ */
 
 canvas.main-plot {
   min-width: 800px;
-  min-height: 800px;
+  min-height: 600px;
   position: absolute;
 }
+
+/** coordinate label */
 
 #coords-label {
   position: absolute;
@@ -583,8 +675,7 @@ canvas.main-plot {
   border: 1px solid dimgray;
 }
 
-
-/* drag & drop sign */
+/** drag & drop sign */
 
 #drop-sign {
   position: absolute;
@@ -603,13 +694,17 @@ canvas.main-plot {
 
 
 /**
- * dashboard
+ * Dashboard (the left frame).
  */
 
 #dash-frame {
   position: fixed;
   top: 0;
   left: 0;
+}
+
+#dash-panel {
+  width: 280px;
 }
 
 /** start panel */
@@ -625,6 +720,8 @@ canvas.main-plot {
   font-style: oblique;
   font-weight: bold;
 }
+
+/** dast button (main button) */
 
 #dash-btn {
   width: 32px;
@@ -747,7 +844,21 @@ div.dash-content > table tr td:last-child > span button:hover {
 
 
 /**
- * mini plot
+ * Selection panel.
+ */
+
+ #select-utils {
+  padding-bottom: 5px;
+}
+
+#select-utils p {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+
+/**
+ * Mini plot.
  */
 
 #mini-canvas {
@@ -766,12 +877,11 @@ div.dash-content > table tr td:last-child > span button:hover {
 
 #context-menu {
   position: fixed;
-  min-width: 160px;
 }
 
 
 /**
- * widget frame
+ * Widget frame
  */
 
 #widget-frame {
@@ -797,15 +907,15 @@ div.dash-content > table tr td:last-child > span button:hover {
 #widget-frame > div > button {
   height: 100%;
   width: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
 }
 
 #widget-frame > div > button.pressed {
   color: black;
   background-color: white;
-}
-
-#widget-frame div:not(:first-child) {
-  border-left: 1px solid white;
 }
 
 #widget-frame span.spacer {
@@ -824,15 +934,33 @@ div.dash-content > table tr td:last-child > span button:hover {
   flex-direction: column;
 }
 
-#widget-frame > div > div.menu {
-  display: block;
+#widget-frame > div:hover > div.expand {
+  display: flex;
+}
+
+#widget-frame > div > div.expand {
   position: absolute;
+  display: none;
   bottom: 32px;
+  z-index: 2;
+  min-width: 120px;
+  box-shadow: 3px 3px 15px rgba(0, 0, 0, 0.15);
+  flex-direction: column;
+}
+
+#widget-frame > div > div.expand > p {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+#set-panel > div {
+  width: 180px;
 }
 
 
 /**
- * side frame
+ * Side frame (right side of the window).
  */
 
 #side-frame {
@@ -845,9 +973,10 @@ div.dash-content > table tr td:last-child > span button:hover {
   flex-grow: 1;
   margin-left: auto;
   background-color: #EEE;
+  box-shadow: 0 0 25px 5px rgba(0, 0, 0, 0.2);
 }
 
-/* show/hide buttons */
+/** show/hide buttons */
 
 #show-frame {
   position: fixed;
@@ -880,27 +1009,15 @@ div.dash-content > table tr td:last-child > span button:hover {
 
 div.side-content {
   border-top: 0;
-  resize: vertical; /* IE incompatible */
-  overflow: auto;
   display: flex;
   flex-direction: column;
   background-color: white;
 }
 
 
-/* select panel */
-
-#select-utils {
-  padding-bottom: 5px;
-}
-
-#select-utils p {
-  margin-top: 0;
-  margin-bottom: 0;
-}
-
-
-/* bins panel */
+/**
+ * Binning panel.
+ */
 
 #bin-table-wrap {
   padding: 0 5px 5px 5px;
@@ -924,11 +1041,15 @@ div.side-content {
 #bin-thead th {
   position: sticky;
   top: 0;
-  background-color: #EEE;
+  background-color: #EEE;}
+
+#bin-thead th {
+  font-weight: normal;
+  cursor: pointer;
 }
 
-#bin-thead tr th {
-  font-weight: normal;
+#bin-thead th:hover {
+  background-color: lightgray;
 }
 
 #bin-tbody tr:hover {
@@ -961,9 +1082,16 @@ div.side-content {
   width: 100%;
 }
 
+#bin-tbody {
+  user-select: none;
+  -ms-user-select: none;
+  -moz-user-select: none;
+  -webkit-user-select: none;
+}
+
 
 /**
- * info panel
+ * Info panel.
  */
 
 /* information table */
@@ -972,6 +1100,7 @@ div.side-content {
   table-layout: fixed;
   border: none;
   width: 100%;
+  margin: 5px;
 }
 
 #info-table tr {
@@ -1001,7 +1130,7 @@ div.side-content {
   background-color: #EEE;
 }
 
-/** control span */
+/** inline controls */
 
 #info-ctrl {
   margin: 0;
@@ -1036,7 +1165,7 @@ div.side-content {
   padding: 0;
   border: none;
   min-width: 30px;
-  max-width: 50px;
+  width: 50px;
   cursor: pointer;
 }
 
@@ -1045,11 +1174,17 @@ div.side-content {
 }
 
 
-/* data table */
+/**
+ * Data table.
+ */
 
-#data-table-container {
-  max-height: 600px;
-  overflow: auto;
+#data-table-modal > .modal-content {
+  width: 80%;
+}
+
+#export-table-btn {
+  padding-left: 10px;
+  padding-right: 10px;
 }
 
 table.sheet {
@@ -1058,26 +1193,31 @@ table.sheet {
   table-layout: fixed;
 }
 
+/* this is an newer way of setting sticky table heads
 table.sheet thead {
-  border-top: 1px solid black;
-  border-bottom: 1px solid black;
-}
+  position: sticky;
+  inset-block-start: 0;
+} */
 
-table.sheet thead td {
+table.sheet thead th {
+  background-color: lightgray;
   font-weight: bold;
   text-align: center;
   line-height: 200%;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  padding-left: 5px;
+  padding-right: 5px;
 }
 
 table.sheet tbody td {
   text-align: left;
-  /* overflow-wrap: break-word; */
+  word-wrap: break-word;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   padding: 2px 5px;
-  /* width: 100%;
-  max-width: 0; */
 }
 
 table.sheet tbody tr:hover {
@@ -1093,35 +1233,60 @@ table.sheet tbody tr td:nth-last-child(2)+td {
   text-align: left;
 }
 
-/* column widths by data type */
-
-table.sheet thead td[data-type="id"] {
-  max-width: 50px;
-}
-
-table.sheet thead td[data-type="number"] {
-  max-width: 75px;
-}
-
-table.sheet thead td[data-type="category"] {
-  max-width: 100px;
-}
-
-table.sheet thead td[data-type="feature"] {
-  max-width: 150px;
-}
-
-table.sheet thead td[data-type="description"] {
-  max-width: 150px;
-}
-
+/** sorting arrow */
 
 table.sheet th.sortable {
-  background-color: lightgray;
   cursor: pointer;
 }
 
-table.sheet td.key {
+table.sheet thead th.ascending:after,
+table.sheet thead th.descending:after {
+  content: "";
+  position: relative;
+  left: 2px;
+  border: 6px solid transparent;
+}
+
+table.sheet thead th.ascending:after {
+  bottom: 8px;
+  border-bottom-color: dimgray;
+}
+
+table.sheet thead th.descending:after {
+  top: 10px;
+  border-top-color: dimgray;
+}
+
+table.sheet thead th.ascending,
+table.sheet thead th.descending {
+  padding-right: 5px;
+}
+
+
+/** column widths by data type (not used) */
+/* 
+table.sheet thead th[data-type="id"] {
+  width: 50px;
+}
+
+table.sheet thead th[data-type="num"] {
+  width: 75px;
+}
+
+table.sheet thead th[data-type="cat"] {
+  width: 100px;
+}
+
+table.sheet thead th[data-type="fea"] {
+  width: 150px;
+}
+
+table.sheet thead th[data-type="des"] {
+  width: 150px;
+} */
+
+
+/* table.sheet td.key {
   text-align: right;
   font-weight: bold;
   padding-right: 5px;
@@ -1146,11 +1311,11 @@ table.sheet td.detail {
   padding: 10px;
   background-color: lightyellow;
   font-size: 80%;
-}
+} */
 
 
 /**
- * legends
+ * Legends.
  */
 
 div.legend {
@@ -1207,6 +1372,13 @@ div.legend div.gradient {
 
 #opacity-gradient {
   background-image: linear-gradient(to right, rgba(0, 0, 0, 0) , black);
+}
+
+#color-table-ctrl > button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
 }
 
 div.legend div.range {
@@ -1276,7 +1448,7 @@ div.legend:hover div.clip {
 }
 
 #legend-tip::before {
-  content: " ";
+  content: "";
   position: absolute;
   left: calc(50% - 5px);
   bottom: 100%;
@@ -1286,7 +1458,7 @@ div.legend:hover div.clip {
 }
 
 #legend-tip::after {
-  content: " ";
+  content: "";
   position: absolute;
   left: calc(50% - 4px);
   bottom: 100%;
@@ -1368,3 +1540,165 @@ div.legend:hover div.clip {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+
+/**
+ * Silhouette calculation.
+ */
+
+#silh-modal > .modal-content {
+  width: 600px;
+}
+
+#silh-calc-btn {
+  background-color: tomato;
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
+#silh-calc-btn:hover {
+  background-color: lightpink;
+}
+
+#silh-done-btn {
+  background-color: limegreen;
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
+#silh-done-btn:hover {
+  background-color: lightgreen;
+}
+
+#silh-prog-span {
+  text-align: center;
+  padding-left: 10px;
+}
+
+/* loading dots */
+#calc-dots > span { animation: calc-blink 1.2s linear infinite; }
+#calc-dots > span:nth-child(1) { animation-delay: 0.4s; }
+#calc-dots > span:nth-child(2) { animation-delay: 0.8s; }
+#calc-dots > span:nth-child(3) { animation-delay: 1.2s; }
+@keyframes calc-blink { from { opacity: 0; } to { opacity: 1; } }
+
+#silh-body-div {
+  display: flex;
+  flex-direction: row;
+}
+
+#silh-msg-div {
+  width: 300px;
+}
+
+#silh-var-sel > tr > td {
+  width: 140px;
+}
+
+#silh-res-todo > tr > td {
+  width: 280px;
+}
+
+#silh-col-text {
+  width: 100px;
+}
+
+#silh-table-wrap {
+  padding: 5px;
+  width: 300px;
+  max-height: 360px;
+  border-left: 1px solid lightgray;
+}
+
+#silh-table {
+  border: none;
+  table-layout: fixed;
+  overflow-y: scroll;
+  width: 100%;
+}
+
+#silh-thead th {
+  position: sticky;
+  top: 0;
+  background-color: #EEE;
+  font-weight: normal;
+}
+
+#silh-thead th:hover {
+  background-color: lightgray;
+}
+
+#silh-thead th:first-child {
+  width: 50%;
+}
+
+#silh-thead th:not(:first-child) {
+  width: 25%;
+}
+
+#silh-tbody tr:hover {
+  background-color: #EEE;
+}
+
+#silh-tbody tr td:not(:first-child) {
+  text-align: right;
+}
+
+
+/**
+ * Masking.
+ */
+
+#clear-mask-btn {
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
+
+/**
+ * Help window (currently not in use).
+ */
+
+#quick-help {
+  margin: 10px;
+  padding: 10px 20px;
+  border: 1px solid gray;
+  background-color: white;
+}
+
+#quick-help p {
+  padding-left: 10px;
+}
+
+#quick-help p:first-child {
+  font-size: 120%;
+  font-weight: 500; 
+}
+
+#quick-help hr {
+  text-align: left;
+  margin-left: 10px;
+  width: 100px;
+  border: 0;
+  height: 1px;
+  background-color: darkgray;
+}
+
+#quick-help ul {
+  margin-left: 20px;
+  margin-bottom: 5px;
+  line-height: 150%;
+}
+
+
+/**
+ * Program-accessible styles.
+ */
+
+#selection-color { color: royalblue; }
+#polygon-color { color: royalblue; }
+
+#type-num-color { background-color: paleturquoise; }
+#type-cat-color { background-color: peachpuff; }
+#type-fea-color { background-color: thistle; }
+#type-des-color { background-color: seashell; }

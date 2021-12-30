@@ -1,8 +1,10 @@
+"use strict";
+
 /**!
  * @file Unit tests for "numeric.js".
  */
 
- describe('numeric.js', function() {
+describe('numeric.js', function() {
 
   it('arrMinMax', function() {
     expect(arrMinMax([1])).toEqual([1, 1]);
@@ -35,13 +37,18 @@
     expect(arrProdSum([2.5, 3.2, 4.5], [0.1, 1.2, -0.4])).toBe(2.29);
   });
 
-  it('arrEqual', function() {
-    expect(arrEqual([0, 1], 0)).toBeFalsy();
-    expect(arrEqual([0, 0], [0, 1])).toBeFalsy();
-    expect(arrEqual([[0, 0], [0, 1]], [0, 1])).toBeFalsy();
-    expect(arrEqual([[0, 0], [0, 1]], [[0, 1], [0, 0]])).toBeFalsy();
-    expect(arrEqual([[0, 0], [[1, 0], [1, 1]]], [[0, 0], [[1, 0], [1, 1]]])).toBeTruthy();
+  it('arrEqualDeep', function() {
+    expect(arrEqualDeep([0, 1], 0)).toBeFalsy();
+    expect(arrEqualDeep([0, 0], [0, 1])).toBeFalsy();
+    expect(arrEqualDeep([[0, 0], [0, 1]], [0, 1])).toBeFalsy();
+    expect(arrEqualDeep([[0, 0], [0, 1]], [[0, 1], [0, 0]])).toBeFalsy();
+    expect(arrEqualDeep([[0, 0], [[1, 0], [1, 1]]], [[0, 0], [[1, 0], [1, 1]]])).toBeTruthy();
   });
+
+  it('rankdata', function () {
+    expect(rankdata([50, 30, 20, 60])).toEqual([3, 2, 1, 4]);
+    expect(rankdata([0, 2, 3, 2])).toEqual([1, 2.5, 4, 2.5]);
+  })
 
   it('transpose', function() {
     const before = [
@@ -69,6 +76,14 @@
   it('pdist', function() {
     expect(pdist([[0, 0], [0, 0]])).toEqual([0]);
     expect(pdist([[0, 0], [0, 1], [1, 0]])).toEqual([1, 1, Math.sqrt(2)]);
+  });
+
+  it('factorize', function() {
+    // https://pandas.pydata.org/docs/reference/api/pandas.factorize.html
+    expect(factorize(['b', 'b', 'a', 'c', 'b'])).toEqual(
+      [[0, 0, 1, 2, 0], ['b', 'a', 'c']]);
+    expect(factorize(['b', '', 'a', 'c', 'b'])).toEqual(
+      [[0, -1, 1, 2, 0], ['b', 'a', 'c']]);
   });
 
   it('bincount', function() {

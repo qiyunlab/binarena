@@ -13,7 +13,7 @@
 /**
  * Initialize mini plot controls.
  * @function initMiniPlotCtrl
- * @params {Object} mo - main object
+ * @param {Object} mo - main object
  */
 function initMiniPlotCtrl(mo) {
 
@@ -86,13 +86,13 @@ function initMiniPlotCtrl(mo) {
 
 
 /**
- * Update mini plot controls by data.
+ * Update mini plot controls by data columns.
  * @function updateMiniPlotCtrl
- * @params {Object} data - data object
+ * @param {Object} cols - cols object
  */
-function updateMiniPlotCtrl(data) {
-  const cols = data.cols,
-        types = data.types;
+function updateMiniPlotCtrl(cols) {
+  const names = cols.names,
+        types = cols.types;
   const sel = byId('mini-field-sel');
   sel.innerHTML = '';
 
@@ -100,13 +100,13 @@ function updateMiniPlotCtrl(data) {
   sel.add(document.createElement('option'));
 
   // create an option for each column
-  const n = cols.length;
+  const n = names.length;
   let opt;
   for (let i = 0; i < n; i++) {
-    if (types[i] !== 'number') continue;    
+    if (types[i] !== 'num') continue;    
     opt = document.createElement('option');
     opt.value = i;
-    opt.text = cols[i];
+    opt.text = names[i];
     sel.add(opt);
   }
 }
@@ -129,7 +129,7 @@ function miniPlotMouseMove(e, mo) {
   // skip if no mini plot is displayed
   if (mo.mini.field === null) return;
   if (mo.mini.hist === null) return;
-  if ((Object.keys(mo.pick)).length === 0) return;
+  if ((Object.keys(mo.picked)).length === 0) return;
 
   // find mouse position in mini plot
   const canvas = mo.mini.canvas;
@@ -151,7 +151,7 @@ function miniPlotMouseMove(e, mo) {
 
     // if before first bin or after last bin, ignore
     if ((i < 0) || (i >= nbin)) i = null;
-    
+
     // if same as saved bin status, skip
     if ((i === mo.mini.bin0) && (i === mo.mini.bin1)) return;
 
@@ -192,7 +192,7 @@ function miniPlotMouseMove(e, mo) {
   const tip = byId('legend-tip');
   tip.classList.add('hidden');
   if (bin0 === null) return;
-  
+
   // determine size of bin(s)
   let n = 0;
   for (i = bin0; i <= bin1; i++) {
@@ -214,7 +214,7 @@ function miniPlotMouseMove(e, mo) {
   tip.style.left = Math.round((10 + ((bin0 + bin1) / 2 + 0.5) * (w - 20) /
     nbin) / w * (rect.right - rect.left) + rect.left) + 'px';
   tip.style.top = Math.round(rect.bottom - 5) + 'px';
-  
+
   // display bin size and range in tooltip
   byId('legend-circle').classList.add('hidden');
   tip.classList.remove('hidden');
@@ -230,8 +230,7 @@ function miniPlotMouseMove(e, mo) {
  * represented by the bars in the range of selection will be selected.
  */
 function miniPlotSelect(mo) {
-  const col = mo.mini.field;
-  
+
   // determine range of selection
   // These are lower and upper bounds of the original data. The lower bound is
   // inclusive ("["). However the upper bound is tricky. In all but last bar,
@@ -239,7 +238,7 @@ function miniPlotSelect(mo) {
   // To tackle this, the code removes the upper bound of the last bar.
   const min = mo.mini.edges[mo.mini.bin0];
   const max = (mo.mini.bin1 === mo.mini.nbin - 1) ?
-    null : mo.mini.edges[mo.mini.bin1 + 1];
+    NaN : mo.mini.edges[mo.mini.bin1 + 1];
 
   // reset histogram status
   mo.mini.hist = null;
@@ -248,28 +247,25 @@ function miniPlotSelect(mo) {
   mo.mini.bin1 = null;
   mo.mini.drag = null;
 
-  const res = [];
-  const mask = mo.mask;
-  const hasMask = (Object.keys(mask).length > 0);
-  const df = mo.data.df;
-
-  // selection will take place within the already selected contigs
-  const picked = Object.keys(mo.pick);
-  const n = picked.length;
-  let idx, val;
-
   // find within selected contigs which ones are within the range
+  const pick = mo.picked;
+  let npick = mo.cache.npick;
+  const col = mo.data[mo.mini.field];
+  const n = mo.cache.nctg;
+  let val;
   for (let i = 0; i < n; i++) {
-    idx = picked[i];
-    if (hasMask && idx in mask) continue;
-    val = df[idx][col];
+    if (pick[i]) {
+      val = col[i];
 
-    // lower bound: inclusive; upper bound: exclusive
-    if (val !== null && val >= min && (max === null || val < max)) {
-      res.push(idx);
+      // lower bound: inclusive; upper bound: exclusive
+      if (val !== val || val < min || val >= max) {
+        pick[i] = false;
+        npick -= 1;
+      }
     }
   }
-  treatSelection(res, mo.stat.selmode, mo.stat.masking, mo);
+  mo.cache.npick = npick;
+  updateSelection(mo);
 }
 
 
@@ -277,8 +273,8 @@ function miniPlotSelect(mo) {
  * Draw a mini plot.
  * @function updateMiniPlot
  * @param {Object} mo - main object
- * @param {boolean} keep - use pre-calculated histogram if available
- * @param {number} x1 - draw selection range from the start position (defined
+ * @param {boolean} [keep] - use pre-calculated histogram if available
+ * @param {number} [x1] - draw selection range from the start position (defined
  * by mo.mini.drag) to this position
  * @description It (re-)draws the entire mini plot. Three things are performed:
  * 1. Draw a histogram of a designated numeric field of selection contigs.
@@ -298,10 +294,8 @@ function updateMiniPlot(mo, keep, x1) {
   const col = mo.mini.field;
   if (!col) return;
 
-  // selected contigs
-  const ctgs = Object.keys(mo.pick).sort();
-  const n = ctgs.length;
-  if (n <= 1) return;
+  // 0 or 1 contig won't be plotted
+  if (mo.cache.npick < 2) return;
 
   // draw mouse range
   const x0 = mo.mini.drag;
@@ -312,18 +306,24 @@ function updateMiniPlot(mo, keep, x1) {
   if (!keep || (hist === null)) {
 
     // variable values
-    const df = mo.data.df;
-    let data = Array(n).fill();
+    const arr = mo.data[col];
+    const n = mo.cache.nctg;
+    const pick = mo.picked;
+    let X = [];
+    let val;
     for (let i = 0; i < n; i++) {
-      data[i] = df[ctgs[i]][col];
+      if (pick[i]) {
+        val = arr[i];
+        if (val === val) X.push(val); // only add non-NaN values
+      }
     }
 
     // log transformation
-    if (mo.mini.log) data = arrLog(data);
+    if (mo.mini.log) X = arrLog(X);
 
     // calculate 
     let edges;
-    [hist, edges] = histogram(data, mo.mini.nbin);
+    [hist, edges] = histogram(X, mo.mini.nbin);
 
     // save (and reverse transform) result
     mo.mini.hist = hist;
@@ -333,7 +333,7 @@ function updateMiniPlot(mo, keep, x1) {
 
   // draw frame
   ctx.strokeStyle = 'grey';
-  drawFrame(ctx, w, h);
+  drawPlotFrame(ctx, w, h);
 
   // draw histogram
   const high = [mo.mini.bin0, mo.mini.bin1];
@@ -364,7 +364,7 @@ function drawMouseRange(ctx, x0, x1, w, h) {
   ctx.strokeStyle = 'dodgerblue';
   ctx.fillStyle = 'lightcyan';
   ctx.lineWidth = 2;
-  
+
   // draw begin line
   ctx.beginPath();
   ctx.moveTo(beg, 5);
@@ -385,12 +385,12 @@ function drawMouseRange(ctx, x0, x1, w, h) {
 
 /**
  * Draw a frame of plot.
- * @function drawFrame
+ * @function drawPlotFrame
  * @param {Object} ctx - canvas context
  * @param {number} w - canvas width
  * @param {number} h - canvas height
  */
-function drawFrame(ctx, w, h) {
+function drawPlotFrame(ctx, w, h) {
   w = w || ctx.canvas.width;
   h = h || ctx.canvas.height;
   ctx.beginPath();
