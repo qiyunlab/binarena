@@ -149,7 +149,7 @@ function initBinCtrl(mo) {
   });
 
   // merge currently selected bins
-  byId('merge-bins-btn').addEventListener('click', function () {
+  byId('merge-bin-btn').addEventListener('click', function () {
     const table = byId('bin-tbody');
     const [deleted, unbinned] = deleteBins(table, mo.cache.binns, mo.binned);
     const name = createBin(mo.cache.binns);
@@ -166,6 +166,26 @@ function initBinCtrl(mo) {
       `"${name}" (${suffix}).`, stat);
     else toastMsg(`Merged ${plural('bin', n)} into "${name}" (${suffix}).`,
       stat,);
+    mo.rena.focus();
+  });
+
+  // remove masked contigs from all bins
+  byId('mask-bin-btn').addEventListener('click', function () {
+    const binned = mo.binned,
+          masked = mo.masked;
+    const n = mo.cache.nctg;
+    let count = 0;
+    for (let i = 0; i < n; i++) {
+      if (binned[i] && masked[i]) {
+        binned[i] = '';
+        count++;
+      }
+    }
+    if (count > 0) {
+      updateBinTable(mo);
+      updateBinCtrl(mo);
+    }
+    toastMsg(`Removed ${plural('contig', count)} from bins.`, mo.stat);
     mo.rena.focus();
   });
 
@@ -377,6 +397,7 @@ function updateBinCtrl(mo) {
   byId('adj-rand-btn').classList.toggle('hidden', !n);
   byId('export-plan-btn').classList.toggle('hidden', !n);
   byId('bin-thead').classList.toggle('hidden', !n);
+  byId('mask-bin-btn').classList.toggle('hidden', !n || !mo.cache.nmask);
 
   // number of selected bins
   let m = 0;
@@ -385,7 +406,7 @@ function updateBinCtrl(mo) {
   }
 
   byId('delete-bin-btn').classList.toggle('hidden', !m);
-  byId('merge-bins-btn').classList.toggle('hidden', (m < 2));
+  byId('merge-bin-btn').classList.toggle('hidden', (m < 2));
   byId('bin-data-btn').classList.toggle('hidden', !m);
 
   const k = mo.cache.npick;
