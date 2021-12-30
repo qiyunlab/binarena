@@ -666,7 +666,7 @@ function selectedBins(table) {
       names.push(rows[i].cells[0].firstElementChild.innerHTML);
     }
   }
-  return [idxes, names]
+  return [idxes, names];
 }
 
 

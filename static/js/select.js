@@ -489,8 +489,11 @@ function updateInfoRow(row, mo, picked) {
  * @param {string} [rarr] - reference data array
  * @param {string} [warr] - weight data array
  * @returns {[string, string]} descriptive text and comment
+ * @todo The weights are currently not in use.
  */
-function summFieldInfo(arr, type, metric='mean', deci=3, rarr, warr) {
+function summFieldInfo(arr, type, metric, deci, rarr, warr) {
+  metric = metric || 'mean';
+  deci = deci || 3;
   const noref = rarr === undefined;
   const nowei = warr === undefined;
   const issum = metric === 'sum';

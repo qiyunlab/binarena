@@ -155,11 +155,9 @@ function mainObj() {
    * @property {number} npick - number of contigs selected
    * @property {number} nmask - number of contigs masked
    * 
-   * @property {Set.<string>} - current bin names
-   * 
-   * @property {Object.<Array>} locis - locations of contigs in the plot
-   * They are transformed values that can be directly rendered in the plot.
-   * @todo Currently not in use.
+   * @property {Set.<string>} binns - current bin names
+   * Note: Bin names is a superset of actual bins in the dataset, because there
+   * can be empty bins.
    * 
    * @param {number[][]} pdist - pairwise distance among all contigs
    * Stored as a condensed distance matrix (i.e., a 1D array).
@@ -176,7 +174,6 @@ function mainObj() {
     npick: 0,
     nmask: 0,
     binns: new Set(),
-    locis: {},
     pdist: [],
     silhs: []
   };
@@ -278,7 +275,7 @@ function mainObj() {
     color:   [],
     rgb:     [],
     rgba:    []
-  }
+  };
 
 
   /**
@@ -322,7 +319,8 @@ function mainObj() {
   /**
    * Binning plan.
    * @member {Array.<string>} binned
-   * @description Indices of contigs included in each bin.
+   * @description Indices of contigs included in each bin. Is a 1D array of
+   * strings. Unbinned contigs are empty strings.
    */
   this.binned = [];
 

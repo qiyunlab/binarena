@@ -625,7 +625,6 @@ function updateViewByData(mo) {
   cache.npick = 0;
   cache.nmask = 0;
   cache.binns.clear();
-  cache.locis = {};
   cache.pdist = [];
 
   // data is closed

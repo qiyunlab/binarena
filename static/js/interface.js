@@ -787,6 +787,6 @@ function loadTheme() {
     cat: getComputedStyle(byId('type-cat-color')).backgroundColor,
     fea: getComputedStyle(byId('type-fea-color')).backgroundColor,
     des: getComputedStyle(byId('type-des-color')).backgroundColor
-  }
+  };
   return theme;
 }

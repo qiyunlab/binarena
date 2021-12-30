@@ -307,18 +307,18 @@ function newName(exist, prefix) {
 
 
 /**
- * Dictionary of singular to plural transformations.
+ * @constant {Object} PLURAL_FORMS - Dictionary of singular to plural
+ * transformations.
  */
 const PLURAL_FORMS = {};
 
 
 /**
- * Generate a new name that does not conflict with existing names.
- * Will read like "prefix_#", in which "#" is an incremental integer.
+ * Convert a noun and a number into the appropriate form.
  * @function plural
- * @param {Object} exists - existing names
- * @param {string} prefix - name prefix
- * @returns {string} new name
+ * @param {Object} noun - noun
+ * @param {string} n - number
+ * @returns {string} formatted phrase
  */
 function plural(noun, n) {
   if (n <= 1) return n + ' ' + noun;

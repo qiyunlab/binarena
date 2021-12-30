@@ -54,9 +54,10 @@ function updateCalcBoxCtrl(mo) {
   // available variables
   let v, idx, chk, scale, n = 0;
   for (let item of ['x', 'y', 'size', 'opacity', 'color']) {
-    v = view[item], idx = v.i;
+    v = view[item];
+    idx = v.i;
     if (idx && cols.types[idx] === 'num') {
-      chk = byId(`${item}-calc-chk`)
+      chk = byId(`${item}-calc-chk`);
       chk.disabled = false;
       scale = v.scale;
       if (chk.checked) n++;
@@ -161,7 +162,7 @@ function calcSilhouette(mo) {
     // min-max scaling of each variable
     console.log('Performing min-max scaling...');
     for (let j = 0; j < num_item; j++) {
-      arrMinMaxScale(filt_data[j])
+      arrMinMaxScale(filt_data[j]);
     }
 
     // transpose data matrix
@@ -184,7 +185,7 @@ function calcSilhouette(mo) {
     fillSilhTable(mo, byId('silh-tbody'));
 
     byId('silh-table-wrap').classList.remove('hidden');
-    byId('silh-title').classList.remove('hidden')
+    byId('silh-title').classList.remove('hidden');
     byId('silh-progress').classList.add('hidden');
     byId('silh-done-div').classList.remove('hidden');
     byId('silh-done-btn').classList.remove('hidden');

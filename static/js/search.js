@@ -200,7 +200,7 @@ function searchByCriteria(mo, shift) {
     for (let i = 0; i < n; i++) {
       if (mask[i]) continue;
       val = arr[i];
-      if ((val !== NaN) &&
+      if ((val === val) &&
         (min === null || (minIn ? (val >= min) : (val > min))) &&
         (max === null || (maxIn ? (val <= max) : (val < max)))) {
           ctgs.push(i);

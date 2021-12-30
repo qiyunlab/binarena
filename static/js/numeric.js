@@ -216,7 +216,7 @@ function arrProdSumN(arr1, arr2) {
       if (a2 === a2) {
         sum12 += a1 * a2;
         sum2 += a2;
-        m += 1
+        m += 1;
       }
     }
   }
