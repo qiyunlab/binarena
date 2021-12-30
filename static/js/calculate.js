@@ -321,9 +321,9 @@ function exportSilh(mo) {
  */
 function calcAdjRand(mo, field) {
   if (!mo.cache.nctg) return;
-  const ari = adjustedRandScore(mo.binned.filter(Boolean),
-    mo.data[mo.cols.names.indexOf(field)].filter(Boolean));
+  const ari = adjustedRandScore(factorize(mo.binned)[0],
+    factorize(mo.data[mo.cols.names.indexOf(field)])[0]);
 
   toastMsg(`Adjusted Rand index between current binning plan and ` +
-    `"${field}": ${ari.toFixed(3)}.`, mo.stat, 0, false, true);
+    `"${field}": ${ari.toFixed(5)}.`, mo.stat, 0, false, true);
 }

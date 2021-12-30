@@ -217,8 +217,12 @@ div.panel-head select:hover {
  * menu
  */
 
-div.menu {
+#context-menu {
   position: fixed;
+}
+
+div.menu {
+  z-index: 2;
   min-width: 160px;
   padding: 5px 0;
   border: none;
@@ -264,8 +268,27 @@ div.menu a:not(.disabled).dropdown:hover:after {
 
 div.dock {
   z-index: 2;
+  background-color: dimgray;
+  opacity: 0.5;
 }
 
+div.dock.active {
+  opacity: 1.0;
+  box-shadow: 0 0 25px 5px rgba(0, 0, 0, 0.2);
+}
+
+div.dock > div > button {
+  cursor: pointer;
+  border: none;
+  margin: 0;
+  color: white;
+  background-color: transparent;
+  height: 100%;
+}
+
+div.dock > div > button:enabled:hover {
+  background-color: darkgray;
+}
 
 /**
  * classical toolbar (obsolete)
@@ -311,25 +334,6 @@ div.toolbar span.spacer {
 /**
  * toolbar (floating)
  */
-/* 
-div.hastool {
-  transition-property: all;
-  transition-delay: 1s;
-}
-
-div.hastool:hover {
-  background-color: red;
-  transition-delay: 0s;
-}
-
-
-div.hastool > div.toolbar {
-  transition-delay: 1s;
-} */
-/* 
-div.hastool {
-  z-index: 2;
-} */
 
 div.hastool:hover > div.toolbar {
   display: flex;
@@ -366,6 +370,10 @@ div.toolbar button {
   background-color: transparent;
   width: 24px;
   height: 24px;
+  display: inline-flex; /* this trick puts big text in the middle of small button */
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
 }
 
 div.toolbar button:hover {
@@ -532,14 +540,17 @@ span.btn-group button:not(:first-child):not(:last-child) {
 
 /* shared elements */
 
+
 /** popup selects */
+
+/* Popups are floating boxes opened by mouse clicks, and closed by mouse
+clicking in the blank area. */
 
 div.popup {
   position: fixed;
   z-index: 2;
   background-color: white;
-  /* min-width: 100px; */
-  box-shadow: 3px 3px 15px lightgray;
+  box-shadow: 3px 3px 15px rgba(0, 0, 0, 0.15);
 }
 
 div.popup p {
@@ -835,11 +846,6 @@ div.dash-content > table tr td:last-child > span button:hover {
  * context menu
  */
 
-#context-menu {
-  position: fixed;
-  min-width: 160px;
-}
-
 
 /**
  * widget frame
@@ -868,15 +874,15 @@ div.dash-content > table tr td:last-child > span button:hover {
 #widget-frame > div > button {
   height: 100%;
   width: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
 }
 
 #widget-frame > div > button.pressed {
   color: black;
   background-color: white;
-}
-
-#widget-frame div:not(:first-child) {
-  border-left: 1px solid white;
 }
 
 #widget-frame span.spacer {
@@ -895,12 +901,25 @@ div.dash-content > table tr td:last-child > span button:hover {
   flex-direction: column;
 }
 
-#widget-frame > div > div.menu {
-  display: block;
-  position: absolute;
-  bottom: 32px;
+#widget-frame > div:hover > div.expand {
+  display: flex;
 }
 
+#widget-frame > div > div.expand {
+  position: absolute;
+  display: none;
+  bottom: 32px;
+  z-index: 2;
+  min-width: 120px;
+  box-shadow: 3px 3px 15px rgba(0, 0, 0, 0.15);
+  flex-direction: column;
+}
+
+#widget-frame > div > div.expand > p {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
 
 /**
  * side frame
@@ -1598,4 +1617,12 @@ div.legend:hover div.clip {
 #clear-mask-btn {
   padding-left: 10px;
   padding-right: 10px;
+}
+
+
+#color-table-ctrl > button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
 }

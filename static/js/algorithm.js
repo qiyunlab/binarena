@@ -167,23 +167,20 @@ function coordinateMatrix(row, col, data, shape, sparse=false) {
   for (i = 0; i < n; i++) {
     res[row[i]][col[i]] += data[i];
   }  
-  if (!sparse) {
-    return res;
-  } else {
-    const key = [],
-          value = [];
-    const n = res[0].length,
-          m = res[1].length;
-    for (i = 0; i < n; i++) {
-      for (j = 0; j < m; j++) {
-        if (res[i][j] !== 0) {
-          key.push([i, j]);
-          value.push(res[i][j]);
-        }
+  if (!sparse) return res;
+  const key = [],
+        value = [];
+  const n0 = res[0].length,
+        n1 = res[1].length;
+  for (i = 0; i < n0; i++) {
+    for (j = 0; j < n1; j++) {
+      if (res[i][j] !== 0) {
+        key.push([i, j]);
+        value.push(res[i][j]);
       }
     }
-    return [key, value];
   }
+  return [key, value];
 }
 
 
@@ -213,14 +210,6 @@ function contingencyMatrix(labelTrue, labelPred) {
  * @return {number} adjusted Rand index
  */ 
 function adjustedRandScore(labelTrue, labelPred) {
-  let nSamples = labelTrue.length;
-  let nClasses = unique(labelTrue).length;
-  let nClusters = unique(labelPred).length;
-
-  if (nClasses == nClusters === 1 || nClasses == nClusters === 0 ||
-    nClasses === nClusters === nSamples) {
-    return 1.0;
-  }
 
   let contingency = contingencyMatrix(labelTrue, labelPred);
   let classSum = Array(nClasses).fill(0);

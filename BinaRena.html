@@ -5,7 +5,6 @@
 <head>
   <meta charset="utf-8">
   <title>BinaRena</title>
-  <link rel="stylesheet" href="static/vendor/font-awesome/css/font-awesome.min.css">
   <link rel="stylesheet" href="static/css/style.css">
   <link rel="stylesheet" href="static/css/theme.css">
   <script src="static/js/main.js"></script>
@@ -185,7 +184,7 @@
             <td><select id="size-field-sel"></select></td>
             <td><span id="size-param-span" class="hidden">
               <button class="square dropdown scale-btn" id="size-scale-btn"></button><!--
-              --><button class="square legend-btn" title="Show/hide legend">&#9783;</button>
+              --><button class="square legend-btn" title="Show/hide legend" style="transform: rotate(-90deg)">&#8562;</button>
             </span></td>
           </tr>
 
@@ -210,7 +209,7 @@
             <td><select id="opacity-field-sel"></select></td>
             <td><span id="opacity-param-span" class="hidden">
               <button class="square dropdown scale-btn" id="opacity-scale-btn"></button><!--
-              --><button class="square legend-btn" title="Show/hide legend">&#9783;</button>
+              --><button class="square legend-btn" title="Show/hide legend" style="transform: rotate(-90deg)">&#8562;</button>
             </span></td>
           </tr>
 
@@ -240,7 +239,7 @@
             </td>
             <td><span id="color-param-span" class="hidden">
               <button class="square dropdown scale-btn" id="color-scale-btn"></button><!--
-              --><button class="square legend-btn" title="Show/hide legend">&#9783;</button>
+              --><button class="square legend-btn" title="Show/hide legend" style="transform: rotate(-90deg)">&#8562;</button>
             </span></td>
           </tr>
 
@@ -260,8 +259,8 @@
               <div id="color-legend-2">
                 <table id="color-table"></table>
                 <div id="color-table-ctrl">
-                  <button id="add-color-btn" class="square" title="Add a color"><i class="fa fa-plus"></i></button><!--
-                  --><br><button id="remove-color-btn" class="square" title="Remove a color"><i class="fa fa-minus"></i></button>
+                  <button id="add-color-btn" class="square" title="Add a color">&plus;</button><!--
+                  --><br><button id="remove-color-btn" class="square" title="Remove a color">&minus;</button>
                 </div>
               </div>
             </td>
@@ -277,9 +276,9 @@
 
         <!-- mini plot controls -->
         <div class="toolbar right">
-          <button id="mini-log-btn" class="square" title="Logarithm transformation" style="letter-spacing: -0.08em;">log</button>
-          <button id="mini-plus-btn" class="square" title="Increase resolution"><i class="fa fa-plus"></i></button>
-          <button id="mini-minus-btn" class="square" title="Decrease resolution"><i class="fa fa-minus"></i></button>
+          <button id="mini-log-btn" class="square" title="Logarithm transformation" style="letter-spacing: -0.08em; font-size: 1em;">log</button>
+          <button id="mini-plus-btn" class="square" title="Increase resolution">&plus;</button>
+          <button id="mini-minus-btn" class="square" title="Decrease resolution">&minus;</button>
         </div>
 
         <!-- mini plot variable selection -->
@@ -314,7 +313,7 @@
 
     <!-- setting panel -->
     <div id="set-panel">
-      <button id="set-btn" title="Show settings"><i class="fa fa-sliders fa-lg"></i></button>
+      <button id="set-btn" title="Show settings">&vellip;</button>
       <div class="dock active hidden">
         <div class="panel-head"><span><button disabled>Settings</button></span></div>
         <div class="dash-content">
@@ -331,30 +330,31 @@
 
     <!-- frequent panel -->
     <div id="freq-panel">
-      <button id="screenshot-btn" title="Take a screenshot (P)"><i class="fa fa-camera"></i></button>
-      <button id="polygon-btn" title="Draw polygon with mouse clicks to contain multiple contigs (Enter)" data-title="Finish polygon selection (Enter)"><i class="fa fa-pencil fa-lg"></i></button>
+      <button id="screenshot-btn" title="Take a screenshot (P)" style="font-size: 14pt;">&lbrkslu; &rbrksld;</button>
+      <button id="polygon-btn" title="Draw polygon with mouse clicks to contain multiple contigs (Enter)" data-title="Finish polygon selection (Enter) (hold Shift to append)">&#11040;</button>
+      <!-- unused unicode symbols: &imof; &hercon; &rHar; &boxbox; -->
     </div>
 
-    <!-- calculation panel -->
-    <div id="calc-panel">
-      <button id="calc-btn" class="dropdown" title="Advanced calculations"><i class="fa fa-calculator fa-lg"></i></button>
-      <div id="calc-menu" class="menu active hidden">
-        <a id="silhouet-a" title="Calculate silhouette coefficients of contigs in the current binning plan">Silhouette score</a>
-        <a id="adj-rand-a" class="dropdown" title="Calculate adjusted Rand index of the current vs. an existing binning plan">Adj. Rand index</a>
+    <div>
+      <button id="mask-btn" title="Mask selected contigs (Delete)">&osol;</button>
+      <div id="mask-menu" class="expand dash-content">
+        <p><span id="masked-span">Masked</span><!--
+        --><button id="clear-mask-btn" class="hidden" title="Unmask all contigs">&#10005;</button>
       </div>
     </div>
 
     <!-- navigation panel -->
     <div id="nav-panel" class="hidden">
-      <button id="zoomin-btn" title="Zoom in (+)"><i class="fa fa-plus"></i></button>
-      <button id="zoomout-btn" title="Zoom out (-)"><i class="fa fa-minus"></i></button>
       <span class="spacer"></span>
-      <button id="left-btn" title="Move left (&larr;)"><i class="fa fa-arrow-left"></i></button>
-      <button id="up-btn" title="Move up (&uarr;)"><i class="fa fa-arrow-up"></i></button>
-      <button id="right-btn" title="Move right (&rarr;)"><i class="fa fa-arrow-right"></i></button>
-      <button id="down-btn" title="Move down (&darr;)"><i class="fa fa-arrow-down"></i></button>
+      <button id="zoomin-btn" title="Zoom in (+)">&plus;</button>
+      <button id="zoomout-btn" title="Zoom out (-)">&minus;</button>
       <span class="spacer"></span>
-      <button id="reset-btn" title="Reset view (0)"><i class="fa fa-refresh"></i></button>
+      <button id="left-btn" title="Move left (&larr;)">&larr;</button>
+      <button id="up-btn" title="Move up (&uarr;)">&uarr;</button>
+      <button id="right-btn" title="Move right (&rarr;)">&rarr;</button>
+      <button id="down-btn" title="Move down (&darr;)">&darr;</button>
+      <span class="spacer"></span>
+      <button id="reset-btn" title="Reset view (0)">&#10227;</button>
     </div>
   </div>
 
@@ -387,7 +387,10 @@
 
         <!-- toolbar -->
         <div class="toolbar left">
-          <button id="export-plan-btn" class="hidden" title="Export current binning plan"><i class="fa fa-download fa-lg"></i></button>
+          <button id="silhouet-btn" class="hidden" title="Evaluate binning confidence using silhouette coefficient">&#9739;</button>
+          <button id="adj-rand-btn" class="dropdown hidden" title="Compare with another binning plan using adjusted Rand index">&harr;</button>
+          <span class="spacer"></span>
+          <button id="export-plan-btn" class="hidden" title="Export current binning plan" style="transform: rotate(90deg)">&rarrb;</button>
         </div>
 
         <!-- plan selector -->
@@ -407,10 +410,12 @@
 
         <!-- toolbar -->
         <div class="toolbar left">
-          <button id="new-empty-bin-btn" title="Create an empty new bin"><i class="fa fa-plus fa-lg"></i></button>
-          <button id="delete-bin-btn" class="hidden" title="Delete selected bin(s)"><i class="fa fa-minus fa-lg"></i></button>
-          <button id="merge-bins-btn" class="hidden" title="Merge selected bins"><i class="fa fa-compress fa-lg"></i></button>
-          <button id="bin-data-btn" class="hidden" title="Show data of selected bin(s)"><i class="fa fa-table fa-lg"></i></button>
+          <button id="new-empty-bin-btn" title="Create an empty new bin">&plus;</button>
+          <button id="delete-bin-btn" class="hidden" title="Delete selected bin(s)">&minus;</button>
+          <button id="merge-bins-btn" class="hidden" title="Merge selected bins">&cup;</button>
+          <span class="spacer"></span>
+          <button id="mask-bin-btn" title="Merge selected bins" style="font-size: 22px">&#8416;</button>
+          <button id="bin-data-btn" class="hidden" title="Show data of selected bin(s)" style="font-size: 22px">&#9707;</button>
         </div>
 
         <!-- bins table -->
@@ -442,12 +447,12 @@
 
       <!-- toolbar -->
       <div class="toolbar left">
-        <button id="as-new-bin-btn" class="hidden" title="Create a new bin from selected contigs (Space)"><i class="fa fa-asterisk fa-lg"></i></button>
-        <button id="add-to-bin-btn" class="hidden" title="Add selected contigs to bin (.)"><i class="fa fa-plus fa-lg"></i></button>
-        <button id="remove-from-bin-btn" class="hidden" title="Remove selected contigs from bin (,)"><i class="fa fa-minus fa-lg"></i></button>
-        <button id="update-bin-btn" class="hidden" title="Update bin with selected contigs (/)"><i class="fa fa-refresh fa-lg"></i></button>
-        <button id="invert-btn" class="hidden" title="Invert selection"><i class="fa fa-exchange fa-lg"></i></button>
-        <button id="mask-btn" class="hidden" title="Mask selected contigs"><i class="fa fa-eye-slash fa-lg"></i></button>
+        <button id="as-new-bin-btn" class="hidden" title="Create a new bin from selected contigs (Space)">&lowast;</button>
+        <button id="add-to-bin-btn" class="hidden" title="Add selected contigs to bin (.)">&plus;</button>
+        <button id="remove-from-bin-btn" class="hidden" title="Remove selected contigs from bin (,)">&minus;</button>
+        <button id="update-bin-btn" class="hidden" title="Update bin with selected contigs (/)">&#8634;</button>
+        <span class="spacer"></span>
+        <button id="invert-btn" class="hidden" title="Invert selection">&#9680;</button>
       </div>
 
       <!-- info table -->
@@ -458,15 +463,10 @@
         <button class="dropdown" id="info-metric-btn" title="Metric">f(x)</button><!--
         --><span id="info-ref-span">&nbsp;by&nbsp;<select id="info-ref-sel" title="Weight by reference field"></select></span><!--
         --><button id="info-plot-btn" title="Plot distribution">&#9684;</button><!--
-        --><button id="info-hide-btn" title="Hide field">&#x2715;</button>
+        --><button id="info-hide-btn" title="Hide field">&#10005;</button>
       </div>
     </div>
 
-    <!-- mask panel -->
-    <div id="mask-head" class="panel-head" style="margin-top: auto;">
-      <span style="float: right;"><button id="clear-mask-btn" title="Unmask all contigs">Clear</button></span>
-      <span><button id="mask-head-btn">Masked</button></span>
-    </div>
   </div>
 
 
@@ -475,7 +475,7 @@
     i.e., the main menu, can be activated by clicking the program title or
     right-clicking anywhere in the plot.
   -->
-  <div id="context-menu" style="z-index: 2;" class="menu hidden">
+  <div id="context-menu" class="menu popup hidden">
     <a id="load-data-a">Load data</a>
     <a id="show-data-a">Show data</a>
     <a id="close-data-a">Close data</a>
@@ -598,7 +598,7 @@
       </tr>
       <tr>
         <td title="Square root" data-scale="sqrt">&radic;<i>x</i></td>
-        <td title="Cube root" data-scale="cbrt"><sup><small>3</small></sup>&radic;<i>x</i></td>
+        <td title="Cube root" data-scale="cbrt">&#8731;<i>x</i></td>
       </tr>
       <tr>
         <td title="Logarithm" data-scale="log">log</td>
@@ -629,7 +629,7 @@
   <div id="toast" class="hidden">
     <span id="toast-msg"></span><!--
     --><span id="toast-dots" class="hidden"><span>&bull;</span> <span>&bull;</span> <span>&bull;</span></span><!--
-    --><button id="toast-close-btn" title="Close message" class="hidden">&#x2715;</button>
+    --><button id="toast-close-btn" title="Close message" class="hidden">&#10005;</button>
   </div>
 
   <!-- list select dropdown (also for auto-complete textbox) -->

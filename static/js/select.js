@@ -203,9 +203,7 @@ function updateSelection(mo) {
  */
 function updateMaskCtrl(mo) {
   const n = mo.cache.nmask;
-  let str = `Masked: ${n}`;
-  if (n === 1) str += ' (ID: ' +  mo.data[0][mo.masked.indexOf(true)] + ')';
-  byId('mask-head-btn').innerHTML = str;
+  byId('masked-span').innerHTML = `Masked: ${n}`;
   byId('clear-mask-btn').classList.toggle('hidden', !n);
 }
 

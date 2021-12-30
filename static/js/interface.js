@@ -121,7 +121,7 @@ function initWindow(mo) {
         }
       }
       if (hideDropdown) {
-        for (let div of document.querySelectorAll('div.popup, div.menu')) {
+        for (let div of document.querySelectorAll('div.popup')) {
           div.classList.add('hidden');
         }
       }
@@ -544,39 +544,6 @@ function initWidgets(mo) {
     updateView(mo);
   });
 
-  // show calculation menu
-  byId('calc-btn').addEventListener('click', function () {
-    const menu = byId('calc-menu');
-    if (menu.classList.contains('hidden')) {
-      const n = mo.cache.binns.size;
-      byId('silhouet-a').classList.toggle('disabled', !n);
-      byId('adj-rand-a').classList.toggle('disabled', !n);
-      menu.classList.remove('hidden');
-    } else {
-      menu.classList.add('hidden');
-    }
-  });
-
-  // calculate silhouette coefficients
-  byId('silhouet-a').addEventListener('click', function () {
-    if (this.classList.contains('disabled')) return;
-    updateCalcBoxCtrl(mo);
-    byId('silh-modal').classList.remove('hidden');
-  });
-
-  // calculate adjusted Rand index
-  byId('adj-rand-a').addEventListener('click', function () {
-    if (this.classList.contains('disabled')) return;
-    if (!this.value) {
-      const lst = listColsByType(mo.cols, 'cat');
-      listSelect(lst, this, 'right');
-    } else {
-      calcAdjRand(mo, this.value);
-      this.value = null;
-      this.parentElement.classList.add('hidden');      
-    }
-  });
-
 }
 
 /**
@@ -597,10 +564,8 @@ function popupPos(source, target, direc, same) {
         ts = target.style;
   const rect = source.getBoundingClientRect();
 
-  // pop up toward right
-  if (direc === 'right') {
-    ts.left = rect.right + 'px';
-    ts.right = '';
+  // pop up toward right or left
+  if (['left', 'right'].includes(direc)) {
     if (same) {
       ts.top = rect.top + 'px';
       ts.height = (rect.top - rect.bottom) + 'px';
@@ -610,6 +575,13 @@ function popupPos(source, target, direc, same) {
     } else {
       ts.top = '';
       ts.bottom = (vh - rect.bottom) + 'px';
+    }
+    if (direc === 'right') {
+      ts.left = rect.right + 'px';
+      ts.right = '';
+    } else if (direc === 'left') {
+      ts.right = (vw - rect.left) + 'px';
+      ts.left = '';
     }
   }
 

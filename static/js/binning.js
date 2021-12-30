@@ -187,6 +187,25 @@ function initBinCtrl(mo) {
     byId('data-table-modal').classList.remove('hidden');
   });
 
+  // calculate silhouette coefficients
+  byId('silhouet-btn').addEventListener('click', function () {
+    if (this.classList.contains('disabled')) return;
+    updateCalcBoxCtrl(mo);
+    byId('silh-modal').classList.remove('hidden');
+  });
+
+  // calculate adjusted Rand index
+  byId('adj-rand-btn').addEventListener('click', function () {
+    if (this.classList.contains('disabled')) return;
+    if (!this.value) {
+      const lst = listColsByType(mo.cols, 'cat');
+      listSelect(lst, this, 'left');
+    } else {
+      calcAdjRand(mo, this.value);
+      this.value = '';
+    }
+  });
+
   // export current binning plan
   byId('export-plan-btn').addEventListener('click', function () {
     exportBinPlan(mo.binned);
@@ -354,6 +373,8 @@ function updateBinCtrl(mo) {
   byId('bins-head').lastElementChild.firstElementChild
     .innerHTML = 'Bins: ' + n;
 
+  byId('silhouet-btn').classList.toggle('hidden', !n);
+  byId('adj-rand-btn').classList.toggle('hidden', !n);
   byId('export-plan-btn').classList.toggle('hidden', !n);
   byId('bin-thead').classList.toggle('hidden', !n);
 
@@ -373,7 +394,6 @@ function updateBinCtrl(mo) {
   byId('remove-from-bin-btn').classList.toggle('hidden', !(m === 1 && k));
   byId('update-bin-btn').classList.toggle('hidden', !(m === 1 && k));
   byId('invert-btn').classList.toggle('hidden', !k);
-  byId('mask-btn').classList.toggle('hidden', !k);
 }
 
 
