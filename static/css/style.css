@@ -1,5 +1,5 @@
 /**
- * global setting
+ * Global settings.
  */
 
 body {
@@ -16,7 +16,7 @@ body {
 
 
 /**
- * default styles
+ * Default style of DOMs.
  */
 
 input, textarea, select, button, a {
@@ -104,8 +104,9 @@ sub {
 }
 
 
-
-/* general classes */
+/**
+ * General classes.
+ */
 
 .hidden {
   display: none !important;
@@ -122,6 +123,8 @@ sub {
   -webkit-transform: rotate(-90deg);
   -o-transform: rotate(-90deg);
 }
+
+/** button styles */
 
 button.static {
   background-color: transparent;
@@ -147,7 +150,7 @@ button.inside {
 
 
 /**
- * shared classes
+ * Shared classes.
  */
 
 /** panel head */
@@ -214,12 +217,8 @@ div.panel-head select:hover {
 
 
 /**
- * menu
+ * Menu (currently includes context menu only).
  */
-
-#context-menu {
-  position: fixed;
-}
 
 div.menu {
   z-index: 2;
@@ -263,7 +262,7 @@ div.menu a:not(.disabled).dropdown:hover:after {
 
 
 /**
- * dock
+ * Dock.
  */
 
 div.dock {
@@ -290,8 +289,9 @@ div.dock > div > button:enabled:hover {
   background-color: darkgray;
 }
 
+
 /**
- * classical toolbar (obsolete)
+ * Classical toolbar (obsolete).
  */
 
  /* 
@@ -330,9 +330,8 @@ div.toolbar span.spacer {
 } */
 
 
-
 /**
- * toolbar (floating)
+ * Toolbar (floating).
  */
 
 div.hastool:hover > div.toolbar {
@@ -389,7 +388,9 @@ div.toolbar span.spacer {
 }
 
 
-/** toast */
+/**
+ * Toast (auto-hiding message box in the lower middle of the window).
+ */
 
 #toast {
   min-width: 250px;
@@ -433,7 +434,9 @@ div.toolbar span.spacer {
 @keyframes toast-blink { from { opacity: 0; } to { opacity: 1; } }
 
 
-/** modal */
+/**
+ * Modal (separate window opened on top of the window).
+ */
 
 div.modal {
   position: fixed;
@@ -454,6 +457,8 @@ div.modal-content {
   overflow: hidden;
 }
 
+/* title bar of modal */
+
 div.modal-head {
   display: flex;
   align-items: center;
@@ -473,6 +478,8 @@ div.modal-head > span:last-child {
   height: 100%;
 }
 
+/* modal title */
+
 div.modal-head > span:nth-child(2) {
   text-align: center;
 }
@@ -481,7 +488,6 @@ div.modal-head button {
   height: 100%;
   min-width: 32px;
   color: white;
-  /* font-size: 16px; */
   background-color: transparent;
 }
 
@@ -504,8 +510,6 @@ div.modal-head input[type=text]:focus {
   border-bottom: none;
 }
 
-
-
 div.modal-body {
   max-height: 600px;
   overflow: auto;
@@ -517,7 +521,10 @@ div.modal-body > div {
   padding-top: 0 !important;
 }
 
-/** button group (currently not used) */
+
+/**
+ * Button group (currently not used).
+ */
 
 /* span.btn-group button {
   height: 22px;
@@ -538,10 +545,9 @@ span.btn-group button:not(:first-child):not(:last-child) {
 */
 
 
-/* shared elements */
-
-
-/** popup selects */
+/**
+ * Popup selects.
+ */
 
 /* Popups are floating boxes opened by mouse clicks, and closed by mouse
 clicking in the blank area. */
@@ -646,13 +652,17 @@ table.square td:hover {
 }
 
 
-/* main plot */
+/**
+ * Main plot.
+ */
 
 canvas.main-plot {
   min-width: 800px;
   min-height: 600px;
   position: absolute;
 }
+
+/** coordinate label */
 
 #coords-label {
   position: absolute;
@@ -665,8 +675,7 @@ canvas.main-plot {
   border: 1px solid dimgray;
 }
 
-
-/* drag & drop sign */
+/** drag & drop sign */
 
 #drop-sign {
   position: absolute;
@@ -685,13 +694,17 @@ canvas.main-plot {
 
 
 /**
- * dashboard
+ * Dashboard (the left frame).
  */
 
 #dash-frame {
   position: fixed;
   top: 0;
   left: 0;
+}
+
+#dash-panel {
+  width: 280px;
 }
 
 /** start panel */
@@ -707,6 +720,8 @@ canvas.main-plot {
   font-style: oblique;
   font-weight: bold;
 }
+
+/** dast button (main button) */
 
 #dash-btn {
   width: 32px;
@@ -829,7 +844,21 @@ div.dash-content > table tr td:last-child > span button:hover {
 
 
 /**
- * mini plot
+ * Selection panel.
+ */
+
+ #select-utils {
+  padding-bottom: 5px;
+}
+
+#select-utils p {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+
+/**
+ * Mini plot.
  */
 
 #mini-canvas {
@@ -846,9 +875,13 @@ div.dash-content > table tr td:last-child > span button:hover {
  * context menu
  */
 
+#context-menu {
+  position: fixed;
+}
+
 
 /**
- * widget frame
+ * Widget frame
  */
 
 #widget-frame {
@@ -921,8 +954,13 @@ div.dash-content > table tr td:last-child > span button:hover {
   justify-content: space-between;
 }
 
+#set-panel > div {
+  width: 180px;
+}
+
+
 /**
- * side frame
+ * Side frame (right side of the window).
  */
 
 #side-frame {
@@ -935,9 +973,10 @@ div.dash-content > table tr td:last-child > span button:hover {
   flex-grow: 1;
   margin-left: auto;
   background-color: #EEE;
+  box-shadow: 0 0 25px 5px rgba(0, 0, 0, 0.2);
 }
 
-/* show/hide buttons */
+/** show/hide buttons */
 
 #show-frame {
   position: fixed;
@@ -976,19 +1015,9 @@ div.side-content {
 }
 
 
-/* select panel */
-
-#select-utils {
-  padding-bottom: 5px;
-}
-
-#select-utils p {
-  margin-top: 0;
-  margin-bottom: 0;
-}
-
-
-/* bins panel */
+/**
+ * Binning panel.
+ */
 
 #bin-table-wrap {
   padding: 0 5px 5px 5px;
@@ -1062,7 +1091,7 @@ div.side-content {
 
 
 /**
- * info panel
+ * Info panel.
  */
 
 /* information table */
@@ -1100,7 +1129,7 @@ div.side-content {
   background-color: #EEE;
 }
 
-/** control span */
+/** inline controls */
 
 #info-ctrl {
   margin: 0;
@@ -1144,7 +1173,9 @@ div.side-content {
 }
 
 
-/** data table */
+/**
+ * Data table.
+ */
 
 #data-table-modal > .modal-content {
   width: 80%;
@@ -1161,7 +1192,7 @@ table.sheet {
   table-layout: fixed;
 }
 
-/* 
+/* this is an newer way of setting sticky table heads
 table.sheet thead {
   position: sticky;
   inset-block-start: 0;
@@ -1178,22 +1209,14 @@ table.sheet thead th {
   padding-left: 5px;
   padding-right: 5px;
 }
-/* 
-table.sheet thead th:hover {
-  color: white;
-  cursor: pointer;
-} */
 
 table.sheet tbody td {
   text-align: left;
-  /* overflow-wrap: break-word; */
   word-wrap: break-word;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   padding: 2px 5px;
-  /* width: 100%;
-  max-width: 0; */
 }
 
 table.sheet tbody tr:hover {
@@ -1239,7 +1262,7 @@ table.sheet thead th.descending {
 }
 
 
-/** column widths by data type */
+/** column widths by data type (not used) */
 /* 
 table.sheet thead th[data-type="id"] {
   width: 50px;
@@ -1291,7 +1314,7 @@ table.sheet td.detail {
 
 
 /**
- * legends
+ * Legends.
  */
 
 div.legend {
@@ -1348,6 +1371,13 @@ div.legend div.gradient {
 
 #opacity-gradient {
   background-image: linear-gradient(to right, rgba(0, 0, 0, 0) , black);
+}
+
+#color-table-ctrl > button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
 }
 
 div.legend div.range {
@@ -1510,7 +1540,10 @@ div.legend:hover div.clip {
   white-space: nowrap;
 }
 
-/* silhouette */
+
+/**
+ * Silhouette calculation.
+ */
 
 #silh-modal > .modal-content {
   width: 600px;
@@ -1547,7 +1580,6 @@ div.legend:hover div.clip {
 #calc-dots > span:nth-child(2) { animation-delay: 0.8s; }
 #calc-dots > span:nth-child(3) { animation-delay: 1.2s; }
 @keyframes calc-blink { from { opacity: 0; } to { opacity: 1; } }
-
 
 #silh-body-div {
   display: flex;
@@ -1612,7 +1644,9 @@ div.legend:hover div.clip {
 }
 
 
-/* masking */
+/**
+ * Masking.
+ */
 
 #clear-mask-btn {
   padding-left: 10px;
@@ -1620,9 +1654,50 @@ div.legend:hover div.clip {
 }
 
 
-#color-table-ctrl > button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 20px;
+/**
+ * Help window (currently not in use).
+ */
+
+#quick-help {
+  margin: 10px;
+  padding: 10px 20px;
+  border: 1px solid gray;
+  background-color: white;
 }
+
+#quick-help p {
+  padding-left: 10px;
+}
+
+#quick-help p:first-child {
+  font-size: 120%;
+  font-weight: 500; 
+}
+
+#quick-help hr {
+  text-align: left;
+  margin-left: 10px;
+  width: 100px;
+  border: 0;
+  height: 1px;
+  background-color: darkgray;
+}
+
+#quick-help ul {
+  margin-left: 20px;
+  margin-bottom: 5px;
+  line-height: 150%;
+}
+
+
+/**
+ * Program-accessible styles.
+ */
+
+#selection-color { color: royalblue; }
+#polygon-color { color: royalblue; }
+
+#type-num-color { background-color: paleturquoise; }
+#type-cat-color { background-color: peachpuff; }
+#type-fea-color { background-color: thistle; }
+#type-des-color { background-color: seashell; }

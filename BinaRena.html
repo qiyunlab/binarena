@@ -6,7 +6,6 @@
   <meta charset="utf-8">
   <title>BinaRena</title>
   <link rel="stylesheet" href="static/css/style.css">
-  <link rel="stylesheet" href="static/css/theme.css">
   <script src="static/js/main.js"></script>
   <script src="static/js/interface.js"></script>
   <script src="static/js/input.js"></script>
@@ -29,7 +28,7 @@
   The program interface consists of:
   1. rendering area (main-frame)
     arena-canvas: scatter plot
-    overlay-canvas: selection highlight etc.
+    overlay-canvas: selection etc.
   2. docked panel:
     dashboard (dash-frame): top left
       start-panels:
@@ -43,9 +42,8 @@
     side-frame: right side (toggled by show-side-btn)
       bins-panel (contains hide-side-btn)
       info-panel (for selected)
-      mask-head (no body)
     widget-frame: bottom left
-      set-panel (expand on set-btn hover)
+      set-panel
       freq-panel
       nav-panel
   3. context menu:
@@ -330,13 +328,13 @@
 
     <!-- frequent panel -->
     <div id="freq-panel">
-      <button id="screenshot-btn" title="Take a screenshot (P)" style="font-size: 14pt;">&lbrkslu; &rbrksld;</button>
+      <button id="screenshot-btn" title="Take a screenshot (P)">&#8889;</button>
       <button id="polygon-btn" title="Draw polygon with mouse clicks to contain multiple contigs (Enter)" data-title="Finish polygon selection (Enter) (hold Shift to append)">&#11040;</button>
       <!-- unused unicode symbols: &imof; &hercon; &rHar; &boxbox; -->
     </div>
 
     <div>
-      <button id="mask-btn" title="Mask selected contigs (Delete)">&osol;</button>
+      <button id="mask-btn" title="Mask selected contigs (Delete)">&empty;</button>
       <div id="mask-menu" class="expand dash-content">
         <p><span id="masked-span">Masked</span><!--
         --><button id="clear-mask-btn" class="hidden" title="Unmask all contigs">&#10005;</button>
@@ -414,7 +412,7 @@
           <button id="delete-bin-btn" class="hidden" title="Delete selected bin(s)">&minus;</button>
           <button id="merge-bin-btn" class="hidden" title="Merge selected bins">&cup;</button>
           <span class="spacer"></span>
-          <button id="mask-bin-btn" class="hidden" title="Removed masked contigs from all bins" style="font-size: 22px">&#8416;</button>
+          <button id="mask-bin-btn" class="hidden" title="Removed masked contigs from all bins" style="font-size: 22px">&empty;</button>
           <button id="bin-data-btn" class="hidden" title="Show data of selected bin(s)" style="font-size: 22px">&#9707;</button>
         </div>
 
@@ -649,7 +647,7 @@
         <span>Title</span>
         <span>Right controls</span>
       </div>
-      <p>Some text in the Modal..</p>
+      <p>Some text in the Modal...</p>
     </div>
   </div>
 

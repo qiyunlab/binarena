@@ -210,6 +210,14 @@ function contingencyMatrix(labelTrue, labelPred) {
  * @return {number} adjusted Rand index
  */ 
 function adjustedRandScore(labelTrue, labelPred) {
+  let nSamples = labelTrue.length;
+  let nClasses = unique(labelTrue).length;
+  let nClusters = unique(labelPred).length;
+
+  if (nClasses == nClusters === 1 || nClasses == nClusters === 0 ||
+    nClasses === nClusters === nSamples) {
+    return 1.0;
+  }
 
   let contingency = contingencyMatrix(labelTrue, labelPred);
   let classSum = Array(nClasses).fill(0);
