@@ -33,7 +33,7 @@ function initCalcBoxCtrl(mo) {
   });
 
   byId('silh-help-btn').addEventListener('click', function () {
-    window.open('https://github.com/qiyunlab/binarena#readme#' +
+    window.open('https://github.com/qiyunlab/binarena#' +
       'binning-confidence-evaluation', '_blank');
   });
 }
