@@ -321,9 +321,15 @@ The contigs are filtered to exclude those 1) that are not in any bin, 2) that ar
 
 One can monitor the process and intermediates using the browser's **console**.
 
-**Why does the program stall during silhouette coefficient calculation?**
+**Why does the program stall / crash during silhouette coefficient calculation?**
 
-Calculation of silhouette coefficients requires the calculation of a Euclidean distance matrix among all contigs. This is a computationally expensive operation, and runtime quickly builds up as the dataset expands (_O_(_n_<sup>2</sup>)). However, with a typical computer, it shouldn't take more than a few minutes even with tens of thousands of contigs. Just be bit patient before killing the browser tab.
+Calculation of silhouette coefficients requires the calculation of a Euclidean distance matrix among all contigs. This is a computationally expensive operation. Runtime and memory consumption quickly build up as the dataset expands (_O_(_n_<sup>2</sup>)).
+
+However, with a typical computer, it shouldn't take more than a few minutes even with tens of thousands of contigs. Just be bit patient before killing the browser tab.
+
+- Note: Chrome and Edge have a mechanism to limit memory consumption per tab, hence blocking this function from handling more than some ten thousand of contigs. Firefox and Safari do not have this limitation.
+
+When compute is an issue, it is recommended to filter down the dataset (e.g., removing short and shallow contigs) to make the calculation smooth.
 
 
 ## Contact
