@@ -121,6 +121,7 @@ function initCanvas(mo) {
       case 'l':
       case 'L':
         byId('high-btn').click();
+        break;
       case 'p':
       case 'P':
         byId('screenshot-btn').click();
