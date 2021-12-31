@@ -588,7 +588,7 @@ function parseContigTitle(line, format) {
   }
   if (format === 'megahit') {
     const regex = /(?=\d)[0-9]*(\.[0-9]*)?/g;
-    [id, , coverage, length] = line.match(regex);
+    [ , id, , coverage, length] = line.match(regex);
     return [id, coverage];
   }
   return null;
