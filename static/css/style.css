@@ -1099,7 +1099,7 @@ div.side-content {
 #info-table {
   table-layout: fixed;
   border: none;
-  width: 100%;
+  width: calc(100% - 10px);
   margin: 5px;
 }
 

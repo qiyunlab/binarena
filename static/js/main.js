@@ -198,6 +198,9 @@ function mainObj() {
    * @property {string}  contpal - continuous palette
    * @property {string}  discpal - discrete palette
    * @property {number}  ncolor  - number of categories to color
+   * 
+   * @property {number} minW     - minimum width of canvas
+   * @property {number} minH     - minimum height of canvas
    */
   this.view = {
     /** canvas rendering */
@@ -214,7 +217,9 @@ function mainObj() {
     grid:    false,
     contpal: DEFAULT_CONTINUOUS_PALETTE,
     discpal: DEFAULT_DISCRETE_PALETTE,
-    ncolor:  7
+    ncolor:  7,
+    minW:    0,
+    minH:    0
   };
 
 

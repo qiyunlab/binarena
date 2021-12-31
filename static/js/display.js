@@ -706,7 +706,6 @@ function resetView(mo) {
   updateLegends(mo);
 
   // render plots
-  updateView(mo);
   resizeArena(mo);
 }
 

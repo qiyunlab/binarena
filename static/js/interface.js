@@ -137,7 +137,7 @@ function initWindow(mo) {
  * @description also manually triggered when user resizes main frame
  */
 function resizeWindow(mo) {
-  const [w, h] = calcArenaDimensions(mo.rena);
+  const [w, h] = calcArenaDimensions(mo);
   toastMsg(`Plot size: ${w} x ${h}`, mo.stat);
   clearTimeout(mo.stat.resizing);
   mo.stat.resizing = setTimeout(function () {

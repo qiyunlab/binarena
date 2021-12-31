@@ -17,7 +17,7 @@ Please check out this [live demo](https://qiyunlab.github.io/binarena/demo.html)
 - [Input files](#input-files): [Data table](#data-table) | [Table view](#table-view) | [Special columns](#special-columns) | [Additional data](#additional-data)
 - [Display items](#display-items): [Legends and data scaling](#legends-and-data-scaling) | [Data transformation](#data-transformation) | [Color coding](#color-coding)
 - [Contig selection](#contig-selection) | [Contig summary](#contig-summary) | [Contig masking](#contig-masking) | [Contig searching](#contig-searching) | [Mini plot](#mini-plot)
-- [Binning plan](#binning-plan) | [Table of bins](#table-of-bins) | [Selection to bin](#selection-to-bin)
+- [Binning plan](#binning-plan) | [Table of bins](#table-of-bins) | [From selection to bin](#from-selection-to-bin)
 - [Binning confidence evaluation](#binning-confidence-evaluation) | [Binning plan comparison](#binning-plan-comparison)
 - [FAQ](#faq) | [Contact](#contact)
 
@@ -256,7 +256,7 @@ The toolbar next to the bin table provides a few utilities. Click <span style="b
 <img src="docs/img/bins.png" width="334">
 
 
-## Selection to bin
+## From selection to bin
 
 Press `Space` to **create a new bin from selected contigs**. If no binning plan is currently loaded, the program will create a new plan. This is perhaps the easiest way to start **de novo binning** using the program.
 
@@ -299,13 +299,19 @@ One may click the <span style="background-color: lightgrey">&harr;</span> button
 
 BinaRena is written in JavaScript, using mordern language standards including [ES6](https://www.w3schools.com/js/js_es6.asp) and above. Mordern browsers shouldn't have problems as they normally auto-update to meet the latest standards. However, very outdated browsers such as Internet Explorer may not support BinaRena.
 
-**How does BinaRena perform [data ranking](https://en.wikipedia.org/wiki/Ranking#Ranking_in_statistics)?**
+**Does BinaRena expose my data to a remote server?**
 
-BinaRena sorts numeric values from small to large and assign them ranks 1, 2, 3... If there are ties, all numbers in a tie will receive the **average** rank of them. This behavior is consistent with the default behavior of SciPy's [`rankdata`](https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.rankdata.html) function.
+The standalone BinaRena program is a client-end webpage that runs in your browser. Theoretically and technically, it cannot communicate with a web server. There is no risk with regard to the confidentiality of your data.
+
+The live demo hosted by [GitHub Pages](https://pages.github.com/) can communicate with the GitHub repository, and the only thing it does is to [retrieve](demo.html) the sample dataset from the repository directory. It does not perform any other communication.
 
 **Where are the color palettes in BinaRena from?**
 
 Most of these color palettes were adopted from [Matplotlib](https://matplotlib.org/stable/tutorials/colors/colormaps.html), which have been widely utilized in Python data science. The default categorical palette "QIIME" was adopted from the EMPeror viewer of the microbiome data analysis package [QIIME 2](https://qiime2.org/).
+
+**How does BinaRena perform [data ranking](https://en.wikipedia.org/wiki/Ranking#Ranking_in_statistics)?**
+
+BinaRena sorts numeric values from small to large and assign them ranks 1, 2, 3... If there are ties, all numbers in a tie will receive the **average** rank of them. This behavior is consistent with the default behavior of SciPy's [`rankdata`](https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.rankdata.html) function.
 
 **How exactly does BinaRena calculate silhouette coefficients?**
 
@@ -315,9 +321,9 @@ The contigs are filtered to exclude those 1) that are not in any bin, 2) that ar
 
 One can monitor the process and intermediates using the browser's **console**.
 
-**Why the program stalls during silhouette coefficient calculation?**
+**Why does program crash / stall during silhouette coefficient calculation?**
 
-Calculation of silhouette coefficients requires the calculation of a Euclidean distance matrix among all contigs. This is a computationally expensive operation (_O_(_n_<sup>2</sup>)). However, with a typical computer, it shouldn't take more than 1-2 minutes. The most plausible reason for stalling is that there are too many data points and, this causes an out-of-memory error (can be found in the browser console). In that case, one should filter down the contigs and try again.
+Calculation of silhouette coefficients requires the calculation of a Euclidean distance matrix among all contigs. This is a computationally expensive operation (_O_(_n_<sup>2</sup>)). However, with a typical computer, it shouldn't take more than 1-2 minutes. The most plausible reason for stalling is that there are too many data points and this causes an out-of-memory error (can be found in the browser console). In that case, one should filter down the contigs and try again.
 
 
 ## Contact

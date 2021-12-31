@@ -17,6 +17,8 @@ function initCanvas(mo) {
   // the two main canvases that render the assembly plot
   mo.rena = byId('arena-canvas');
   mo.oray = byId('overlay-canvas');
+  mo.view.minW = parseInt(getComputedStyle(mo.rena).minWidth);
+  mo.view.minH = parseInt(getComputedStyle(mo.rena).minHeight);
 
   const view = mo.view,
         stat = mo.stat,
@@ -276,16 +278,16 @@ function canvasMouseClick(e, mo) {
 /**
  * Calculate arena dimensions based on style and container.
  * @function calcArenaDimensions
- * @param {Object} rena - arena canvas DOM
+ * @param {Object} mo - main object
  * @returns {[number, number]} - width and height of arena
  */
-function calcArenaDimensions(rena) {
-  const w = Math.max(parseInt(getComputedStyle(rena).minWidth),
-    rena.parentElement.parentElement.offsetWidth);
-  const h = Math.max(parseInt(getComputedStyle(rena).minHeight),
-    rena.parentElement.parentElement.offsetHeight);
+function calcArenaDimensions(mo) {
+  const frame = byId('main-frame');
+  const w = Math.max(mo.view.minW, frame.offsetWidth);
+  const h = Math.max(mo.view.minH, frame.offsetHeight);
   return [w, h];
 }
+
 
 
 /**
@@ -298,7 +300,7 @@ function calcArenaDimensions(rena) {
 function resizeArena(mo) {
   const rena = mo.rena,
         oray = mo.oray;
-  const [w, h] = calcArenaDimensions(rena);
+  const [w, h] = calcArenaDimensions(mo);
 
   // update width
   if (rena.style.width !== w) rena.style.width = w;
