@@ -582,13 +582,13 @@ function parseContigTitle(line, format) {
       length = 0,
       coverage = 0;
   if (format === 'spades') {
-    const regex = /(?<=_)(\+|-)?[0-9]*(\.[0-9]*)?$|\d+/g;
+    const regex = /(\+|-)?[0-9]*(\.[0-9]*)?$|\d+/g;
     [id, length, coverage] = line.match(regex);
     return [id, coverage];
   }
   if (format === 'megahit') {
-    const regex = /(?<==|_)[0-9]*(\.[0-9]*)?/g;
-    [id, , coverage, length] = line.match(regex);
+    const regex = /(?=\d)[0-9]*(\.[0-9]*)?/g;
+    [ , id, , coverage, length] = line.match(regex);
     return [id, coverage];
   }
   return null;
