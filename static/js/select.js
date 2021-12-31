@@ -79,6 +79,98 @@ function initSelTools(mo) {
     updateMaskCtrl(mo);
   });
 
+  /** Highlight colors */
+  const hidiv = byId('high-menu');
+  const nhigh = HIGHLIGHT_PALETTE.length;
+  let p, span, btn;
+  for (let i = 0; i < nhigh; i++) {
+    p = document.createElement('p');
+    span = document.createElement('span');
+    span.style.backgroundColor = HIGHLIGHT_PALETTE[i] + '99';
+    span.innerHTML = '&nbsp;';
+    span.addEventListener('click', function () {
+      addHighlight(mo, i + 1);
+    });
+    p.appendChild(span);
+    btn = document.createElement('button');
+    btn.innerHTML = '&#10005;'
+    btn.title = 'Unhighlight contigs';
+    btn.classList.add('hidden');
+    btn.addEventListener('click', function () {
+      clearHighlight(mo, i + 1, this);
+    });
+    p.appendChild(btn);
+    hidiv.appendChild(p);
+  }
+
+  /** Highlight contigs. */
+  byId('high-btn').addEventListener('click', function () {
+    addHighlight(mo, 1);
+  });
+
+}
+
+
+/**
+ * Highlight selected contigs.
+ * @function addHighlight
+ * @param {Object} mo - main object
+ * @param {number} idx - highlight color index
+ */
+ function addHighlight(mo, idx) {
+  if (!mo.cache.npick) return;
+  const n = mo.cache.nctg;
+  const pick = mo.picked,
+        high = mo.highed;
+  let m = 0;
+  for (let i = 0; i < n; i++) {
+    if (pick[i]) {
+      high[i] = idx;
+      pick[i] = false;
+      m ++;
+    }
+  }
+  mo.cache.npick -= m;
+  toastMsg(`Highlighted ${plural('contig', m)}.`, mo.stat);
+  renderArena(mo);
+  updateSelection(mo);
+  updateHighlight(mo);
+  mo.rena.focus();
+}
+
+
+/**
+ * Update highlight control status.
+ * @function updateHighlight
+ * @param {Object} mo - main object
+ */
+function updateHighlight(mo) {
+  const counts = listCats(mo.highed);
+  const ps = byId('high-menu').children;
+  let p;
+  for (const [idx, count] of Object.entries(counts)) {
+    p = ps.item(idx - 1);
+    p.firstChild.innerHTML = count ? count : '&nbsp;';
+    p.lastChild.classList.toggle('hidden', !count);
+  }
+}
+
+
+/**
+ * Clear a particular highlight color.
+ * @function clearHighlight
+ * @param {Object} mo - main object
+ * @param {number} idx - highlight color index
+ */
+function clearHighlight(mo, idx, btn) {
+  const n = mo.cache.nctg;
+  const high = mo.highed;
+  for (let i = 0; i < n; i++) {
+    if (high[i] === idx) high[i] = 0;
+  }
+  btn.previousSibling.innerHTML = '&nbsp;';
+  btn.classList.add('hidden');
+  renderArena(mo);
 }
 
 

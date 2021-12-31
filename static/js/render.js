@@ -118,6 +118,9 @@ function initCanvas(mo) {
       case '0':
         byId('reset-btn').click();
         break;
+      case 'l':
+      case 'L':
+        byId('high-btn').click();
       case 'p':
       case 'P':
         byId('screenshot-btn').click();
@@ -351,7 +354,8 @@ function resizeArena(mo) {
 function renderArena(mo) {
   const view = mo.view,
         rena = mo.rena,
-        mask = mo.masked;
+        mask = mo.masked,
+        high = mo.highed;
   let n = mo.cache.nctg;
 
   // prepare canvas context
@@ -405,7 +409,12 @@ function renderArena(mo) {
   const paths = {};
 
   // intermediates
-  let radius, rviz, x, y, fs;
+  let radius, rviz, x, y, fs, hi;
+
+  // highlights
+  const nhigh = HIGHLIGHT_PALETTE.length;
+  const highs = Array(nhigh).fill().map(() => Array());
+  const hirad = 8 / scale;
 
   // determine appearance of contig
   for (let i = 0; i < n; i++) {
@@ -438,7 +447,29 @@ function renderArena(mo) {
     else {
       paths[fs].circle.push([x, y, Math.round(radius)]);
     }
+
+    // highlight circle
+    hi = high[i];
+    if (hi) {
+      highs[hi - 1].push([x, y, Math.round(radius + hirad)]);
+    }
   } // end for i
+
+  // render highlights
+  let j, hs, m, hl;
+  for (let i = 0; i < nhigh; i++) {
+    hs = highs[i];
+    m = hs.length;
+    if (!m) continue;
+    ctx.fillStyle = HIGHLIGHT_PALETTE[i] + '66'; // alpha = 0.4
+    ctx.beginPath();
+    for (j = 0; j < m; j++) {
+      hl = hs[j];
+      ctx.moveTo(hl[0], hl[1]);
+      ctx.arc(hl[0], hl[1], hl[2], 0, pi2, true);
+    }
+    ctx.fill();
+  }
 
   // render contigs
   let squares, sq, circles, circ;

@@ -222,7 +222,6 @@ div.panel-head select:hover {
 
 div.menu {
   z-index: 2;
-  min-width: 160px;
   padding: 5px 0;
   border: none;
   background-color: white;
@@ -877,6 +876,7 @@ div.dash-content > table tr td:last-child > span button:hover {
 
 #context-menu {
   position: fixed;
+  min-width: 160px;
 }
 
 
@@ -943,7 +943,6 @@ div.dash-content > table tr td:last-child > span button:hover {
   display: none;
   bottom: 32px;
   z-index: 2;
-  min-width: 120px;
   box-shadow: 3px 3px 15px rgba(0, 0, 0, 0.15);
   flex-direction: column;
 }
@@ -1649,9 +1648,29 @@ div.legend:hover div.clip {
  * Masking.
  */
 
+#mask-menu {
+  min-width: 120px;
+}
+
 #clear-mask-btn {
   padding-left: 10px;
   padding-right: 10px;
+}
+
+#high-menu span {
+  width: 50px;
+  text-align: center;
+  height: 100%;
+  cursor: pointer;
+}
+
+
+/**
+ * Highlighting.
+ */
+
+#high-menu {
+  min-width: 80px;
 }
 
 
