@@ -6,7 +6,7 @@
 **Binarena** ("bin arena") is an interative visualizer of metagenomic assembly that facilitates observation, semi-manual and semi-automatic binning of metagenomic contigs.
 
 
-## [live demo](https://qiyunlab.github.io/binarena/demo.html)
+## [Live demo](https://qiyunlab.github.io/binarena/demo.html)
 
 Please check out this [live demo](https://qiyunlab.github.io/binarena/demo.html). It is a fully functional program with a pre-loaded sample [dataset](https://www.ncbi.nlm.nih.gov/assembly/GCA_003604395.1/). You may close the data, then drag and drop your own data into the interface and start to analyze!
 
@@ -321,9 +321,9 @@ The contigs are filtered to exclude those 1) that are not in any bin, 2) that ar
 
 One can monitor the process and intermediates using the browser's **console**.
 
-**Why does program crash / stall during silhouette coefficient calculation?**
+**Why does the program stall during silhouette coefficient calculation?**
 
-Calculation of silhouette coefficients requires the calculation of a Euclidean distance matrix among all contigs. This is a computationally expensive operation (_O_(_n_<sup>2</sup>)). However, with a typical computer, it shouldn't take more than 1-2 minutes. The most plausible reason for stalling is that there are too many data points and this causes an out-of-memory error (can be found in the browser console). In that case, one should filter down the contigs and try again.
+Calculation of silhouette coefficients requires the calculation of a Euclidean distance matrix among all contigs. This is a computationally expensive operation, and runtime quickly builds up as the dataset expands (_O_(_n_<sup>2</sup>)). However, with a typical computer, it shouldn't take more than a few minutes even with tens of thousands of contigs. Just be bit patient before killing the browser tab.
 
 
 ## Contact

@@ -437,6 +437,42 @@ function pdist(arr) {
 
 
 /**
+ * Calculate pairwise distances of all data points
+ * @function pdist
+ * @param {number[][]} arr - input data
+ * @return {number[][]} distance matrix
+ * @description This is the 2D version of pdist. It returns a 2D matrix
+ * instead of a 1D condensed matrix. This is because JavaScript has an upper
+ * limit of array length (2^32-1 = 4,294,967,295). A large dataset may exceed
+ * this limit.
+ */
+function pdist2d(arr) {
+  const n = arr.length;
+  const m = arr[0].length;
+  const res = Array(n).fill().map(() => Array(n).fill(0));
+  let xi, xj, sum, k;
+  for (let i = 0; i < n; i++) {
+    xi = arr[i];
+    for (let j = 0; j < n; j++) {
+      if (j === i) {
+        res[i][j] = 0;
+      } else if (j < i) {
+        res[i][j] = res[j][i];
+      } else {
+        xj = arr[j];
+        sum = 0;
+        for (k = 0; k < m; k++) {
+          sum += (xi[k] - xj[k]) ** 2;
+        }
+        res[i][j] = Math.sqrt(sum);
+      }
+    }
+  }
+  return res;
+}
+
+
+/**
  * Convert a categorical variable to incremental integers.
  * @param {string[]} arr - input array
  * @returns {number[], string[]} factorized variable and unique values
