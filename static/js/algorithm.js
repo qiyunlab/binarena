@@ -113,7 +113,7 @@ function silhouetteSample(x, label, dist) {
         }
 
         // determine intra- or inter-bin distance
-        if (li == label[j]) {
+        if (li === label[j]) {
           distIn += dist[idx];
         } else {
           distOut[label[j]] += dist[idx];
@@ -138,6 +138,40 @@ function silhouetteSample(x, label, dist) {
       res[i] = 0;
     }
   } // end for i
+  return res;
+}
+
+
+/**
+ * Compute the silhouette coefficient for each contig.
+ * @function silhouetteSample2D
+ * @param {number[]} x - input data
+ * @param {number[]} label - labels of input data
+ * @param {number[]} dist - pairwise distances among input data
+ * @return {number[]} silhouette coefficient of each contig
+ * @description This is the 2D version of the function.
+ */
+ function silhouetteSample2D(x, label, dist) {
+  const n = x.length;
+  const count = bincount(label);
+  const c = count.length;
+  let distIn, distOut, li, j;
+  const res = Array(n).fill();
+  for (let i = 0; i < n; i++) {
+    li = label[i];
+    if (count[li] > 1) {
+      distIn = 0;
+      distOut = Array(c).fill(0);
+      for (j = 0; j < n; j++) {
+        if (li === label[j]) distIn += dist[i][j];
+        else distOut[label[j]] += dist[i][j];
+      }
+      for (j = 0; j < c; j++) distOut[j] /= count[j];
+      distOut = Math.min.apply(null, distOut.filter(Boolean));
+      distIn /= (count[li] - 1);
+      res[i] = (distOut - distIn) / Math.max(distOut, distIn);
+    } else res[i] = 0;
+  }
   return res;
 }
 

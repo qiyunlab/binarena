@@ -177,11 +177,21 @@ function calcSilhouette(mo) {
     // if (cache.pdist.length === 0) cache.pdist = pdist(vals);
     // note: can no longer use cache pdist
     console.log('Calculating pairwise Euclidean distances...');
-    const dm = pdist(vals);
+
+    // switch to 2D version if there are too many contigs
+    const use2d = n_ctg >= 20000;
+    if (use2d) console.log('Switched to 2D calculation (slower but can ' +
+      'handle more data points.');
+
+    // const t0 = performance.now();
+    const dm = use2d ? pdist2d(vals) : pdist(vals);
+    // const t1 = performance.now();
+    // console.log(t1 - t0);
 
     // calculate silhouette scores
     console.log('Calculating silhouette coefficients...');
-    let scores = silhouetteSample(vals, labels, dm);
+    let scores = use2d ? silhouetteSample2D(vals, labels, dm) :
+      silhouetteSample(vals, labels, dm);
 
     // cache result
     console.log('Calculation completed.');
