@@ -13,13 +13,13 @@ Please check out this [live demo](https://qiyunlab.github.io/binarena/demo.html)
 
 ## Contents
 
-- [Installation](#noinstallation) | [Main interface](#main-interface) | [System requirements](#system-requirements) | [Mouse and keyboard shortcuts](#mouse-and-keyboard-shortcuts)
-- [Input files](#input-files): [Data table](#data-table) | [Table view](#table-view) | [Special columns](#special-columns) | [Additional data](#additional-data)
-- [Display items](#display-items): [Legends and data scaling](#legends-and-data-scaling) | [Data transformation](#data-transformation) | [Color coding](#color-coding)
-- [Contig selection](#contig-selection) | [Contig summary](#contig-summary) | [Contig masking](#contig-masking) | [Contig searching](#contig-searching) | [Mini plot](#mini-plot)
-- [Binning plan](#binning-plan) | [Table of bins](#table-of-bins) | [From selection to bin](#from-selection-to-bin)
-- [Binning confidence evaluation](#binning-confidence-evaluation) | [Binning plan comparison](#binning-plan-comparison)
-- [FAQ](#faq) | [Contact](#contact)
+- [Installation](#noinstallation) | [main interface](#main-interface) | [system requirements](#system-requirements) | [mouse and keyboard shortcuts](#mouse-and-keyboard-shortcuts)
+- [Input files](#input-files): [data table](#data-table) | [table view](#table-view) | [special columns](#special-columns) | [additional data](#additional-data)
+- [Display items](#display-items): [legends and data scaling](#legends-and-data-scaling) | [data transformation](#data-transformation) | [color coding](#color-coding)
+- [Contig selection](#contig-selection) | [masking](#contig-masking) | [highlighting](#contig-highlighting) | [summary](#contig-summary) | [search](#contig-searching) | [mini plot](#mini-plot)
+- [Binning plan](#binning-plan) | [table of bins](#table-of-bins) | [from selection to bin](#from-selection-to-bin)
+- [Binning confidence evaluation](#binning-confidence-evaluation) | [binning plan comparison](#binning-plan-comparison)
+- [FAQ](#faq) | [contact](#contact)
 
 
 ## (No)Installation
@@ -58,7 +58,7 @@ The BinaRena interface is like a [**digital map**](https://www.google.com/maps) 
 - Click a contig to **select** it. Hold `Shift` and click to select multiple contigs.
 - Click a selected contig to unselect it. Hold `Shift` and click to unselect multiple contigs.
 - Press `Enter` to enter **polygon selection** mode. Then use mouse clicks to draw a polygon to contain multiple contigs. Press `Enter` again to complete selection. Hold `Shift` while pressing the second `Enter` to add contigs to the existing selection.
-- Press `Delete` or `Backspace` to **mask** selected contigs.
+- Press `Delete` or `Backspace` to **mask** selected contigs. Presee `L` to **highlight** selected contigs.
 - Press `Space` to **create a new bin** from selected contigs.
 - Click a **bin name** to select it and all member contigs. Click it again to edit its name. Hold Shift and click to select multiple bins.
 - Press `.` (`>`) to **add** selected contigs to the current bin, press `,` (`<`) to **remove** selected contigs from the current bin, press `/` to **update** the current bin with selected contigs (i.e., replace its content).
@@ -173,13 +173,35 @@ In the interactive scatter plot, one can simple click circles (**contigs**) to s
 
 A more efficient may is to press `Enter` or click the <span style="background-color: lightgrey">&#11040;</span> button in the corner to enter the **polygon** selection mode.
 
-<img src="docs/img/widgets.png" width="128">
+<img src="docs/img/widgets.png" width="160">
 
 Then one can click on the plot to draw a polygon to contain contigs of interest. When done, press `Enter` again and these contigs will be selected.
 
 <img src="docs/img/polyogn.png" width="304">
 
 Hold `Shift` when finishing selection will add the contigs to the current selection.
+
+
+## Contig masking
+
+One can press the `Delete` key or click the <span style="background-color: lightgrey">&empty;</span> button in the corner to **mask** currently selected contigs. These contigs will disappear from the plot. They will also be excluded from subsequent operations (e.g., they cannot be selected, nor can they influence calculation of metrics). This function is useful for cloaking unwanted contigs during binning.
+
+<img src="docs/img/mask.png" width="271">
+
+The masked contigs are not deleted from the dataset. They can be released back to the view by clicking the <span style="background-color: lightgrey">&times;</span> button next to the masked number.
+
+- Note that masked contigs will not be immediated deleted from bins. One can click the <span style="background-color: lightgrey">&empty;</span> button in the bin table toolbar to remove masked contigs from all bins.
+
+
+## Contig highlighting
+
+One can press the `L` key or click the <span style="background-color: lightgrey">&#9673;</span> button in the corner to **highlight** currently selected contigs. Moreover, one may select one of multiple highlight colors from the menu.
+
+<img src="docs/img/highlight.png" width="350">
+
+The highlight will stay with the contigs no matter how the layout and display items change, until the user click the <span style="background-color: lightgrey">&times;</span> button next to each color to release them.
+
+Highlighting will not affect binning, search, calculation and operations. It serves as a visual annotation of contigs to make them noticeable to the user.
 
 
 ## Contig summary
@@ -193,17 +215,6 @@ When multiple contigs are selected, the displayed value of **numeric** fields is
 For **categorical** columns, the displayed category is the **majority-rule** category, if there are multiple options (i.e., the selected contigs are a mixture), determined by weighting against the contig length (one can tweak this). The relative frequency of the main category is displayed in the parentheses. If no category is over half, the row will be displayed as "ambiguous", while the most frequent category can be found in the tooltip during mouse hovering.
 
 One may click the <span style="background-color: lightgrey">&#9684;</span> button in each row to display a histogram of the distribution of this variable in a [mini plot](#mini-plot).
-
-
-## Contig masking
-
-One may press the `Delete` key or click the <span style="background-color: lightgrey">&empty;</span> button in the corner to **mask** currently selected contigs. These contigs will disappear from the plot. They will also be excluded from subsequent operations (e.g., they cannot be selected, nor can they influence calculation of metrics). This function is useful for cloaking unwanted contigs during binning.
-
-<img src="docs/img/mask.png" width="271">
-
-The masked contigs are not deleted from the dataset. They can be released back to the view by clicking the <span style="background-color: lightgrey">&times;</span> button next to the masked number.
-
-Note that masked contigs will not be immediated deleted from bins. One can click the <span style="background-color: lightgrey">&empty;</span> button in the bin table toolbar to remove masked contigs from all bins.
 
 
 ## Contig searching
@@ -283,7 +294,7 @@ Before pressing "done", one may check "save result to field" to save the calcula
 
 One may also check "export result to file" to save the results (contig IDs, bin assignments and silhouette coefficients) to a TSV file.
 
-- Be warned not to over-intepret silhouette coefficient. It is a widely-used metric for [cluster analysis evaluation](https://en.wikipedia.org/wiki/Cluster_analysis#Evaluation_and_assessment). However, other biological factors may also be important in the task of binning.
+- Be warned not to over-interpret silhouette coefficient. It is a widely-used metric for [cluster analysis evaluation](https://en.wikipedia.org/wiki/Cluster_analysis#Evaluation_and_assessment). However, other biological factors may also be important in the task of binning.
 
 
 ## Binning plan comparison

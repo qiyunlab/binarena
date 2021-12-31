@@ -34,7 +34,8 @@
  * @property {Object} stat   - transient status
  * @property {Object} picked - contig selection
  * @property {Object} masked - contig masking
- * @property {Object} tabled - indices of contigs in data table
+ * @property {Object} highed - contig highlighting
+ * @property {Object} tabled - contigs in table
  * @property {Object} bins   - binning plan
  * @property {Object} rena   - arena canvas
  * @property {Object} oray   - overlay canvas
@@ -173,6 +174,7 @@ function mainObj() {
     freqs: {},
     npick: 0,
     nmask: 0,
+    nhigh: 0,
     binns: new Set(),
     pdist: [],
     silhs: []
@@ -312,14 +314,22 @@ function mainObj() {
 
   /**
    * Contig selection and masking
-   * @member {Array.<boolean>} pick
-   * @member {Array.<boolean>} mask
+   * @member {Array.<boolean>} picked
+   * @member {Array.<boolean>} masked
    * @description They are 1D arrays of the same size as data columns. Their
    * elements are true/false values.
    */
   this.picked = [];
   this.masked = [];
 
+
+  /**
+   * Contig highlighting
+   * @member {Array.<number>} highed
+   * @description This is a 1D array of integers. 0 means not lighlighted. 1 to
+   * n corresponds to highlight color indices.
+   */
+  this.highed = [];
 
   /**
    * Binning plan.

@@ -24,6 +24,9 @@ const helpInfo = 'Help information to be added.';
  * @license BSD 3-Clause
  * @see licenses/QIIME2.txt
  * 
+ * @description The highlight palette was adopted from:
+ * {@link https://www.color-hex.com/color-palette/70969}
+ * 
  * @description Other palettes were extracted from matplotlib 3.0.3.
  * {@link https://matplotlib.org/}
  * @license matplotlib license
@@ -145,3 +148,7 @@ const DIVERGING_PALETTES = [
 
 const DEFAULT_DISCRETE_PALETTE = 'QIIME';
 const DEFAULT_CONTINUOUS_PALETTE = 'viridis';
+
+const HIGHLIGHT_PALETTE = [
+  '#fdff00', '#ff9a00', '#00ff04', '#00c5ff', '#ff00a7'
+];
