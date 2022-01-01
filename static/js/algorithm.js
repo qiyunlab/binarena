@@ -3,34 +3,11 @@
 /**!
  * @module algorithm
  * @file Advanced algorithms.
- * @description They only operate on the parameters that are explicitly passed
- * to them. They do NOT directly access the main object OR the "document"
- * object. They are not related to any visual elements.
+ * @description These are algorithms designed to achieve specific goals, as in
+ * contrast to the general functions in "numeric.js". They only operate on the
+ * parameters that are explicitly passed to them. They do NOT access the main
+ * object or the "document" object. They are not related to the interface.
  */
-
-
-/**
- * Check if a circle and a rectangle collide
- * @function rectCircleColliding
- * @param {Object.<x: number, y: number, r: number>} circle - circle
- * @param {Object.<x: number, y: number, w: number, h: number>} rect - rectangle
- * @description adopted from markE's answer at:
- * @see {@link: https://stackoverflow.com/questions/21089959/}
- */
-function rectCircleColliding(circle, rect){
-  const distX = Math.abs(circle.x - rect.x - rect.w / 2),
-        distY = Math.abs(circle.y - rect.y - rect.h / 2);
-
-  if (distX > (rect.w / 2 + circle.r)) return false;
-  if (distY > (rect.h / 2 + circle.r)) return false;
-
-  if (distX <= (rect.w / 2)) return true;
-  if (distY <= (rect.h / 2)) return true;
-
-  const dx = distX - rect.w / 2,
-        dy = distY - rect.h / 2;
-  return (dx ** 2 + dy ** 2 <= (circle.r ** 2));
-}
 
 
 /**
@@ -51,18 +28,43 @@ function rectCircleColliding(circle, rect){
 function pnpoly(x, y, polygon) {
   let res = false;
   const n = polygon.length;
-  let xi, yi, xj, yj;
+  let point, xi, yi, xj, yj;
   for (let i = 0, j = n - 1; i < n; j = i++) {
-    xi = polygon[i].x;
-    yi = polygon[i].y;
-    xj = polygon[j].x;
-    yj = polygon[j].y;
+    point = polygon[i];
+    xi = point.x;
+    yi = point.y;
+    xj = point.x;
+    yj = point.y;
     if (((yi > y) != (yj > y)) &&
       (x < (xj - xi) * (y - yi) / (yj - yi) + xi)) {
       res = !res;
     }
   }
   return res;
+}
+
+
+/**
+ * Check if a circle and a rectangle collide
+ * @function rectCircleColliding
+ * @param {Object.<x: number, y: number, r: number>} circle - circle
+ * @param {Object.<x: number, y: number, w: number, h: number>} rect - rectangle
+ * @description adopted from markE's answer at:
+ * @see {@link: https://stackoverflow.com/questions/21089959/}
+ */
+ function rectCircleColliding(circle, rect){
+  const distX = Math.abs(circle.x - rect.x - rect.w / 2),
+        distY = Math.abs(circle.y - rect.y - rect.h / 2);
+
+  if (distX > (rect.w / 2 + circle.r)) return false;
+  if (distY > (rect.h / 2 + circle.r)) return false;
+
+  if (distX <= (rect.w / 2)) return true;
+  if (distY <= (rect.h / 2)) return true;
+
+  const dx = distX - rect.w / 2,
+        dy = distY - rect.h / 2;
+  return (dx ** 2 + dy ** 2 <= (circle.r ** 2));
 }
 
 
@@ -149,7 +151,9 @@ function silhouetteSample(x, label, dist) {
  * @param {number[]} label - labels of input data
  * @param {number[]} dist - pairwise distances among input data
  * @return {number[]} silhouette coefficient of each contig
- * @description This is the 2D version of the function.
+ * @description This is the 2D version of the function. It takes a 2D square
+ * distance matrix instead of a 1D condensed distance matrix. It is slower
+ * but it can handle larger datasets.
  */
  function silhouetteSample2D(x, label, dist) {
   const n = x.length;

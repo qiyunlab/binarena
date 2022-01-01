@@ -129,15 +129,14 @@ function miniPlotMouseMove(e, mo) {
   // skip if no mini plot is displayed
   if (mo.mini.field === null) return;
   if (mo.mini.hist === null) return;
-  if ((Object.keys(mo.picked)).length === 0) return;
+  if (!mo.cache.npick) return;
 
   // find mouse position in mini plot
   const canvas = mo.mini.canvas;
   const rect = canvas.getBoundingClientRect();
   const w = canvas.width,
         h = canvas.height;
-  const x = (e.clientX - rect.left) / (rect.right - rect.left) * w,
-        y = (e.clientY - rect.top)  / (rect.bottom - rect.top) * h;
+  const x = (e.clientX - rect.left) / (rect.right - rect.left) * w;
 
   // first and last bin indices
   let bin0, bin1;

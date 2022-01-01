@@ -410,7 +410,7 @@ function renderArena(mo) {
   const paths = {};
 
   // intermediates
-  let radius, rviz, x, y, fs, hi;
+  let rad, vrad, x, y, fs, hi;
 
   // highlights
   const nhigh = HIGHLIGHT_PALETTE.length;
@@ -422,37 +422,37 @@ function renderArena(mo) {
     if (mask[i]) continue;
 
     // determine radius (size)
-    radius = S[i];
-    rviz = radius * scale;
+    rad = S[i];
+    vrad = rad * scale;
 
     // if contig occupies less than one pixel on screen, skip
-    if (rviz < min1) continue;
+    if (vrad < min1) continue;
 
     // determine x- and y-coordinates
     // skip contigs outside visible region
     x = Math.round(X[i] * w);
-    if (x + radius < vleft || x - radius > vright) continue;
+    if (x + rad < vleft || x - rad > vright) continue;
     y = Math.round(Y[i] * h);
-    if (y + radius < vtop || y - radius > vbottom) continue;
+    if (y + rad < vtop || y - rad > vbottom) continue;
 
     // determine fill style (color and opacity)
     fs = `rgba(${C[i]})`;
     if (!(fs in paths)) paths[fs] = { 'square': [], 'circle': [] };
 
     // if a contig occupies less than four pixels on screen, draw a square
-    if (rviz < min2) {
-      paths[fs].square.push([x, y, Math.round(radius * pi1_2)]);
+    if (vrad < min2) {
+      paths[fs].square.push([x, y, Math.round(rad * pi1_2)]);
     }
 
     // if bigger, draw a circle
     else {
-      paths[fs].circle.push([x, y, Math.round(radius)]);
+      paths[fs].circle.push([x, y, Math.round(rad)]);
     }
 
     // highlight circle
     hi = high[i];
     if (hi) {
-      highs[hi - 1].push([x, y, Math.round(radius + hirad)]);
+      highs[hi - 1].push([x, y, Math.round(rad + hirad)]);
     }
   } // end for i
 
@@ -646,9 +646,7 @@ function drawGrid(rena, view) {
 function polygonSelect(mo, shift) {
   let n = mo.cache.nctg;
   if (!n) return;
-  const data = mo.data,
-        view = mo.view,
-        stat = mo.stat,
+  const stat = mo.stat,
         oray = mo.oray;
 
   // change button appearance
