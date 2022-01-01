@@ -21,7 +21,7 @@ function splitLines(text) {
 
 
 /**
- * Capitalize a string
+ * Capitalize a string.
  * @function capital
  * @param {string} text - multi-line string
  * @returns {string[]} split text
@@ -32,7 +32,7 @@ function capital(str) {
 
 
 /**
- * Format a number.
+ * Format a number to given precision and strip trailing zeros.
  * @function formatNum
  * @param {number} num - number to format
  * @param {number} digits - number of digits to retain
@@ -89,20 +89,20 @@ function scaleNum(num, scale) {
     switch (scale) {
       case 'none':
         return num;
-      case 'rank':
+      case 'rank': // cannot rank a single number
         return NaN;
       case 'square':
-        return Math.pow(num, 2);
+        return num ** 2;
       case 'sqrt':
         return Math.sqrt(num);
       case 'cube':
-        return Math.pow(num, 3);
+        return num ** 3;
       case 'cbrt':
         return Math.cbrt(num);
       case '4pow':
-        return Math.pow(num, 4);
+        return num ** 4;
       case '4rt':
-        return Math.pow(num, 0.25);
+        return num ** 0.25;
       case 'log':
         return Math.log(num);
       case 'exp':
@@ -129,8 +129,8 @@ function scaleNum(num, scale) {
  * @function scaleArr
  * @param {number[]} arr - array to scale
  * @param {string|number} scale - scale name or power
+ * @returns {number[]} scaled array 
  * @throws if scale is invalid
- * @returns {number[]} scaled array
  */
 function scaleArr(arr, scale) {
   const n = arr.length;
@@ -415,13 +415,13 @@ function listFeas(arr) {
 
 /**
  * Generate a string to summarize a feature frequency map.
- * @function summFeas
+ * @function summFeatures
  * @param {Array} arr - feature set column
  * @returns {string} features sorted by frequency in descending order, prefixed
  * by frequency in parentheses if frequency is not 1.
  * @example 'K00001(5), K00023(2), K01456, K00789'
  */
-function summFeas(arr) {
+function summFeatures(arr) {
   return Object.entries(listFeas(arr))
     .sort(([, a],[, b]) => b - a)
     .map(x => x[1] === 1 ? x[0] : `${x[0]}(${x[1]})`)

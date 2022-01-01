@@ -638,7 +638,7 @@ function summFieldInfo(arr, type, metric, deci, rarr, warr) {
       break;
 
     case 'fea':
-      text = summFeas(arr);
+      text = summFeatures(arr);
       break;
   }
   return [text, capital(comment)];

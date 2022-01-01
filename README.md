@@ -278,7 +278,7 @@ These functions can also be found in the toolbar next to the summary table.
 
 ## Binning confidence evaluation
 
-BinaRena calculates the [**silhouette coefficient**](https://en.wikipedia.org/wiki/Silhouette_(clustering)) to evaluate the **confidence** of binning. Specifically, a silhouette coefficient measures how similar a contig is to other contigs in the same bin, as in contrast to contigs in other bins. It ranges from -1 (worse) to 1 (best).
+BinaRena can evaluate the **confidence** of binning by calculating the [**silhouette coefficient**](https://en.wikipedia.org/wiki/Silhouette_(clustering)). Specifically, a silhouette coefficient measures how similar a contig is to other contigs in the same bin, as in contrast to contigs in other bins. It ranges from -1 (worst) to 1 (best).
 
 One may click the <span style="background-color: lightgrey">&#9739;</span> button in the toolbar next to the binning plan to open the "silhouette coefficient" window. It allows the user to select variables to be included in the calculation.
 

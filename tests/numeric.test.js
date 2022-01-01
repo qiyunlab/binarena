@@ -37,12 +37,12 @@ describe('numeric.js', function() {
     expect(arrProdSum([2.5, 3.2, 4.5], [0.1, 1.2, -0.4])).toBe(2.29);
   });
 
-  it('arrEqualDeep', function() {
-    expect(arrEqualDeep([0, 1], 0)).toBeFalsy();
-    expect(arrEqualDeep([0, 0], [0, 1])).toBeFalsy();
-    expect(arrEqualDeep([[0, 0], [0, 1]], [0, 1])).toBeFalsy();
-    expect(arrEqualDeep([[0, 0], [0, 1]], [[0, 1], [0, 0]])).toBeFalsy();
-    expect(arrEqualDeep([[0, 0], [[1, 0], [1, 1]]], [[0, 0], [[1, 0], [1, 1]]])).toBeTruthy();
+  it('arrDeepEqual', function() {
+    expect(arrDeepEqual([0, 1], 0)).toBeFalsy();
+    expect(arrDeepEqual([0, 0], [0, 1])).toBeFalsy();
+    expect(arrDeepEqual([[0, 0], [0, 1]], [0, 1])).toBeFalsy();
+    expect(arrDeepEqual([[0, 0], [0, 1]], [[0, 1], [0, 0]])).toBeFalsy();
+    expect(arrDeepEqual([[0, 0], [[1, 0], [1, 1]]], [[0, 0], [[1, 0], [1, 1]]])).toBeTruthy();
   });
 
   it('rankdata', function () {
