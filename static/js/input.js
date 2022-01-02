@@ -80,6 +80,11 @@ function updateDataFromText(text, data, cols, filter) {
       parseAssembly(text, data, cols, filter);
     }
 
+    // parse as an annotation file
+    else if (data.length > 0 && getAnnotationFormat(text)) {
+      parseAnnotation(text, data, cols);
+    }
+
     // parse as a table
     else {
       parseTable(text, data, cols);
@@ -162,6 +167,17 @@ function parseTable(text, data, cols) {
   if ((new Set(arr2d[0])).size !== n - 1) {
     throw 'Error: Contig identifiers are not unique.';
   }
+
+  // remove old data
+  if (data.length > 0 && data[0].length !== arr2d[0].length) {
+    let n = data.length;
+    for (let i = 0; i < n; i++) {
+      data.shift()
+      cols.names.shift()
+      cols.types.shift()
+    }
+  }
+
   data.push(arr2d[0]);
   cols.names.push(names[0]);
   cols.types.push('id');
@@ -180,7 +196,6 @@ function parseTable(text, data, cols) {
       cols.types.push(type === 'cat' ? 'cwt' : 'fwt');
     }
   }
-
 }
 
 
@@ -494,10 +509,19 @@ function parseAssembly(text, data, cols, filter) {
 
   if (df.length === 0) throw `Error: No contig is ${minLen} bp or larger.`;
 
-  // update data and cols objects
-  for (let arr of transpose(df)) data.push(arr);
-  cols.names = ['id', 'length', 'gc', 'coverage'];
-  cols.types = ['id', 'num', 'num', 'num'];
+  // remove old data
+  if (data.length > 0 && df[0].length !== data[0].length) {
+    let n = data.length;
+    for (let i = 0; i < n; i++) {
+      data.shift()
+      cols.names.shift()
+      cols.types.shift()
+    }
+  }
+    // update data and cols objects
+    for (let arr of transpose(df)) data.push(arr);
+    cols.names = ['id', 'length', 'gc', 'coverage'];
+    cols.types = ['id', 'num', 'num', 'num'];
 }
 
 
@@ -591,5 +615,57 @@ function parseContigTitle(line, format) {
     [ , id, , coverage, length] = line.match(regex);
     return [id, coverage];
   }
+  return null;
+}
+
+/**
+ * Parses and retrieves information in annotation file.
+ * @function parseAnnotation
+ * @param {String} text - annotation file content (multi-line string)
+ * @param {Object} data - data object
+ * @param {Object} cols - cols object
+ */
+function parseAnnotation(text, data, cols) {
+  const lines = splitLines(text);
+  const format = getAnnotationFormat(text);
+  const n = lines.length;
+
+  if (n !== data[0].length) {
+    // Number of contigs do not match number of rows in annotation file
+    throw 'Dimension Error'
+  }
+
+  else if (format === 'greengenes') {
+    const regex = /__[0-9a-zA-Z\s]*\s*(?=[;\s])|G\d+/g;
+    let arr2d = []
+
+    for(let i = 0; i < n; i++) {
+      let line = lines[i];
+      let arr = (line.match(regex).join('')).split('__');
+      arr2d.push(arr);  
+    }
+
+    for (let arr of transpose(arr2d)) data.push(arr);
+    cols.names = cols.names.concat(['GreenGenes ID', 'Kingdom', 'Phylum', 'Class', 'Order', 'Family', 'Genus', 'Species'])
+    cols.types = cols.types.concat(['id', 'cat', 'cat', 'cat', 'cat', 'cat', 'cat', 'cat'])
+  }
+
+}
+
+/**
+ * Infer the format of an annotation file.
+ * @function getAnnotationFormat
+ * @param {String} text - file content (multi-line)
+ * @returns {String} - annotation file format (GreenGenes or null)
+ * @see parseContigTitle
+ * This function searches for unique starting sequences of different annotation file
+ * formats. Currently, it supports GreenGenes format.
+ */
+function getAnnotationFormat(text) {
+  // GreenGenes sample line
+  // e.g. G000712055  k__Bacteria; p__Firmicutes; c__Clostridia; o__Clostridiales; f__Ruminococcaceae; g__Ruminococcus; s__Ruminococcus sp. HUN007
+  const green_genes_regex = /G\d{9}\s[kd]__/g;
+  if (text.search(green_genes_regex) === 0) return 'greengenes';
+
   return null;
 }
