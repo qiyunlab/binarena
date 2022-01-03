@@ -444,7 +444,9 @@ function initSettings(mo) {
 
   // Show/hide frequent buttons.
   byId('freq-chk').addEventListener('change', function () {
-    byId('freq-panel').classList.toggle('hidden', !this.checked);
+    for (let div of byId('widget-frame').querySelectorAll('div.freq')) {
+      div.classList.toggle('hidden', !this.checked);
+    }
   });
 
 }
@@ -464,8 +466,18 @@ function initWidgets(mo) {
   });
 
   // take screenshot
-  byId('screenshot-btn').addEventListener('click', function () {
+  byId('image-btn').addEventListener('click', function () {
+    byId('png.btn').click();
+  });
+
+  // generate PNG
+  byId('png-btn').addEventListener('click', function () {
     exportPNG(mo.rena);
+  });
+
+  // generate SVG
+  byId('svg-btn').addEventListener('click', function () {
+    exportSVG(mo);
   });
 
   // reset graph
