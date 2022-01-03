@@ -953,6 +953,17 @@ div.dash-content > table tr td:last-child > span button:hover {
   justify-content: space-between;
 }
 
+#widget-frame > div > div.expand > p > a {
+  padding-left: 10px;
+  padding-right: 10px;
+  cursor: pointer;
+}
+
+#widget-frame > div > div.expand > p > a:hover {
+  background-color: gainsboro;
+}
+
+
 #set-panel > div {
   width: 180px;
 }
