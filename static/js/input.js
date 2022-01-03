@@ -410,7 +410,24 @@ function guessColumnType(arr) {
       }
     }
   }
-  if (areCats) return ['cat', parsed, weighted ? weight : null];
+
+  const unique = [...new Set(arr)];
+  const base = unique.length;
+  let probs = [];
+
+  for (let val of unique) probs.push(calcProb(arr, val));
+
+  const reducer = (acculumator, current) => acculumator + (current + (Math.log(current) / Math.log(base)));
+  const entropy = -1 * probs.reduce(reducer);
+
+  const threshold = 100;
+
+  if (areCats) {
+    if (entropy > threshold) {
+      return ['des', parsed, weighted ? weight : null];
+    }
+    return ['cat', parsed, weighted ? weight : null];
+  }
 
   // parse as features
   parsed = Array(n).fill().map(() => []);
@@ -439,6 +456,25 @@ function guessColumnType(arr) {
   }
   return ['fea', parsed, weighted ? weight : null];
 
+}
+
+
+/** calculates the probability of picking a vlue in an array
+ * @function calcProb
+ * @param {Array} arr - array of values
+ * @param {String | Number | Float} match - value to look for in array
+ */
+function calcProb(arr, match) {
+  const n = arr.length;
+
+  let count = 0;
+  for (let i = 0; i < n; i++) {
+    if (arr[i] === match) {
+      count++;
+    }
+  }
+
+  return count / n;
 }
 
 
