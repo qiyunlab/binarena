@@ -51,7 +51,10 @@ function initCanvas(mo) {
   });
 
   rena.addEventListener('mousewheel', function (e) {
-    view.scale *= e.wheelDelta > 0 ? (4 / 3) : 0.75;
+    const dscale = e.wheelDelta > 0 ? (4 / 3) : 0.75;
+    view.scale *= dscale;
+    view.posX = e.x - (e.x - view.posX) * dscale;
+    view.posY = e.y - (e.y - view.posY) * dscale;
     updateView(mo);
   });
 
