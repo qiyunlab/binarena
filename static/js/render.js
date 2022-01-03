@@ -606,34 +606,95 @@ function drawPolygon(mo) {
  * @function drawGrid
  * @param {Object} rena - arena canvas DOM
  * @param {Object} view - view object
- * @todo needs further work
  */
 function drawGrid(rena, view) {
+  const w = rena.width,
+        h = rena.height;
+  const scale = view.scale;
+  const xmin = view.x.min,
+        xmax = view.x.max,
+        xran = xmax - xmin;
+  const ymin = view.y.min,
+        ymax = view.y.max,
+        yran = ymax - ymin;
+
+  // get viewport edges
+  const vleft = -view.posX / scale,
+        vright = (w - view.posX) / scale,
+        vtop = -view.posY / scale,
+        vbottom = (h - view.posY) / scale;
+
+  // calculate grid density (number of steps)
+  // note: grid density increases when zooming in, and descreases to at least
+  // 5 when zooming out
+  const nbin = Math.max(Math.round(10 * scale), 5);
+
+  // calculate best ticks
+  // note: these ticks are constant as long as data and zooming are unchanged,
+  // regardless of canvas position
+  const xticks = getTicks(xmin, xmax, nbin).slice(1, -1),
+        yticks = getTicks(ymin, ymax, nbin).slice(1, -1);
+  const nxtick = xticks.length,
+        nytick = yticks.length;
+
+  // calculate best precisions
+  const xdigits = Math.max(0, Math.ceil(-Math.log10((xticks[nxtick - 1] -
+          xticks[0]) / (nxtick - 1)))),
+        ydigits = Math.max(0, Math.ceil(-Math.log10((yticks[nytick - 1] -
+          yticks[0]) / (nytick - 1))));
+
+  // render vertical lines
   const ctx = rena.getContext('2d');
-  ctx.font = (1 / view.scale).toFixed(2) + 'em monospace';
+  ctx.strokeStyle = 'lightgray';
+  ctx.lineWidth = 1 / scale;
+  const xposes = [], xtickz = [];
+  let xtick, xpos;
+  for (let i = 0; i < nxtick; i++) {
+    xtick = xticks[i];
+    xpos = ((xtick - xmin) / xran - 0.5) * w;
+    if (xpos < vleft) continue;
+    if (xpos > vright) break;
+    xposes.push(xpos);
+    xtickz.push(xtick);
+    ctx.moveTo(xpos, -h * 0.5);
+    ctx.lineTo(xpos, h * 0.5);
+  }
+
+  // render horizontal lines
+  const yposes = [], ytickz = [];
+  let ytick, ypos;
+  for (let i = 0; i < nytick; i++) {
+    ytick = yticks[i];
+    ypos = ((ymax - ytick) / yran - 0.5) * h;
+    if (ypos > vbottom) continue;
+    if (ypos < vtop) break;
+    ctx.moveTo(-w * 0.5, ypos);
+    ctx.lineTo(w * 0.5, ypos);
+    yposes.push(ypos);
+    ytickz.push(ytick);
+  }
+  ctx.stroke();
+
+  // determine text label positions
+  // i.e., the line closest to the middle of screen
+  const xlabpos = xposes[Math.round(xposes.length / 2 - 1)],
+        ylabpos = yposes[Math.round(yposes.length / 2 - 1)];
+
+  // render text labels
+  ctx.font = (1 / scale).toFixed(5) + 'em monospace';
   ctx.fillStyle = 'dimgray';
   ctx.textAlign = 'center';
-  ctx.lineWidth = 1 / view.scale;
-  const ig = 5, gp = 10;
-  let xx, yy;
-  for (let x = parseInt(view.x.min / ig) * ig; x <= parseInt(view.x.max /
-    ig) * ig; x += ig) {
-    xx = ((x - view.x.min) / (view.x.max - view.x.min) - 0.5) * rena.width;
-    ctx.moveTo(xx, -rena.height * 0.5);
-    ctx.lineTo(xx, rena.height * 0.5);
-    ctx.fillText(x.toString(), xx - gp / view.scale, (view.y.max /
-      (view.y.max - view.y.min) - 0.5) * rena.height + gp / view.scale);
+  ctx.textBaseline = 'top';
+  const nxpos = xposes.length;
+  for (let i = 0; i < nxpos; i++) {
+    ctx.fillText(xtickz[i].toFixed(xdigits), xposes[i], ylabpos);
   }
-  for (let y = parseInt(view.y.min / ig) * ig; y <= parseInt(view.y.max /
-    ig) * ig; y += ig) {
-    yy = ((view.y.max - y) / (view.y.max - view.y.min) - 0.5) * rena.height;
-    ctx.moveTo(-rena.width * 0.5, yy);
-    ctx.lineTo(rena.width * 0.5, yy);
-    ctx.fillText(y.toString(), (view.x.min / (view.x.min - view.x.max) -
-      0.5) * rena.width - gp / view.scale, yy + gp / view.scale);
+  ctx.textAlign = 'right';
+  ctx.textBaseline = 'middle';
+  const nypos = yposes.length;
+  for (let i = 0; i < nypos; i++) {
+    ctx.fillText(ytickz[i].toFixed(ydigits), xlabpos, yposes[i]);
   }
-  ctx.strokeStyle = 'lightgray';
-  ctx.stroke();
 }
 
 

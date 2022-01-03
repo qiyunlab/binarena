@@ -277,3 +277,48 @@ function adjustedRandScore(labelTrue, labelPred) {
 
   return (sumComb - prodComb) / (meanComb - prodComb);
 }
+
+
+/**
+ * @constant TICK_LOCS
+ * @description "Nice" numbers for placing ticks in a graph. Consistent with
+ * Matplotlib's default.
+ * {@link https://matplotlib.org/stable/api/ticker_api.html}
+ */
+const TICK_LOCS = [0.1, 0.2, 0.25, 0.5, 1, 2, 2.5, 5, 10, 20];
+
+
+/**
+ * Determine best tick locations for a range of data.
+ * @function getTicks
+ * @param {number} min - minimum value
+ * @param {number} max - maximum value
+ * @param {number} [n=10] - number of bins
+ * @description Implemented with reference to Matplotlib's AutoLocator. This
+ * function however is much simpler than AutoLocator, and the outcomes are not
+ * the same.
+ * {@link https://matplotlib.org/stable/api/ticker_api.html#matplotlib.ticker.
+ * AutoLocator}
+ * @license Matplotlib license
+ * @see licenses/matplotlib.txt
+ */
+function getTicks(min, max, n) {
+  n = n || 10;
+  const rawstep = (max - min) / n;
+  const scale = 10 ** (Math.floor(Math.log10(rawstep)));
+  const m = TICK_LOCS.length;
+  let step, loc;
+  for (let i = 0; i < m; i++) {
+    step = scale * TICK_LOCS[i];
+    if (step < rawstep) continue;
+    loc = Math.floor(min / step) * step;
+    if (loc + step * n >= max) break;
+  }
+  const ticks = [];
+  while (true) {
+    ticks.push(loc);
+    if (loc >= max) break;
+    loc += step;
+  }
+  return ticks;
+}
