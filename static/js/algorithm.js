@@ -28,13 +28,12 @@
 function pnpoly(x, y, polygon) {
   let res = false;
   const n = polygon.length;
-  let point, xi, yi, xj, yj;
+  let xi, yi, xj, yj;
   for (let i = 0, j = n - 1; i < n; j = i++) {
-    point = polygon[i];
-    xi = point.x;
-    yi = point.y;
-    xj = point.x;
-    yj = point.y;
+    xi = polygon[i].x;
+    yi = polygon[i].y;
+    xj = polygon[j].x;
+    yj = polygon[j].y;
     if (((yi > y) != (yj > y)) &&
       (x < (xj - xi) * (y - yi) / (yj - yi) + xi)) {
       res = !res;
