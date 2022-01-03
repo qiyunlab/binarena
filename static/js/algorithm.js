@@ -277,3 +277,120 @@ function adjustedRandScore(labelTrue, labelPred) {
 
   return (sumComb - prodComb) / (meanComb - prodComb);
 }
+
+
+/**
+ * @constant TICK_LOCS
+ * @description "Nice" numbers for placing ticks in a graph. Consistent with
+ * Matplotlib's default.
+ * {@link https://matplotlib.org/stable/api/ticker_api.html}
+ */
+const TICK_LOCS = [0.1, 0.2, 0.25, 0.5, 1, 2, 2.5, 5, 10, 20];
+
+
+/**
+ * Determine best tick locations for a range of data.
+ * @function getTicks
+ * @param {number} min - minimum value
+ * @param {number} max - maximum value
+ * @param {number} [n=10] - number of bins
+ * @description Implemented with reference to Matplotlib's AutoLocator. This
+ * function however is much simpler than AutoLocator, and the outcomes are not
+ * the same.
+ * {@link https://matplotlib.org/stable/api/ticker_api.html#matplotlib.ticker.
+ * AutoLocator}
+ * @license Matplotlib license
+ * @see licenses/matplotlib.txt
+ */
+function getTicks(min, max, n) {
+  n = n || 10;
+  const rawstep = (max - min) / n;
+  const scale = 10 ** (Math.floor(Math.log10(rawstep)));
+  const m = TICK_LOCS.length;
+  let step, loc;
+  for (let i = 0; i < m; i++) {
+    step = scale * TICK_LOCS[i];
+    if (step < rawstep) continue;
+    loc = Math.floor(min / step) * step;
+    if (loc + step * n >= max) break;
+  }
+  const ticks = [];
+  while (true) {
+    ticks.push(loc);
+    if (loc >= max) break;
+    loc += step;
+  }
+  return ticks;
+}
+
+
+/**
+ * Determine best tick locations for a range of data (not in use).
+ * @function getTicksMpl
+ * @param {number} min - minimum value
+ * @param {number} max - maximum value
+ * @param {number} n - number of bins
+ * @description Reimplemented based on Matplotlib's AutoLocator to mimick its
+ * default behavior. It is simplified, but in the ideal scenario it should
+ * generate the same output as AutoLocator does.
+ * {@link https://matplotlib.org/stable/api/ticker_api.html#matplotlib.ticker.
+ * AutoLocator}
+ * @license Matplotlib license
+ * @see licenses/matplotlib.txt
+ */
+function getTicksMpl(min, max, n) {
+  const range = Math.abs(max - min);
+  const mean = (max + min) / 2;
+  let offset;
+  const absmean = Math.abs(mean);
+  if (absmean / range < 100) offset = 0;
+  else offset = Math.sign(mean) * 10 ** Math.floor(Math.log10(absmean));
+  const scale = 10 ** Math.floor(Math.log10(range / n));
+  min -= offset;
+  max -= offset;
+  const rawstep = (max - min) / nbins;
+  const steps = TICK_LOCS.map(x => x * scale);
+  const nstep = steps.length;
+
+  let step, bestmin, dmin, dmax, div, lower, upper, ticks;
+  for (var i = nstep; i >= 0; i--) {
+    step = steps[i];
+    if (step < rawstep) continue;
+    bestmin = Math.floor(min / step) * step;
+
+    dmin = min - bestmin;
+    div = Math.floor(dmin / step);
+    lower = closeto(dmin % step / step - 1, offset / step) ? div + 1 : div;
+
+    dmax = max - bestmin;
+    div = Math.floor(dmax / step);
+    upper = closeto(dmax % step / step, offset / step) ? div : div + 1;
+
+    ticks = [...Array(upper - lower + 1).keys()].map(x => (x + lower) * 
+      step + bestmin);
+    if (ticks.filter(x => min <= x <= max).length >= 2) break;
+  }
+  return ticks.map(x => x + offset);
+}
+
+
+/**
+ * Test whether a number is visually close to a threshold.
+ * @function closeto
+ * @param {number} gap - distance between lower edge and minimum value
+ * @param {number} exp - desired visual distance
+ * {@link https://matplotlib.org/stable/api/ticker_api.html#matplotlib.ticker.
+ * AutoLocator}
+ * @description Adopted from Matplotlib. For `getTicksMpl`.
+ * @license Matplotlib license
+ * @see licenses/matplotlib.txt
+ */
+function closeto(gap, exp) {
+  let tol;
+  if (exp > 0) {
+    const digits = Math.log10(exp);
+    tol = max(1e-10, 10 ** (digits - 12));
+    tol = min(0.4999, tol);
+  } else tol = 1e-10;
+  return Math.abs(gap) < tol;
+}
