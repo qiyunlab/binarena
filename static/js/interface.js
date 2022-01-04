@@ -467,7 +467,7 @@ function initWidgets(mo) {
 
   // take screenshot
   byId('image-btn').addEventListener('click', function () {
-    byId('png.btn').click();
+    byId('png-btn').click();
   });
 
   // generate PNG
