@@ -3,19 +3,24 @@
  * Generate and export an SVG image of the current view.
  * @function exportSVG
  * @param {Object} mo - main object
+ * @param {string[]} legs - legends to plot
  * @description This is an independent rendering enginer that is in parallel
  * to the HTML5 canvas rendering engine. It aims at reproducing what the
  * latter is capturing.
  */
-function exportSVG(mo) {
+function exportSVG(mo, legs) {
+  legs = legs || ['size', 'opacity', 'color'];
 
   // figure flavors
-  const margin = 10,  // margin space
-        xspace = 30,  // extra horizontal space for x-axis ticks and labels
-        yspace = 40,  // extra vertical space for y-axis ticks and labels
-        ticksize = 5, // tick length
+  const pmar = 10,    // plot margin
+        xlabh = 30,   // horizontal space for x-axis ticks and labels
+        ylabw = 40,   // vertical space for y-axis ticks and labels
+        ticklen = 5,  // tick length
         tickgap = 50, // tick density
-        minticks = 5; // minimum tick number
+        minticks = 5, // minimum tick number
+        legmar = 10,  // legend margin
+        legpad = 10,  // legend padding
+        legw = 200;   // legend width
 
   // create SVG (array of lines)
   let svg = [];
@@ -105,8 +110,8 @@ function exportSVG(mo) {
 
   // create figure
   svg.push('<svg version="1.1"' +
-    ` width="${Math.round(wp + margin * 2 + yspace)}" ` +
-    `height="${Math.round(hp + margin * 2 + xspace)}" ` +
+    ` width="${Math.round(wp + pmar * 2 + ylabw)}" ` +
+    `height="${Math.round(hp + pmar * 2 + xlabh)}" ` +
     'xmlns="http://www.w3.org/2000/svg">');
 
   // specify font
@@ -125,7 +130,7 @@ function exportSVG(mo) {
    */
 
   // create plot area
-  const plotdim = `x="${margin + yspace}" y="${margin}" width="${wp}" ` +
+  const plotdim = `x="${pmar + ylabw}" y="${pmar}" width="${wp}" ` +
     `height="${hp}"`;
   svg.push(
     `<rect id="background" ${plotdim} fill="white" stroke="black" />`);
@@ -150,26 +155,24 @@ function exportSVG(mo) {
   let xtick, xpos;
   for (let i = 0; i < nxtick; i++) {
     xtick = xticks[i];
-    xpos = (xtick - xminp) / xranp * wp + yspace + margin;
+    xpos = (xtick - xminp) / xranp * wp + ylabw + pmar;
     svg.push('  <line ' + 
       `x1="${xpos}" ` +
       `x2="${xpos}" ` +
-      `y1="${margin + hp}" ` +
-      `y2="${margin + hp + ticksize}" ` + '/>');
-    svg.push(`<text ` +
+      `y1="${pmar + hp}" ` +
+      `y2="${pmar + hp + ticklen}" ` + '/>');
+    svg.push(`  <text ` +
       `x="${xpos}" ` +
-      `y="${margin + hp + ticksize}">` +
+      `y="${pmar + hp + ticklen}">` +
       `${xtick.toFixed(xdigits)}` + '</text>');
   }
   svg.push('</g>');
 
   // draw x-axis label
-  let xlabel = names[view.x.i];
-  if (view.x.scale !== 'none') xlabel += ` (${view.x.scale})`;
-  svg.push('<text ' +
+  svg.push('<text id="x-label" ' +
     'text-anchor="middle" dominant-baseline="middle" font-size="10pt" ' +
-    `x="${margin + yspace + wp / 2}" y="${margin * 2 + hp + xspace / 2}"` +
-    `>${xlabel}</text>`);
+    `x="${pmar + ylabw + wp / 2}" y="${pmar * 2 + hp + xlabh / 2}"` +
+    `>${dispNameScale(mo, 'x')}</text>`);
 
   // draw y-axis ticks and ticks labels
   svg.push('<g id="y-axis" ' +
@@ -177,25 +180,23 @@ function exportSVG(mo) {
   let ytick, ypos;
   for (let i = 0; i < nytick; i++) {
     ytick = yticks[i];
-    ypos = (ymaxp - ytick) / yranp * hp + margin;
+    ypos = (ymaxp - ytick) / yranp * hp + pmar;
     svg.push('  <line ' +
-      `x1="${margin + yspace - ticksize}" ` +
-      `x2="${margin + yspace}" ` +
+      `x1="${pmar + ylabw - ticklen}" ` +
+      `x2="${pmar + ylabw}" ` +
       `y1="${ypos}" y2="${ypos}" ` + '/>');
     svg.push('  <text ' +
-      `x="${margin + yspace - ticksize}" y="${ypos}"` +
+      `x="${pmar + ylabw - ticklen}" y="${ypos}"` +
       `>${ytick.toFixed(ydigits)}</text>`);
   }
   svg.push('</g>');
 
   // draw y-axis label
-  let ylabel = names[view.y.i];
-  if (view.y.scale !== 'none') ylabel += ` (${view.y.scale})`;
-  svg.push('   <text ' +
-    `transform="rotate(270,${yspace / 2},${margin + hp / 2})" ` +
+  svg.push('<text id="y-label" ' +
+    `transform="rotate(270,${ylabw / 2},${pmar + hp / 2})" ` +
     'text-anchor="middle" dominant-baseline="middle" font-size="10pt" ' +
-    `x="${yspace / 2}" y="${margin + hp / 2}"` +
-    `>${ylabel}</text>`);
+    `x="${ylabw / 2}" y="${pmar + hp / 2}"` +
+    `>${dispNameScale(mo, 'y')}</text>`);
 
 
   /** 
@@ -244,15 +245,15 @@ function exportSVG(mo) {
     if (y + r < 0 || y - r > hp) continue;
 
     // transform and round coordinates
-    x = (x + margin + yspace).toFixed(3);
-    y = (y + margin).toFixed(3);
+    x = (x + pmar + ylabw).toFixed(3);
+    y = (y + pmar).toFixed(3);
 
     // determine fill color and opacity
     c = C[i];
     j = c.lastIndexOf(',');
 
     // add circle and color to scatter plot
-    scatter.push('      <circle ' +
+    scatter.push('    <circle ' +
       `cx="${x}" cy="${y}" r="${r.toFixed(3)}" ` +
       `fill="rgb(${c.substring(0, j)})" ` +
       `fill-opacity="${c.substring(j + 1)}"` + '/>');
@@ -268,7 +269,7 @@ function exportSVG(mo) {
    * Highlights.
    */
 
-  // homogenize highlight opacity (even when they overlap)
+  // homogenize highlight opacity (even with overlaps)
   // see: https://stackoverflow.com/questions/14386642
   svg.push('  <defs>');
   svg.push('  <filter id="even-opacity">');
@@ -299,6 +300,128 @@ function exportSVG(mo) {
   svg.push('  <g id="scatter">');
   svg.push(...scatter);
   svg.push('  </g>');
+
+
+  /**
+   * Legends.
+   */
+
+  svg.push('  <g id="legend">');
+  let legx = pmar + ylabw + legmar;
+  let legy = pmar + legmar;
+  let legh;
+  let v, baseline;
+  let base = mo.view.size.base;
+
+  // 8pt ~= 11px, 10pt ~= 13px
+
+  // size legend
+  if (legs.includes('size')) {
+    v = mo.view.size;
+    legh = legpad * 3 + 22 + base;
+    svg.push('    <rect stroke="black" fill="white" ' +
+      `x="${legx}" y="${legy}" width="${legw}" height="${legh}"  />`);
+    svg.push('    <text ' +
+      'text-anchor="middle" dominant-baseline="middle" font-size="10pt" ' +
+      `x="${legx + legw / 2}" y="${legy + legpad + 6.5}"` +
+      `>${dispNameScale(mo, 'size')}</text>`);
+    baseline = legy + legh - legpad - 9;
+    svg.push('    <polygon points="' +
+      `${legx + legpad},${baseline} ` +
+      `${legx + legw - legpad},${baseline} ` +
+      `${legx + legw - legpad},${baseline - base * v.upper / 100} ` +
+      `${legx + legpad},${baseline - base * v.lower / 100}` +
+      '" fill="black" />');
+    svg.push('    <text ' +
+      'text-anchor="start" dominant-baseline="hanging" font-size="8pt" ' +
+      `x="${legx + legpad}" y="${baseline + 2}"` +
+      `>${v.zero ? '0' : formatNum(v.min, 3)}</text>`);
+    svg.push('    <text ' +
+      'text-anchor="end" dominant-baseline="hanging" font-size="8pt" ' +
+      `x="${legx + legw - legpad}" y="${baseline + 2}"` +
+      `>${formatNum(v.max, 3)}</text>`);
+    legy += legh + legmar;
+  }
+
+  // opacity legend
+  if (legs.includes('opacity')) {
+    v = mo.view.opacity;
+    svg.push('    <defs>');
+    svg.push('      <linearGradient id="alpha-gradient" ' +
+      'x1="0" x2="1" y1="0" y2="0">');
+    svg.push('        <stop offset="0%" stop-color="black" ' +
+      `stop-opacity="${v.lower / 100}"/>`);
+    svg.push('        <stop offset="100%" stop-color="black" ' +
+      `stop-opacity="${v.upper / 100}"/>`);
+    svg.push('      </linearGradient>');
+    svg.push('    </defs>');
+    legh = legpad * 3 + 22 + base;
+    svg.push('    <rect stroke="black" fill="white" ' +
+      `x="${legx}" y="${legy}" width="${legw}" height="${legh}"  />`);
+    svg.push('    <text ' +
+      'text-anchor="middle" dominant-baseline="middle" font-size="10pt" ' +
+      `x="${legx + legw / 2}" y="${legy + legpad + 6.5}"` +
+      `>${dispNameScale(mo, 'opacity')}</text>`);
+    baseline = legy + legh - legpad - 9;
+    svg.push('    <rect fill="url(#alpha-gradient)" ' +
+      `x="${legx + legpad}" y="${baseline - base}" ` +
+      `width="${legw - legpad * 2}" height="${base}" />`);
+    svg.push('    <text ' +
+      'text-anchor="start" dominant-baseline="hanging" font-size="8pt" ' +
+      `x="${legx + legpad}" y="${baseline + 2}"` +
+      `>${v.zero ? '0' : formatNum(v.min, 3)}</text>`);
+    svg.push('    <text ' +
+      'text-anchor="end" dominant-baseline="hanging" font-size="8pt" ' +
+      `x="${legx + legw - legpad}" y="${baseline + 2}"` +
+      `>${formatNum(v.max, 3)}</text>`);
+    legy += legh + legmar;
+  }
+
+  // color legend
+  if (legs.includes('color')) {
+    v = mo.view.color;
+
+    // continuous colors
+    if (mo.cols.types[v.i] === 'num') {
+      svg.push('    <defs>');
+      svg.push('      <linearGradient id="color-gradient" ' +
+        'x1="0" x2="1" y1="0" y2="0">');
+      const palette = PALETTES[mo.view.contpal].map(x => '#' + x);
+      const ncolor = palette.length;
+      const step = 100 / (ncolor - 1);
+      const lower = v.lower;
+      const ratio = 100 / (v.upper - lower);
+      for (i = 0; i < ncolor; i++) {
+        svg.push(`        <stop offset="${(step * i - lower) * ratio}%" ` +
+          `stop-color="${palette[i]}" />`);
+      }
+      svg.push('      </linearGradient>');
+      svg.push('    </defs>');
+      legh = legpad * 3 + 22 + base;
+      svg.push('    <rect stroke="black" fill="white" ' +
+        `x="${legx}" y="${legy}" width="${legw}" height="${legh}"  />`);
+      svg.push('    <text ' +
+        'text-anchor="middle" dominant-baseline="middle" font-size="10pt" ' +
+        `x="${legx + legw / 2}" y="${legy + legpad + 6.5}"` +
+        `>${dispNameScale(mo, 'color')}</text>`);
+      baseline = legy + legh - legpad - 9;
+      svg.push('    <rect fill="url(#color-gradient)" ' +
+        `x="${legx + legpad}" y="${baseline - base}" ` +
+        `width="${legw - legpad * 2}" height="${base}" />`);
+      svg.push('    <text ' +
+        'text-anchor="start" dominant-baseline="hanging" font-size="8pt" ' +
+        `x="${legx + legpad}" y="${baseline + 2}"` +
+        `>${v.zero ? '0' : formatNum(v.min, 3)}</text>`);
+      svg.push('    <text ' +
+        'text-anchor="end" dominant-baseline="hanging" font-size="8pt" ' +
+        `x="${legx + legw - legpad}" y="${baseline + 2}"` +
+        `>${formatNum(v.max, 3)}</text>`);
+      legy += legh + legmar;
+    }
+  }
+
+  svg.push('  </g>');
+
 
   // finish SVG file
   svg.push('</g>');

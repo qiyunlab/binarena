@@ -524,3 +524,20 @@ function countTrue(arr) {
   }
   return res;
 }
+
+
+/**
+ * Generate a string to describe a display item with scale.
+ * @function dispNameScale
+ * @param {Object} mo - main object
+ * @param {string} item - display item
+ * @returns {string} - result string
+ */
+function dispNameScale(mo, item) {
+  const idx = mo.view[item].i;
+  if (!idx) return '';
+  const name = mo.cols.names[idx];
+  const scale = mo.view[item].scale;
+  if (scale === 'none') return name;
+  return `${name} (${scale})`;
+}
