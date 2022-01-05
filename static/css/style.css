@@ -716,7 +716,6 @@ canvas.main-plot {
 #menu-btn {
   width: 100px;
   font-size: 12px;
-  font-style: oblique;
   font-weight: bold;
 }
 
@@ -1071,13 +1070,19 @@ div.side-content {
   text-align: left;
 }
 
-#bin-thead tr th:nth-last-child(-n+3) {
+#bin-thead tr th:not(:first-child) {
   width: 20%;
   text-align: right;
 }
 
-#bin-tbody tr td:nth-last-child(-n+3) {
+#bin-tbody tr td:not(:first-child) {
   text-align: right;
+  color: dimgray;
+}
+
+#bin-tbody tr:hover td:not(:first-child) {
+  text-align: right;
+  color: black;
 }
 
 #bin-tbody tr.selected {
@@ -1128,16 +1133,20 @@ div.side-content {
   width: 25%;
   text-align: right;
   padding: 0 5px 0 0;
-  font-weight: bold;
 }
 
 #info-table tr td:nth-child(2) {
   text-align: left;
   padding: 0 0 0 5px;
+  color: dimgray;
 }
 
 #info-table tr:hover {
   background-color: #EEE;
+}
+
+#info-table tr:hover td:nth-child(2) {
+  color: black;
 }
 
 /** inline controls */

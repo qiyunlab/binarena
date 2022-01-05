@@ -15,12 +15,17 @@ function exportSVG(mo, legs) {
   const pmar = 10,    // plot margin
         xlabh = 30,   // horizontal space for x-axis ticks and labels
         ylabw = 40,   // vertical space for y-axis ticks and labels
+        labfs = 14,   // axis and legend label font size (px)
         ticklen = 5,  // tick length
         tickgap = 50, // tick density
+        tickfs = 12,  // tick label font size (px)
         minticks = 5, // minimum tick number
         legmar = 10,  // legend margin
         legpad = 10,  // legend padding
-        legw = 200;   // legend width
+        legw = 200,   // legend width
+        cboxw = 12,   // color box width
+        cboxgap = 6,  // color box gap
+        clabfs = 13;  // color label font size (px)
 
   // create SVG (array of lines)
   let svg = [];
@@ -130,10 +135,9 @@ function exportSVG(mo, legs) {
    */
 
   // create plot area
-  const plotdim = `x="${pmar + ylabw}" y="${pmar}" width="${wp}" ` +
-    `height="${hp}"`;
-  svg.push(
-    `<rect id="background" ${plotdim} fill="white" stroke="black" />`);
+  const plotdim = `x="${(pmar + ylabw).toFixed(3)}" y="${pmar.toFixed(3)}" ` +
+    `width="${wp.toFixed(3)}" height="${hp.toFixed(3)}"`;
+  svg.push(`<rect id="plotbox" ${plotdim} fill="white" stroke="black" />`);
 
   // clip plot by the plot area
   svg.push('<defs>');
@@ -150,53 +154,54 @@ function exportSVG(mo, legs) {
   const names = mo.cols.names;
 
   // draw x-axis ticks and ticks labels
-  svg.push('<g id="x-axis" ' +
-    'text-anchor="middle" dominant-baseline="hanging" font-size="8pt">');
+  svg.push(`<g id="x-axis" font-size="${tickfs}px" ` +
+    'text-anchor="middle" dominant-baseline="hanging">');
   let xtick, xpos;
   for (let i = 0; i < nxtick; i++) {
     xtick = xticks[i];
-    xpos = (xtick - xminp) / xranp * wp + ylabw + pmar;
+    xpos = ((xtick - xminp) / xranp * wp + ylabw + pmar).toFixed(3);
     svg.push('  <line ' + 
       `x1="${xpos}" ` +
       `x2="${xpos}" ` +
-      `y1="${pmar + hp}" ` +
-      `y2="${pmar + hp + ticklen}" ` + '/>');
+      `y1="${(pmar + hp).toFixed(3)}" ` +
+      `y2="${(pmar + hp + ticklen).toFixed(3)}" ` + '/>');
     svg.push(`  <text ` +
       `x="${xpos}" ` +
-      `y="${pmar + hp + ticklen}">` +
+      `y="${(pmar + hp + ticklen + 1).toFixed(3)}">` +
       `${xtick.toFixed(xdigits)}` + '</text>');
   }
   svg.push('</g>');
 
   // draw x-axis label
-  svg.push('<text id="x-label" ' +
-    'text-anchor="middle" dominant-baseline="middle" font-size="10pt" ' +
-    `x="${pmar + ylabw + wp / 2}" y="${pmar * 2 + hp + xlabh / 2}"` +
-    `>${dispNameScale(mo, 'x')}</text>`);
+  svg.push(`<text id="x-label" font-size="${labfs}px" ` +
+    'text-anchor="middle" dominant-baseline="middle" ' +
+    `x="${(pmar + ylabw + wp / 2).toFixed(3)}" ` +
+    `y="${(pmar * 2 + hp + xlabh / 2).toFixed(3)}"` +
+    `>${dispNameScale(view['x'], names)}</text>`);
 
   // draw y-axis ticks and ticks labels
-  svg.push('<g id="y-axis" ' +
-    'text-anchor="end" dominant-baseline="middle" font-size="8pt">');
+  svg.push(`<g id="y-axis" font-size="${tickfs}px" ` +
+    'text-anchor="end" dominant-baseline="middle">');
   let ytick, ypos;
   for (let i = 0; i < nytick; i++) {
     ytick = yticks[i];
-    ypos = (ymaxp - ytick) / yranp * hp + pmar;
+    ypos = ((ymaxp - ytick) / yranp * hp + pmar).toFixed(3);
     svg.push('  <line ' +
-      `x1="${pmar + ylabw - ticklen}" ` +
-      `x2="${pmar + ylabw}" ` +
+      `x1="${(pmar + ylabw - ticklen).toFixed(3)}" ` +
+      `x2="${(pmar + ylabw).toFixed(3)}" ` +
       `y1="${ypos}" y2="${ypos}" ` + '/>');
     svg.push('  <text ' +
-      `x="${pmar + ylabw - ticklen}" y="${ypos}"` +
+      `x="${(pmar + ylabw - ticklen - 1).toFixed(3)}" y="${ypos}"` +
       `>${ytick.toFixed(ydigits)}</text>`);
   }
   svg.push('</g>');
 
   // draw y-axis label
-  svg.push('<text id="y-label" ' +
-    `transform="rotate(270,${ylabw / 2},${pmar + hp / 2})" ` +
-    'text-anchor="middle" dominant-baseline="middle" font-size="10pt" ' +
-    `x="${ylabw / 2}" y="${pmar + hp / 2}"` +
-    `>${dispNameScale(mo, 'y')}</text>`);
+  svg.push(`<text id="y-label" font-size="${labfs}px" transform=` +
+    `"rotate(270,${(ylabw / 2).toFixed(3)},${(pmar + hp / 2).toFixed(3)})" ` +
+    'text-anchor="middle" dominant-baseline="middle" ' +
+    `x="${(ylabw / 2).toFixed(3)}" y="${(pmar + hp / 2).toFixed(3)}"` +
+    `>${dispNameScale(view['y'], names)}</text>`);
 
 
   /** 
@@ -313,39 +318,70 @@ function exportSVG(mo, legs) {
   let v, baseline;
   let base = mo.view.size.base;
 
-  // 8pt ~= 11px, 10pt ~= 13px
+  // helper for drawing legend box
+  function drawLegBox() {
+    svg.push('    <rect stroke="black" fill="white" ' +
+      `x="${legx.toFixed(3)}" y="${legy.toFixed(3)}" ` +
+      `width="${legw.toFixed(3)}" height="${legh.toFixed(3)}"  />`);
+  }
+
+  // helper for drawing legend title
+  function drawLegTitle(v) {
+    svg.push(`    <text font-size="${labfs}px" ` +
+      'text-anchor="middle" dominant-baseline="middle" ' +
+      `x="${(legx + legw / 2).toFixed(3)}" ` +
+      `y="${(legy + legpad + labfs / 2).toFixed(3)}"` +
+      `>${dispNameScale(v, names)}</text>`);
+  }
+
+  // helper for formatting legend box and title
+  function drawNumLegFrame(v) {
+    legh = legpad * 3 + labfs + base + tickfs;
+    drawLegBox();
+    drawLegTitle(v);
+    baseline = legy + legh - legpad - 9;
+  }
+
+  // helper for formatting min and max labels
+  function drawNumLegMinMax(v) {
+    const min = v.zero ? scaleNum(0, unscale(v.scale)) : v.min;
+    const max = v.max;
+    svg.push(`    <text font-size="${tickfs}px" ` +
+      'text-anchor="start" dominant-baseline="hanging" ' +
+      `x="${(legx + legpad).toFixed(3)}" ` +
+      `y="${(baseline + 2).toFixed(3)}"` +
+      `>${formatNum(min, 3)}</text>`);
+    svg.push(`    <text font-size="${tickfs}px" ` +
+      'text-anchor="end" dominant-baseline="hanging" ' +
+      `x="${(legx + legw - legpad).toFixed(3)}" ` +
+      `y="${(baseline + 2).toFixed(3)}"` +
+      `>${formatNum(max, 3)}</text>`);
+  }
 
   // size legend
   if (legs.includes('size')) {
     v = mo.view.size;
-    legh = legpad * 3 + 22 + base;
-    svg.push('    <rect stroke="black" fill="white" ' +
-      `x="${legx}" y="${legy}" width="${legw}" height="${legh}"  />`);
-    svg.push('    <text ' +
-      'text-anchor="middle" dominant-baseline="middle" font-size="10pt" ' +
-      `x="${legx + legw / 2}" y="${legy + legpad + 6.5}"` +
-      `>${dispNameScale(mo, 'size')}</text>`);
-    baseline = legy + legh - legpad - 9;
+    drawNumLegFrame(v);
+
+    // legend is a trapezoid of solid color
     svg.push('    <polygon points="' +
-      `${legx + legpad},${baseline} ` +
-      `${legx + legw - legpad},${baseline} ` +
-      `${legx + legw - legpad},${baseline - base * v.upper / 100} ` +
-      `${legx + legpad},${baseline - base * v.lower / 100}` +
+      `${(legx + legpad).toFixed(3)},${baseline.toFixed(3)} ` +
+      `${(legx + legw - legpad).toFixed(3)},${baseline.toFixed(3)} ` +
+      `${(legx + legw - legpad).toFixed(3)},` +
+      `${(baseline - base * v.upper / 100).toFixed(3)} ` +
+      `${(legx + legpad).toFixed(3)},` +
+      `${(baseline - base * v.lower / 100).toFixed(3)}` +
       '" fill="black" />');
-    svg.push('    <text ' +
-      'text-anchor="start" dominant-baseline="hanging" font-size="8pt" ' +
-      `x="${legx + legpad}" y="${baseline + 2}"` +
-      `>${v.zero ? '0' : formatNum(v.min, 3)}</text>`);
-    svg.push('    <text ' +
-      'text-anchor="end" dominant-baseline="hanging" font-size="8pt" ' +
-      `x="${legx + legw - legpad}" y="${baseline + 2}"` +
-      `>${formatNum(v.max, 3)}</text>`);
+
+    drawNumLegMinMax(v);
     legy += legh + legmar;
   }
 
   // opacity legend
   if (legs.includes('opacity')) {
     v = mo.view.opacity;
+
+    // legend is filled with an alpha gradient
     svg.push('    <defs>');
     svg.push('      <linearGradient id="alpha-gradient" ' +
       'x1="0" x2="1" y1="0" y2="0">');
@@ -355,25 +391,15 @@ function exportSVG(mo, legs) {
       `stop-opacity="${v.upper / 100}"/>`);
     svg.push('      </linearGradient>');
     svg.push('    </defs>');
-    legh = legpad * 3 + 22 + base;
-    svg.push('    <rect stroke="black" fill="white" ' +
-      `x="${legx}" y="${legy}" width="${legw}" height="${legh}"  />`);
-    svg.push('    <text ' +
-      'text-anchor="middle" dominant-baseline="middle" font-size="10pt" ' +
-      `x="${legx + legw / 2}" y="${legy + legpad + 6.5}"` +
-      `>${dispNameScale(mo, 'opacity')}</text>`);
+
+    drawNumLegFrame(v);
     baseline = legy + legh - legpad - 9;
     svg.push('    <rect fill="url(#alpha-gradient)" ' +
-      `x="${legx + legpad}" y="${baseline - base}" ` +
-      `width="${legw - legpad * 2}" height="${base}" />`);
-    svg.push('    <text ' +
-      'text-anchor="start" dominant-baseline="hanging" font-size="8pt" ' +
-      `x="${legx + legpad}" y="${baseline + 2}"` +
-      `>${v.zero ? '0' : formatNum(v.min, 3)}</text>`);
-    svg.push('    <text ' +
-      'text-anchor="end" dominant-baseline="hanging" font-size="8pt" ' +
-      `x="${legx + legw - legpad}" y="${baseline + 2}"` +
-      `>${formatNum(v.max, 3)}</text>`);
+      `x="${(legx + legpad).toFixed(3)}" ` +
+      `y="${(baseline - base).toFixed(3)}" ` +
+      `width="${(legw - legpad * 2).toFixed(3)}" ` +
+      `height="${base.toFixed(3)}" />`);
+    drawNumLegMinMax(v);
     legy += legh + legmar;
   }
 
@@ -383,6 +409,8 @@ function exportSVG(mo, legs) {
 
     // continuous colors
     if (mo.cols.types[v.i] === 'num') {
+
+      // legend is filled with a color gradient
       svg.push('    <defs>');
       svg.push('      <linearGradient id="color-gradient" ' +
         'x1="0" x2="1" y1="0" y2="0">');
@@ -392,31 +420,50 @@ function exportSVG(mo, legs) {
       const lower = v.lower;
       const ratio = 100 / (v.upper - lower);
       for (i = 0; i < ncolor; i++) {
-        svg.push(`        <stop offset="${(step * i - lower) * ratio}%" ` +
-          `stop-color="${palette[i]}" />`);
+        svg.push(`        <stop offset="${((step * i - lower) * ratio)
+          .toFixed(1)}%" stop-color="${palette[i]}" />`);
       }
       svg.push('      </linearGradient>');
       svg.push('    </defs>');
-      legh = legpad * 3 + 22 + base;
-      svg.push('    <rect stroke="black" fill="white" ' +
-        `x="${legx}" y="${legy}" width="${legw}" height="${legh}"  />`);
-      svg.push('    <text ' +
-        'text-anchor="middle" dominant-baseline="middle" font-size="10pt" ' +
-        `x="${legx + legw / 2}" y="${legy + legpad + 6.5}"` +
-        `>${dispNameScale(mo, 'color')}</text>`);
-      baseline = legy + legh - legpad - 9;
+
+      drawNumLegFrame(v);
       svg.push('    <rect fill="url(#color-gradient)" ' +
-        `x="${legx + legpad}" y="${baseline - base}" ` +
-        `width="${legw - legpad * 2}" height="${base}" />`);
-      svg.push('    <text ' +
-        'text-anchor="start" dominant-baseline="hanging" font-size="8pt" ' +
-        `x="${legx + legpad}" y="${baseline + 2}"` +
-        `>${v.zero ? '0' : formatNum(v.min, 3)}</text>`);
-      svg.push('    <text ' +
-        'text-anchor="end" dominant-baseline="hanging" font-size="8pt" ' +
-        `x="${legx + legw - legpad}" y="${baseline + 2}"` +
-        `>${formatNum(v.max, 3)}</text>`);
+        `x="${(legx + legpad).toFixed(3)}" ` +
+        `y="${(baseline - base).toFixed(3)}" ` +
+        `width="${(legw - legpad * 2).toFixed(3)}" ` +
+        `height="${base.toFixed(3)}" />`);
+      drawNumLegMinMax(v);
       legy += legh + legmar;
+    }
+
+    // discrete colors
+    else {
+      const cmap = v.discmap;
+      const ncat = Object.keys(cmap).length
+      legh = legpad * 3 + labfs + cboxgap * ncat + cboxw * (ncat + 1);
+      drawLegBox();
+      drawLegTitle(v);
+
+      // helper for drawing color box and label
+      function drawCatCol(color, cat) {
+        svg.push(`    <rect fill="${color}" ` +
+          `x="${(legx + legpad).toFixed(3)}" ` +
+          `y="${legy.toFixed(3)}" ` +
+          `width="${cboxw.toFixed(3)}" ` +
+          `height="${cboxw.toFixed(3)}" />`);
+        svg.push(`    <text font-size="${clabfs}px" ` +
+          'text-anchor="start" dominant-baseline="middle" ' +
+          `x="${(legx + legpad * 2 + cboxw).toFixed(3)}" ` +
+          `y="${(legy + cboxgap).toFixed(3)}">` +
+          `${cat}</text>`);
+        legy += cboxw + cboxgap;
+      }
+
+      legy += legpad * 2 + labfs;
+      for (const [cat, color] of Object.entries(cmap)) {
+        drawCatCol(`#${color}`, cat);
+      }
+      drawCatCol(`black`, 'Others &amp; N/A');
     }
   }
 
@@ -432,12 +479,13 @@ function exportSVG(mo, legs) {
   /**
    * Export SVG file.
    */
-
-  const a = document.createElement('a');
-  a.href = "data:image/svg+xml;charset=utf-8," +
-    encodeURIComponent(svg.join('\n'));
-  a.download = 'image.svg';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
+  setTimeout(function () {
+    const a = document.createElement('a');
+    a.href = "data:image/svg+xml;charset=utf-8," +
+      encodeURIComponent(svg.join('\n'));
+    a.download = 'image.svg';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  }, 0);
 }
