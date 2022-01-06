@@ -250,13 +250,25 @@ div.menu hr {
   margin-right: 10px;
 }
 
-div.menu a:not(.disabled).dropdown:hover:after {
+div.menu div.expand-wrap > a.expand-a:after {
   position: absolute;
   content: "";
   top: calc(50% - 5px);
   right: 5px;
   border: 5px solid transparent;
-  border-color: transparent transparent transparent dimgrey;
+  border-color: transparent transparent transparent darkgray;
+}
+
+div.menu div.expand-wrap > div.expand-body {
+  position: absolute;
+  right: 0;
+  transform: translate(calc(100% - 1px), -32px);
+  display: none;
+}
+
+div.menu div.expand-wrap:hover > div.expand-body {
+  display: flex;
+  flex-direction: column;
 }
 
 
@@ -944,12 +956,28 @@ div.dash-content > table tr td:last-child > span button:hover {
   z-index: 2;
   box-shadow: 3px 3px 15px rgba(0, 0, 0, 0.15);
   flex-direction: column;
+  color: black;
+  background-color: white;
+  padding: 5px 0;
 }
 
 #widget-frame > div > div.expand > p {
+  margin: 0;
+  line-height: 24px;
+  padding: 0 5px;
   display: flex;
   align-items: center;
   justify-content: space-between;
+}
+
+#widget-frame > div > div.expand button {
+  height: 24px;
+  padding: 0 5px;
+}
+
+#widget-frame > div > div.expand button.pressed {
+  border: 1px solid darkgray;
+  box-sizing: border-box;
 }
 
 #widget-frame > div > div.expand > p > a {
@@ -961,7 +989,6 @@ div.dash-content > table tr td:last-child > span button:hover {
 #widget-frame > div > div.expand > p > a:hover {
   background-color: gainsboro;
 }
-
 
 #set-panel > div {
   width: 180px;
@@ -1669,7 +1696,11 @@ div.legend:hover div.clip {
  */
 
 #mask-menu {
-  min-width: 120px;
+  min-width: 140px;
+}
+
+#masked-span {
+  padding-left: 5px;
 }
 
 #clear-mask-btn {
@@ -1678,7 +1709,7 @@ div.legend:hover div.clip {
 }
 
 #high-menu span {
-  width: 50px;
+  width: 60px;
   text-align: center;
   height: 100%;
   cursor: pointer;

@@ -635,6 +635,11 @@ function updateViewByData(mo) {
     const btn = byId('dash-btn');
     if (btn.classList.contains('active')) btn.click();
     byId('dash-panel').classList.add('hidden');
+    mo.view.grid = false;
+    byId('nav-panel').classList.add('hidden');
+    for (let div of byId('widget-frame').querySelectorAll('div.freq')) {
+      div.classList.add('hidden');
+    }
   }
 
   // data is open
@@ -644,6 +649,13 @@ function updateViewByData(mo) {
     byId('drop-sign').classList.add('hidden');
     const btn = byId('dash-btn');
     if (!btn.classList.contains('active')) btn.click();
+    mo.view.grid = byId('grid-chk').checked;
+    if (byId('nav-chk').checked) byId('nav-panel').classList.remove('hidden');
+    if (byId('freq-chk').checked) {
+      for (let div of byId('widget-frame').querySelectorAll('div.freq')) {
+        div.classList.remove('hidden');
+      }
+    }
 
     // guess special columns
     const cols = mo.cols;

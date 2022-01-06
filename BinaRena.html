@@ -330,25 +330,25 @@
     <!-- unused unicode symbols: &imof; &hercon; &rHar; &boxbox; -->
     <!-- frequent panel -->
     <div class="freq">
-      <button id="polygon-btn" title="Draw polygon with mouse clicks to contain multiple contigs (Enter)" data-title="Finish polygon selection (Enter) (hold Shift to append)">&#11040;</button>      
-    </div>
-    <div class="freq">
       <button id="image-btn" title="Take a screenshot (P)">&#8889;</button>
-      <div id="image-menu" class="expand dash-content">
+      <div id="image-menu" class="expand">
         <p><a id="png-btn" title="Save as PNG format">PNG</a></p>
         <p><a id="svg-btn" title="Save as SVG format">SVG</a></p>
       </div>
     </div>
     <div class="freq">
+      <button id="polygon-btn" title="Draw polygon with mouse clicks to contain multiple contigs (Enter)" data-title="Finish polygon selection (Enter) (hold Shift to append)">&#11040;</button>      
+    </div>
+    <div class="freq">
       <button id="mask-btn" title="Mask selected contigs (Delete)">&empty;</button>
-      <div id="mask-menu" class="expand dash-content">
+      <div id="mask-menu" class="expand">
         <p><span id="masked-span">Masked</span><!--
         --><button id="clear-mask-btn" class="hidden" title="Unmask all contigs">&#10005;</button>
       </div>
     </div>
     <div class="freq">
       <button id="high-btn" title="Highlight selected contigs (L)">&#9673;</button>
-      <div id="high-menu" class="expand dash-content"></div>
+      <div id="high-menu" class="expand"></div>
     </div>
 
     <!-- navigation panel -->
@@ -490,9 +490,15 @@
     <hr>
     <a id="export-bins-a">Export bins</a>
     <a id="export-data-a">Export data</a>
-    <a id="export-image-a">Export image</a>
+    <div class="expand-wrap">
+      <a class="expand-a" id="export-image-a">Export image</a>
+      <div class="menu expand-body">
+        <a id="export-png-a">PNG</a>
+        <a id="export-svg-a">SVG</a>
+      </div>
+    </div>
     <hr>
-    <a id="reset-view-a">Re-center</a>
+    <a id="reset-view-a">Re-center (0)</a>
     <hr>
     <a id="help-a" href="https://github.com/qiyunlab/binarena#readme" target="_blank">Help</a>
   </div>

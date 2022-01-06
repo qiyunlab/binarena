@@ -277,7 +277,8 @@ function initContextMenu(mo) {
 
   // show data table
   byId('show-data-a').addEventListener('click', function () {
-    if (mo.cache.nctg) mo.tabled = [...mo.data[0].keys()];
+    if (!mo.cache.nctg) return;
+    mo.tabled = [...mo.data[0].keys()];
     fillDataTable(mo, 'Dataset');
     byId('data-table-modal').classList.remove('hidden');
   });
@@ -299,8 +300,13 @@ function initContextMenu(mo) {
   });
 
   // export image as PNG
-  byId('export-image-a').addEventListener('click', function () {
+  byId('export-png-a').addEventListener('click', function () {
     exportPNG(mo.rena);
+  });
+
+  // export image as SVG
+  byId('export-svg-a').addEventListener('click', function () {
+    renderSVG(mo);
   });
 
   // reset view
@@ -479,7 +485,7 @@ function initWidgets(mo) {
 
   // generate SVG
   byId('svg-btn').addEventListener('click', function () {
-    exportSVG(mo);
+    renderSVG(mo);
   });
 
   // reset graph
