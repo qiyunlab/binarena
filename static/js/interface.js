@@ -495,34 +495,28 @@ function initWidgets(mo) {
 
   // zoom in/out
   byId('zoomin-btn').addEventListener('click', function () {
-    view.scale /= 0.75;
-    updateView(mo);
+    canvasZoom(true, mo);
   });
 
   byId('zoomout-btn').addEventListener('click', function () {
-    view.scale *= 0.75;
-    updateView(mo);
+    canvasZoom(false, mo);
   });
 
   // move around
-  byId('left-btn').addEventListener('click', function () {
-    view.posX -= 15;
-    updateView(mo);
-  });
-
   byId('up-btn').addEventListener('click', function () {
-    view.posY -= 15;
-    updateView(mo);
+    canvasMove(0, mo);
   });
 
   byId('right-btn').addEventListener('click', function () {
-    view.posX += 15;
-    updateView(mo);
+    canvasMove(1, mo);
   });
 
   byId('down-btn').addEventListener('click', function () {
-    view.posY += 15;
-    updateView(mo);
+    canvasMove(2, mo);
+  });
+
+  byId('left-btn').addEventListener('click', function () {
+    canvasMove(3, mo);
   });
 
 }
