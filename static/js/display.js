@@ -434,7 +434,7 @@ function updateColorGradient(mo) {
   if (mo.cols.types[ci] === 'cat') return;
   byId('color-gradient').style.backgroundImage =
     'linear-gradient(to right, ' + PALETTES[mo.view.contpal].map(
-    function (e) { return '#' + e; }).join(', ') + ')';
+     x => '#' + x).join(', ') + ')';
 }
 
 
