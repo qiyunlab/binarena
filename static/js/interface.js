@@ -332,10 +332,12 @@ function initSideFrame(mo) {
     byId('show-frame').classList.add('hidden');
     byId('side-frame').classList.remove('hidden');
     const mf = byId('main-frame');
+    mf.style.overflow = "hidden";
     mf.style.resize = 'horizontal';
     const w = mf.getAttribute('data-width');
     if (w) mf.style.width = w;
     resizeArena(mo);
+    mf.style.overflow = "auto";
   });
 
 }
