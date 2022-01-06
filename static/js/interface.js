@@ -277,7 +277,8 @@ function initContextMenu(mo) {
 
   // show data table
   byId('show-data-a').addEventListener('click', function () {
-    if (mo.cache.nctg) mo.tabled = [...mo.data[0].keys()];
+    if (!mo.cache.nctg) return;
+    mo.tabled = [...mo.data[0].keys()];
     fillDataTable(mo, 'Dataset');
     byId('data-table-modal').classList.remove('hidden');
   });
@@ -299,8 +300,13 @@ function initContextMenu(mo) {
   });
 
   // export image as PNG
-  byId('export-image-a').addEventListener('click', function () {
+  byId('export-png-a').addEventListener('click', function () {
     exportPNG(mo.rena);
+  });
+
+  // export image as SVG
+  byId('export-svg-a').addEventListener('click', function () {
+    renderSVG(mo);
   });
 
   // reset view
@@ -479,7 +485,7 @@ function initWidgets(mo) {
 
   // generate SVG
   byId('svg-btn').addEventListener('click', function () {
-    exportSVG(mo);
+    renderSVG(mo);
   });
 
   // reset graph
@@ -489,34 +495,28 @@ function initWidgets(mo) {
 
   // zoom in/out
   byId('zoomin-btn').addEventListener('click', function () {
-    view.scale /= 0.75;
-    updateView(mo);
+    canvasZoom(true, mo);
   });
 
   byId('zoomout-btn').addEventListener('click', function () {
-    view.scale *= 0.75;
-    updateView(mo);
+    canvasZoom(false, mo);
   });
 
   // move around
-  byId('left-btn').addEventListener('click', function () {
-    view.posX -= 15;
-    updateView(mo);
-  });
-
   byId('up-btn').addEventListener('click', function () {
-    view.posY -= 15;
-    updateView(mo);
+    canvasMove(0, mo);
   });
 
   byId('right-btn').addEventListener('click', function () {
-    view.posX += 15;
-    updateView(mo);
+    canvasMove(1, mo);
   });
 
   byId('down-btn').addEventListener('click', function () {
-    view.posY += 15;
-    updateView(mo);
+    canvasMove(2, mo);
+  });
+
+  byId('left-btn').addEventListener('click', function () {
+    canvasMove(3, mo);
   });
 
 }

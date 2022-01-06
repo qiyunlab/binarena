@@ -811,7 +811,7 @@ function updateSavePlanBtn(mo, edited) {
 
 /**
  * Sort bin table by clicking header.
- * @function exportBinPlan
+ * @function sortBinTable
  * @param {number} idx - index of table column to sort with
  * @description Modified based on:
  * @see {@link https://www.w3schools.com/howto/howto_js_sort_table.asp}
@@ -867,6 +867,7 @@ function sortBinTable(idx) {
  */
 function exportBinPlan(binned) {
   const bin2ctgs = arrGroupByF(binned);
+  if (Object.keys(bin2ctgs).length === 0) return;
   let tsv = '';
   for (const [name, ctgs] of Object.entries(bin2ctgs)) {
     tsv += (name + '\t' + ctgs.sort().join(',') + '\n');

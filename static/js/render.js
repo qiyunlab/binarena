@@ -51,13 +51,11 @@ function initCanvas(mo) {
   });
 
   rena.addEventListener('mousewheel', function (e) {
-    view.scale *= e.wheelDelta > 0 ? (4 / 3) : 0.75;
-    updateView(mo);
+    canvasZoom(e.wheelDelta > 0, mo);
   });
 
   rena.addEventListener('DOMMouseScroll', function (e) {
-    view.scale *= e.detail > 0 ? 0.75 : (4 / 3);
-    updateView(mo);
+    canvasZoom(e.detail < 0, mo);
   });
 
   rena.addEventListener('contextmenu', function (e) {
@@ -91,29 +89,29 @@ function initCanvas(mo) {
   rena.addEventListener('keydown', function (e) {
     // const t0 = performance.now();
     switch (e.key) {
-      case 'Left':
-      case 'ArrowLeft':
-        byId('left-btn').click();
-        break;
       case 'Up':
       case 'ArrowUp':
-        byId('up-btn').click();
+        canvasMove(0, mo);
         break;
       case 'Right':
       case 'ArrowRight':
-        byId('right-btn').click();
+        canvasMove(1, mo);
         break;
       case 'Down':
       case 'ArrowDown':
-        byId('down-btn').click();
+        canvasMove(2, mo);
+        break;
+      case 'Left':
+      case 'ArrowLeft':
+        canvasMove(3, mo);
         break;
       case '-':
       case '_':
-        byId('zoomout-btn').click();
+        canvasZoom(false, mo);
         break;
       case '=':
       case '+':
-        byId('zoomin-btn').click();
+        canvasZoom(true, mo);
         break;
       case '0':
         byId('reset-btn').click();
@@ -154,6 +152,42 @@ function initCanvas(mo) {
     // console.log(t1 - t0);
   });
 } // end initializing controls
+
+
+/**
+ * Canvas moving.
+ * @function canvasMove
+ * @param {number} d - move direction
+ * @param {Object} mo - main object
+ * @description Direction: 0 (top), 1 (right), 2 (bottom), 3 (left), the same
+ * as JavaScript margins.
+ */
+function canvasMove(d, mo) {
+  const step = 15;
+  if (d & 1) mo.view.posX += d >> 1 ? -step : step;
+  else mo.view.posY += d >> 1 ? step : -step;
+  updateView(mo);
+}
+
+
+/**
+ * Canvas zooming.
+ * @function canvasZoom
+ * @param {boolean} isin - zoom in (true) or out (false)
+ * @param {Object} mo - main object
+ */
+function canvasZoom(isin, mo) {
+  let ratio = 0.75;
+  if (isin) ratio = 1 / ratio;
+  const view = mo.view;
+  const rena = mo.rena;
+  const w2 = rena.width / 2,
+        h2 = rena.height / 2;
+  view.scale *= ratio;
+  view.posX = (view.posX - w2) * ratio + w2;
+  view.posY = (view.posY - h2) * ratio + h2;
+  updateView(mo);
+}
 
 
 /**

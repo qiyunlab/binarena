@@ -15,7 +15,7 @@ Please check out this [live demo](https://qiyunlab.github.io/binarena/demo.html)
 
 - [Installation](#noinstallation) | [main interface](#main-interface) | [system requirements](#system-requirements) | [mouse and keyboard shortcuts](#mouse-and-keyboard-shortcuts)
 - [Input files](#input-files): [data table](#data-table) | [table view](#table-view) | [special columns](#special-columns) | [additional data](#additional-data)
-- [Display items](#display-items): [legends and data scaling](#legends-and-data-scaling) | [data transformation](#data-transformation) | [color coding](#color-coding)
+- [Display items](#display-items): [legends and data scaling](#legends-and-data-scaling) | [data transformation](#data-transformation) | [color coding](#color-coding) | [image export](#image-export)
 - [Contig selection](#contig-selection) | [masking](#contig-masking) | [highlighting](#contig-highlighting) | [summary](#contig-summary) | [search](#contig-searching) | [mini plot](#mini-plot)
 - [Binning plan](#binning-plan) | [table of bins](#table-of-bins) | [from selection to bin](#from-selection-to-bin)
 - [Binning confidence evaluation](#binning-confidence-evaluation) | [binning plan comparison](#binning-plan-comparison)
@@ -155,7 +155,6 @@ Specifically, BinaRena supports the following transformations:
 
 Note: Certain values may become invalid after certain transformation. For example, zero and negative numbers cannot be log-transformed. In such cases, the contigs will be displayed using the default setting (e.g., color is grey).
 
-
 ### Color coding
 
 The color panel has an additional dropdown menu to let the user choose from multiple standard color palettes.
@@ -166,6 +165,16 @@ For **categorical** data, BinaRena automatically identifies and colors the **mos
 
 <img src="docs/img/color_cat.png" width="240">
 
+### Image export
+
+The plot rendered by BinaRena can be exported as an image file. There are two options for doing this:
+
+1. Press `P` or click the `&#8889;` button to take a screenshot of the current view and save as a [PNG](https://en.wikipedia.org/wiki/Scalable_Vector_Graphics) (portable network graphics) file.
+
+2. Mouse over the `&#8889;` button and select "SVG" in the expanded menu. This will generate an 
+[SVG](https://en.wikipedia.org/wiki/Scalable_Vector_Graphics) (scalable vector graphics) file. It is a vector image therefore it can be further edited in vector image editing programs, such as [Inkscape](https://inkscape.org/). Compared with PNG which is a bare screenshot, the SVG image has _x_- and _y_-axes ticked, labeled, and aligned to "nice" tick numbers, and legends (size, opacity and/or color) displayed in the plot. It is suitable for further processing to generate publication-quality figures.
+
+<img src="docs/img/svg.png" width="553">
 
 ## Contig selection
 
@@ -316,9 +325,25 @@ The standalone BinaRena program is a client-end webpage that runs in your browse
 
 The live demo hosted by [GitHub Pages](https://pages.github.com/) can communicate with the GitHub repository, and the only thing it does is to [retrieve](demo.html) the sample dataset from the repository directory. It does not perform any other communication.
 
+**How to precisely control the size of the plot?**
+
+Drag to resize the browser window. The plot will be resized along with it, during which its width and height (in unit of pixel) will be displayed in a floating message box.
+
 **Where are the color palettes in BinaRena from?**
 
 Most of these color palettes were adopted from [Matplotlib](https://matplotlib.org/stable/tutorials/colors/colormaps.html), which have been widely utilized in Python data science. The default categorical palette "QIIME" was adopted from the EMPeror viewer of the microbiome data analysis package [QIIME 2](https://qiime2.org/).
+
+**Can I customize the color palettes?**
+
+Not from the GUI. But look into [static/js/resource.js](static/js/resource.js) and you know what to do.
+
+**In the exported SVG image, some data points are covered by the legends. Can I move the legends outside the plot?**
+
+The data points are covered, but they are not missing. One can open the SVG file in a vector image editor such as [Inkscape](https://inkscape.org/), and move the legends away from the plot area. The covered elements will be revealed.
+
+**Can I customize the appearance of the exported SVG image?**
+
+The GUI doesn't provide much control. However, pro users can look into ([static/js/svg.js](static/js/svg.js)). On top of the function `renderSVG` there are multiple customizable parameters.
 
 **How does BinaRena perform [data ranking](https://en.wikipedia.org/wiki/Ranking#Ranking_in_statistics)?**
 

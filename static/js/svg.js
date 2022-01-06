@@ -1,14 +1,14 @@
 
 /**
  * Generate and export an SVG image of the current view.
- * @function exportSVG
+ * @function renderSVG
  * @param {Object} mo - main object
  * @param {string[]} legs - legends to plot
  * @description This is an independent rendering enginer that is in parallel
  * to the HTML5 canvas rendering engine. It aims at reproducing what the
  * latter is capturing.
  */
-function exportSVG(mo, legs) {
+function renderSVG(mo, legs) {
   legs = legs || ['size', 'opacity', 'color'];
 
   // figure flavors
