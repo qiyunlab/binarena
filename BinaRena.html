@@ -342,8 +342,12 @@
     <div class="freq">
       <button id="mask-btn" title="Mask selected contigs (Delete)">&empty;</button>
       <div id="mask-menu" class="expand">
-        <p><span id="masked-span">Masked</span><!--
-        --><button id="clear-mask-btn" class="hidden" title="Unmask all contigs">&#10005;</button>
+        <p>
+          <span id="masked-span">Masked: 0</span>
+          <span id="unmask-span" class="hidden">
+            <button id="undo-mask-btn" title="Undo last masking (Z)">&#8617;</button>
+            <button id="clear-mask-btn" title="Unmask all contigs">&#10005;</button>
+          </span>
       </div>
     </div>
     <div class="freq">

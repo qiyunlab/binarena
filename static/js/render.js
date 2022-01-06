@@ -116,6 +116,9 @@ function initCanvas(mo) {
       case '0':
         byId('reset-btn').click();
         break;
+      case 'Enter':
+        polygonSelect(mo, e.shiftKey);
+        break;
       case 'l':
       case 'L':
         byId('high-btn').click();
@@ -128,8 +131,9 @@ function initCanvas(mo) {
       case 'Backspace':
         byId('mask-btn').click();
         break;
-      case 'Enter':
-        polygonSelect(mo, e.shiftKey);
+      case 'z':
+      case 'Z':
+        byId('undo-mask-btn').click();
         break;
       case ' ':
         byId('as-new-bin-btn').click();
