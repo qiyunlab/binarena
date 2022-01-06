@@ -1695,24 +1695,24 @@ div.legend:hover div.clip {
  * Masking.
  */
 
-#mask-menu {
-  min-width: 140px;
+#mask-menu > p {
+  overflow: hidden;
+  white-space: nowrap;
 }
 
 #masked-span {
   padding-left: 5px;
+  padding-right: 5px;
 }
 
-#clear-mask-btn {
+#unmask-span {
+  align-items: center;
   padding-left: 10px;
-  padding-right: 10px;
+  padding-right: 5px;
 }
 
-#high-menu span {
-  width: 60px;
-  text-align: center;
-  height: 100%;
-  cursor: pointer;
+#unmask-span > button {
+  line-height: 24px;
 }
 
 
@@ -1722,6 +1722,13 @@ div.legend:hover div.clip {
 
 #high-menu {
   min-width: 80px;
+}
+
+#high-menu span {
+  width: 60px;
+  text-align: center;
+  height: 100%;
+  cursor: pointer;
 }
 
 

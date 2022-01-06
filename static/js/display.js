@@ -624,6 +624,7 @@ function updateViewByData(mo) {
   cache.freqs = {};
   cache.npick = 0;
   cache.nmask = 0;
+  cache.maskh = [];
   cache.binns.clear();
   cache.pdist = [];
 

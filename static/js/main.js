@@ -156,6 +156,8 @@ function mainObj() {
    * @property {number} npick - number of contigs selected
    * @property {number} nmask - number of contigs masked
    * 
+   * @property {number[]} maskh - masking history
+   * 
    * @property {Set.<string>} binns - current bin names
    * Note: Bin names is a superset of actual bins in the dataset, because there
    * can be empty bins.
@@ -174,6 +176,7 @@ function mainObj() {
     freqs: {},
     npick: 0,
     nmask: 0,
+    maskh: [],
     nhigh: 0,
     binns: new Set(),
     pdist: [],

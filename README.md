@@ -58,11 +58,11 @@ The BinaRena interface is like a [**digital map**](https://www.google.com/maps) 
 - Click a contig to **select** it. Hold `Shift` and click to select multiple contigs.
 - Click a selected contig to unselect it. Hold `Shift` and click to unselect multiple contigs.
 - Press `Enter` to enter **polygon selection** mode. Then use mouse clicks to draw a polygon to contain multiple contigs. Press `Enter` again to complete selection. Hold `Shift` while pressing the second `Enter` to add contigs to the existing selection.
-- Press `Delete` or `Backspace` to **mask** selected contigs. Presee `L` to **highlight** selected contigs.
+- Press `Delete` or `Backspace` to **mask** selected contigs. Press `Z` to undo.
+- Presee `L` to **highlight** selected contigs.
 - Press `Space` to **create a new bin** from selected contigs.
 - Click a **bin name** to select it and all member contigs. Click it again to edit its name. Hold Shift and click to select multiple bins.
 - Press `.` (`>`) to **add** selected contigs to the current bin, press `,` (`<`) to **remove** selected contigs from the current bin, press `/` to **update** the current bin with selected contigs (i.e., replace its content).
-- Press `P` to take a screenshot of the current view.
 - Press `0` to reset the plot view.
 
 
@@ -195,9 +195,11 @@ Hold `Shift` when finishing selection will add the contigs to the current select
 
 One can press the `Delete` key or click the <span style="background-color: lightgrey">&empty;</span> button in the corner to **mask** currently selected contigs. These contigs will disappear from the plot. They will also be excluded from subsequent operations (e.g., they cannot be selected, nor can they influence calculation of metrics). This function is useful for cloaking unwanted contigs during binning.
 
-<img src="docs/img/mask.png" width="271">
+<img src="docs/img/mask.png" width="279">
 
-The masked contigs are not deleted from the dataset. They can be released back to the view by clicking the <span style="background-color: lightgrey">&times;</span> button next to the masked number.
+The masked contigs are not deleted from the dataset. They can be released back to the view by clicking the <span style="background-color: lightgrey">&times;</span> button.
+
+One can also press `Z` or click the <span style="background-color: lightgrey">&#8617;</span> button to **undo** previous masking operations one by one. The program allows a total of 50 regrets.
 
 - Note that masked contigs will not be immediated deleted from bins. One can click the <span style="background-color: lightgrey">&empty;</span> button in the bin table toolbar to remove masked contigs from all bins.
 
