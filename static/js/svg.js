@@ -17,14 +17,14 @@ function exportSVG(mo, legs) {
         ylabw = 40,   // vertical space for y-axis ticks and labels
         labfs = 14,   // axis and legend label font size (px)
         ticklen = 5,  // tick length
-        tickgap = 50, // tick density
+        tickgap = 50, // appr. gap between ticks
         tickfs = 12,  // tick label font size (px)
         minticks = 5, // minimum tick number
         legmar = 10,  // legend margin
         legpad = 10,  // legend padding
-        legw = 200,   // legend width
-        cboxw = 12,   // color box width
-        cboxgap = 6,  // color box gap
+        legw = 180,   // legend width
+        colr = 6,     // color marker radius
+        colgap = 6,   // color row gap
         clabfs = 13;  // color label font size (px)
 
   // create SVG (array of lines)
@@ -326,19 +326,21 @@ function exportSVG(mo, legs) {
   }
 
   // helper for drawing legend title
-  function drawLegTitle(v) {
+  function drawLegTitle(v, scale) {
+    let title = dispNameScale(v, names);
+    if (scale && scale !== 1) title += ` (${formatNum(scale, 2)}x)`;
     svg.push(`    <text font-size="${labfs}px" ` +
       'text-anchor="middle" dominant-baseline="middle" ' +
       `x="${(legx + legw / 2).toFixed(3)}" ` +
       `y="${(legy + legpad + labfs / 2).toFixed(3)}"` +
-      `>${dispNameScale(v, names)}</text>`);
+      `>${title}</text>`);
   }
 
   // helper for formatting legend box and title
-  function drawNumLegFrame(v) {
+  function drawNumLegFrame(v, scale) {
     legh = legpad * 3 + labfs + base + tickfs;
     drawLegBox();
-    drawLegTitle(v);
+    drawLegTitle(v, scale);
     baseline = legy + legh - legpad - 9;
   }
 
@@ -359,27 +361,35 @@ function exportSVG(mo, legs) {
   }
 
   // size legend
-  if (legs.includes('size')) {
-    v = mo.view.size;
-    drawNumLegFrame(v);
+  v = mo.view.size;
+  if (legs.includes('size') && v.i) {
+    drawNumLegFrame(v, view.scale);
 
-    // legend is a trapezoid of solid color
-    svg.push('    <polygon points="' +
-      `${(legx + legpad).toFixed(3)},${baseline.toFixed(3)} ` +
-      `${(legx + legw - legpad).toFixed(3)},${baseline.toFixed(3)} ` +
-      `${(legx + legw - legpad).toFixed(3)},` +
-      `${(baseline - base * v.upper / 100).toFixed(3)} ` +
-      `${(legx + legpad).toFixed(3)},` +
-      `${(baseline - base * v.lower / 100).toFixed(3)}` +
-      '" fill="black" />');
+    // min and max sizes
+    let minr = base * v.lower / 100,
+        maxr = base * v.upper / 100;
+
+    // legend is a trapezoid plus two sectors
+    svg.push('    <path d="' +
+      `M ${(legx + legpad).toFixed(3)} ${baseline.toFixed(3)} ` +
+      `H ${(legx + legw - legpad).toFixed(3)} ` +
+      `A ${maxr.toFixed(3)} ${maxr.toFixed(3)} 0 0 0 ` + 
+      `${(legx + legw - legpad - maxr).toFixed(3)} ` +
+      `${(baseline - maxr).toFixed(3)} ` +
+      `L ${(legx + legpad + minr).toFixed(3)} ` +
+      `${(baseline - minr).toFixed(3)}` +
+      `A ${minr.toFixed(3)} ${minr.toFixed(3)} 0 0 0 ` +
+      `${(legx + legpad).toFixed(3)} ${baseline.toFixed(3)}` +
+      '" fill="gray" />');
 
     drawNumLegMinMax(v);
     legy += legh + legmar;
   }
+  base *= 0.8 // make subsequent legends narrower
 
   // opacity legend
-  if (legs.includes('opacity')) {
-    v = mo.view.opacity;
+  v = mo.view.opacity;
+  if (legs.includes('opacity') && v.i) {
 
     // legend is filled with an alpha gradient
     svg.push('    <defs>');
@@ -404,8 +414,8 @@ function exportSVG(mo, legs) {
   }
 
   // color legend
-  if (legs.includes('color')) {
-    v = mo.view.color;
+  v = mo.view.color;
+  if (legs.includes('color') && v.i) {
 
     // continuous colors
     if (mo.cols.types[v.i] === 'num') {
@@ -440,23 +450,22 @@ function exportSVG(mo, legs) {
     else {
       const cmap = v.discmap;
       const ncat = Object.keys(cmap).length
-      legh = legpad * 3 + labfs + cboxgap * ncat + cboxw * (ncat + 1);
+      legh = legpad * 3 + labfs + colgap * ncat + colr * 2 * (ncat + 1);
       drawLegBox();
       drawLegTitle(v);
 
       // helper for drawing color box and label
       function drawCatCol(color, cat) {
-        svg.push(`    <rect fill="${color}" ` +
-          `x="${(legx + legpad).toFixed(3)}" ` +
-          `y="${legy.toFixed(3)}" ` +
-          `width="${cboxw.toFixed(3)}" ` +
-          `height="${cboxw.toFixed(3)}" />`);
+        svg.push(`    <circle fill="${color}" ` +
+          `cx="${(legx + legpad + colr).toFixed(3)}" ` +
+          `cy="${(legy + colr).toFixed(3)}" ` +
+          `r="${(colr).toFixed(3)}" ` + '/>');
         svg.push(`    <text font-size="${clabfs}px" ` +
           'text-anchor="start" dominant-baseline="middle" ' +
-          `x="${(legx + legpad * 2 + cboxw).toFixed(3)}" ` +
-          `y="${(legy + cboxgap).toFixed(3)}">` +
+          `x="${(legx + legpad * 2 + colr * 2).toFixed(3)}" ` +
+          `y="${(legy + colr).toFixed(3)}">` +
           `${cat}</text>`);
-        legy += cboxw + cboxgap;
+        legy += colr * 2 + colgap;
       }
 
       legy += legpad * 2 + labfs;
