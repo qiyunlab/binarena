@@ -250,13 +250,25 @@ div.menu hr {
   margin-right: 10px;
 }
 
-div.menu a:not(.disabled).dropdown:hover:after {
+div.menu div.expand-wrap > a.expand-a:after {
   position: absolute;
   content: "";
   top: calc(50% - 5px);
   right: 5px;
   border: 5px solid transparent;
-  border-color: transparent transparent transparent dimgrey;
+  border-color: transparent transparent transparent darkgray;
+}
+
+div.menu div.expand-wrap > div.expand-body {
+  position: absolute;
+  right: 0;
+  transform: translate(calc(100% - 1px), -32px);
+  display: none;
+}
+
+div.menu div.expand-wrap:hover > div.expand-body {
+  display: flex;
+  flex-direction: column;
 }
 
 
@@ -716,7 +728,6 @@ canvas.main-plot {
 #menu-btn {
   width: 100px;
   font-size: 12px;
-  font-style: oblique;
   font-weight: bold;
 }
 
@@ -945,12 +956,38 @@ div.dash-content > table tr td:last-child > span button:hover {
   z-index: 2;
   box-shadow: 3px 3px 15px rgba(0, 0, 0, 0.15);
   flex-direction: column;
+  color: black;
+  background-color: white;
+  padding: 5px 0;
 }
 
 #widget-frame > div > div.expand > p {
+  margin: 0;
+  line-height: 24px;
+  padding: 0 5px;
   display: flex;
   align-items: center;
   justify-content: space-between;
+}
+
+#widget-frame > div > div.expand button {
+  height: 24px;
+  padding: 0 5px;
+}
+
+#widget-frame > div > div.expand button.pressed {
+  border: 1px solid darkgray;
+  box-sizing: border-box;
+}
+
+#widget-frame > div > div.expand > p > a {
+  padding-left: 10px;
+  padding-right: 10px;
+  cursor: pointer;
+}
+
+#widget-frame > div > div.expand > p > a:hover {
+  background-color: gainsboro;
 }
 
 #set-panel > div {
@@ -1060,13 +1097,19 @@ div.side-content {
   text-align: left;
 }
 
-#bin-thead tr th:nth-last-child(-n+3) {
+#bin-thead tr th:not(:first-child) {
   width: 20%;
   text-align: right;
 }
 
-#bin-tbody tr td:nth-last-child(-n+3) {
+#bin-tbody tr td:not(:first-child) {
   text-align: right;
+  color: dimgray;
+}
+
+#bin-tbody tr:hover td:not(:first-child) {
+  text-align: right;
+  color: black;
 }
 
 #bin-tbody tr.selected {
@@ -1117,16 +1160,20 @@ div.side-content {
   width: 25%;
   text-align: right;
   padding: 0 5px 0 0;
-  font-weight: bold;
 }
 
 #info-table tr td:nth-child(2) {
   text-align: left;
   padding: 0 0 0 5px;
+  color: dimgray;
 }
 
 #info-table tr:hover {
   background-color: #EEE;
+}
+
+#info-table tr:hover td:nth-child(2) {
+  color: black;
 }
 
 /** inline controls */
@@ -1648,20 +1695,24 @@ div.legend:hover div.clip {
  * Masking.
  */
 
-#mask-menu {
-  min-width: 120px;
+#mask-menu > p {
+  overflow: hidden;
+  white-space: nowrap;
 }
 
-#clear-mask-btn {
+#masked-span {
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#unmask-span {
+  align-items: center;
   padding-left: 10px;
-  padding-right: 10px;
+  padding-right: 5px;
 }
 
-#high-menu span {
-  width: 50px;
-  text-align: center;
-  height: 100%;
-  cursor: pointer;
+#unmask-span > button {
+  line-height: 24px;
 }
 
 
@@ -1671,6 +1722,13 @@ div.legend:hover div.clip {
 
 #high-menu {
   min-width: 80px;
+}
+
+#high-menu span {
+  width: 60px;
+  text-align: center;
+  height: 100%;
+  cursor: pointer;
 }
 
 

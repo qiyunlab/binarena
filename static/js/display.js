@@ -434,7 +434,7 @@ function updateColorGradient(mo) {
   if (mo.cols.types[ci] === 'cat') return;
   byId('color-gradient').style.backgroundImage =
     'linear-gradient(to right, ' + PALETTES[mo.view.contpal].map(
-    function (e) { return '#' + e; }).join(', ') + ')';
+     x => '#' + x).join(', ') + ')';
 }
 
 
@@ -624,6 +624,7 @@ function updateViewByData(mo) {
   cache.freqs = {};
   cache.npick = 0;
   cache.nmask = 0;
+  cache.maskh = [];
   cache.binns.clear();
   cache.pdist = [];
 
@@ -635,6 +636,11 @@ function updateViewByData(mo) {
     const btn = byId('dash-btn');
     if (btn.classList.contains('active')) btn.click();
     byId('dash-panel').classList.add('hidden');
+    mo.view.grid = false;
+    byId('nav-panel').classList.add('hidden');
+    for (let div of byId('widget-frame').querySelectorAll('div.freq')) {
+      div.classList.add('hidden');
+    }
   }
 
   // data is open
@@ -644,6 +650,13 @@ function updateViewByData(mo) {
     byId('drop-sign').classList.add('hidden');
     const btn = byId('dash-btn');
     if (!btn.classList.contains('active')) btn.click();
+    mo.view.grid = byId('grid-chk').checked;
+    if (byId('nav-chk').checked) byId('nav-panel').classList.remove('hidden');
+    if (byId('freq-chk').checked) {
+      for (let div of byId('widget-frame').querySelectorAll('div.freq')) {
+        div.classList.remove('hidden');
+      }
+    }
 
     // guess special columns
     const cols = mo.cols;

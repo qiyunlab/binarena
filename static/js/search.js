@@ -99,8 +99,7 @@ function updateSearchCtrl(cols) {
  * @param {Object} mo - main object
  */
 function searchFieldChange(e, mo) {
-  const cols = mo.cols,
-        view = mo.view;
+  const cols = mo.cols;
   const freqs = mo.cache.freqs;
 
   for (let key of ['num', 'cat', 'fea', 'des']) {
@@ -210,7 +209,7 @@ function searchByCriteria(mo, shift) {
 
   // search by keyword
   else {
-    let text = byId(type + '-sel-txt').value;
+    let text = byId(`${type}-sel-txt`).value;
     if (text === '') {
       toastMsg('Must specify a keyword.', mo.stat);
       return false;

@@ -32,49 +32,7 @@ function arrMinMax(arr) {
 
 
 /**
- * Calculate min of a object with numeric values.
- * @function objMin
- * @param {Object.<string, number>} obj - input object
- * @returns {[string, number]} min key-value pair
- */
-function objMin(obj) {
-  const arr = Object.keys(obj);
-  const n = arr.length;
-  let key = arr[0];
-  let val = obj[key];
-  let min = [key, val];
-  for (let i = 1; i < n; i++) {
-    key = arr[i];
-    val = obj[key];
-    min = (val < min[1]) ? [key, val] : min;
-  }
-  return min;
-}
-
-
-/**
- * Calculate max of a object with numeric values.
- * @function objMax
- * @param {Object.<string, number>} obj - input object
- * @returns {[string, number]} max key-value pair
- */
-function objMax(obj) {
-  const arr = Object.keys(obj);
-  const n = arr.length;
-  let key = arr[0];
-  let val = obj[key];
-  let max = [key, val];
-  for (let i = 1; i < n; i++) {
-    key = arr[i];
-    val = obj[key];
-    max = (val > max[1]) ? [key, val] : max;
-  }
-  return max;
-}
-
-
-/**
- * Calculate both min and max of a object with numeric values.
+ * Calculate both min and max of an object of numeric values.
  * @function objMinMax
  * @param {Object.<string, number>} obj - input object
  * @returns {[[string, number], [string, number]]} min and max key-value pairs
@@ -97,7 +55,49 @@ function objMinMax(obj) {
 
 
 /**
- * Calculate sum of elements in an array.
+ * Calculate min of an object of numeric values.
+ * @function objMin
+ * @param {Object.<string, number>} obj - input object
+ * @returns {[string, number]} min key-value pair
+ */
+ function objMin(obj) {
+  const arr = Object.keys(obj);
+  const n = arr.length;
+  let key = arr[0];
+  let val = obj[key];
+  let min = [key, val];
+  for (let i = 1; i < n; i++) {
+    key = arr[i];
+    val = obj[key];
+    min = (val < min[1]) ? [key, val] : min;
+  }
+  return min;
+}
+
+
+/**
+ * Calculate max of an object of numeric values.
+ * @function objMax
+ * @param {Object.<string, number>} obj - input object
+ * @returns {[string, number]} max key-value pair
+ */
+function objMax(obj) {
+  const arr = Object.keys(obj);
+  const n = arr.length;
+  let key = arr[0];
+  let val = obj[key];
+  let max = [key, val];
+  for (let i = 1; i < n; i++) {
+    key = arr[i];
+    val = obj[key];
+    max = (val > max[1]) ? [key, val] : max;
+  }
+  return max;
+}
+
+
+/**
+ * Calculate the sum of elements in an array.
  * @function arrSum
  * @param {number[]} arr - input array
  * @returns {number} sum
@@ -116,7 +116,7 @@ function arrSum(arr) {
  * Calculate the mean of all elements in an array.
  * @function arrMean
  * @param {number[]} arr - input array
- * returns {number} mean
+ * @returns {number} mean
  */
 function arrMean(arr) {
   // to avoid floating point err in js
@@ -125,7 +125,7 @@ function arrMean(arr) {
 
 
 /**
- * Calculate sum of products of paired elements in two arrays.
+ * Calculate the sum of products of paired elements in two arrays.
  * @function arrProdSum
  * @param {number[]} arr1 - input array
  * @param {number[]} arr2 - input array
@@ -240,18 +240,18 @@ function arrProdMeanN(arr1, arr2) {
 
 /**
  * Calculate the mean of all elements in an array, while skipping NaN.
- * @function arrMean
+ * @function arrDeepEqual
  * @param {number[]} arr - input array
  * returns {number} mean
  */
-function arrEqualDeep(arr1, arr2) {
+function arrDeepEqual(arr1, arr2) {
   if (arr1 instanceof Array && arr2 instanceof Array) {
     const n = arr1.length;
     if (n !== arr2.length) {
       return false;
     }
     for (let i = 0; i < n; i++) {
-      if (!arrEqualDeep(arr1[i], arr2[i])) {
+      if (!arrDeepEqual(arr1[i], arr2[i])) {
         return false;
       }
     }
@@ -307,6 +307,7 @@ function arrLog(arr, clip) {
 /**
  * Min-max scaling of an array in place.
  * @param {number[]} arr - input array
+ * @see sklearn.preprocessing.MinMaxScaler
  */
 function arrMinMaxScale(arr) {
   const [min, max] = arrMinMax(arr);
@@ -355,10 +356,11 @@ function transpose(arr2d) {
   const n = arr2d.length;
   const m = arr2d[0].length;
   const res = Array(m).fill().map(() => Array(n));
-  let j;
+  let row, j;
   for (let i = 0; i < n; i++) {
+    row = arr2d[i];
     for (j = 0; j < m; j++) {
-      res[j][i] = arr2d[i][j];
+      res[j][i] = row[j];
     }
   }
   return res;
@@ -373,10 +375,6 @@ function transpose(arr2d) {
  * @return {number} euclidean distance between x and y
  */
 function euclidean(x, y) {
-  // check x, y
-  if (arrEqualDeep(x, y)) {
-    return 0;
-  }
   let sum = 0;
   const n = x.length;
   for (let i = 0; i < n; i++) {
@@ -387,7 +385,7 @@ function euclidean(x, y) {
 
 
 /**
- * Calculate pairwise distances of all data points
+ * Calculate pairwise distances of all data points.
  * @function pdist
  * @param {number[][]} arr - input data
  * @return {number[]} condensed distance matrix
@@ -504,8 +502,8 @@ function factorize(arr) {
  * @function bincount
  * @param {number[]} arr - input array
  * @return {number[]} the occurrence of each entry in the input data
- * @description Input data must consist of incremental integers (0, 1, 2,...).
- * Output is an array with index as input data and value as frequency.
+ * @description Input data must be integers. Output is an array with index as
+ * input data and value as frequency.
  * @see numpy.bincount
  */
 function bincount(arr) {
@@ -590,7 +588,7 @@ function factorial(n, m=1) {
 
 
 /**
- * Calculate the combination of choosing m iterms from n iterms.
+ * Calculate the combination of choosing m items from n items.
  * @function comb
  * @param {number} n - the input integer
  * @param {number} m - the input integer of elements taken

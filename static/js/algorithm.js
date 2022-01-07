@@ -3,34 +3,11 @@
 /**!
  * @module algorithm
  * @file Advanced algorithms.
- * @description They only operate on the parameters that are explicitly passed
- * to them. They do NOT directly access the main object OR the "document"
- * object. They are not related to any visual elements.
+ * @description These are algorithms designed to achieve specific goals, as in
+ * contrast to the general functions in "numeric.js". They only operate on the
+ * parameters that are explicitly passed to them. They do NOT access the main
+ * object or the "document" object. They are not related to the interface.
  */
-
-
-/**
- * Check if a circle and a rectangle collide
- * @function rectCircleColliding
- * @param {Object.<x: number, y: number, r: number>} circle - circle
- * @param {Object.<x: number, y: number, w: number, h: number>} rect - rectangle
- * @description adopted from markE's answer at:
- * @see {@link: https://stackoverflow.com/questions/21089959/}
- */
-function rectCircleColliding(circle, rect){
-  const distX = Math.abs(circle.x - rect.x - rect.w / 2),
-        distY = Math.abs(circle.y - rect.y - rect.h / 2);
-
-  if (distX > (rect.w / 2 + circle.r)) return false;
-  if (distY > (rect.h / 2 + circle.r)) return false;
-
-  if (distX <= (rect.w / 2)) return true;
-  if (distY <= (rect.h / 2)) return true;
-
-  const dx = distX - rect.w / 2,
-        dy = distY - rect.h / 2;
-  return (dx ** 2 + dy ** 2 <= (circle.r ** 2));
-}
 
 
 /**
@@ -63,6 +40,30 @@ function pnpoly(x, y, polygon) {
     }
   }
   return res;
+}
+
+
+/**
+ * Check if a circle and a rectangle collide
+ * @function rectCircleColliding
+ * @param {Object.<x: number, y: number, r: number>} circle - circle
+ * @param {Object.<x: number, y: number, w: number, h: number>} rect - rectangle
+ * @description adopted from markE's answer at:
+ * @see {@link: https://stackoverflow.com/questions/21089959/}
+ */
+ function rectCircleColliding(circle, rect){
+  const distX = Math.abs(circle.x - rect.x - rect.w / 2),
+        distY = Math.abs(circle.y - rect.y - rect.h / 2);
+
+  if (distX > (rect.w / 2 + circle.r)) return false;
+  if (distY > (rect.h / 2 + circle.r)) return false;
+
+  if (distX <= (rect.w / 2)) return true;
+  if (distY <= (rect.h / 2)) return true;
+
+  const dx = distX - rect.w / 2,
+        dy = distY - rect.h / 2;
+  return (dx ** 2 + dy ** 2 <= (circle.r ** 2));
 }
 
 
@@ -149,7 +150,9 @@ function silhouetteSample(x, label, dist) {
  * @param {number[]} label - labels of input data
  * @param {number[]} dist - pairwise distances among input data
  * @return {number[]} silhouette coefficient of each contig
- * @description This is the 2D version of the function.
+ * @description This is the 2D version of the function. It takes a 2D square
+ * distance matrix instead of a 1D condensed distance matrix. It is slower
+ * but it can handle larger datasets.
  */
  function silhouetteSample2D(x, label, dist) {
   const n = x.length;
@@ -272,4 +275,49 @@ function adjustedRandScore(labelTrue, labelPred) {
   let meanComb = (sumCombK + sumCombC) / 2;
 
   return (sumComb - prodComb) / (meanComb - prodComb);
+}
+
+
+/**
+ * @constant TICK_LOCS
+ * @description "Nice" numbers for placing ticks in a graph. Consistent with
+ * Matplotlib's default.
+ * {@link https://matplotlib.org/stable/api/ticker_api.html}
+ */
+const TICK_LOCS = [0.1, 0.2, 0.25, 0.5, 1, 2, 2.5, 5, 10, 20];
+
+
+/**
+ * Determine best tick locations for a range of data.
+ * @function getTicks
+ * @param {number} min - minimum value
+ * @param {number} max - maximum value
+ * @param {number} [n=10] - number of bins
+ * @description Implemented with reference to Matplotlib's AutoLocator. This
+ * function however is much simpler than AutoLocator, and the outcomes are not
+ * the same.
+ * {@link https://matplotlib.org/stable/api/ticker_api.html#matplotlib.ticker.
+ * AutoLocator}
+ * @license Matplotlib license
+ * @see licenses/matplotlib.txt
+ */
+function getTicks(min, max, n) {
+  n = n || 10;
+  const rawstep = (max - min) / n;
+  const scale = 10 ** (Math.floor(Math.log10(rawstep)));
+  const m = TICK_LOCS.length;
+  let step, loc;
+  for (let i = 0; i < m; i++) {
+    step = scale * TICK_LOCS[i];
+    if (step < rawstep) continue;
+    loc = Math.floor(min / step) * step;
+    if (loc + step * n >= max) break;
+  }
+  const ticks = [];
+  while (true) {
+    ticks.push(loc);
+    if (loc >= max) break;
+    loc += step;
+  }
+  return ticks;
 }
