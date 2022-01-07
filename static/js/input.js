@@ -84,7 +84,10 @@ function updateDataFromText(text, data, cols, filter) {
     else if(text.length > 3 && text.charCodeAt() === 31 && text.charCodeAt(1) === 65533 && text.charCodeAt(2) === 8) {
         // convert compressed text into Uint8Array and decompress into string fromat
         var decompText = pako.ungzip(new Uint8Array(text), { to: 'string' });
-        return parseAssembly(decompText, data, cols, filter);
+      
+        if (decompText.charAt() === '>') return parseAssembly(decompText, data, cols, filter);
+      
+        else return parseTable(decompText, data, cols);
     }
 
     // parse as a table
