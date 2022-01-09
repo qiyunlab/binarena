@@ -336,6 +336,7 @@ function parseFeaColumn(arr) {
  * Guess the data type of a column while parsing it.
  * @function guessColumnType
  * @param {string[]} arr - input column
+ * @param {Number} - threshold for entropy
  * @returns {string, Array, Array} - column type, data array, weight array (if
  * applicable)
  * @see parseNumColumn
@@ -361,7 +362,8 @@ function parseFeaColumn(arr) {
  * @todo Terminate the search for categories and features if the entropy of
  * processed ones exceed a threshold, and return "description".
  */
-function guessColumnType(arr) {
+function guessColumnType(arr, threshold = 600) {
+  threshold = (typeof threshold !== 'Number') ?  threshold : 600;
   const n = arr.length;
 
   // try to parse as numbers
@@ -411,23 +413,9 @@ function guessColumnType(arr) {
     }
   }
 
-  const unique = [...new Set(arr)];
-  const base = unique.length;
-  let probs = [];
+  if (calcEntropy(arr) > threshold) return ['des', arr, null];
 
-  for (let val of unique) probs.push(calcProb(arr, val));
-
-  const reducer = (acculumator, current) => acculumator + (current + (Math.log(current) / Math.log(base)));
-  const entropy = -1 * probs.reduce(reducer);
-
-  const threshold = 100;
-
-  if (areCats) {
-    if (entropy > threshold) {
-      return ['des', parsed, weighted ? weight : null];
-    }
-    return ['cat', parsed, weighted ? weight : null];
-  }
+  if (areCats) return ['cat', parsed, weighted ? weight : null];
 
   // parse as features
   parsed = Array(n).fill().map(() => []);
@@ -459,22 +447,38 @@ function guessColumnType(arr) {
 }
 
 
-/** calculates the probability of picking a vlue in an array
- * @function calcProb
+/**
+ * Calculates the entropy of an array
+ * @function calcEntropy
  * @param {Array} arr - array of values
- * @param {String | Number | Float} match - value to look for in array
+ * @returns {Number} entropy - entropy of array
  */
-function calcProb(arr, match) {
-  const n = arr.length;
+function calcEntropy(arr, match) {
+  const unique = [...new Set(arr)];
+  const base = unique.length;
+  let probs = [];
 
-  let count = 0;
-  for (let i = 0; i < n; i++) {
-    if (arr[i] === match) {
-      count++;
+  // calculates probability of occurence of search value
+  function calcProb(match) {
+    const n = arr.length;
+
+    let count = 0;
+    for (let i = 0; i < n; i++) {
+      if (arr[i] === match) {
+        count++;
+      }
     }
+
+    return count / n;
   }
 
-  return count / n;
+  for (let val of unique) probs.push(calcProb(val));
+
+  const reducer = (acculumator, current) => acculumator + (current + (Math.log(current) / Math.log(base)));
+  const entropy = -1 * probs.reduce(reducer);
+
+  return entropy;
+
 }
 
 
