@@ -466,9 +466,12 @@ function calcEntropy(arr) {
   }
 
   let entropy = 0;
-  for (let i = 0; i < probs.length; i++) entropy += (probs[i] / arr.length) * Math.log2(probs[i] / arr.length);
+  for (let i = 0; i < probs.length; i++) {
+    let current = probs[i] / arr.length;
+    entropy -= current * Math.log2(current);
+  }
 
-  return entropy * -1;
+  return entropy;
 }
 
 /**
