@@ -51,11 +51,11 @@ function initCanvas(mo) {
   });
 
   rena.addEventListener('mousewheel', function (e) {
-    canvasZoom(e.wheelDelta > 0, mo);
+    canvasZoom(e.wheelDelta > 0, mo, e.clientX, e.clientY);
   });
 
   rena.addEventListener('DOMMouseScroll', function (e) {
-    canvasZoom(e.detail < 0, mo);
+    canvasZoom(e.detail < 0, mo, e.clientX, e.clientY;
   });
 
   rena.addEventListener('contextmenu', function (e) {
