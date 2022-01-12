@@ -336,6 +336,7 @@ function parseFeaColumn(arr) {
  * Guess the data type of a column while parsing it.
  * @function guessColumnType
  * @param {string[]} arr - input column
+ * @param {number} threshold - entropy threshold
  * @returns {string, Array, Array} - column type, data array, weight array (if
  * applicable)
  * @see parseNumColumn
@@ -361,7 +362,8 @@ function parseFeaColumn(arr) {
  * @todo Terminate the search for categories and features if the entropy of
  * processed ones exceed a threshold, and return "description".
  */
-function guessColumnType(arr) {
+function guessColumnType(arr, threshold) {
+  threshold = (typeof threshold === 'number') ?  threshold : 4.5;
   const n = arr.length;
 
   // try to parse as numbers
@@ -410,6 +412,8 @@ function guessColumnType(arr) {
       }
     }
   }
+  if (calcEntropy(arr) > threshold) return ['des', parsed, null];
+
   if (areCats) return ['cat', parsed, weighted ? weight : null];
 
   // parse as features
@@ -441,6 +445,31 @@ function guessColumnType(arr) {
 
 }
 
+/**
+ * Calculates the entropy of an array
+ * @function calcEntropy
+ * @param {Array} arr - array of values
+ * @returns {Number} entropy - entropy of array
+ */
+function calcEntropy(arr) {
+  let unique = [],
+      probs = [];
+
+  for (let i = 0; i < arr.length; i++) {
+    if (unique.length === 0 || unique.indexOf(arr[i]) < 0) {
+      unique.push(arr[i]);
+      probs.push(1);
+    }
+    else {
+      probs[unique.indexOf(arr[i])] = probs[unique.indexOf(arr[i])] + 1;
+    }
+  }
+
+  let entropy = 0;
+  for (let i = 0; i < probs.length; i++) entropy += (probs[i] / arr.length) * Math.log2(probs[i] / arr.length);
+
+  return entropy * -1;
+}
 
 /**
  * Parse data as an assembly.
