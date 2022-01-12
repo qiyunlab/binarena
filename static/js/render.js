@@ -51,11 +51,11 @@ function initCanvas(mo) {
   });
 
   rena.addEventListener('mousewheel', function (e) {
-    canvasZoom(e.wheelDelta > 0, mo, e.clientX, e.clientY);
+    canvasZoom(e.wheelDelta > 0, mo);
   });
 
   rena.addEventListener('DOMMouseScroll', function (e) {
-    canvasZoom(e.detail < 0, mo, e.clientX, e.clientY);
+    canvasZoom(e.detail < 0, mo);
   });
 
   rena.addEventListener('contextmenu', function (e) {
@@ -179,16 +179,17 @@ function canvasMove(d, mo) {
  * @function canvasZoom
  * @param {boolean} isin - zoom in (true) or out (false)
  * @param {Object} mo - main object
- * @param {number} x - x-coordinate of mouse pointer
- * @param {number} y - y-coordinate of mouse pointer
  */
-function canvasZoom(isin, mo, x, y) {
+function canvasZoom(isin, mo) {
   let ratio = 0.75;
   if (isin) ratio = 1 / ratio;
   const view = mo.view;
+  const rena = mo.rena;
+  const w2 = rena.width / 2,
+        h2 = rena.height / 2;
   view.scale *= ratio;
-  view.posX = x - (x - view.posX) * ratio;
-  view.posY = y - (y - view.posY) * ratio;
+  view.posX = (view.posX - w2) * ratio + w2;
+  view.posY = (view.posY - h2) * ratio + h2;
   updateView(mo);
 }
 
