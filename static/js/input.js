@@ -452,22 +452,20 @@ function guessColumnType(arr, threshold) {
  * @returns {Number} entropy - entropy of array
  */
 function calcEntropy(arr) {
-  let unique = [],
-      probs = [];
+  const unique = {},
+        l = arr.length;
 
-  for (let i = 0; i < arr.length; i++) {
-    if (unique.length === 0 || unique.indexOf(arr[i]) < 0) {
-      unique.push(arr[i]);
-      probs.push(1);
-    }
-    else {
-      probs[unique.indexOf(arr[i])] = probs[unique.indexOf(arr[i])] + 1;
-    }
+  for (let i = 0; i < l; i++) {
+    let val = arr[i];
+    unique[val] = (unique[val] || 0) + 1;
   }
 
   let entropy = 0;
-  for (let i = 0; i < probs.length; i++) {
-    let current = probs[i] / arr.length;
+  const keys = Object.keys(unique),
+        n = keys.length;
+
+  for (let j = 0; j < n; j++) {
+    let current = unique[keys[j]] / l;
     entropy -= current * Math.log2(current);
   }
 
