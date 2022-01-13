@@ -51,11 +51,11 @@ function initCanvas(mo) {
   });
 
   rena.addEventListener('mousewheel', function (e) {
-    canvasZoom(e.wheelDelta > 0, mo, e.clientX, e.clientY);
+    canvasMouseZoom(e.wheelDelta > 0, mo, e.clientX, e.clientY);
   });
 
   rena.addEventListener('DOMMouseScroll', function (e) {
-    canvasZoom(e.detail < 0, mo, e.clientX, e.clientY;
+    canvasMouseZoom(e.detail < 0, mo, e.clientX, e.clientY);
   });
 
   rena.addEventListener('contextmenu', function (e) {
@@ -107,11 +107,11 @@ function initCanvas(mo) {
         break;
       case '-':
       case '_':
-        canvasZoom(false, mo);
+        canvasKeyZoom(false, mo);
         break;
       case '=':
       case '+':
-        canvasZoom(true, mo);
+        canvasKeyZoom(true, mo);
         break;
       case '0':
         byId('reset-btn').click();
@@ -175,14 +175,33 @@ function canvasMove(d, mo) {
 
 
 /**
- * Canvas zooming.
- * @function canvasZoom
+ * Canvas zooming by keys.
+ * @function canvasKeyZoom
+ * @param {boolean} isin - zoom in (true) or out (false)
+ * @param {Object} mo - main object
+ */
+function canvasKeyZoom(isin, mo) {
+  let ratio = 0.75;
+  if (isin) ratio = 1 / ratio;
+  const view = mo.view;
+  const rena = mo.rena;
+  const w2 = rena.width / 2,
+        h2 = rena.height / 2;
+  view.scale *= ratio;
+  view.posX = (view.posX - w2) * ratio + w2;
+  view.posY = (view.posY - h2) * ratio + h2;
+  updateView(mo);
+}
+
+/**
+ * Canvas zooming by mouse.
+ * @function canvasMouseZoom
  * @param {boolean} isin - zoom in (true) or out (false)
  * @param {Object} mo - main object
  * @param {number} x - x-coordinate of mouse pointer
  * @param {number} y - y-coordinate of mouse pointer
  */
-function canvasZoom(isin, mo, x, y) {
+ function canvasMouseZoom(isin, mo, x, y) {
   let ratio = 0.75;
   if (isin) ratio = 1 / ratio;
   const view = mo.view;
@@ -190,8 +209,7 @@ function canvasZoom(isin, mo, x, y) {
   view.posX = x - (x - view.posX) * ratio;
   view.posY = y - (y - view.posY) * ratio;
   updateView(mo);
-}
-
+ }
 
 /**
  * Canvas mouse move event.
