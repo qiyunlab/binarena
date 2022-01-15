@@ -362,7 +362,7 @@ function parseFeaColumn(arr) {
  * processed ones exceed a threshold, and return "description".
  */
 function guessColumnType(arr, threshold) {
-  threshold = threshold || 4.6;
+  threshold = threshold || 4.75;
   const n = arr.length;
 
   // try to parse as numbers
