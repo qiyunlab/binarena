@@ -169,8 +169,8 @@ describe('input.js', function() {
     arr = ['a', 'a', 'b', 'c', 'b', 
           'a', 'c', 'c', 'b', 'b'];
     obs = calcEntropy(arr);
-    exp = Math.log2( 0.3 ** -0.3 ) + Math.log2( 0.4 ** -0.4 )
-          + Math.log2( 0.3 ** -0.3 );
+    exp = Math.log2(0.3 ** -0.3) + Math.log2(0.4 ** -0.4)
+          + Math.log2(0.3 ** -0.3);
     expect(obs).toEqual(exp);
 
     // array with blanks
