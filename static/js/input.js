@@ -618,18 +618,22 @@ function parseAnnotation(text, data, cols) {
   }
 
   else if (format === 'greengenes') {
-    const regex = /G\d{9}|[dkpcofgs]__[a-zA-Z.0-9]{2,}|sp.\s[a-zA-Z0-9]+/g;
-    let arr2d = []
+    const regex = /G\d{9}|[dkpcofgs]__[a-zA-Z.0-9]{2,}|sp.\s[a-zA-Z0-9]+/g,
+          ref = {'G': '', 'd__': '', 'k__': '', 'p__': '', 'c__': '', 
+                'o__': '', 'f__': '', 'g__': '',  's__': '', 'sp. ': ''};
+    let arr2d = [];
 
     for(let i = 0; i < n; i++) {
       let line = lines[i];
-      let arr = line.match(regex);
-      arr2d.push(arr);  
-    }
+      let raw_arr = line.match(regex);
+      let arr = [];
+      for (let i = 0; i < ref.length; i++) {
+        if (i >= arr.length) arr.push('');
 
-    const ref = ['G', 'd__', 'k__', 'p__', 'c__', 'o__', 'f__', 'g__' 's__', 'sp. '];
-    for (let i = 0; i < ref.length; i++) {
-      if (i > arr)
+        else if (raw_arr.indexOf(ref[i]) === 0) arr
+      }
+
+      arr2d.push(arr);  
     }
 
     for (let arr of transpose(arr2d)) data.push(arr);
