@@ -359,11 +359,10 @@ function parseFeaColumn(arr) {
  * the input data are categories, as in contrast to `parseCatColumn`, which
  * does not do this check.
  * 
- * @todo Terminate the search for categories and features if the entropy of
  * processed ones exceed a threshold, and return "description".
  */
 function guessColumnType(arr, threshold) {
-  threshold = (typeof threshold === 'number') ?  threshold : 4.5;
+  threshold = threshold || 4.6;
   const n = arr.length;
 
   // try to parse as numbers
@@ -412,8 +411,10 @@ function guessColumnType(arr, threshold) {
       }
     }
   }
+  // parsing as description based on entropy of array
   if (calcEntropy(arr) > threshold) return ['des', parsed, null];
 
+  // now recognize and pares as categories
   if (areCats) return ['cat', parsed, weighted ? weight : null];
 
   // parse as features
@@ -450,25 +451,29 @@ function guessColumnType(arr, threshold) {
  * @function calcEntropy
  * @param {Array} arr - array of values
  * @returns {Number} entropy - entropy of array
+ * @description Calculates the probability of occurence of unique values
+ * in the array and then proceeds to employ the Shannon entropy formula
+ * @see {@link https://en.wikipedia.org/wiki/Entropy_(information_theory)}
  */
 function calcEntropy(arr) {
   const unique = {},
-        l = arr.length;
+        len = arr.length;
 
-  for (let i = 0; i < l; i++) {
+  for (let i = 0; i < len; i++) {
     let val = arr[i];
     unique[val] = (unique[val] || 0) + 1;
   }
 
-  let entropy = 0;
+  let entropy = 0,
+      current;
   const keys = Object.keys(unique),
         n = keys.length;
 
   for (let j = 0; j < n; j++) {
-    let current = unique[keys[j]] / l;
+    current = unique[keys[j]] / len;
     entropy -= current * Math.log2(current);
   }
-
+  console.log(entropy)
   return entropy;
 }
 

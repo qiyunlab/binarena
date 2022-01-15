@@ -149,4 +149,40 @@ describe('input.js', function() {
     expect(guessColumnType([])).toEqual(['num', [], null]);
   });
 
+  /** Calculate entropy of an array. */
+  it('calcEntropy', function() {
+    let arr, obs, exp;
+
+    // same values in array
+    arr = [1, 1, 1, 1, 1];
+    obs = calcEntropy(arr);
+    exp = 0;
+    expect(obs).toEqual(exp);
+
+    // all unique values in array
+    arr = [1, 2, 3, 4, 5];
+    obs = calcEntropy(arr);
+    exp = Math.log2(5);
+    expect(obs).toEqual(exp);
+
+    // categories
+    arr = ['a', 'a', 'b', 'c', 'b', 
+          'a', 'c', 'c', 'b', 'b'];
+    obs = calcEntropy(arr);
+    exp = Math.log2( 0.3 ** -0.3 ) + Math.log2( 0.4 ** -0.4 )
+          + Math.log2( 0.3 ** -0.3 );
+    expect(obs).toEqual(exp);
+
+    // array with blanks
+    arr = [1, , 2, 2, , 3, 4, , , 4];
+    obs = calcEntropy(arr);
+    exp = Math.log2(0.1 ** -0.1) + Math.log2(0.1 ** -0.1) 
+          + Math.log2(0.4 ** -0.4) + Math.log2(0.2 ** -0.2)
+          + Math.log2(0.2 ** -0.2);
+    expect(obs).toEqual(exp);
+
+    // empty input
+    expect(calcEntropy([])).toEqual(0);
+  });
+
 });
