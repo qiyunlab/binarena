@@ -473,7 +473,7 @@ function calcEntropy(arr) {
     current = unique[keys[j]] / len;
     entropy -= current * Math.log2(current);
   }
-  console.log(entropy)
+
   return entropy;
 }
 
