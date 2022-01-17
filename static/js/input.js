@@ -186,7 +186,7 @@ function parseTable(text, data, cols) {
       cols.types.push(type === 'cat' ? 'cwt' : 'fwt');
     }
   }
-
+  console.log(data)
 }
 
 
@@ -607,44 +607,101 @@ function parseContigTitle(line, format) {
  * @param {Object} data - data object
  * @param {Object} cols - cols object
  */
-function parseAnnotation(text, data, cols) {
-  const lines = splitLines(text);
-  const format = getAnnotationFormat(text);
-  const n = lines.length;
+function parseAnnotation(text, data, cols, threshold) {
+  threshold = threshold || 0.7;
+  const lines = splitLines(text),
+        format = getAnnotationFormat(text)[0],
+        fregex = getAnnotationFormat(text)[1],
+        n = lines.length;
 
-  if (n !== data[0].length) {
-    // Number of contigs do not match number of rows in annotation file
-    throw 'Dimension Error'
+  // calculating how much of the annotation file's contig IDs match
+  // the existing data's contig IDs
+  function calcSimilarity(contigIds, annIds) {
+    const contigSet = new Set(contigIds),
+          annArr = Array.from(new Set(annIds));
+    let count = 0;
+    for (let i = 0; i < annArr.length; i++) {
+      if (contigSet.has(Number(annArr[i] - 7000).toString())) count++;
+    }
+    console.log(count / contigIds.length)
+    return count / contigIds.length;
+  }
+
+  if (calcSimilarity(data[0], text.match(fregex)) < threshold) {
+    // Number of contigs do not match enough of the number of rows in annotation file
+    throw `Annotation File does not match ${threshold * 100}% of the existing data.`
   }
 
   else if (format === 'greengenes') {
-    const regex = /G\d{9}|[dkpcofgs]__[a-zA-Z.0-9]{2,}|\.\s[a-zA-Z0-9]+/g,
+    const regex = /G\d{9}|[dkpcofgs]__[-a-zA-Z0-9\.\f _]{2,}/g,
           ref = {'G': '', 'd': '', 'k': '', 'p': '', 'c': '', 
-                'o': '', 'f': '', 'g': '',  's': '', '.': ''},
+                'o': '', 'f': '', 'g': '',  's': ''},
           keys = ref.keys;
-    let arr2d = [];
+    let arr2d = new Array(data[0].length).fill(new Array(8).fill(''));
 
-    for(let i = 0; i < n; i++) {
+    for (let i = 0; i < n; i++) {
       let line = lines[i];
+      // extracting the taxon values from greengenes file
       let rawArr = line.match(regex);
       let arr = [];
-      for (let i = 0; i < rawArr.length; i++) {
-        let index = rawArr[i].charAt();
-        console.log(index)
-        if (index === '.') ref[index] = rawArr[i].substring(2);
-        else if (index !== 'G') ref[index] = rawArr[i].substring(3);
-        else ref[index] = rawArr[i];
+
+      // parsing the extracted taxonomy data
+      for (let j = 0; j < rawArr.length; j++) {
+        if (!rawArr[j]) continue;
+        let index = rawArr[j].charAt();
+
+        if (index !== 'G') ref[index] = rawArr[j].substring(3);
+        else ref[index] = rawArr[j].substring(1);
       }
 
-      console.log(Object.values(ref))
-      arr2d.push(Object.values(ref));
+      // finding where the information needs to go in the existing data
+      let id = data[0].indexOf(Number(ref['G']).toString());
+
+      if (id >= 0) {
+        let vals = Object.values(ref);
+        vals.shift();
+        // inserting the parsed data into proper place
+        arr2d.splice(id, 1, vals)
+      }
     }
 
     for (let arr of transpose(arr2d)) data.push(arr);
-    cols.names = cols.names.concat(['GreenGenes ID', 'Domain','Kingdom', 'Phylum', 
-                                    'Class', 'Order', 'Family', 'Genus', 'Species', 'Strain']);
-    cols.types = cols.types.concat(['id', 'cat', 'cat', 'cat', 'cat', 'cat', 
-                                    'cat', 'cat', 'des', 'des']);
+    cols.names = cols.names.concat(['Domain','Kingdom', 'Phylum', 'Class', 
+                                  'Order', 'Family', 'Genus', 'Species']);
+    cols.types = cols.types.concat(['cat', 'cat', 'cat', 'cat', 
+                                  'cat', 'cat', 'cat', 'des']);
+  }
+
+  else if (format === 'kegg') {
+    const regex = /\d{12}|\d+|K\d{5}/g,
+          ref = {};
+    let arr2d = new Array(data[0].length).fill('');
+
+    for (let i = 0; i < n; i++) {
+      let line = lines[i]; 
+      // extracting the kegg gene values
+      let rawArr = line.match(regex);
+      let annId = Number(rawArr[0];
+
+      // finding where the information needs to go on the existing data
+      let id = data[0].indexOf((Number(rawArr[0])).toString());
+
+      if (ref[annId] && rawArr.length === 3) {
+        let current = ref[annId];
+        // creating a collection of kegg values and contig ids
+        current.push(rawArr[2])
+        ref[annId] = current;
+      }
+
+      else if (!ref[annId]) ref[annId] = [];
+
+      // inserting the parsed data into the proper place
+      arr2d.splice(id, 1, ref[annId]);
+    }
+
+    data.push(arr2d);
+    cols.names = cols.names.concat(['KEGG']);
+    cols.types = cols.types.concat(['fea']);
   }
 
 }
@@ -659,10 +716,15 @@ function parseAnnotation(text, data, cols) {
  * formats. Currently, it supports GreenGenes format.
  */
 function getAnnotationFormat(text) {
-  // GreenGenes sample line
-  // e.g. G000712055  k__Bacteria; p__Firmicutes; c__Clostridia; o__Clostridiales; f__Ruminococcaceae; g__Ruminococcus; s__Ruminococcus sp. HUN007
-  const green_genes_regex = /G\d{9}\s[kd]__/g;
-  if (text.search(green_genes_regex) === 0) return 'greengenes';
+  let format = null;
 
-  return null;
+  // GreenGenes sample line
+  // e.g. G000712055  k__Bacteria; p__Firmicutes; c__Clostridia; o__Clostridiales; f__Ruminococcaceae; 
+  // g__Ruminococcus; s__Ruminococcus sp. HUN007
+  const green_genes_regex = /G\d{9}/g;
+  if (text.search(green_genes_regex) === 0) format = ['greengenes', /\d{9}/g];
+
+  const kegg_regex = /c_\d{12}_/g;
+  if (text.search(kegg_regex) === 0) format = ['kegg', /\d{12}/g];
+  return format;
 }
