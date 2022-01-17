@@ -50,17 +50,21 @@ function initSelTools(mo) {
     if (!mo.cache.npick) return;
     const pick = mo.picked,
           mask = mo.masked;
-    let m = 0;
+    let res = [];
     const n = mo.cache.nctg;
     for (let i = 0; i < n; i++) {
       if (pick[i]) {
         mask[i] = true;
         pick[i] = false;
-        m ++;
+        res.push(i);
       }
     }
+    const m = res.length;
     mo.cache.npick -= m;
     mo.cache.nmask += m;
+    const history = mo.cache.maskh;
+    history.push(res);
+    if (history.length > 50) history.shift();
     toastMsg(`Masked ${plural('contig', m)}.`, mo.stat);
     prepDataForDisplay(mo);
     updateLegends(mo);
@@ -69,17 +73,44 @@ function initSelTools(mo) {
     mo.rena.focus();
   });
 
-  /** Clear mask. */
-  byId('clear-mask-btn').addEventListener('click', function () {
-    mo.masked.fill(false);
-    mo.cache.nmask = 0;
+  /** Undo masking */
+  byId('undo-mask-btn').addEventListener('click', function () {
+    const prev = mo.cache.maskh.pop();
+    if (prev === undefined) return;
+    const mask = mo.masked;
+    const n = prev.length;
+    let idx, m = 0;
+    for (let i = 0; i < n; i++) {
+      idx = prev[i];
+      if (mask[idx]) {
+        mask[idx] = false;
+        m++;
+      }
+    }
+    if (!m) return;
+    mo.cache.nmask -= m;
+    toastMsg(`Unmasked ${plural('contig', m)}.`, mo.stat);
     prepDataForDisplay(mo);
     updateLegends(mo);
     renderArena(mo);
     updateMaskCtrl(mo);
+    mo.rena.focus();
   });
 
-  /** Highlight colors */
+  /** Clear mask. */
+  byId('clear-mask-btn').addEventListener('click', function () {
+    mo.masked.fill(false);
+    mo.cache.nmask = 0;
+    mo.cache.maskh.length = 0;
+    toastMsg(`Unmasked all contigs.`, mo.stat);
+    prepDataForDisplay(mo);
+    updateLegends(mo);
+    renderArena(mo);
+    updateMaskCtrl(mo);
+    mo.rena.focus();
+  });
+
+  /** Highlight colors. */
   const hidiv = byId('high-menu');
   const nhigh = HIGHLIGHT_PALETTE.length;
   let p, span, btn;
@@ -296,7 +327,7 @@ function updateSelection(mo) {
 function updateMaskCtrl(mo) {
   const n = mo.cache.nmask;
   byId('masked-span').innerHTML = `Masked: ${n}`;
-  byId('clear-mask-btn').classList.toggle('hidden', !n);
+  byId('unmask-span').classList.toggle('hidden', !n);
 }
 
 
@@ -638,7 +669,7 @@ function summFieldInfo(arr, type, metric, deci, rarr, warr) {
       break;
 
     case 'fea':
-      text = summFeas(arr);
+      text = summFeatures(arr);
       break;
   }
   return [text, capital(comment)];

@@ -351,6 +351,7 @@ function parseFeaColumn(arr) {
  * Guess the data type of a column while parsing it.
  * @function guessColumnType
  * @param {string[]} arr - input column
+ * @param {number} threshold - entropy threshold
  * @returns {string, Array, Array} - column type, data array, weight array (if
  * applicable)
  * @see parseNumColumn
@@ -373,10 +374,10 @@ function parseFeaColumn(arr) {
  * the input data are categories, as in contrast to `parseCatColumn`, which
  * does not do this check.
  * 
- * @todo Terminate the search for categories and features if the entropy of
  * processed ones exceed a threshold, and return "description".
  */
-function guessColumnType(arr) {
+function guessColumnType(arr, threshold) {
+  threshold = threshold || 4.75;
   const n = arr.length;
 
   // try to parse as numbers
@@ -425,6 +426,10 @@ function guessColumnType(arr) {
       }
     }
   }
+  // parsing as description based on entropy of array
+  if (calcEntropy(arr) > threshold) return ['des', parsed, null];
+
+  // now recognize and pares as categories
   if (areCats) return ['cat', parsed, weighted ? weight : null];
 
   // parse as features
@@ -456,6 +461,36 @@ function guessColumnType(arr) {
 
 }
 
+/**
+ * Calculates the entropy of an array
+ * @function calcEntropy
+ * @param {Array} arr - array of values
+ * @returns {Number} entropy - entropy of array
+ * @description Calculates the probability of occurence of unique values
+ * in the array and then proceeds to employ the Shannon entropy formula
+ * @see {@link https://en.wikipedia.org/wiki/Entropy_(information_theory)}
+ */
+function calcEntropy(arr) {
+  const unique = {},
+        len = arr.length;
+
+  for (let i = 0; i < len; i++) {
+    let val = arr[i];
+    unique[val] = (unique[val] || 0) + 1;
+  }
+
+  let entropy = 0,
+      current;
+  const keys = Object.keys(unique),
+        n = keys.length;
+
+  for (let j = 0; j < n; j++) {
+    current = unique[keys[j]] / len;
+    entropy -= current * Math.log2(current);
+  }
+
+  return entropy;
+}
 
 /**
  * Parse data as an assembly.

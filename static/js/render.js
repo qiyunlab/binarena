@@ -51,13 +51,11 @@ function initCanvas(mo) {
   });
 
   rena.addEventListener('mousewheel', function (e) {
-    view.scale *= e.wheelDelta > 0 ? (4 / 3) : 0.75;
-    updateView(mo);
+    canvasMouseZoom(e.wheelDelta > 0, mo, e.clientX, e.clientY);
   });
 
   rena.addEventListener('DOMMouseScroll', function (e) {
-    view.scale *= e.detail > 0 ? 0.75 : (4 / 3);
-    updateView(mo);
+    canvasMouseZoom(e.detail < 0, mo, e.clientX, e.clientY);
   });
 
   rena.addEventListener('contextmenu', function (e) {
@@ -91,32 +89,35 @@ function initCanvas(mo) {
   rena.addEventListener('keydown', function (e) {
     // const t0 = performance.now();
     switch (e.key) {
-      case 'Left':
-      case 'ArrowLeft':
-        byId('left-btn').click();
-        break;
       case 'Up':
       case 'ArrowUp':
-        byId('up-btn').click();
+        canvasMove(0, mo);
         break;
       case 'Right':
       case 'ArrowRight':
-        byId('right-btn').click();
+        canvasMove(1, mo);
         break;
       case 'Down':
       case 'ArrowDown':
-        byId('down-btn').click();
+        canvasMove(2, mo);
+        break;
+      case 'Left':
+      case 'ArrowLeft':
+        canvasMove(3, mo);
         break;
       case '-':
       case '_':
-        byId('zoomout-btn').click();
+        canvasKeyZoom(false, mo);
         break;
       case '=':
       case '+':
-        byId('zoomin-btn').click();
+        canvasKeyZoom(true, mo);
         break;
       case '0':
         byId('reset-btn').click();
+        break;
+      case 'Enter':
+        polygonSelect(mo, e.shiftKey);
         break;
       case 'l':
       case 'L':
@@ -124,14 +125,15 @@ function initCanvas(mo) {
         break;
       case 'p':
       case 'P':
-        byId('screenshot-btn').click();
+        byId('image-btn').click();
         break;
       case 'Delete':
       case 'Backspace':
         byId('mask-btn').click();
         break;
-      case 'Enter':
-        polygonSelect(mo, e.shiftKey);
+      case 'z':
+      case 'Z':
+        byId('undo-mask-btn').click();
         break;
       case ' ':
         byId('as-new-bin-btn').click();
@@ -155,6 +157,59 @@ function initCanvas(mo) {
   });
 } // end initializing controls
 
+
+/**
+ * Canvas moving.
+ * @function canvasMove
+ * @param {number} d - move direction
+ * @param {Object} mo - main object
+ * @description Direction: 0 (top), 1 (right), 2 (bottom), 3 (left), the same
+ * as JavaScript margins.
+ */
+function canvasMove(d, mo) {
+  const step = 15;
+  if (d & 1) mo.view.posX += d >> 1 ? -step : step;
+  else mo.view.posY += d >> 1 ? step : -step;
+  updateView(mo);
+}
+
+
+/**
+ * Canvas zooming by keys.
+ * @function canvasKeyZoom
+ * @param {boolean} isin - zoom in (true) or out (false)
+ * @param {Object} mo - main object
+ */
+function canvasKeyZoom(isin, mo) {
+  let ratio = 0.75;
+  if (isin) ratio = 1 / ratio;
+  const view = mo.view;
+  const rena = mo.rena;
+  const w2 = rena.width / 2,
+        h2 = rena.height / 2;
+  view.scale *= ratio;
+  view.posX = (view.posX - w2) * ratio + w2;
+  view.posY = (view.posY - h2) * ratio + h2;
+  updateView(mo);
+}
+
+/**
+ * Canvas zooming by mouse.
+ * @function canvasMouseZoom
+ * @param {boolean} isin - zoom in (true) or out (false)
+ * @param {Object} mo - main object
+ * @param {number} x - x-coordinate of mouse pointer
+ * @param {number} y - y-coordinate of mouse pointer
+ */
+ function canvasMouseZoom(isin, mo, x, y) {
+  let ratio = 0.75;
+  if (isin) ratio = 1 / ratio;
+  const view = mo.view;
+  view.scale *= ratio;
+  view.posX = x - (x - view.posX) * ratio;
+  view.posY = y - (y - view.posY) * ratio;
+  updateView(mo);
+ }
 
 /**
  * Canvas mouse move event.
@@ -410,49 +465,49 @@ function renderArena(mo) {
   const paths = {};
 
   // intermediates
-  let radius, rviz, x, y, fs, hi;
+  let rad, vrad, x, y, fs, hi;
 
   // highlights
   const nhigh = HIGHLIGHT_PALETTE.length;
   const highs = Array(nhigh).fill().map(() => Array());
   const hirad = 8 / scale;
 
-  // determine appearance of contig
+  // determine appearance of contigs
   for (let i = 0; i < n; i++) {
     if (mask[i]) continue;
 
     // determine radius (size)
-    radius = S[i];
-    rviz = radius * scale;
+    rad = S[i];
+    vrad = rad * scale;
 
     // if contig occupies less than one pixel on screen, skip
-    if (rviz < min1) continue;
+    if (vrad < min1) continue;
 
     // determine x- and y-coordinates
     // skip contigs outside visible region
     x = Math.round(X[i] * w);
-    if (x + radius < vleft || x - radius > vright) continue;
+    if (x + rad < vleft || x - rad > vright) continue;
     y = Math.round(Y[i] * h);
-    if (y + radius < vtop || y - radius > vbottom) continue;
+    if (y + rad < vtop || y - rad > vbottom) continue;
 
     // determine fill style (color and opacity)
     fs = `rgba(${C[i]})`;
     if (!(fs in paths)) paths[fs] = { 'square': [], 'circle': [] };
 
     // if a contig occupies less than four pixels on screen, draw a square
-    if (rviz < min2) {
-      paths[fs].square.push([x, y, Math.round(radius * pi1_2)]);
+    if (vrad < min2) {
+      paths[fs].square.push([x, y, Math.round(rad * pi1_2)]);
     }
 
     // if bigger, draw a circle
     else {
-      paths[fs].circle.push([x, y, Math.round(radius)]);
+      paths[fs].circle.push([x, y, Math.round(rad)]);
     }
 
     // highlight circle
     hi = high[i];
     if (hi) {
-      highs[hi - 1].push([x, y, Math.round(radius + hirad)]);
+      highs[hi - 1].push([x, y, Math.round(rad + hirad)]);
     }
   } // end for i
 
@@ -606,34 +661,95 @@ function drawPolygon(mo) {
  * @function drawGrid
  * @param {Object} rena - arena canvas DOM
  * @param {Object} view - view object
- * @todo needs further work
  */
 function drawGrid(rena, view) {
+  const w = rena.width,
+        h = rena.height;
+  const scale = view.scale;
+  const xmin = view.x.min,
+        xmax = view.x.max,
+        xran = xmax - xmin;
+  const ymin = view.y.min,
+        ymax = view.y.max,
+        yran = ymax - ymin;
+
+  // get viewport edges
+  const vleft = -view.posX / scale,
+        vright = (w - view.posX) / scale,
+        vtop = -view.posY / scale,
+        vbottom = (h - view.posY) / scale;
+
+  // calculate grid density (number of steps)
+  // note: grid density increases when zooming in, and descreases to at least
+  // 5 when zooming out
+  const nbin = Math.max(Math.round(10 * scale), 5);
+
+  // calculate best ticks
+  // note: these ticks are constant as long as data and zooming are unchanged,
+  // regardless of canvas position
+  const xticks = getTicks(xmin, xmax, nbin).slice(1, -1),
+        yticks = getTicks(ymin, ymax, nbin).slice(1, -1);
+  const nxtick = xticks.length,
+        nytick = yticks.length;
+
+  // calculate best precisions
+  const xdigits = Math.max(0, Math.ceil(-Math.log10((xticks[nxtick - 1] -
+          xticks[0]) / (nxtick - 1)))),
+        ydigits = Math.max(0, Math.ceil(-Math.log10((yticks[nytick - 1] -
+          yticks[0]) / (nytick - 1))));
+
+  // render vertical lines
   const ctx = rena.getContext('2d');
-  ctx.font = (1 / view.scale).toFixed(2) + 'em monospace';
+  ctx.strokeStyle = 'lightgray';
+  ctx.lineWidth = 1 / scale;
+  const xposes = [], xtickz = [];
+  let xtick, xpos;
+  for (let i = 0; i < nxtick; i++) {
+    xtick = xticks[i];
+    xpos = ((xtick - xmin) / xran - 0.5) * w;
+    if (xpos < vleft) continue;
+    if (xpos > vright) break;
+    xposes.push(xpos);
+    xtickz.push(xtick);
+    ctx.moveTo(xpos, -h * 0.5);
+    ctx.lineTo(xpos, h * 0.5);
+  }
+
+  // render horizontal lines
+  const yposes = [], ytickz = [];
+  let ytick, ypos;
+  for (let i = 0; i < nytick; i++) {
+    ytick = yticks[i];
+    ypos = ((ymax - ytick) / yran - 0.5) * h;
+    if (ypos > vbottom) continue;
+    if (ypos < vtop) break;
+    ctx.moveTo(-w * 0.5, ypos);
+    ctx.lineTo(w * 0.5, ypos);
+    yposes.push(ypos);
+    ytickz.push(ytick);
+  }
+  ctx.stroke();
+
+  // determine text label positions
+  // i.e., the line closest to the middle of screen
+  const xlabpos = xposes[Math.round(xposes.length / 2 - 1)],
+        ylabpos = yposes[Math.round(yposes.length / 2 - 1)];
+
+  // render text labels
+  ctx.font = (1 / scale).toFixed(5) + 'em monospace';
   ctx.fillStyle = 'dimgray';
   ctx.textAlign = 'center';
-  ctx.lineWidth = 1 / view.scale;
-  const ig = 5, gp = 10;
-  let xx, yy;
-  for (let x = parseInt(view.x.min / ig) * ig; x <= parseInt(view.x.max /
-    ig) * ig; x += ig) {
-    xx = ((x - view.x.min) / (view.x.max - view.x.min) - 0.5) * rena.width;
-    ctx.moveTo(xx, -rena.height * 0.5);
-    ctx.lineTo(xx, rena.height * 0.5);
-    ctx.fillText(x.toString(), xx - gp / view.scale, (view.y.max /
-      (view.y.max - view.y.min) - 0.5) * rena.height + gp / view.scale);
+  ctx.textBaseline = 'top';
+  const nxpos = xposes.length;
+  for (let i = 0; i < nxpos; i++) {
+    ctx.fillText(xtickz[i].toFixed(xdigits), xposes[i], ylabpos);
   }
-  for (let y = parseInt(view.y.min / ig) * ig; y <= parseInt(view.y.max /
-    ig) * ig; y += ig) {
-    yy = ((view.y.max - y) / (view.y.max - view.y.min) - 0.5) * rena.height;
-    ctx.moveTo(-rena.width * 0.5, yy);
-    ctx.lineTo(rena.width * 0.5, yy);
-    ctx.fillText(y.toString(), (view.x.min / (view.x.min - view.x.max) -
-      0.5) * rena.width - gp / view.scale, yy + gp / view.scale);
+  ctx.textAlign = 'right';
+  ctx.textBaseline = 'middle';
+  const nypos = yposes.length;
+  for (let i = 0; i < nypos; i++) {
+    ctx.fillText(ytickz[i].toFixed(ydigits), xlabpos, yposes[i]);
   }
-  ctx.strokeStyle = 'lightgray';
-  ctx.stroke();
 }
 
 
@@ -646,9 +762,7 @@ function drawGrid(rena, view) {
 function polygonSelect(mo, shift) {
   let n = mo.cache.nctg;
   if (!n) return;
-  const data = mo.data,
-        view = mo.view,
-        stat = mo.stat,
+  const stat = mo.stat,
         oray = mo.oray;
 
   // change button appearance

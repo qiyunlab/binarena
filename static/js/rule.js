@@ -200,10 +200,14 @@ function findColumnByKeys(cols, keys, types) {
     if (type.endsWith('wt')) continue;
     if (types && types.indexOf(type) === -1) continue;
     let str = cols.names[i].toLowerCase();
+
+    // whole word matching
     if (keys.indexOf(str) !== -1) {
       whole = i;
       break;
     }
+
+    // prefix matching
     if (prefix) continue;
     for (let d of delims) {
       if (keys.indexOf(str.substring(0, str.indexOf(d))) !== -1) {
@@ -224,6 +228,7 @@ function findColumnByKeys(cols, keys, types) {
  * @description Options are: none, sum, mean, sumby meanby.
  * e.g., "length" and "genes" => sum
  * e.g., "gc" and "coverage" => meanby (length)
+ * @todo Current form is too hard-coded. Needs change.
  */
 function guessColMetric(col) {
   let res = 'sum';
@@ -270,7 +275,7 @@ function value2Str(val, type) {
 
 
 /**
- * Format length value.
+ * Format contig length value.
  * @function FormatLength
  * @param {number} len - length (bp)
  * @returns {Array.<number, string>} number and unit
@@ -289,11 +294,12 @@ function FormatLength(len) {
 
 /**
  * Generate a new name that does not conflict with existing names.
- * Will read like "prefix_#", in which "#" is an incremental integer.
  * @function newName
  * @param {Set} exist - existing names
  * @param {string} prefix - name prefix
  * @returns {string} new name
+ * @description Will read like "prefix_#", in which "#" is an incremental
+ * integer.
  */
 function newName(exist, prefix) {
   let name;
