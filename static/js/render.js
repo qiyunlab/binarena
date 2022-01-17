@@ -24,6 +24,10 @@ function initCanvas(mo) {
         stat = mo.stat,
         rena = mo.rena;
 
+  let x = 0;
+  let y = 0;
+  let mid = [0, 0];
+
   resizeArena(mo);
 
   // mouse events
@@ -48,6 +52,56 @@ function initCanvas(mo) {
 
   rena.addEventListener('mousemove', function (e) {
     canvasMouseMove(e, mo);
+  });
+
+  rena.addEventListener('touchstart', function (e) {
+    const t = e.touches;
+    if (t.length=== 1) {
+      x = t[0].clientX;
+      y = t[0].clientY;
+    }
+    else if (t.length === 2) {
+      e.preventDefault();
+      x = [t[0].clientX, t[1].clientX];
+      y = [t[0].clientY, t[1].clientY];
+      mid = [(x[0] - x[1]) / 2, (y[0] - y[1]) / 2];
+      console.log([x, y])
+    }
+  });
+
+  rena.addEventListener('touchmove', function (e) {
+    const t = e.touches;
+    if (t.length === 1) {
+      let dx = x - t[0].clientX;
+      let dy = y - t[0].clientY;
+      x = t[0].clientX;
+      y = t[0].clientY;
+      view.posX -= dx;
+      view.posY -= dy;
+      updateView(mo);
+    }
+    else if (t.length === 2) {
+      e.preventDefault();
+      let newX = [t[0].clientX, t[1].clientX];
+      let newY = [t[0].clientY, t[1].clientY];
+      console.log(newX, newY)
+      let newMid = [(newX[0] - newX[1]) / 2, (newY[0] - newY[1]) / 2];
+      let dmid = [mid[0] - newMid[0], mid[1] - newMid[1]];
+      // view.posX -= dmid[0];
+      // view.posY -= dmid[1];
+      let dist = Math.sqrt(((x[0] - x[1]) / rena.width) ** 2 + ((y[0] - y[1]) / rena.height) ** 2);
+      let newDist = Math.sqrt(((newX[0] - newX[1]) / rena.width) ** 2 + ((newY[0] - newY[1]) / rena.height) ** 2);
+      let scale = newDist / dist;
+      x = newX;
+      y = newY;
+      view.scale *= scale;
+      view.posX -= dmid[0] / scale;
+      view.posY -= dmid[1] / scale;
+      console.log(scale)
+      updateView(mo);
+      // view.posX = x - (x - view.posX) * ratio;
+      // view.posY = y - (y - view.posY) * ratio;
+    }
   });
 
   rena.addEventListener('mousewheel', function (e) {
@@ -161,6 +215,21 @@ function initCanvas(mo) {
 /**
  * Canvas moving.
  * @function canvasMove
+ * @param {number} d - move direction
+ * @param {Object} mo - main object
+ * @description Direction: 0 (top), 1 (right), 2 (bottom), 3 (left), the same
+ * as JavaScript margins.
+ */
+function canvasMove(d, mo) {
+  const step = 15;
+  if (d & 1) mo.view.posX += d >> 1 ? -step : step;
+  else mo.view.posY += d >> 1 ? step : -step;
+  updateView(mo);
+}
+
+/**
+ * Canvas touch moving.
+ * @function canvasTouchMove
  * @param {number} d - move direction
  * @param {Object} mo - main object
  * @description Direction: 0 (top), 1 (right), 2 (bottom), 3 (left), the same
