@@ -656,7 +656,7 @@ function parseAnnotation(text, data, cols, threshold) {
           annArr = Array.from(new Set(annIds));
     let count = 0;
     for (let i = 0; i < annArr.length; i++) {
-      if (contigSet.has(Number(annArr[i] - 7000).toString())) count++;
+      if (contigSet.has(Number(annArr[i]).toString())) count++;
     }
     return count / contigIds.length;
   }
@@ -715,7 +715,7 @@ function parseAnnotation(text, data, cols, threshold) {
       let line = lines[i]; 
       // extracting the kegg gene values
       let rawArr = line.match(regex);
-      let annId = Number(rawArr[0];
+      let annId = Number(rawArr[0]);
 
       // finding where the information needs to go on the existing data
       let id = data[0].indexOf((Number(rawArr[0])).toString());
@@ -758,6 +758,8 @@ function getAnnotationFormat(text) {
   const green_genes_regex = /G\d{9}/g;
   if (text.search(green_genes_regex) === 0) format = ['greengenes', /\d{9}/g];
 
+  // KEGG sample line
+  // e.g. c_000000007179_9  K16922
   const kegg_regex = /c_\d{12}_/g;
   if (text.search(kegg_regex) === 0) format = ['kegg', /\d{12}/g];
   return format;
