@@ -641,6 +641,7 @@ function parseContigTitle(line, format) {
  * @param {String} text - annotation file content (multi-line string)
  * @param {Object} data - data object
  * @param {Object} cols - cols object
+ * @param {number} threshold - similarity threshold for annotation files
  */
 function parseAnnotation(text, data, cols, threshold) {
   threshold = threshold || 0.7;
@@ -669,8 +670,7 @@ function parseAnnotation(text, data, cols, threshold) {
   else if (format === 'greengenes') {
     const regex = /G\d{9}|[dkpcofgs]__[-a-zA-Z0-9\.\f _]{2,}/g,
           ref = {'G': '', 'd': '', 'k': '', 'p': '', 'c': '', 
-                'o': '', 'f': '', 'g': '',  's': ''},
-          keys = ref.keys;
+                'o': '', 'f': '', 'g': '',  's': ''};
     let arr2d = new Array(data[0].length).fill(new Array(8).fill(''));
 
     for (let i = 0; i < n; i++) {
@@ -679,7 +679,7 @@ function parseAnnotation(text, data, cols, threshold) {
       let rawArr = line.match(regex);
       let arr = [];
 
-      // parsing the extracted taxonomy data
+      // parsing the extracted taxonomy data and updating reference object
       for (let j = 0; j < rawArr.length; j++) {
         if (!rawArr[j]) continue;
         let index = rawArr[j].charAt();
@@ -744,10 +744,9 @@ function parseAnnotation(text, data, cols, threshold) {
  * Infer the format of an annotation file.
  * @function getAnnotationFormat
  * @param {String} text - file content (multi-line)
- * @returns {String} - annotation file format (GreenGenes or null)
- * @see parseContigTitle
- * This function searches for unique starting sequences of different annotation file
- * formats. Currently, it supports GreenGenes format.
+ * @returns {String} format - annotation file format (GreenGenes or null)
+ * @description This function searches for unique starting sequences of different annotation file
+ * formats. Currently, it supports GreenGenes and KEGG format.
  */
 function getAnnotationFormat(text) {
   let format = null;
