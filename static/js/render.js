@@ -230,22 +230,6 @@ function canvasMove(d, mo) {
 }
 
 /**
- * Canvas touch moving.
- * @function canvasTouchMove
- * @param {number} d - move direction
- * @param {Object} mo - main object
- * @description Direction: 0 (top), 1 (right), 2 (bottom), 3 (left), the same
- * as JavaScript margins.
- */
-function canvasMove(d, mo) {
-  const step = 15;
-  if (d & 1) mo.view.posX += d >> 1 ? -step : step;
-  else mo.view.posY += d >> 1 ? step : -step;
-  updateView(mo);
-}
-
-
-/**
  * Canvas zooming by keys.
  * @function canvasKeyZoom
  * @param {boolean} isin - zoom in (true) or out (false)
