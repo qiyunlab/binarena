@@ -289,6 +289,11 @@ function initContextMenu(mo) {
     updateViewByData(mo);
   });
 
+  // export work progress
+  byId('export-progress-a').addEventListener('click', function () {
+    saveProgress(mo);
+  });
+
   // export bins
   byId('export-bins-a').addEventListener('click', function () {
     exportBinPlan(mo.binned);
