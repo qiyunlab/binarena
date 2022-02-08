@@ -106,6 +106,7 @@ const helpInfo = 'Help information to be added.';
   'RdYlBu':   ['a50026', 'd62f27', 'f46d43', 'fdad60', 'fee090', 'feffc0', 'e0f3f8', 'aad8e9', '74add1', '4574b3', '313695'],
   'RdYlGn':   ['a50026', 'd62f27', 'f46d43', 'fdad60', 'fee08b', 'feffbe', 'd9ef8b', 'a5d86a', '66bd63', '199750', '006837'],
   'Spectral': ['9e0142', 'd43d4f', 'f46d43', 'fdad60', 'fee08b', 'ffffbe', 'e6f598', 'aadca4', '66c2a5', '3387bc', '5e4fa2'],
+  'coolwarm': ['3b4cc0', '5978e3', '7b9ff9', '9fbeff', 'c0d4f5', 'dddddd', 'f2cbb7', 'f7ad8f', 'ee8468', 'd75344', 'b40426'],
   'bwr':      ['0000ff', '3232ff', '6666ff', '9898ff', 'ccccff', 'fffefe', 'ffcccc', 'ff9898', 'ff6666', 'ff3232', 'ff0000'],
   'seismic':  ['00004c', '000092', '0000db', '3131ff', '9999ff', 'fffdfd', 'ff9999', 'ff3131', 'e60000', 'b20000', '800000'],
   // Qualitative
@@ -122,6 +123,12 @@ const helpInfo = 'Help information to be added.';
   'tab20':    ['1f77b4', 'aec7e8', 'ff7f0e', 'ffbb78', '2ca02c', '98df8a', 'd62728', 'ff9896', '9467bd', 'c5b0d5', '8c564b', 'c49c94', 'e377c2', 'f7b6d2', '7f7f7f', 'c7c7c7', 'bcbd22', 'dbdb8d', '17becf', '9edae5'],
   'tab20b':   ['393b79', '5254a3', '6b6ecf', '9c9ede', '637939', '8ca252', 'b5cf6b', 'cedb9c', '8c6d31', 'bd9e39', 'e7ba52', 'e7cb94', '843c39', 'ad494a', 'd6616b', 'e7969c', '7b4173', 'a55194', 'ce6dbd', 'de9ed6'],
   'tab20c':   ['3182bd', '6baed6', '9ecae1', 'c6dbef', 'e6550d', 'fd8d3c', 'fdae6b', 'fdd0a2', '31a354', '74c476', 'a1d99b', 'c7e9c0', '756bb1', '9e9ac8', 'bcbddc', 'dadaeb', '636363', '969696', 'bdbdbd', 'd9d9d9'],  
+  // Miscellaneous
+  'ocean':    ['008000', '00591a', '003333', '000d4d', '001a66', '004080', '006699', '1a8cb3', '66b3cc', 'b3d9e6', 'ffffff'],
+  'terrain':  ['333399', '1177dd', '00b2b2', '33d670', '99eb85', 'ffff99', 'ccbe7d', '997c62', '997c76', 'ccbebb', 'ffffff'],
+  'gnuplot':  ['000000', '510096', '7202f3', '8c07f3', 'a11096', 'b42000', 'c63700', 'd55700', 'e48300', 'f2ba00', 'ffff00'],
+  'rainbow':  ['8000ff', '4c4ffc', '1996f3', '1acee3', '4df3ce', '80ffb4', 'b3f396', 'e6ce74', 'ff964f', 'ff4f28', 'ff0000'],
+  'jet':      ['000080', '0000f3', '004cff', '00b3ff', '29ffce', '7bff7b', 'ceff29', 'ffc600', 'ff6800', 'f30900', '800000']
 };
 
 const QUALITATIVE_PALETTES = [
@@ -138,12 +145,17 @@ const CONTINUOUS_PALETTES = [
 
 const SEQUENTIAL_PALETTES = [
   'viridis', 'plasma', 'inferno', 'magma', 'cividis', 'PuBuGn', 'YlGnBu',
-  'GnBu', 'YlOrRd', 'YlOrBr', 'BuGn', 'BuPu', 'RdPu', 'YlGn', 'OrRd'
+  'GnBu', 'YlOrRd', 'YlOrBr', 'BuGn', 'BuPu', 'RdPu', 'YlGn', 'OrRd', 'cool',
+  'hot'
 ];
 
 const DIVERGING_PALETTES = [
   'Spectral', 'RdYlGn', 'RdYlBu', 'RdBu', 'PiYG', 'PRGn', 'PuOr', 'RdGy',
-  'BrBG'
+  'BrBG', 'coolwarm', 'bwr'
+];
+
+const MISCELLANEOUS_PALETTES = [
+  'ocean', 'terrain', 'gnuplot', 'rainbow', 'jet'
 ];
 
 const DEFAULT_DISCRETE_PALETTE = 'QIIME';
