@@ -24,10 +24,6 @@ function initCanvas(mo) {
         stat = mo.stat,
         rena = mo.rena;
 
-  let x = 0;
-  let y = 0;
-  let mid = [0, 0];
-
   resizeArena(mo);
 
   // mouse events
@@ -52,58 +48,6 @@ function initCanvas(mo) {
 
   rena.addEventListener('mousemove', function (e) {
     canvasMouseMove(e, mo);
-  });
-
-  rena.addEventListener('touchstart', function (e) {
-    const t = e.touches;
-    if (t.length=== 1) {
-      e.preventDefault();
-      // updating info about touch
-      x = t[0].clientX;
-      y = t[0].clientY;
-    }
-    else if (t.length === 2) {
-      e.preventDefault();
-      // updating info about touches
-      x = [t[0].clientX, t[1].clientX];
-      y = [t[0].clientY, t[1].clientY];
-      mid = [(x[0] + x[1]) / 2, (y[0] + y[1]) / 2];
-    }
-  });
-
-  rena.addEventListener('touchmove', function (e) {
-    const t = e.touches;
-    if (t.length === 1) {
-      e.preventDefault();
-      // updating info about new touch
-      let dx = x - t[0].clientX;
-      let dy = y - t[0].clientY;
-      x = t[0].clientX;
-      y = t[0].clientY;
-      view.posX -= dx;
-      view.posY -= dy;
-      updateView(mo);
-    }
-    else if (t.length === 2) {
-      e.preventDefault();
-      // current xy coordinates of touches
-      let newX = [t[0].clientX, t[1].clientX];
-      let newY = [t[0].clientY, t[1].clientY];
-      // finding midpoint of current touches
-      let newMid = [(newX[0] + newX[1]) / 2, (newY[0] + newY[1]) / 2];
-      // distance between old coordinates and new coordinates
-      let dist = Math.sqrt(((x[0] - x[1]) / rena.width) ** 2 + ((y[0] - y[1]) / rena.height) ** 2);
-      let newDist = Math.sqrt(((newX[0] - newX[1]) / rena.width) ** 2 + ((newY[0] - newY[1]) / rena.height) ** 2);
-      let scale = newDist / dist;
-      // resetting new coordinates to be old coordinates
-      x = newX;
-      y = newY;
-      // updating view
-      view.scale *= scale;
-      view.posX = newMid[0] - (newMid[0] - view.posX) * scale;
-      view.posY = newMid[1] - (newMid[1] - view.posY) * scale;
-      updateView(mo);
-    }
   });
 
   rena.addEventListener('mousewheel', function (e) {
