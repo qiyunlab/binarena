@@ -173,6 +173,7 @@ function canvasMove(d, mo) {
   updateView(mo);
 }
 
+
 /**
  * Canvas zooming by keys.
  * @function canvasKeyZoom
@@ -192,6 +193,7 @@ function canvasKeyZoom(isin, mo) {
   updateView(mo);
 }
 
+
 /**
  * Canvas zooming by mouse.
  * @function canvasMouseZoom
@@ -209,6 +211,7 @@ function canvasKeyZoom(isin, mo) {
   view.posY = y - (y - view.posY) * ratio;
   updateView(mo);
  }
+
 
 /**
  * Canvas mouse move event.
