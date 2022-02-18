@@ -816,3 +816,19 @@ function polygonSelect(mo, shift) {
   a.click();
   document.body.removeChild(a);
 }
+
+/**
+ * Convert view and cache into JSON format and save it as json file
+ * @function saveProgress
+ * @param {Object} mo - main object
+ */
+ function saveProgress(mo) {
+  const a = document.createElement('a');
+  const view = 'data:application/json;charset=utf-8,'+ encodeURIComponent(JSON.stringify(mo.view));
+  const cache = 'data:application/json;charset=utf-8,'+ encodeURIComponent(JSON.stringify(mo.cache));
+  a.href = view + '\n' + cache;
+  a.download = 'progress.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
