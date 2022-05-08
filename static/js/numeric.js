@@ -545,7 +545,7 @@ function histogram(x, n) {
  * Return array of unique elements from the input array.
  * @function unique
  * @param {number[]} arr - the input array
- * @param {boolean} returnInv - if true, return the indices of of the unique
+ * @param {boolean} returnInv - if true, return the indices of the unique
  * array, default to false
  * @return {number[]} the unique array and optional indices of unique array
  * @see numpy.unique
