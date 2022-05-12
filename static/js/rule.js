@@ -23,7 +23,7 @@ function isMissing(str) {
   try {
     str = str.replace(/^[#-]+/, '');
   } catch (e) {
-    throw e.message + ' ' + str;
+    throw new Error(e.message + ' ' + str);
   }
   return nulls.includes(str.toLowerCase());
 }

@@ -1589,6 +1589,26 @@ div.legend:hover div.clip {
 
 
 /**
+ * Data import.
+ */
+
+#import-modal > .modal-content {
+  width: 600px;
+}
+
+#import-table-btn {
+  background-color: limegreen;
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
+#import-table-btn:hover {
+  background-color: lightgreen;
+}
+
+
+
+/**
  * Silhouette calculation.
  */
 

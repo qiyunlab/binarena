@@ -59,7 +59,7 @@ function initDataTableCtrl(mo) {
   'id':  'identifier',   // id
   'num': 'numeric',     // numeric
   'cat': 'categorical', // categorical
-  'fea': 'feature set', // feature sets
+  'fea': 'feature set', // feature set
   'des': 'descriptive'  // descriptive
 };
 

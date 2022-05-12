@@ -8,6 +8,28 @@
  */
 
 
+
+/**
+ * Initialize data import controls.
+ * @function initImportCtrl
+ * @param {Object} mo - main object
+ */
+ function initImportCtrl(mo) {
+
+  // import table button
+  byId('import-table-btn').addEventListener('click', function () {
+    mo.data.push(...mo.import[0]);
+    mo.cols.names.push(...mo.import[1]);
+    mo.cols.types.push(...mo.import[2]);
+    mo.import = [];
+    byId('import-modal').classList.add('hidden');
+    updateViewByData(mo);
+    toastMsg(`Read ${plural('contig', mo.data[0].length)}.`, mo.stat);
+  });
+
+}
+
+
 /**
  * Import data from a text file.
  * @function uploadFile
@@ -18,9 +40,9 @@
 function uploadFile(file, mo) {
   const reader = new FileReader();
   reader.onload = function (e) {
-    updateDataFromText(e.target.result, mo.data, mo.cols, mo.filter);
-    updateViewByData(mo);
-    toastMsg(`Read ${plural('contig', mo.data[0].length)}.`, mo.stat);
+    updateDataFromText(e.target.result, mo);
+    // updateViewByData(mo);
+    // toastMsg(`Read ${plural('contig', mo.data[0].length)}.`, mo.stat);
   };
   reader.readAsText(file);
 }
@@ -38,7 +60,7 @@ function updateDataFromRemote(path, mo) {
   xhr.onreadystatechange = function() {
     if (this.readyState == 4) {
       if (this.status == 200) {
-        updateDataFromText(this.responseText, mo.data, mo.cols, mo.filter);
+        updateDataFromText(this.responseText, mo);
         updateViewByData(mo);
         toastMsg(`Read ${plural('contig', mo.data[0].length)}.`, mo.stat);
       }
@@ -53,9 +75,7 @@ function updateDataFromRemote(path, mo) {
  * Update data from text file.
  * @function updateDataFromText
  * @param {String} text - imported text
- * @param {Array} data - dataset
- * @param {Object} cols - columns
- * @param {Object} filter - data filter
+ * @param {Array} mo - main object
  * @returns {Array.<Object, Object, Object>} - decimals, categories, features
  * @todo let user specify minimum contig length threshold
  *
@@ -65,25 +85,50 @@ function updateDataFromRemote(path, mo) {
  * 1.2. TSV format.
  * 2. Assembly file (i.e., contig sequences).
  */
-function updateDataFromText(text, data, cols, filter) {
+function updateDataFromText(text, mo) {
   let obj;
 
   // try to parse as JSON
   try {
     obj = JSON.parse(text);
-    parseObj(obj, data, cols);
+    parseObj(obj, mo.data, mo.cols);
   }
   catch (err) {
 
     // parse as an assembly
     if (text.charAt() === '>') {
-      parseAssembly(text, data, cols, filter);
+      parseAssembly(text, mo.data, mo.cols, mo.filter);
     }
 
     // parse as a table
     else {
-      parseTable(text, data, cols);
+      try { mo.import = parseTable(text); }
+      catch (err) { toastMsg(err.message, mo.stat); }
+      fillImportTable(mo);
+      byId('import-modal').classList.remove('hidden');
     }
+  }
+}
+
+
+/**
+ * Populate data import table.
+ * @function fillImportTable
+ * @param {Object} mo - main object
+ */
+function fillImportTable(mo) {
+  const table = byId('import-table');
+  table.innerHTML = '';
+  const [data, names, types] = mo.import;
+  const n = names.length;
+  let row, cell;
+  for (let i = 0; i < n; i++) {
+    if (types[i].endsWith('wt')) continue;
+    row = table.insertRow(-1);
+    cell = row.insertCell(-1);
+    cell.innerHTML = names[i];
+    cell = row.insertCell(-1);
+    cell.innerHTML = types[i];
   }
 }
 
@@ -109,9 +154,7 @@ function parseObj(obj, data, cols) {
  * Parse data as a table.
  * @function parseTable
  * @param {String} text - multi-line tab-delimited string
- * @param {Object} data - dataset
- * @param {Object} cols - columns
- * @returns {Array.<Object, Object, Object>} - decimals, categories, features
+ * @returns {[Array, Array, Array]} - data, names, types
  * @throws if table is empty
  * @throws if column number is inconsistent
  * @throws if duplicate contig Ids found
@@ -134,24 +177,29 @@ function parseObj(obj, data, cols) {
  * indicating metrics likes weight, quantity, proportion, confidence etc.
  *   e.g., "Firmicutes:80,Proteobacteria:15"
  */
-function parseTable(text, data, cols) {
+function parseTable(text) {
   const lines = splitLines(text);
   const n = lines.length;
-  if (n <= 1) throw 'Error: Table is empty.';
+  if (n <= 1) throw new Error('Table is empty.');
 
   // read table header
-  const names = lines[0].split('\t');
-  const m = names.length;
-  if (m < 2) throw 'Error: Table has no column.';
-  if ((new Set(names)).size !== m) throw 'Error: Column names are not unique.';
+  const heads = lines[0].split('\t');
+  const m = heads.length;
+  if (m < 2) throw new Error('Table has no column.');
+  if ((new Set(heads)).size !== m) throw new Error(
+    'Column names are not unique.');
+
+  const data = [],
+        names = [],
+        types = [];
 
   // read table body
   let arr2d = [];
   let row;
   for (let i = 1; i < n; i++) {
     row = lines[i].split('\t');
-    if (row.length !== m) throw `Error: Table has ${m} columns but row ` +
-      `${i + 1} has ${row.length} cells.`;
+    if (row.length !== m) throw new Error(`Table has ${m} columns `
+      `but row ${i + 1} has ${row.length} cells.`);
     arr2d.push(row);
   }
 
@@ -160,27 +208,28 @@ function parseTable(text, data, cols) {
 
   // initialize new dataset with Id
   if ((new Set(arr2d[0])).size !== n - 1) {
-    throw 'Error: Contig identifiers are not unique.';
+    throw new Error('Contig identifiers are not unique.');
   }
   data.push(arr2d[0]);
-  cols.names.push(names[0]);
-  cols.types.push('id');
+  names.push(heads[0]);
+  types.push('id');
 
   // parse and append individual columns
   for (let i = 1; i < m; i++) {
-    let [name, type, parsed, weight] = parseColumn(arr2d[i], names[i]);
+    let [name, type, parsed, weight] = parseColumn(arr2d[i], heads[i]);
     data.push(parsed);
-    cols.names.push(name);
-    cols.types.push(type);
+    names.push(name);
+    types.push(type);
 
     // if there is weight, append as a new column
     if (weight !== null) {
       data.push(weight);
-      cols.names.push(name);
-      cols.types.push(type === 'cat' ? 'cwt' : 'fwt');
+      names.push(name);
+      types.push(type === 'cat' ? 'cwt' : 'fwt');
     }
   }
 
+  return [data, names, types];
 }
 
 
@@ -216,10 +265,12 @@ function parseColumn(arr, name) {
   // (e.g., "length|n", "species|c")
   let i = name.indexOf('|');
   if (i > 0) {
-    if (i != name.length - 2) throw `Invalid field name: "${name}".`;
+    if (i != name.length - 2) throw new Error(
+      `Invalid field name: "${name}".`);
     const code = name.slice(-1);
     type = FIELD_CODES[code];
-    if (type === undefined) throw `Invalid field type code: "${code}".`;
+    if (type === undefined) throw new Error(
+      `Invalid field type code: "${code}".`);
     name = name.slice(0, i);
   }
 
@@ -503,7 +554,7 @@ function parseAssembly(text, data, cols, filter) {
 
   // append dataframe with current contig information
   function appendContig() {
-    if (id && length >= minLen && coverage >= minCov) {
+    if (id && length >= minLen && (coverage === 0 || coverage >= minCov)) {
       df.push([id, length, roundNum(100 * gc / length, 3), Number(coverage)]);
     }
   }
@@ -527,7 +578,8 @@ function parseAssembly(text, data, cols, filter) {
   }
   appendContig(); // append last contig
 
-  if (df.length === 0) throw `Error: No contig is ${minLen} bp or larger.`;
+  if (df.length === 0) throw new Error(
+    `No contig is ${minLen} bp or larger.`);
 
   // update data and cols objects
   for (let arr of transpose(df)) data.push(arr);
@@ -621,9 +673,13 @@ function parseContigTitle(line, format) {
     [id, length, coverage] = line.match(regex);
     return [id, coverage];
   }
-  if (format === 'megahit') {
+  else if (format === 'megahit') {
     const regex = /(?=\d)[0-9]*(\.[0-9]*)?/g;
     [ , id, , coverage, length] = line.match(regex);
+    return [id, coverage];
+  }
+  else if (format === null) {
+    id = line.substring(1).split(' ')[0]
     return [id, coverage];
   }
   return null;

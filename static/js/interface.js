@@ -46,6 +46,7 @@ function initGUI(mo) {
   initDataTableCtrl(mo); // data table controls ( 'datable.js'   )
   initCalcBoxCtrl(mo);   // calculator controls ( 'calculate.js' )
   initCanvas(mo);        // main canvas         ( 'render.js'    )
+  initImportCtrl(mo);    // data input controls ( 'input.js'     )
 
 }
 

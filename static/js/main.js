@@ -344,7 +344,7 @@ function mainObj() {
 
 
   /**
-   * Contigs displayed in data table
+   * Contigs displayed in data table.
    * @member {Array.<number>} tabled
    * @description They are indices of contigs that should be displayed in the
    * data table. They are not a boolean array as above because the order of
@@ -352,6 +352,11 @@ function mainObj() {
    */
   this.tabled = [];
 
+  /**
+   * Data being imported.
+   * @member {Array} imported
+   */
+  this.import = [];
 
   /**
    * Main and overlay plots.

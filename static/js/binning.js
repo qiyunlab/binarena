@@ -581,7 +581,7 @@ function createBin(binns, name) {
   if (name === undefined) {
     name = newName(binns, 'bin');
   } else if (binns.has(name)) {
-    throw `Error: Bin name "${name}" already exists.`;
+    throw new Error(`Bin name "${name}" already exists.`);
   }
   binns.add(name);
   return name;
@@ -598,7 +598,7 @@ function createBin(binns, name) {
  * @returns {boolean} whether renaming is successful
  */
 function renameBin(old, neo, binns, binned) {
-  if (binns.has(neo)) throw `Error: Bin name ${neo} already exists.`;
+  if (binns.has(neo)) throw new Error(`Bin name ${neo} already exists.`);
   binns.add(neo);
   binns.delete(old);
   const n = binned.length;
@@ -757,7 +757,7 @@ function removeFromBin(name, picked, binned) {
  */
 function deleteBins(table, binns, binned) {
   const [idxes, deleted] = selectedBins(table);
-  if (idxes.length === 0) throw 'Error: No bin is selected.';
+  if (idxes.length === 0) throw new Error('No bin is selected.');
 
   // delete rows from bottom to top so that row indices won't change
   for (let i = idxes.length - 1; i >= 0; i--) table.deleteRow(idxes[i]);
