@@ -544,13 +544,25 @@
     <div class="modal-content">
       <div class="modal-head">
         <span>
-          <button id="import-table-btn" title="Import data">Import</button>
+          <button id="import-btn" title="Import data">Import</button>
         </span>
         <span id="import-title-span">Import data</span>
         <span id="import-ctrl-span"></span>
       </div>
       <div class="modal-body">
-        <table id="import-table"></table>
+        <div id="import-table-wrap" class="hidden">
+          <table id="import-table" style="z-index: 1;">
+            <thead id="import-thead">
+              <tr>
+                <th title="Discard">&nbsp;</th>
+                <th title="Field name">Field</th>
+                <th title="Data type">Type</th>
+                <th title="Special">&nbsp;</th>
+              </tr>
+            </thead>
+            <tbody id="import-tbody"></tbody>
+          </table>
+        </div>
       </div>
     </div>
   </div>

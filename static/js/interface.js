@@ -360,7 +360,7 @@ function initSideFrame(mo) {
  * transfer the selection back to the source DOM and trigger a display item
  * change event.
  */
- function initScaleSel(mo) {
+function initScaleSel(mo) {
 
   // scale select buttons
   // It is a dropdown menu of various scaling methods.
@@ -582,8 +582,8 @@ function popupPos(source, target, direc, same) {
 /**
  * Let user select from a list displayed in a dropdown menu.
  * @function listSelect
- * @param {Object} src - source DOM
  * @param {string[]} lst - list of options
+ * @param {Object} src - source DOM
  * @param {string} direc - direction of list expansion
  * @param {boolean} same - keep same dimension
  */

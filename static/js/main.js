@@ -334,6 +334,7 @@ function mainObj() {
    */
   this.highed = [];
 
+
   /**
    * Binning plan.
    * @member {Array.<string>} binned
@@ -352,11 +353,24 @@ function mainObj() {
    */
   this.tabled = [];
 
+
   /**
    * Data being imported.
-   * @member {Array} imported
+   * @member {Array} impo
+   * @property {string}    text  - multi-line text containing data
+   * @property {string[]}  names - field names
+   * @property {string[]}  types - data types
+   * @property {boolean[]} guess - whether data types are guessed
+   * @property {number[]}  idx   - field indices (optional)
    */
-  this.import = [];
+  this.impo = {
+    text:  null,
+    names: [],
+    types: [],
+    guess: [],
+    idx:   [],
+  };
+
 
   /**
    * Main and overlay plots.

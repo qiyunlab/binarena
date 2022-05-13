@@ -1596,16 +1596,71 @@ div.legend:hover div.clip {
   width: 600px;
 }
 
-#import-table-btn {
+#import-btn {
   background-color: limegreen;
   padding-left: 10px;
   padding-right: 10px;
 }
 
-#import-table-btn:hover {
+#import-btn:hover {
   background-color: lightgreen;
 }
 
+#import-table-wrap {
+  padding: 5px;
+  width: 400px;
+  max-height: 360px
+}
+
+#import-table {
+  border: none;
+  table-layout: fixed;
+  overflow-y: scroll;
+  width: 100%;
+}
+
+#import-thead th {
+  position: sticky;
+  top: 0;
+  font-weight: normal;
+}
+
+#import-thead th:not(:first-child) {
+  background-color: #EEE;
+}
+
+#import-thead th:not(:first-child):hover {
+  background-color: lightgray;
+}
+
+#import-thead th:first-child {
+  width: 24px;
+}
+
+#import-thead th:nth-child(2) {
+  width: 200px;
+}
+
+#import-thead th:nth-child(3) {
+  width: 100px;
+}
+
+#import-thead th:last-child {
+  width: 48px;
+}
+
+#import-tbody td {
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+#import-tbody td:first-child button {
+  display: none;
+}
+
+#import-tbody tr:hover td:first-child button {
+  display: block;
+}
 
 
 /**

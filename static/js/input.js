@@ -8,25 +8,152 @@
  */
 
 
+/**
+ * @constant FIELD_CODES
+ */
+ const FIELD_CODES = {
+  'n': 'num', // numeric
+  'c': 'cat', // categorical
+  'f': 'fea', // feature set
+  'd': 'des'  // descriptive
+};
+
+const FIELD_DESCS = {
+  'num': 'numeric',
+  'cat': 'categorical',
+  'fea': 'feature set',
+  'des': 'descriptive'
+};
+
 
 /**
  * Initialize data import controls.
  * @function initImportCtrl
  * @param {Object} mo - main object
  */
- function initImportCtrl(mo) {
+function initImportCtrl(mo) {
 
   // import table button
-  byId('import-table-btn').addEventListener('click', function () {
-    mo.data.push(...mo.import[0]);
-    mo.cols.names.push(...mo.import[1]);
-    mo.cols.types.push(...mo.import[2]);
-    mo.import = [];
+  byId('import-btn').addEventListener('click', function () {
+    const impo = mo.impo;
+    let names = impo.names,
+        types = impo.types;
+
+    // add contig Ids
+    const idx = [0],
+          namex = [names[0]],
+          typex = [types[0]];
+
+    // add individual fields
+    let i;
+    for (let row of byId('import-tbody').rows) {
+      i = parseInt(row.getAttribute('data-index'));
+      idx.push(i);
+      namex.push(names[i]);
+      typex.push(row.cells[2].firstElementChild.value.substring(0, 3));
+    }
+
+    if (idx.length === 1) {
+      toastMsg('No data field is selected.', mo.stat);
+      return;
+    }
+
+    impo.names = namex;
+    impo.types = typex;
+    impo.idx = idx;
+
+    // strip head line
+    const text = impo.text
+    impo.text = text.substring(text.indexOf('\n') + 1);
+
+    // parse table body
+    let data;
+    [data, names, types] = parseTableBody(impo);
+
+    // load new dataset
+    if (mo.data.length === 0) {
+      mo.data.push(...data);
+      mo.cols.names.push(...names);
+      mo.cols.types.push(...types);
+    }
+
+    // clean up data
+    impo.text = null;
+    impo.names = [];
+    impo.types = [];
+    impo.guess = [];
+    impo.idx = [];
+
     byId('import-modal').classList.add('hidden');
     updateViewByData(mo);
     toastMsg(`Read ${plural('contig', mo.data[0].length)}.`, mo.stat);
   });
+}
 
+
+/**
+ * Populate data import table.
+ * @function fillImportTable
+ * @param {Object} mo - main object
+ */
+function fillImportTable(mo) {
+  const impo = mo.impo;
+  const names = impo.names,
+        types = impo.types,
+        guess = impo.guess;
+  const n = names.length;
+
+  // clear table
+  const table = byId('import-tbody');
+  table.innerHTML = '';
+
+  // populate table
+  let row, cell, input, btn, desc;
+  for (let i = 0; i < n; i++) {
+    if (types[i] === 'id') continue;
+    if (types[i].endsWith('wt')) continue;
+    row = table.insertRow(-1);
+    row.setAttribute('data-index', i)
+
+    // drop field
+    btn = document.createElement('button');
+    btn.innerHTML = '&#x2715;'; // cross mark
+    btn.title = 'Discard field';
+    btn.addEventListener('click', function () {
+      const row = this.parentElement.parentElement;
+      row.parentElement.parentElement.deleteRow(row.rowIndex);
+    });
+    cell = row.insertCell(-1);
+    cell.appendChild(btn);
+
+    // field name
+    cell = row.insertCell(-1);
+    cell.innerHTML = names[i];
+    
+    // let user select data type
+    if (guess[i]) {
+      input = document.createElement('select');
+      for (let key of ['num', 'cat', 'fea', 'des']) {
+        const opt = document.createElement('option');
+        desc = FIELD_DESCS[key];
+        opt.value = desc;
+        opt.text = desc;
+        input.appendChild(opt);
+      }
+    }
+
+    // data type is pre-defined
+    else {
+      input = document.createElement('input');
+      input.type = 'text';
+      input.disabled = true;
+    }
+    input.value = FIELD_DESCS[types[i]];
+    cell = row.insertCell(-1);
+    cell.appendChild(input);
+  }
+  byId('import-table-wrap').classList.remove('hidden');
+  byId('import-modal').classList.remove('hidden');
 }
 
 
@@ -35,7 +162,6 @@
  * @function uploadFile
  * @param {File} file - user upload file
  * @param {Object} mo - main object
- * @description It uses the FileReader object, available since IE 10.
  */
 function uploadFile(file, mo) {
   const reader = new FileReader();
@@ -74,7 +200,7 @@ function updateDataFromRemote(path, mo) {
 /**
  * Update data from text file.
  * @function updateDataFromText
- * @param {String} text - imported text
+ * @param {string} text - imported text
  * @param {Array} mo - main object
  * @returns {Array.<Object, Object, Object>} - decimals, categories, features
  * @todo let user specify minimum contig length threshold
@@ -86,6 +212,7 @@ function updateDataFromRemote(path, mo) {
  * 2. Assembly file (i.e., contig sequences).
  */
 function updateDataFromText(text, mo) {
+  const impo = mo.impo;
   let obj;
 
   // try to parse as JSON
@@ -102,33 +229,11 @@ function updateDataFromText(text, mo) {
 
     // parse as a table
     else {
-      try { mo.import = parseTable(text); }
+      try { [impo.names, impo.types, impo.guess] = parseTableHead(text); }
       catch (err) { toastMsg(err.message, mo.stat); }
+      impo.text = text;
       fillImportTable(mo);
-      byId('import-modal').classList.remove('hidden');
     }
-  }
-}
-
-
-/**
- * Populate data import table.
- * @function fillImportTable
- * @param {Object} mo - main object
- */
-function fillImportTable(mo) {
-  const table = byId('import-table');
-  table.innerHTML = '';
-  const [data, names, types] = mo.import;
-  const n = names.length;
-  let row, cell;
-  for (let i = 0; i < n; i++) {
-    if (types[i].endsWith('wt')) continue;
-    row = table.insertRow(-1);
-    cell = row.insertCell(-1);
-    cell.innerHTML = names[i];
-    cell = row.insertCell(-1);
-    cell.innerHTML = types[i];
   }
 }
 
@@ -151,6 +256,174 @@ function parseObj(obj, data, cols) {
 
 
 /**
+ * Parse data table head.
+ * @function parseTableHead
+ * @param {string} text - multi-line tab-delimited string
+ * @returns {[Array, Array, Array]} - names, types, guess
+ */
+function parseTableHead(text) {
+
+  // get table table
+  const head = text.split(/\r?\n/, 1)[0].split('\t');
+  const m = head.length;
+  if (m < 2) throw new Error('Table has no column.');
+
+  const names = [head[0]],
+        types = ['id'],
+        guess = [false];
+  let name, l, code, type;
+  for (let i = 1; i < m; i++) {
+    name = head[i];
+    l = name.length;
+    if (l === 0) throw new Error(`Column ${i} has no name.`);
+
+    // look for field type code (e.g., "length|n")
+    if (l > 2 & name.charAt(l - 2) == '|') {
+      code = name.charAt(l - 1);
+      type = FIELD_CODES[code];
+      if (type === undefined) throw new Error(
+        `Invalid field type code: "${code}".`);
+      names.push(name.substring(0, l - 2));
+      types.push(type);
+      guess.push(false);
+    } else {
+      names.push(name);
+      types.push(null);
+      guess.push(true);
+    }
+  }
+
+  // guess data type by first 1000 lines
+  if (guess.some(Boolean)) {
+
+    // get table body (excluding 1st line)
+    const body = text.substring(text.indexOf('\n') + 1);
+    if (body === '') throw new Error('Table is empty.');
+
+    // get up to 1000 rows
+    const lines = body.split(/\r?\n/, 1000);
+    const last = lines.pop();
+    if (last !== '') lines.push(last);
+    const n = lines.length;
+
+    // read rows
+    let data = [];
+    
+    let row;
+    for (let i = 0; i < n; i++) {
+      row = lines[i].split('\t');
+      if (row.length !== m) throw new Error(`Table has ${m} columns `
+        `but row ${i} has ${row.length} cells.`);
+      data.push(row);
+    }
+
+    // transpose data
+    data = transpose(data);
+
+    // guess data type per column
+    for (let i = 1; i < m; i++) {
+      if (guess[i]) types[i] = guessColumnType(data[i])[0];
+    }
+  }
+
+  return [names, types, guess];
+}
+
+
+/**
+ * Parse data table body.
+ * @function parseTableBody
+ * @param {Object} impo - import object
+ * @returns {[Array, Array, Array]} - data, names, types
+ */
+function parseTableBody(impo) {
+  const text = impo.text,
+        names = impo.names,
+        types = impo.types,
+        idx = impo.idx;
+  const m = names.length;
+
+  const lines = text.split(/\r?\n/);
+  const last = lines.pop();
+  if (last !== '') lines.push(last);
+  const n = lines.length;
+
+  // if indices unspecified, use all columns
+  if (idx.length === 0) idx = [...Array(m).keys()];
+
+  // pre-allocate arrays
+  const rawdat = Array(m).fill().map(() => Array(n).fill(''));
+
+  // read data into columns
+  let j, row;
+  for (let i = 0; i < n; i++) {
+    row = lines[i].split('\t');
+    for (j = 0; j < m; j++) {
+      rawdat[j][i] = row[idx[j]];
+    }
+  }
+
+  // check if contig Ids are unique
+  if ((new Set(rawdat[0])).size !== n) throw new Error(
+    'Contig identifiers are not unique.');
+
+  // add contig Ids
+  const data = [rawdat[0]],
+        namez = [names[0]],
+        typez = [types[0]];
+
+  // add individual columns
+  let parsed, weight;
+  for (let i = 1; i < m; i++) {
+    switch (types[i]) {
+
+      // numeric
+      case 'num':
+        parsed = parseNumColumn(rawdat[i]);
+        data.push(parsed);
+        namez.push(names[i]);
+        typez.push(types[i]);
+        break;
+
+      // categorical
+      case 'cat':
+        [parsed, weight] = parseCatColumn(rawdat[i]);
+        data.push(parsed);
+        namez.push(names[i]);
+        typez.push('cat');
+        if (weight !== null) {
+          data.push(weight);
+          namez.push(names[i]);
+          typez.push('cwt');
+        }
+        break;
+
+      // feature set
+      case 'fea':
+        [parsed, weight] = parseFeaColumn(rawdat[i]);
+        data.push(parsed);
+        namez.push(names[i]);
+        typez.push('fea');
+        if (weight !== null) {
+          data.push(weight);
+          namez.push(names[i]);
+          typez.push('fwt');
+        }
+        break;
+
+      // descriptive
+      case 'des':
+        data.push(rawdat[i]);
+        namez.push(names[i]);
+        typez.push('des');
+        break;
+    }
+  }
+  return [data, namez, typez];
+}
+
+
+/**
  * Parse data as a table.
  * @function parseTable
  * @param {String} text - multi-line tab-delimited string
@@ -167,7 +440,7 @@ function parseObj(obj, data, cols) {
  *   remaining columns: metadata fields
  * 
  * Field types (and codes):
- *   id, number(n), category(c), feature(f), description(d)
+ *   id, (n)umeric, (c)ategorical, (f)eature set, (d)escriptive
  * A field name may be written as "name|code", or just "name".
  * 
  * Feature type: a cell can have multiple comma-separated features.
@@ -191,7 +464,8 @@ function parseTable(text) {
 
   const data = [],
         names = [],
-        types = [];
+        types = [],
+        guess = [];
 
   // read table body
   let arr2d = [];
@@ -213,45 +487,38 @@ function parseTable(text) {
   data.push(arr2d[0]);
   names.push(heads[0]);
   types.push('id');
+  guess.push(false);
 
   // parse and append individual columns
   for (let i = 1; i < m; i++) {
-    let [name, type, parsed, weight] = parseColumn(arr2d[i], heads[i]);
+    let [name, type, parsed, ges, weight] = parseColumn(arr2d[i], heads[i]);
     data.push(parsed);
     names.push(name);
     types.push(type);
+    guess.push(ges);
 
     // if there is weight, append as a new column
     if (weight !== null) {
       data.push(weight);
       names.push(name);
       types.push(type === 'cat' ? 'cwt' : 'fwt');
+      guess.push(false);
     }
   }
 
-  return [data, names, types];
+  return [data, names, types, guess];
 }
-
-
-/**
- * @constant FIELD_CODES
- */
-const FIELD_CODES = {
-  'n': 'num', // numeric
-  'c': 'cat', // categorical
-  'f': 'fea', // feature set
-  'd': 'des'  // descriptive
-};
 
 
 /** Parse a column in the data table.
  * @function parseColumn
  * @param {Array} arr - column data
  * @param {string} name - column name
- * @returns {[string, string, Array, Array]} -
+ * @returns {[string, string, Array, boolean, Array]} -
  * - processed column name
  * - column data type
  * - processed column data
+ * - whether data type is guessed
  * - weights of categories or features (if applicable)
  * @throws if field name is invalid
  * @throws if field code is invalid
@@ -276,6 +543,7 @@ function parseColumn(arr, name) {
 
   // parse the column according to type, or guess its type
   let parsed, weight = null;
+  let guess = false;
   switch (type) {
     case 'num':
       parsed = parseNumColumn(arr);
@@ -291,9 +559,10 @@ function parseColumn(arr, name) {
       break;
     default:
       [type, parsed, weight] = guessColumnType(arr);
+      guess = true;
   }
 
-  return [name, type, parsed, weight];
+  return [name, type, parsed, guess, weight];
 }
 
 
@@ -387,7 +656,7 @@ function parseFeaColumn(arr) {
  * Guess the data type of a column while parsing it.
  * @function guessColumnType
  * @param {string[]} arr - input column
- * @param {number} threshold - entropy threshold
+ * @param {number} th - entropy threshold
  * @returns {string, Array, Array} - column type, data array, weight array (if
  * applicable)
  * @see parseNumColumn
@@ -412,8 +681,8 @@ function parseFeaColumn(arr) {
  * 
  * processed ones exceed a threshold, and return "description".
  */
-function guessColumnType(arr, threshold) {
-  threshold = threshold || 4.75;
+function guessColumnType(arr, th) {
+  th = th || 4.75;
   const n = arr.length;
 
   // try to parse as numbers
@@ -463,9 +732,9 @@ function guessColumnType(arr, threshold) {
     }
   }
   // parsing as description based on entropy of array
-  if (calcEntropy(arr) > threshold) return ['des', parsed, null];
+  if (calcEntropy(arr) > th) return ['des', parsed, null];
 
-  // now recognize and pares as categories
+  // now recognize and parse as categories
   if (areCats) return ['cat', parsed, weighted ? weight : null];
 
   // parse as features
