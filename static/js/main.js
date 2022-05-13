@@ -319,11 +319,13 @@ function mainObj() {
    * Contig selection and masking
    * @member {Array.<boolean>} picked
    * @member {Array.<boolean>} masked
+   * @member {Array.<boolean>} blured
    * @description They are 1D arrays of the same size as data columns. Their
    * elements are true/false values.
    */
   this.picked = [];
   this.masked = [];
+  this.blured = [];
 
 
   /**

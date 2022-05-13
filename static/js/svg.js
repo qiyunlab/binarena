@@ -288,11 +288,15 @@ function renderSVG(mo, legs) {
   // different way and was not adopted
 
   // draw highlights
+  let highx, nx;
   for (let i = 0; i < nhigh; i++) {
-    if (highs[i].length === 0) continue;
+    highx = highs[i];
+    nx = highx.length;
+    if (nx === 0) continue;
     svg.push(`  <g id="high-${i}" fill="${HIGHLIGHT_PALETTE[i]}" ` +
       'filter="url(#even-opacity)">');
-    svg.push(...highs[i]);
+    if (nx > 120000) svg = svg.concat(highx);
+    else svg.push(...highx);
     svg.push('  </g>');
   }
 
@@ -303,7 +307,14 @@ function renderSVG(mo, legs) {
 
   // draw scatter plot
   svg.push('  <g id="scatter">');
-  svg.push(...scatter);
+
+  // to avoid maximum call stack size limit (some ~125k for Chrome; ~500k for
+  // Firefox), see:
+  // https://stackoverflow.com/questions/1374126/
+  // https://stackoverflow.com/questions/18308700/
+  if (scatter.length > 120000) svg = svg.concat(scatter);
+  else svg.push(...scatter);
+  
   svg.push('  </g>');
 
 
@@ -478,7 +489,6 @@ function renderSVG(mo, legs) {
 
   svg.push('  </g>');
 
-
   // finish SVG file
   svg.push('</g>');
   svg.push('</svg>');
@@ -488,13 +498,21 @@ function renderSVG(mo, legs) {
   /**
    * Export SVG file.
    */
-  setTimeout(function () {
-    const a = document.createElement('a');
-    a.href = "data:image/svg+xml;charset=utf-8," +
-      encodeURIComponent(svg.join('\n'));
-    a.download = 'image.svg';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-  }, 0);
+
+  svg = svg.join('\n');
+  const blob = new Blob([svg], {type: 'data:image/svg+xml;charset=utf-8'});
+  const a = document.createElement('a');
+  a.download = 'image.svg';
+  a.href = URL.createObjectURL(blob); 
+  a.click();
+
+  // setTimeout(function () {
+  //   const a = document.createElement('a');
+  //   a.href = "data:image/svg+xml;charset=utf-8," +
+  //     encodeURIComponent(svg);
+  //   a.download = 'image.svg';
+  //   document.body.appendChild(a);
+  //   a.click();
+  //   document.body.removeChild(a);
+  // }, 0);
 }

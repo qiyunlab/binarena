@@ -228,7 +228,7 @@ function initBinCtrl(mo) {
 
   // export current binning plan
   byId('export-plan-btn').addEventListener('click', function () {
-    exportBinPlan(mo.binned);
+    exportBinPlan(mo.binned, data[0]);
   });
 
 
@@ -859,18 +859,19 @@ function sortBinTable(idx) {
  * Export binning plan as a text file.
  * @function exportBinPlan
  * @param {string[]} binned - binning plan
+ * @param {string[]} ids - contig Ids
  * @description The output file format is like:
  * bin1 <tab> ctg4,ctg15,ctg23
  * bin2 <tab> ctg12,ctg18
  * bin4 <tab> ctg3,ctg5,ctg20
  * ...
  */
-function exportBinPlan(binned) {
+function exportBinPlan(binned, ids) {
   const bin2ctgs = arrGroupByF(binned);
   if (Object.keys(bin2ctgs).length === 0) return;
   let tsv = '';
   for (const [name, ctgs] of Object.entries(bin2ctgs)) {
-    tsv += (name + '\t' + ctgs.sort().join(',') + '\n');
+    tsv += (name + '\t' + ctgs.sort().map(x => ids[x]).join(',') + '\n');
   }
   const a = document.createElement('a');
   a.href = "data:text/tab-separated-values;charset=utf-8," +
