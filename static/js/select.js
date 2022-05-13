@@ -66,7 +66,7 @@ function initSelTools(mo) {
     history.push(res);
     if (history.length > 50) history.shift();
     toastMsg(`Masked ${plural('contig', m)}.`, mo.stat);
-    prepDataForDisplay(mo);
+    prepDataForDisplay(mo, ['size', 'opacity', 'color']);
     updateLegends(mo);
     renderArena(mo);
     updateSelection(mo);
@@ -137,6 +137,58 @@ function initSelTools(mo) {
   /** Highlight contigs. */
   byId('high-btn').addEventListener('click', function () {
     addHighlight(mo, 1);
+  });
+
+  /** Focus on selection. */
+  byId('focus-btn').addEventListener('click', function () {
+    const n = mo.cache.nctg;
+    const mask = mo.masked,
+          blur = mo.blured;
+    
+    // remove current focus
+    if (this.classList.contains('pressed')) {
+      let m = 0;
+      for (let i = 0; i < n; i++) {
+        if (blur[i]) {
+          mask[i] = false;
+          blur[i] = false;
+          m ++;
+        }
+      }
+      mo.cache.nmask -= m;
+      this.classList.remove('pressed');
+      toastMsg('Unfocused contigs.', mo.stat);
+      prepDataForDisplay(mo, ['size', 'opacity', 'color']);
+      updateLegends(mo);
+      renderArena(mo);
+    }
+
+    // focus on current selection
+    else {
+      if (!mo.cache.npick) return;
+      const pick = mo.picked;
+      let m = 0,
+          k = 0;
+      for (let i = 0; i < n; i++) {
+        if (pick[i]) {
+          pick[i] = false;
+          m ++;
+        } else if (!mask[i]) {
+          mask[i] = true;
+          blur[i] = true;
+          k ++;
+        }
+      }
+      mo.cache.npick -= m;
+      mo.cache.nmask += k;
+      this.classList.add('pressed');
+      toastMsg(`Focused on ${plural('contig', m)}.`, mo.stat);
+      prepDataForDisplay(mo, ['size', 'opacity', 'color']);
+      updateLegends(mo);
+      renderArena(mo);
+      updateSelection(mo);
+    }
+    mo.rena.focus();
   });
 
 }

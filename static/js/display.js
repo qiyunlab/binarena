@@ -608,6 +608,7 @@ function updateViewByData(mo) {
   // reset working progress
   mo.picked = Array(N).fill(false);
   mo.masked = Array(N).fill(false);
+  mo.blured = Array(N).fill(false);
   mo.highed = Array(N).fill(0);
   mo.binned = Array(N).fill('');
   mo.tabled = N ? [...data[0].keys()] : [];
