@@ -137,6 +137,7 @@ function mainObj() {
    * 
    * @property {number} nctg - number of contigs in the dataset
    * Equivalent to data[0].length. Stored in case dataset is closed.
+   * @property {number} ixmap - contig Id to index mapping
    * 
    * @property {Object.<number>} speci - indices of special columns
    * Three contig properties are special in the analysis:
@@ -171,6 +172,7 @@ function mainObj() {
    */
   this.cache = {
     nctg:  0,
+    ixmap: {},
     speci: {},
     abund: 0,
     freqs: {},
@@ -359,6 +361,7 @@ function mainObj() {
   /**
    * Data being imported.
    * @member {Array} impo
+   * @property {string}    fname - file name
    * @property {string}    text  - multi-line text containing data
    * @property {string[]}  names - field names
    * @property {string[]}  types - data types
@@ -366,6 +369,7 @@ function mainObj() {
    * @property {number[]}  idx   - field indices (optional)
    */
   this.impo = {
+    fname: null,
     text:  null,
     names: [],
     types: [],

@@ -25,6 +25,15 @@ const FIELD_DESCS = {
   'des': 'descriptive'
 };
 
+const EMPTY_VALS = {
+  'num': NaN,
+  'cat': '',
+  'cwt': NaN,
+  'fea': [],
+  'fwt': [],
+  'des': ''
+};
+
 
 /**
  * Initialize data import controls.
@@ -35,59 +44,105 @@ function initImportCtrl(mo) {
 
   // import table button
   byId('import-btn').addEventListener('click', function () {
-    const impo = mo.impo;
-    let names = impo.names,
-        types = impo.types;
-
-    // add contig Ids
-    const idx = [0],
-          namex = [names[0]],
-          typex = [types[0]];
-
-    // add individual fields
-    let i;
-    for (let row of byId('import-tbody').rows) {
-      i = parseInt(row.getAttribute('data-index'));
-      idx.push(i);
-      namex.push(names[i]);
-      typex.push(row.cells[2].firstElementChild.value.substring(0, 3));
-    }
-
-    if (idx.length === 1) {
-      toastMsg('No data field is selected.', mo.stat);
-      return;
-    }
-
-    impo.names = namex;
-    impo.types = typex;
-    impo.idx = idx;
-
-    // strip head line
-    const text = impo.text
-    impo.text = text.substring(text.indexOf('\n') + 1);
-
-    // parse table body
-    let data;
-    [data, names, types] = parseTableBody(impo);
-
-    // load new dataset
-    if (mo.data.length === 0) {
-      mo.data.push(...data);
-      mo.cols.names.push(...names);
-      mo.cols.types.push(...types);
-    }
-
-    // clean up data
-    impo.text = null;
-    impo.names = [];
-    impo.types = [];
-    impo.guess = [];
-    impo.idx = [];
-
+    importTable(mo);
     byId('import-modal').classList.add('hidden');
-    updateViewByData(mo);
-    toastMsg(`Read ${plural('contig', mo.data[0].length)}.`, mo.stat);
   });
+}
+
+
+/**
+ * Import data from a table.
+ * @function importTable
+ * @param {Object} mo - main object
+ */
+function importTable(mo) {
+  const impo = mo.impo;
+  let names = impo.names,
+      types = impo.types;
+
+  // add contig Ids
+  const idx = [0],
+        namex = [names[0]],
+        typex = [types[0]];
+
+  // add individual fields
+  let i;
+  for (let row of byId('import-tbody').rows) {
+    i = parseInt(row.getAttribute('data-index'));
+    idx.push(i);
+    namex.push(names[i]);
+    typex.push(row.cells[2].firstElementChild.value.substring(0, 3));
+  }
+
+  if (idx.length === 1) {
+    toastMsg('No data field is selected.', mo.stat);
+    return;
+  }
+
+  impo.names = namex;
+  impo.types = typex;
+  impo.idx = idx;
+
+  // strip head line
+  const text = impo.text
+  impo.text = text.substring(text.indexOf('\n') + 1);
+
+  // parse table body
+  let data, ixmap;
+  [data, names, types, ixmap] = parseTableBody(impo);
+
+  // load new dataset
+  let n = mo.cache.nctg;
+  if (n === 0) {
+    mo.data.push(...data);
+    mo.cols.names.push(...names);
+    mo.cols.types.push(...types);
+    mo.cache.ixmap = ixmap;
+  }
+
+  // append to current dataset
+  else {
+
+    // check duplicated fields,
+    // and create empty columns
+    let cols = [];
+    let m = names.length;
+    const nameset = new Set(mo.cols.names);
+    for (let i = 1; i < m; i ++) {
+      if (nameset.has(names[i])) {
+        toastMsg(`Field "${names[i]}" already exists.`, mo.stat);
+        return;
+      }
+      cols.push(Array(n).fill(EMPTY_VALS[types[i]]));
+    }
+
+    // assign data to matching Ids
+    ixmap = mo.cache.ixmap;
+    let idx;
+    const ids = data[0];
+    for (let i = 0; i < n; i ++) {
+      idx = ixmap[ids[i]];
+      if (idx !== undefined) {
+        for (let j = 1; j < m; j ++) {
+          cols[j - 1][idx] = data[j][i];
+        }
+      }
+    }
+
+    mo.data.push(...cols);
+    mo.cols.names.push(...names.slice(1));
+    mo.cols.types.push(...types.slice(1));
+  }
+
+  // clean up data
+  impo.text = null;
+  impo.names = [];
+  impo.types = [];
+  impo.guess = [];
+  impo.idx = [];
+
+  updateViewByData(mo);
+  toastMsg(`Read ${plural('contig', mo.data[0].length)}.`, mo.stat);
 }
 
 
@@ -100,8 +155,13 @@ function fillImportTable(mo) {
   const impo = mo.impo;
   const names = impo.names,
         types = impo.types,
-        guess = impo.guess;
+        guess = impo.guess,
+        fname = impo.fname;
   const n = names.length;
+
+  // update title
+  byId('import-title-span').innerHTML = (mo.cache.nctg === 0)
+    ? `Load new data from ${fname}` : `Append data from ${fname}`;
 
   // clear table
   const table = byId('import-tbody');
@@ -166,7 +226,7 @@ function fillImportTable(mo) {
 function uploadFile(file, mo) {
   const reader = new FileReader();
   reader.onload = function (e) {
-    updateDataFromText(e.target.result, mo);
+    updateDataFromText(e.target.result, file.name, mo);
     // updateViewByData(mo);
     // toastMsg(`Read ${plural('contig', mo.data[0].length)}.`, mo.stat);
   };
@@ -186,7 +246,7 @@ function updateDataFromRemote(path, mo) {
   xhr.onreadystatechange = function() {
     if (this.readyState == 4) {
       if (this.status == 200) {
-        updateDataFromText(this.responseText, mo);
+        updateDataFromText(this.responseText, path, mo);
         updateViewByData(mo);
         toastMsg(`Read ${plural('contig', mo.data[0].length)}.`, mo.stat);
       }
@@ -201,17 +261,17 @@ function updateDataFromRemote(path, mo) {
  * Update data from text file.
  * @function updateDataFromText
  * @param {string} text - imported text
+ * @param {string} fname - file name
  * @param {Array} mo - main object
  * @returns {Array.<Object, Object, Object>} - decimals, categories, features
  * @todo let user specify minimum contig length threshold
- *
- * The file may contain:
+ * @description The file may contain:
  * 1. Metadata of contigs.
  * 1.1. JSON format.
  * 1.2. TSV format.
  * 2. Assembly file (i.e., contig sequences).
  */
-function updateDataFromText(text, mo) {
+function updateDataFromText(text, fname, mo) {
   const impo = mo.impo;
   let obj;
 
@@ -221,6 +281,9 @@ function updateDataFromText(text, mo) {
     parseObj(obj, mo.data, mo.cols);
   }
   catch (err) {
+
+    // get base file name
+    impo.fname = fname.replace(/^.*[\\\/]/, '');
 
     // parse as an assembly
     if (text.charAt() === '>') {
@@ -334,7 +397,7 @@ function parseTableHead(text) {
  * Parse data table body.
  * @function parseTableBody
  * @param {Object} impo - import object
- * @returns {[Array, Array, Array]} - data, names, types
+ * @returns {[Array, Array, Array, Array]} - data, names, types, ixmap
  */
 function parseTableBody(impo) {
   const text = impo.text,
@@ -355,17 +418,17 @@ function parseTableBody(impo) {
   const rawdat = Array(m).fill().map(() => Array(n).fill(''));
 
   // read data into columns
+  const ixmap = {};
   let j, row;
   for (let i = 0; i < n; i++) {
     row = lines[i].split('\t');
+    if (row[0] in ixmap) throw new Error(
+      `Contig ID "${row[0]}" has duplicates.`);
+    ixmap[row[0]] = i;
     for (j = 0; j < m; j++) {
       rawdat[j][i] = row[idx[j]];
     }
   }
-
-  // check if contig Ids are unique
-  if ((new Set(rawdat[0])).size !== n) throw new Error(
-    'Contig identifiers are not unique.');
 
   // add contig Ids
   const data = [rawdat[0]],
@@ -419,7 +482,7 @@ function parseTableBody(impo) {
         break;
     }
   }
-  return [data, namez, typez];
+  return [data, namez, typez, ixmap];
 }
 
 
