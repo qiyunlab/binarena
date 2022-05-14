@@ -45,7 +45,6 @@ function initImportCtrl(mo) {
   // import table button
   byId('import-btn').addEventListener('click', function () {
     importTable(mo);
-    byId('import-modal').classList.add('hidden');
   });
 }
 
@@ -88,61 +87,73 @@ function importTable(mo) {
   impo.text = text.substring(text.indexOf('\n') + 1);
 
   // parse table body
-  let data, ixmap;
-  [data, names, types, ixmap] = parseTableBody(impo);
+  byId('import-title').classList.add('hidden');
+  byId('import-progress').classList.remove('hidden');
 
-  // load new dataset
-  let n = mo.cache.nctg;
-  if (n === 0) {
-    mo.data.push(...data);
-    mo.cols.names.push(...names);
-    mo.cols.types.push(...types);
-    mo.cache.ixmap = ixmap;
-  }
+  setTimeout(function () {
+    let data, ixmap;
+    [data, names, types, ixmap] = parseTableBody(impo);
+    let k = 0;
 
-  // append to current dataset
-  else {
-
-    // check duplicated fields,
-    // and create empty columns
-    let cols = [];
-    let m = names.length;
-    const nameset = new Set(mo.cols.names);
-    for (let i = 1; i < m; i ++) {
-      if (nameset.has(names[i])) {
-        toastMsg(`Field "${names[i]}" already exists.`, mo.stat);
-        return;
-      }
-      cols.push(Array(n).fill(EMPTY_VALS[types[i]]));
+    // load new dataset
+    let n = mo.cache.nctg;
+    if (n === 0) {
+      mo.data.push(...data);
+      mo.cols.names.push(...names);
+      mo.cols.types.push(...types);
+      mo.cache.ixmap = ixmap;
+      k = data[0].length;
     }
 
-    // assign data to matching Ids
-    ixmap = mo.cache.ixmap;
-    let idx;
-    const ids = data[0];
-    for (let i = 0; i < n; i ++) {
-      idx = ixmap[ids[i]];
-      if (idx !== undefined) {
-        for (let j = 1; j < m; j ++) {
-          cols[j - 1][idx] = data[j][i];
+    // append to current dataset
+    else {
+
+      // create empty columns
+      let cols = [];
+      let m = names.length;
+      const nameset = new Set(mo.cols.names);
+      for (let i = 1; i < m; i ++) {
+
+        // check duplicated fields
+        if (nameset.has(names[i])) {
+          toastMsg(`Field "${names[i]}" already exists.`, mo.stat);
+          return;
+        }
+        cols.push(Array(n).fill(EMPTY_VALS[types[i]]));
+      }
+
+      // assign data to matching Ids
+      ixmap = mo.cache.ixmap;
+      let idx;
+      const ids = data[0];
+      n = ids.length;
+      for (let i = 0; i < n; i ++) {
+        idx = ixmap[ids[i]];
+        if (idx !== undefined) {
+          for (let j = 1; j < m; j ++) {
+            cols[j - 1][idx] = data[j][i];
+          }
+          k ++;
         }
       }
+
+      mo.data.push(...cols);
+      mo.cols.names.push(...names.slice(1));
+      mo.cols.types.push(...types.slice(1));
     }
 
-    mo.data.push(...cols);
-    mo.cols.names.push(...names.slice(1));
-    mo.cols.types.push(...types.slice(1));
-  }
+    // clean up data
+    impo.text = null;
+    impo.names = [];
+    impo.types = [];
+    impo.guess = [];
+    impo.idx = [];
 
-  // clean up data
-  impo.text = null;
-  impo.names = [];
-  impo.types = [];
-  impo.guess = [];
-  impo.idx = [];
-
-  updateViewByData(mo);
-  toastMsg(`Read ${plural('contig', mo.data[0].length)}.`, mo.stat);
+    updateViewByData(mo);
+    byId('import-progress').classList.add('hidden');
+    byId('import-modal').classList.add('hidden');
+    toastMsg(`Read ${plural('contig', k)}.`, mo.stat);
+  });
 }
 
 
@@ -160,8 +171,10 @@ function fillImportTable(mo) {
   const n = names.length;
 
   // update title
-  byId('import-title-span').innerHTML = (mo.cache.nctg === 0)
+  byId('import-progress').classList.add('hidden');
+  byId('import-title').innerHTML = (mo.cache.nctg === 0)
     ? `Load new data from ${fname}` : `Append data from ${fname}`;
+  byId('import-title').classList.remove('hidden');
 
   // clear table
   const table = byId('import-tbody');
