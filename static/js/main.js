@@ -139,11 +139,8 @@ function mainObj() {
    * Equivalent to data[0].length. Stored in case dataset is closed.
    * @property {number} ixmap - contig Id to index mapping
    * 
-   * @property {Object.<number>} speci - indices of special columns
-   * Three contig properties are special in the analysis:
-   * @param len - length
-   * @param cov - coverage
-   * @param gc  - GC content
+   * @property {number} splen - index of "length" column
+   * @property {number} spcov - index of "coverage" column
    * 
    * @property {number} abund - total abundance of contigs
    * Equals to the sum of (length x coverage) of all contigs.
@@ -173,7 +170,8 @@ function mainObj() {
   this.cache = {
     nctg:  0,
     ixmap: {},
-    speci: {},
+    splen: 0,
+    spcov: 0,
     abund: 0,
     freqs: {},
     npick: 0,

@@ -451,7 +451,7 @@ div.toolbar span.spacer {
 
 div.modal {
   position: fixed;
-  z-index: 3;
+  z-index: 2;
   left: 0;
   top: 0;
   width: 100%;
@@ -565,7 +565,7 @@ clicking in the blank area. */
 
 div.popup {
   position: fixed;
-  z-index: 2;
+  z-index: 3;
   background-color: white;
   box-shadow: 3px 3px 15px rgba(0, 0, 0, 0.15);
 }
@@ -731,7 +731,7 @@ canvas.main-plot {
   font-weight: bold;
 }
 
-/** dast button (main button) */
+/** dash button (main button) */
 
 #dash-btn {
   width: 32px;
@@ -1633,41 +1633,67 @@ div.legend:hover div.clip {
   background-color: lightgray;
 }
 
-#import-thead th:first-child {
-  width: 24px;
-}
-
-#import-thead th:nth-child(2) {
-  width: 200px;
-}
-
-#import-thead th:nth-child(3) {
-  width: 100px;
-}
-
-#import-thead th:last-child {
-  width: 48px;
-}
+#import-thead th:first-child  { width: 24px;  }
+#import-thead th:nth-child(2) { width: 150px; }
+#import-thead th:nth-child(3) { width: 100px; }
+#import-thead th:last-child   { width: 32px;  }
 
 #import-tbody td {
   padding-top: 0;
   padding-bottom: 0;
 }
 
+/* drop field button */
+
 #import-tbody td:first-child button {
   display: none;
+  background: #EEE;
+  color: dimgray;
 }
 
 #import-tbody tr:hover td:first-child button {
   display: block;
 }
 
+#import-tbody tr td:first-child button:hover {
+  background-color: lightgray;
+  color: black;
+}
+
+/* special field button */
+
+#import-tbody td:last-child {
+  text-align: center;
+}
+
+#import-tbody td:last-child button {
+  width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  color: dimgray;
+}
+
+#import-tbody tr:hover td:last-child button {
+  background-color: #EEE;
+}
+
+#import-tbody tr td:last-child button:hover {
+  background-color: lightgray;
+  color: black;
+}
+
+
 /* running dots */
+
 .run-dots > span { animation: dots-blink 1.2s linear infinite; }
 .run-dots > span:nth-child(1) { animation-delay: 0.4s; }
 .run-dots > span:nth-child(2) { animation-delay: 0.8s; }
 .run-dots > span:nth-child(3) { animation-delay: 1.2s; }
 @keyframes dots-blink { from { opacity: 0; } to { opacity: 1; } }
+
 
 /**
  * Silhouette calculation.

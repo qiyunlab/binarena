@@ -726,7 +726,7 @@ function autoComplete(src, arr) {
  * @param {Object} mo - main object
  */
 function formatValueLabel(value, icol, digits, unit, mo) {
-  const ilen = mo.cache.speci.len;
+  const ilen = mo.cache.splen;
   if (ilen && icol === ilen) {
     const fmtlen = FormatLength(value);
     let res = formatNum(fmtlen[0], digits);

@@ -494,7 +494,7 @@ function updateBinRow(row, ctgs, mo) {
 
   // stop if no length
   const cache = mo.cache;
-  const ilen = cache.speci.len;
+  const ilen = cache.splen;
   if (!ilen) {
     cells[2].innerHTML = 'na';
     cells[3].innerHTML = 'na';
@@ -504,7 +504,7 @@ function updateBinRow(row, ctgs, mo) {
   // 3rd cell: total length (kb)
   const data = mo.data;
   const L = data[ilen];
-  const icov = cache.speci.cov;
+  const icov = cache.spcov;
   let sumlen = 0;
   if (!icov) {
     for (let i = 0; i < n; i++) sumlen += L[ctgs[i]];

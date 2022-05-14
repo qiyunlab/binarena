@@ -621,7 +621,8 @@ function updateViewByData(mo) {
 
   // clear cache
   cache.abund = 0;
-  cache.speci = {};
+  cache.splen = 0;
+  cache.spcov = 0;
   cache.freqs = {};
   cache.npick = 0;
   cache.nmask = 0;
@@ -661,11 +662,8 @@ function updateViewByData(mo) {
 
     // guess special columns
     const cols = mo.cols;
-    cache.speci = {
-      len: guessLenColumn(cols),
-      cov: guessCovColumn(cols),
-      gc:  guessGCColumn(cols)
-    };
+    cache.splen = guessLenColumn(cols);
+    cache.spcov = guessCovColumn(cols);
 
     // calculate category and feature frequencies
     const types = cols.types;
@@ -679,9 +677,9 @@ function updateViewByData(mo) {
     }
 
     // calculate total abundance
-    if (cache.speci.len && cache.speci.cov) {
-      const L = data[cache.speci.len],
-            C = data[cache.speci.cov];
+    if (cache.splen && cache.spcov) {
+      const L = data[cache.splen],
+            C = data[cache.spcov];
       const n = L.length;
       for (let i = 0; i < n; i++) {
         cache.abund += L[i] * C[i];

@@ -417,7 +417,7 @@ function buildInfoTable(mo) {
 
   const names = mo.cols.names,
         types = mo.cols.types;
-  const lencol = mo.cache.speci.len;
+  const splen = mo.cache.splen;
 
   // create rows
   const n = names.length;
@@ -455,7 +455,7 @@ function buildInfoTable(mo) {
       // with reference (default: length)
       if (metric.endsWith('by')) {
         row.setAttribute('data-met', metric.substring(0, metric.length - 2));
-        row.setAttribute('data-ref', lencol);
+        row.setAttribute('data-ref', splen);
       }
 
       // no reference
@@ -467,7 +467,7 @@ function buildInfoTable(mo) {
 
     // categorical: weight by length, metric not relevant
     else if (type === 'cat') {
-      row.setAttribute('data-ref', lencol);
+      row.setAttribute('data-ref', splen);
     }
 
     // row hover event: append control span

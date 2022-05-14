@@ -58,6 +58,10 @@ function guessDisplayFields(mo) {
   const names = cols.names,
         types = cols.types;
 
+  // guess GC and rank columns
+  const igc = guessGCColumn(cols);
+  const irank = guessRankColumn(cols);
+
   // first, locate x and y (mandatory)
   const xaxes = ['x', 'xaxis', 'x1', 'axis1', 'dim1', 'pc1', 'pca1', 'tsne1',
                  'umap1', 'pcoa1', 'nmds1'];
@@ -81,19 +85,17 @@ function guessDisplayFields(mo) {
     res.y = xyCand[1];
 
     // add other items
-    res.size = cache.speci.len || null;
-    res.opacity = cache.speci.cov || null;
-    res.color = guessRankColumn(cols) || cache.speci.gc || null;
+    res.size = cache.splen || null;
+    res.opacity = cache.spcov || null;
+    res.color = irank || igc || null;
   }
 
   // otherwise, get gc -> coverage -> length
   else {
     const avails = [];
-    let icol;
-    for (let key of ['gc', 'cov', 'len']) {
-      icol = cache.speci[key];
-      if (icol) avails.push(icol);
-    }
+    if (igc) avails.push(igc);
+    if (cache.spcov) avails.push(cache.spcov);
+    if (cache.splen) avails.push(cache.splen);
     if (avails.length >= 2) {
       res.x = avails[0];
       res.y = avails[1];
@@ -117,15 +119,16 @@ function guessDisplayFields(mo) {
  */
 function guessDisplayScales(mo) {
   const view = mo.view;
-  const speci = mo.cache.speci;
+  const splen = mo.cache.splen,
+        spcov = mo.cache.spcov;
   const items = ['x', 'y', 'size', 'opacity', 'color'];
   const res = {};
   let i;
   for (let item of items) {
     i = view[item].i
     if (!i) res[item] = 'none';
-    else if (speci.len === i) res[item] = 'cbrt';
-    else if (speci.cov === i) res[item] = 'sqrt';
+    else if (splen === i) res[item] = 'cbrt';
+    else if (spcov === i) res[item] = 'sqrt';
     else res[item] = 'none';
   }
   return res;

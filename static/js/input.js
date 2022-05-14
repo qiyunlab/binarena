@@ -50,14 +50,141 @@ function initImportCtrl(mo) {
 
 
 /**
+ * Populate data import table.
+ * @function fillImportTable
+ * @param {Object} mo - main object
+ */
+ function fillImportTable(mo) {
+  const impo = mo.impo;
+  const names = impo.names,
+        types = impo.types,
+        guess = impo.guess,
+        fname = impo.fname;
+  const n = names.length;
+
+  // guess special fields
+  const cols = {'names': names, 'types': types};
+  const splen = mo.cache.splen ? 0 : guessLenColumn(cols);
+  const spcov = mo.cache.spcov ? 0 : guessCovColumn(cols);
+
+  // update title
+  byId('import-progress').classList.add('hidden');
+  byId('import-title').innerHTML = (mo.cache.nctg === 0)
+    ? `Load new data from ${fname}` : `Append data from ${fname}`;
+  byId('import-title').classList.remove('hidden');
+
+  // clear table
+  const table = byId('import-tbody');
+  table.innerHTML = '';
+
+  // populate table
+  let row, cell, input, btn, desc;
+  for (let i = 0; i < n; i++) {
+    if (types[i] === 'id') continue;
+    if (types[i].endsWith('wt')) continue;
+    row = table.insertRow(-1);
+    row.setAttribute('data-index', i)
+
+    // 1. drop field button
+    btn = document.createElement('button');
+    btn.innerHTML = '&#x2715;'; // cross mark
+    btn.title = 'Discard field';
+    btn.addEventListener('click', function () {
+      const row = this.parentElement.parentElement;
+      row.parentElement.parentElement.deleteRow(row.rowIndex);
+    });
+    cell = row.insertCell(-1);
+    cell.appendChild(btn);
+
+    // 2. field name
+    cell = row.insertCell(-1);
+    cell.innerHTML = names[i];
+    
+    // 3a. let user select data type
+    if (guess[i]) {
+      input = document.createElement('select');
+      for (let key of ['num', 'cat', 'fea', 'des']) {
+        const opt = document.createElement('option');
+        desc = FIELD_DESCS[key];
+        opt.value = desc;
+        opt.text = desc;
+        input.appendChild(opt);
+      }
+    }
+
+    // 3b. data type is pre-defined
+    else {
+      input = document.createElement('input');
+      input.type = 'text';
+      input.disabled = true;
+    }
+    input.value = FIELD_DESCS[types[i]];
+    cell = row.insertCell(-1);
+    cell.appendChild(input);
+
+    // 4. special field
+    btn = document.createElement('button');
+    btn.id = `spec-field-btn-${i}`;
+    btn.title = 'Special column';
+    btn.classList.add('dropdown');
+
+    // pre-assign value
+    const value = (i === splen) ? 'Length' : (i === spcov) ? 'Coverage' : '';
+    btn.value = value;
+    btn.innerHTML = value.slice(0, 3);
+    btn.setAttribute('data-prev-val', value);
+
+    // let user select value
+    btn.addEventListener('click', function () {
+      const value = this.value;
+      if (value !== this.getAttribute('data-prev-val')) {
+        
+        // set current row
+        this.setAttribute('data-prev-val', value);
+        this.innerHTML = value.slice(0, 3);
+
+        // unset other rows
+        if (value) {
+          const row = this.parentElement.parentElement;
+          const idx = row.getAttribute('data-index');
+          let b;
+          for (let r of row.parentElement.rows) {
+            if (r.getAttribute('data-index') !== idx) {
+              b = r.cells[3].firstElementChild;
+              if (b.value === value) {
+                b.innerHTML = b.value = '';
+                b.setAttribute('data-prev-val', '');
+                break;
+              }
+            }
+          }
+        }
+      } else {
+        listSelect(['', 'Length', 'Coverage'], this, 'down');
+      }
+    });
+    cell = row.insertCell(-1);
+    cell.appendChild(btn);
+  }
+  byId('import-table-wrap').classList.remove('hidden');
+  byId('import-modal').classList.remove('hidden');
+
+  // directly import if all data types are pre-defined
+  if (!guess.some(Boolean)) importTable(mo);
+}
+
+
+/**
  * Import data from a table.
  * @function importTable
  * @param {Object} mo - main object
+ * @description Called from within the "import" modal.
  */
 function importTable(mo) {
   const impo = mo.impo;
   let names = impo.names,
       types = impo.types;
+  let n = mo.cache.nctg;
 
   // add contig Ids
   const idx = [0],
@@ -65,12 +192,17 @@ function importTable(mo) {
         typex = [types[0]];
 
   // add individual fields
-  let i;
+  let i, val;
+  let splen = null,
+      spcov = null;
   for (let row of byId('import-tbody').rows) {
     i = parseInt(row.getAttribute('data-index'));
     idx.push(i);
     namex.push(names[i]);
     typex.push(row.cells[2].firstElementChild.value.substring(0, 3));
+    val = row.cells[3].firstElementChild.value;
+    if (val === 'Length') splen = names[i];
+    else if (val === 'Coverage') spcov = names[i];
   }
 
   if (idx.length === 1) {
@@ -96,7 +228,6 @@ function importTable(mo) {
     let k = 0;
 
     // load new dataset
-    let n = mo.cache.nctg;
     if (n === 0) {
       mo.data.push(...data);
       mo.cols.names.push(...names);
@@ -142,7 +273,14 @@ function importTable(mo) {
       mo.cols.types.push(...types.slice(1));
     }
 
-    // clean up data
+    // assign special fields
+    if (splen) mo.cache.splen = mo.cols.names.indexOf(splen);
+    if (spcov) mo.cache.spcov = mo.cols.names.indexOf(spcov);
+
+    console.log(mo.cache.splen, mo.cache.spcov);
+
+    // clean up
+    impo.fname = null;
     impo.text = null;
     impo.names = [];
     impo.types = [];
@@ -154,79 +292,6 @@ function importTable(mo) {
     byId('import-modal').classList.add('hidden');
     toastMsg(`Read ${plural('contig', k)}.`, mo.stat);
   });
-}
-
-
-/**
- * Populate data import table.
- * @function fillImportTable
- * @param {Object} mo - main object
- */
-function fillImportTable(mo) {
-  const impo = mo.impo;
-  const names = impo.names,
-        types = impo.types,
-        guess = impo.guess,
-        fname = impo.fname;
-  const n = names.length;
-
-  // update title
-  byId('import-progress').classList.add('hidden');
-  byId('import-title').innerHTML = (mo.cache.nctg === 0)
-    ? `Load new data from ${fname}` : `Append data from ${fname}`;
-  byId('import-title').classList.remove('hidden');
-
-  // clear table
-  const table = byId('import-tbody');
-  table.innerHTML = '';
-
-  // populate table
-  let row, cell, input, btn, desc;
-  for (let i = 0; i < n; i++) {
-    if (types[i] === 'id') continue;
-    if (types[i].endsWith('wt')) continue;
-    row = table.insertRow(-1);
-    row.setAttribute('data-index', i)
-
-    // drop field
-    btn = document.createElement('button');
-    btn.innerHTML = '&#x2715;'; // cross mark
-    btn.title = 'Discard field';
-    btn.addEventListener('click', function () {
-      const row = this.parentElement.parentElement;
-      row.parentElement.parentElement.deleteRow(row.rowIndex);
-    });
-    cell = row.insertCell(-1);
-    cell.appendChild(btn);
-
-    // field name
-    cell = row.insertCell(-1);
-    cell.innerHTML = names[i];
-    
-    // let user select data type
-    if (guess[i]) {
-      input = document.createElement('select');
-      for (let key of ['num', 'cat', 'fea', 'des']) {
-        const opt = document.createElement('option');
-        desc = FIELD_DESCS[key];
-        opt.value = desc;
-        opt.text = desc;
-        input.appendChild(opt);
-      }
-    }
-
-    // data type is pre-defined
-    else {
-      input = document.createElement('input');
-      input.type = 'text';
-      input.disabled = true;
-    }
-    input.value = FIELD_DESCS[types[i]];
-    cell = row.insertCell(-1);
-    cell.appendChild(input);
-  }
-  byId('import-table-wrap').classList.remove('hidden');
-  byId('import-modal').classList.remove('hidden');
 }
 
 
@@ -335,7 +400,8 @@ function parseObj(obj, data, cols) {
  * Parse data table head.
  * @function parseTableHead
  * @param {string} text - multi-line tab-delimited string
- * @returns {[Array, Array, Array]} - names, types, guess
+ * @returns {[string[], string[], boolean[], number[]]} - field names, data
+ * types, whether type is guessed, and special field indices (len, cov, gc)
  */
 function parseTableHead(text) {
 
