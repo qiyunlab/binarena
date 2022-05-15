@@ -57,6 +57,7 @@ function initDisplayCtrl(mo) {
       updateControls(mo);
       prepDataForDisplay(mo, ['x', 'y']);
       renderArena(mo);
+      renderSelection(mo);
     });
   }
 
@@ -984,6 +985,7 @@ function displayItemChange(item, i, scale, mo) {
   if (isCat) updateColorMap(mo);
   prepDataForDisplay(mo, [item]);
   renderArena(mo);
+  renderSelection(mo);
   updateLegends(mo, [item]);
 }
 

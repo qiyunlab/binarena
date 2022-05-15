@@ -69,11 +69,11 @@ function resetControls() {
  * @param {Object} mo - main object
  */
 function updateControls(mo) {
-  const cols = mo.cols,
-        view = mo.view;
+  const cols = mo.cols;
   updateSearchCtrl(cols);
-  updateDisplayCtrl(cols, view);
+  updateDisplayCtrl(cols, mo.view);
   updateMiniPlotCtrl(cols);
+  updateSpFieldCtrl(cols, mo.cache);
 }
 
 

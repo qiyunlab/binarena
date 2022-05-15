@@ -316,6 +316,9 @@
       <div class="dock active hidden">
         <div class="panel-head"><span><button disabled>Settings</button></span></div>
         <div class="dash-content">
+          <p><label><b>Special:</b></label></p>
+          <p><label>Length</label><select id="len-col-sel" title="Field that represents contig length (bp)" style="width: 50%;"></select></p>
+          <p><label>Coverage</label><select id="cov-col-sel" title="Field that represents contig coverage (depth)" style="width: 50%;"></select></p>
           <p><label><b>Filter:</b></label></p>
           <p><label>Length</label><input type="text" id="len-filt" title="Minimum contig length threshold" style="width: 40%; text-align: right;"></p>
           <p><label>Coverage</label><input type="text" id="cov-filt" title="Minimum contig coverage threshold" style="width: 40%; text-align: right;"></p>
@@ -568,6 +571,7 @@
             </thead>
             <tbody id="import-tbody"></tbody>
           </table>
+          <p id="has-header-p" class="hidden"><input type="checkbox" id="has-header-chk" checked>&nbsp;First line is header.</p>
         </div>
       </div>
     </div>

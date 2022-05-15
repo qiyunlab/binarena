@@ -369,6 +369,7 @@ function mainObj() {
   this.impo = {
     fname: null,
     text:  null,
+    head:  true,
     names: [],
     types: [],
     guess: [],

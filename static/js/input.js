@@ -46,6 +46,14 @@ function initImportCtrl(mo) {
   byId('import-btn').addEventListener('click', function () {
     importTable(mo);
   });
+
+  // special field select
+  for (const key of ['len', 'cov']) {
+    byId(`${key}-col-sel`).addEventListener('change', function () {
+      mo.cache[`sp${key}`] = this.value;
+      cacheTotAbundance(mo);
+    });
+  }
 }
 
 
@@ -62,6 +70,21 @@ function initImportCtrl(mo) {
         fname = impo.fname;
   const n = names.length;
 
+  // load new dataset
+  const isNew = (mo.cache.nctg === 0);
+  if (isNew && n < 3) {
+    toastMsg(
+      'A new data table must contain contig IDs (1st column)' +
+      '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>' +
+      'and at least two data columns.', mo.stat, 3000);
+    return;
+  }
+
+  // guess whether first line is header
+  // no header only when: 1) appending, 2) two columns, 3) cell 1 found in
+  // existing contig Ids
+  if (!isNew && n === 2 && names[0] in mo.cache.ixmap) impo.head = false;
+
   // guess special fields
   const cols = {'names': names, 'types': types};
   const splen = mo.cache.splen ? 0 : guessLenColumn(cols);
@@ -69,7 +92,7 @@ function initImportCtrl(mo) {
 
   // update title
   byId('import-prog').classList.add('hidden');
-  byId('import-title').innerHTML = (mo.cache.nctg === 0)
+  byId('import-title').innerHTML = isNew
     ? `Load new data from ${fname}` : `Append data from ${fname}`;
   byId('import-title').classList.remove('hidden');
 
@@ -78,7 +101,7 @@ function initImportCtrl(mo) {
   table.innerHTML = '';
 
   // populate table
-  let row, cell, input, btn, desc;
+  let row, cell, input, btn;
   for (let i = 0; i < n; i++) {
     if (types[i] === 'id') continue;
     if (types[i].endsWith('wt')) continue;
@@ -101,7 +124,7 @@ function initImportCtrl(mo) {
     cell.innerHTML = names[i];
     
     // 3a. let user select data type
-    if (guess[i]) input = createDtypeSel(i);
+    if (guess[i]) input = createDTypeSel(i);
 
     // 3b. data type is pre-defined
     else {
@@ -130,11 +153,11 @@ function initImportCtrl(mo) {
 
 /**
  * Create a data type selection menu.
- * @function createDtypeSel
+ * @function createDTypeSel
  * @param {number} i - field index
  * @returns {Object} - select DOM
  */
-function createDtypeSel(i) {
+function createDTypeSel(i) {
   const sel = document.createElement('select');
 
   // data type options
@@ -243,6 +266,8 @@ function importTable(mo) {
     idx.push(i);
     namex.push(names[i]);
     typex.push(row.cells[2].firstElementChild.value.substring(0, 3));
+
+    // get special fields
     btn = row.cells[3].firstElementChild;
     if (btn === null) continue;
     val = btn.value;
@@ -252,6 +277,11 @@ function importTable(mo) {
 
   if (idx.length === 1) {
     toastMsg('No data field is selected.', mo.stat);
+    return;
+  }
+
+  if (n === 0 && typex.filter(x => x === 'num').length < 2) {
+    toastMsg('At least two numeric fields are needed for display.', mo.stat);
     return;
   }
 
@@ -267,88 +297,108 @@ function importTable(mo) {
   byId('import-title').classList.add('hidden');
   byId('import-prog').classList.remove('hidden');
 
-  setTimeout(function () {
-    let data, ixmap;
-    [data, names, types, ixmap] = parseTableBody(impo);
-    let nctg = 0,
-        ncol = 0;
+  // do async import when table file exceeds 10 MB
+  if (impo.text.length > 10000000) {
+    setTimeout(function () {
+      importTableNext(mo, splen, spcov);
+    }, 100);
+  } else {
+    importTableNext(mo, splen, spcov);
+  }
+}
 
-    // load new dataset
-    if (n === 0) {
-      mo.data.push(...data);
-      mo.cols.names.push(...names);
-      mo.cols.types.push(...types);
-      mo.cache.ixmap = ixmap;
-      nctg = data[0].length;
-    }
 
-    // append to current dataset
-    else {
+/**
+ * Import data from a table (next stage).
+ * @function importTableNext
+ * @param {Object} mo - main object
+ * @param {string=} splen - "length" field name
+ * @param {string=} spcov - "coverage" field name
+ * @description Called either sync or async (when table is large).
+ */
+function importTableNext(mo, splen, spcov) {
+  const impo = mo.impo;
+  let [data, names, types, ixmap] = parseTableBody(impo);
+  let nctg = 0,
+      ncol = 0;
 
-      // create empty columns
-      let cols = [];
-      let m = names.length;
-      const nameset = new Set(mo.cols.names);
-      for (let i = 1; i < m; i ++) {
+  // load new dataset
+  let n = mo.cache.nctg;
+  if (n === 0) {
+    mo.data.push(...data);
+    mo.cols.names.push(...names);
+    mo.cols.types.push(...types);
+    mo.cache.ixmap = ixmap;
+    nctg = data[0].length;
+  }
 
-        // check duplicated fields
-        if (nameset.has(names[i])) {
-          toastMsg(`Field "${names[i]}" already exists.`, mo.stat);
-          byId('import-prog').classList.add('hidden');
-          byId('import-modal').classList.add('hidden');
-          return;
-        }
-        cols.push(Array(n).fill(EMPTY_VALS[types[i]]));
+  // append to current dataset
+  else {
+
+    // create empty columns
+    let cols = [];
+    let m = names.length;
+    const nameset = new Set(mo.cols.names);
+    for (let i = 1; i < m; i ++) {
+
+      // check duplicated fields
+      if (nameset.has(names[i])) {
+        toastMsg(`Field "${names[i]}" already exists.`, mo.stat);
+        byId('import-prog').classList.add('hidden');
+        byId('import-modal').classList.add('hidden');
+        return;
       }
+      cols.push(Array(n).fill(EMPTY_VALS[types[i]]));
+    }
 
-      // assign data to matching Ids
-      ixmap = mo.cache.ixmap;
-      let idx;
-      const ids = data[0];
-      n = ids.length;
-      for (let i = 0; i < n; i ++) {
-        idx = ixmap[ids[i]];
-        if (idx !== undefined) {
-          for (let j = 1; j < m; j ++) {
-            cols[j - 1][idx] = data[j][i];
-          }
-          nctg ++;
+    // assign data to matching Ids
+    ixmap = mo.cache.ixmap;
+    let idx;
+    const ids = data[0];
+    n = ids.length;
+    for (let i = 0; i < n; i ++) {
+      idx = ixmap[ids[i]];
+      if (idx !== undefined) {
+        for (let j = 1; j < m; j ++) {
+          cols[j - 1][idx] = data[j][i];
         }
+        nctg ++;
       }
-
-      mo.data.push(...cols);
-      mo.cols.names.push(...names.slice(1));
-      mo.cols.types.push(...types.slice(1));
     }
 
-    // count fields (excluding weight)
-    ncol = types.filter(x => !x.endsWith('wt')).length - 1;
+    mo.data.push(...cols);
+    mo.cols.names.push(...names.slice(1));
+    mo.cols.types.push(...types.slice(1));
+  }
 
-    // assign special fields
-    if (splen) mo.cache.splen = mo.cols.names.indexOf(splen);
-    if (spcov) mo.cache.spcov = mo.cols.names.indexOf(spcov);
+  // count fields (excluding weight)
+  ncol = types.filter(x => !x.endsWith('wt')).length - 1;
 
-    // clean up
-    impo.fname = null;
-    impo.text = null;
-    impo.names = [];
-    impo.types = [];
-    impo.guess = [];
-    impo.idx = [];
+  // assign special fields
+  if (splen) mo.cache.splen = mo.cols.names.indexOf(splen);
+  if (spcov) mo.cache.spcov = mo.cols.names.indexOf(spcov);
 
-    // update view by data
-    if (n === 0) resetWorkspace(mo);
-    else {
-      cacheFrequencies(mo, true);
-      if (splen || spcov) cacheTotAbundance(mo);
-      updateWorkspace(mo);
-    }
+  // clean up
+  impo.fname = null;
+  impo.text = null;
+  impo.head = true;
+  impo.names = [];
+  impo.types = [];
+  impo.guess = [];
+  impo.idx = [];
 
-    byId('import-prog').classList.add('hidden');
-    byId('import-modal').classList.add('hidden');
-    toastMsg(`Read ${plural('data field', ncol)} ` +
-      `of ${plural('contig', nctg)}.`, mo.stat);
-  });
+  // update view by data
+  if (n === 0) resetWorkspace(mo);
+  else {
+    cacheFrequencies(mo, true);
+    if (splen || spcov) cacheTotAbundance(mo);
+    updateWorkspace(mo);
+  }
+
+  byId('import-prog').classList.add('hidden');
+  byId('import-modal').classList.add('hidden');
+  toastMsg(`Read ${plural('data field', ncol)} ` +
+    `of ${plural('contig', nctg)}.`, mo.stat);
 }
 
 
@@ -423,8 +473,12 @@ function updateDataFromText(text, fname, mo) {
 
     // parse as a table
     else {
-      try { [impo.names, impo.types, impo.guess] = parseTableHead(text); }
-      catch (err) { toastMsg(err.message, mo.stat); }
+      try {
+        [impo.names, impo.types, impo.guess] = parseTableHead(text);
+      } catch (err) {
+        toastMsg(err.message, mo.stat);
+        return;
+      }
       impo.text = text;
       fillImportTable(mo);
     }
@@ -461,11 +515,14 @@ function parseTableHead(text) {
   // get table table
   const head = text.split(/\r?\n/, 1)[0].split('\t');
   const m = head.length;
-  if (m < 2) throw new Error('Table has no column.');
+  if (m < 2) throw new Error('Input is not a tab-separated file.');
 
+  // contig Ids
   const names = [head[0]],
         types = ['id'],
         guess = [false];
+
+  // data fields
   let name, l, code, type;
   for (let i = 1; i < m; i++) {
     name = head[i];
@@ -1147,4 +1204,37 @@ function parseContigTitle(line, format) {
     return [id, coverage];
   }
   return null;
+}
+
+
+/**
+ * Update special field controls by data.
+ * @function updateSpFieldCtrl
+ * @param {Object} cols - cols object
+ * @param {Object} cache - cache object
+ */
+function updateSpFieldCtrl(cols, cache) {
+  const names = cols.names,
+        types = cols.types;
+  const n = names.length;
+  const numcols = [];
+  let i;
+  for (i = 1; i < n; i++) {
+    if (types[i] === 'num') numcols.push(i);
+  }
+  let key, sel, opt;
+  for (key of ['len', 'cov']) {
+    sel = byId(`${key}-col-sel`);
+    sel.innerHTML = '';
+    opt = document.createElement('option');
+    opt.value = 0;
+    sel.add(opt);
+    for (i of numcols) {
+      opt = document.createElement('option');
+      opt.value = i;
+      opt.text = names[i];
+      sel.add(opt);
+    }
+    sel.value = cache[`sp${key}`];
+  }
 }
