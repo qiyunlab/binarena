@@ -1688,10 +1688,10 @@ div.legend:hover div.clip {
 
 /* running dots */
 
-.run-dots > span { animation: dots-blink 1.2s linear infinite; }
-.run-dots > span:nth-child(1) { animation-delay: 0.4s; }
-.run-dots > span:nth-child(2) { animation-delay: 0.8s; }
-.run-dots > span:nth-child(3) { animation-delay: 1.2s; }
+.prog-dots > span { animation: dots-blink 1.2s linear infinite; }
+.prog-dots > span:nth-child(1) { animation-delay: 0.4s; }
+.prog-dots > span:nth-child(2) { animation-delay: 0.8s; }
+.prog-dots > span:nth-child(3) { animation-delay: 1.2s; }
 @keyframes dots-blink { from { opacity: 0; } to { opacity: 1; } }
 
 

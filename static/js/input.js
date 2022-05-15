@@ -68,7 +68,7 @@ function initImportCtrl(mo) {
   const spcov = mo.cache.spcov ? 0 : guessCovColumn(cols);
 
   // update title
-  byId('import-progress').classList.add('hidden');
+  byId('import-prog').classList.add('hidden');
   byId('import-title').innerHTML = (mo.cache.nctg === 0)
     ? `Load new data from ${fname}` : `Append data from ${fname}`;
   byId('import-title').classList.remove('hidden');
@@ -101,16 +101,7 @@ function initImportCtrl(mo) {
     cell.innerHTML = names[i];
     
     // 3a. let user select data type
-    if (guess[i]) {
-      input = document.createElement('select');
-      for (let key of ['num', 'cat', 'fea', 'des']) {
-        const opt = document.createElement('option');
-        desc = FIELD_DESCS[key];
-        opt.value = desc;
-        opt.text = desc;
-        input.appendChild(opt);
-      }
-    }
+    if (guess[i]) input = createDtypeSel(i);
 
     // 3b. data type is pre-defined
     else {
@@ -122,55 +113,107 @@ function initImportCtrl(mo) {
     cell = row.insertCell(-1);
     cell.appendChild(input);
 
-    // 4. special field
-    btn = document.createElement('button');
-    btn.id = `spec-field-btn-${i}`;
-    btn.title = 'Special column';
-    btn.classList.add('dropdown');
-
-    // pre-assign value
-    const value = (i === splen) ? 'Length' : (i === spcov) ? 'Coverage' : '';
-    btn.value = value;
-    btn.innerHTML = value.slice(0, 3);
-    btn.setAttribute('data-prev-val', value);
-
-    // let user select value
-    btn.addEventListener('click', function () {
-      const value = this.value;
-      if (value !== this.getAttribute('data-prev-val')) {
-        
-        // set current row
-        this.setAttribute('data-prev-val', value);
-        this.innerHTML = value.slice(0, 3);
-
-        // unset other rows
-        if (value) {
-          const row = this.parentElement.parentElement;
-          const idx = row.getAttribute('data-index');
-          let b;
-          for (let r of row.parentElement.rows) {
-            if (r.getAttribute('data-index') !== idx) {
-              b = r.cells[3].firstElementChild;
-              if (b.value === value) {
-                b.innerHTML = b.value = '';
-                b.setAttribute('data-prev-val', '');
-                break;
-              }
-            }
-          }
-        }
-      } else {
-        listSelect(['', 'Length', 'Coverage'], this, 'down');
-      }
-    });
+    // 4. special field (numeric only)
     cell = row.insertCell(-1);
-    cell.appendChild(btn);
+    if (types[i] === 'num') {
+      btn = createSpFieldBtn(i, splen, spcov);
+      cell.appendChild(btn);
+    }
   }
   byId('import-table-wrap').classList.remove('hidden');
   byId('import-modal').classList.remove('hidden');
 
   // directly import if all data types are pre-defined
   if (!guess.some(Boolean)) importTable(mo);
+}
+
+
+/**
+ * Create a data type selection menu.
+ * @function createDtypeSel
+ * @param {number} i - field index
+ * @returns {Object} - select DOM
+ */
+function createDtypeSel(i) {
+  const sel = document.createElement('select');
+
+  // data type options
+  let desc;
+  for (let key of ['num', 'cat', 'fea', 'des']) {
+    const opt = document.createElement('option');
+    desc = FIELD_DESCS[key];
+    opt.value = desc;
+    opt.text = desc;
+    sel.appendChild(opt);
+  }
+
+  // add or remove special field button
+  sel.addEventListener('change', function () {
+    const cell = this.parentElement.nextElementSibling;
+    if (this.value === 'numeric') {
+      const btn = createSpFieldBtn(i);
+      cell.appendChild(btn);
+    } else {
+      cell.innerHTML = '';
+    }
+  });
+  return sel;
+}
+
+
+/**
+ * Create a special field selection button.
+ * @function createSpFieldBtn
+ * @param {number} i - field index
+ * @param {number=} splen - "length" field index
+ * @param {number=} spcov - "coverage" field index
+ * @returns {Object} - button DOM
+ */
+function createSpFieldBtn(i, splen, spcov) {
+  const btn = document.createElement('button');
+  btn.id = `spec-field-btn-${i}`;
+  btn.title = 'Special column';
+  btn.classList.add('dropdown');
+
+  // pre-assign value
+  const value = (i === splen) ? 'Length' : (i === spcov) ? 'Coverage' : '';
+  btn.value = value;
+  btn.innerHTML = value.slice(0, 3);
+  btn.setAttribute('data-prev-val', value);
+
+  // let user select value
+  btn.addEventListener('click', function () {
+    const value = this.value;
+    if (value !== this.getAttribute('data-prev-val')) {
+      
+      // set current row
+      this.setAttribute('data-prev-val', value);
+      this.innerHTML = value.slice(0, 3);
+
+      // unset other rows
+      if (value) {
+        const row = this.parentElement.parentElement;
+        const idx = row.getAttribute('data-index');
+        let b;
+        for (let r of row.parentElement.rows) {
+          if (r.getAttribute('data-index') !== idx) {
+            b = r.cells[3].firstElementChild;
+            if (b !== null && b.value === value) {
+              b.innerHTML = b.value = '';
+              b.setAttribute('data-prev-val', '');
+              break;
+            }
+          }
+        }
+      }
+    }
+
+    // show dropdown menu
+    else {
+      listSelect(['', 'Length', 'Coverage'], this, 'down');
+    }
+  });
+  return btn;
 }
 
 
@@ -192,7 +235,7 @@ function importTable(mo) {
         typex = [types[0]];
 
   // add individual fields
-  let i, val;
+  let i, val, btn;
   let splen = null,
       spcov = null;
   for (let row of byId('import-tbody').rows) {
@@ -200,7 +243,9 @@ function importTable(mo) {
     idx.push(i);
     namex.push(names[i]);
     typex.push(row.cells[2].firstElementChild.value.substring(0, 3));
-    val = row.cells[3].firstElementChild.value;
+    btn = row.cells[3].firstElementChild;
+    if (btn === null) continue;
+    val = btn.value;
     if (val === 'Length') splen = names[i];
     else if (val === 'Coverage') spcov = names[i];
   }
@@ -220,12 +265,13 @@ function importTable(mo) {
 
   // parse table body
   byId('import-title').classList.add('hidden');
-  byId('import-progress').classList.remove('hidden');
+  byId('import-prog').classList.remove('hidden');
 
   setTimeout(function () {
     let data, ixmap;
     [data, names, types, ixmap] = parseTableBody(impo);
-    let k = 0;
+    let nctg = 0,
+        ncol = 0;
 
     // load new dataset
     if (n === 0) {
@@ -233,7 +279,7 @@ function importTable(mo) {
       mo.cols.names.push(...names);
       mo.cols.types.push(...types);
       mo.cache.ixmap = ixmap;
-      k = data[0].length;
+      nctg = data[0].length;
     }
 
     // append to current dataset
@@ -248,6 +294,8 @@ function importTable(mo) {
         // check duplicated fields
         if (nameset.has(names[i])) {
           toastMsg(`Field "${names[i]}" already exists.`, mo.stat);
+          byId('import-prog').classList.add('hidden');
+          byId('import-modal').classList.add('hidden');
           return;
         }
         cols.push(Array(n).fill(EMPTY_VALS[types[i]]));
@@ -264,7 +312,7 @@ function importTable(mo) {
           for (let j = 1; j < m; j ++) {
             cols[j - 1][idx] = data[j][i];
           }
-          k ++;
+          nctg ++;
         }
       }
 
@@ -273,11 +321,12 @@ function importTable(mo) {
       mo.cols.types.push(...types.slice(1));
     }
 
+    // count fields (excluding weight)
+    ncol = types.filter(x => !x.endsWith('wt')).length - 1;
+
     // assign special fields
     if (splen) mo.cache.splen = mo.cols.names.indexOf(splen);
     if (spcov) mo.cache.spcov = mo.cols.names.indexOf(spcov);
-
-    console.log(mo.cache.splen, mo.cache.spcov);
 
     // clean up
     impo.fname = null;
@@ -287,10 +336,18 @@ function importTable(mo) {
     impo.guess = [];
     impo.idx = [];
 
-    updateViewByData(mo);
-    byId('import-progress').classList.add('hidden');
+    // update view by data
+    if (n === 0) resetWorkspace(mo);
+    else {
+      cacheFrequencies(mo, true);
+      if (splen || spcov) cacheTotAbundance(mo);
+      updateWorkspace(mo);
+    }
+
+    byId('import-prog').classList.add('hidden');
     byId('import-modal').classList.add('hidden');
-    toastMsg(`Read ${plural('contig', k)}.`, mo.stat);
+    toastMsg(`Read ${plural('data field', ncol)} ` +
+      `of ${plural('contig', nctg)}.`, mo.stat);
   });
 }
 
@@ -305,8 +362,6 @@ function uploadFile(file, mo) {
   const reader = new FileReader();
   reader.onload = function (e) {
     updateDataFromText(e.target.result, file.name, mo);
-    // updateViewByData(mo);
-    // toastMsg(`Read ${plural('contig', mo.data[0].length)}.`, mo.stat);
   };
   reader.readAsText(file);
 }
@@ -325,8 +380,6 @@ function updateDataFromRemote(path, mo) {
     if (this.readyState == 4) {
       if (this.status == 200) {
         updateDataFromText(this.responseText, path, mo);
-        updateViewByData(mo);
-        toastMsg(`Read ${plural('contig', mo.data[0].length)}.`, mo.stat);
       }
     }
   };
@@ -420,7 +473,7 @@ function parseTableHead(text) {
     if (l === 0) throw new Error(`Column ${i} has no name.`);
 
     // look for field type code (e.g., "length|n")
-    if (l > 2 & name.charAt(l - 2) == '|') {
+    if (l > 2 && name.charAt(l - 2) == '|') {
       code = name.charAt(l - 1);
       type = FIELD_CODES[code];
       if (type === undefined) throw new Error(

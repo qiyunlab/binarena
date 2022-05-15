@@ -212,11 +212,13 @@ function initCloseBtns() {
  */
 function initListSel() {
   byId('list-options').addEventListener('click', function (e) {
-    let src;
+    let src, val;
     for (let row of this.rows) {
       if (row.contains(e.target)) {
+        val = row.cells[0].textContent;
+        if (val.match(/\s/)) val = '';
         src = byId(this.getAttribute('data-target-id'));
-        src.value = row.cells[0].textContent;
+        src.value = val;
         if (src.nodeName.toLowerCase() == 'input') {
           src.focus(); // for text box etc.
         } else {
@@ -287,12 +289,12 @@ function initContextMenu(mo) {
   // close current data
   byId('close-data-a').addEventListener('click', function () {
     closeData(mo);
-    updateViewByData(mo);
+    resetWorkspace(mo);
   });
 
   // export bins
   byId('export-bins-a').addEventListener('click', function () {
-    exportBinPlan(mo.binned);
+    exportBinPlan(mo.binned, mo.data[0]);
   });
 
   // export data table as JSON
@@ -597,7 +599,7 @@ function listSelect(lst, src, direc, same) {
   for (let item of lst) {
     const row = table.insertRow(-1);
     const cell = row.insertCell(-1);
-    cell.innerHTML = item;
+    cell.innerHTML = item ? item : '&nbsp;';
   }
   div.classList.remove('hidden');
 }

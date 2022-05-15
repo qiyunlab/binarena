@@ -30,15 +30,14 @@ function initBinCtrl(mo) {
   // load bins from a categorical field
   byId('plan-sel-txt').addEventListener('click', function () {
     const lst = listColsByType(cols, 'cat');
-    listSelect(['&nbsp;'].concat(lst), this, 'down', true);
+    listSelect([''].concat(lst), this, 'down', true);
   });
 
   byId('plan-sel-txt').addEventListener('focus', function () {
     const plan = this.value;
 
     // empty option: unload any binning plan
-    if (plan.match(/\s/)) {
-      this.value = '';
+    if (plan === '') {
       this.setAttribute('data-col', '');
       mo.binned.fill('');
       mo.cache.binns.clear();

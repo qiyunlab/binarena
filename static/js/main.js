@@ -445,11 +445,11 @@ window.addEventListener('load', function () {
   // load program theme
   mo.theme = loadTheme();
 
-  // initiate graphical user interface
+  // initiate interface
   initGUI(mo);
 
-  // update view based on data
-  updateViewByData(mo);
+  // reset workplace
+  resetWorkspace(mo);
 
 });
 
