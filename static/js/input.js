@@ -111,7 +111,7 @@ function initImportCtrl(mo) {
     // 1. drop field button
     btn = document.createElement('button');
     btn.innerHTML = '&#x2715;'; // cross mark
-    btn.title = 'Discard field';
+    btn.title = 'Delete field';
     btn.addEventListener('click', function () {
       const row = this.parentElement.parentElement;
       row.parentElement.parentElement.deleteRow(row.rowIndex);

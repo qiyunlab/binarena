@@ -1247,7 +1247,6 @@ table.sheet thead {
 
 table.sheet thead th {
   background-color: lightgray;
-  font-weight: bold;
   text-align: center;
   line-height: 200%;
   position: sticky;
@@ -1255,6 +1254,10 @@ table.sheet thead th {
   z-index: 1;
   padding-left: 5px;
   padding-right: 5px;
+}
+
+table.sheet thead th:hover {
+  text-decoration: underline;
 }
 
 table.sheet tbody td {
@@ -1278,6 +1281,18 @@ table.sheet tbody tr td:nth-last-child(2)+td {
   padding-left: 10px;
   text-align: left;
 }
+
+table.sheet thead th button {
+  display: none;
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+
+table.sheet thead th:hover button {
+  display: block;
+}
+
 
 /** sorting arrow */
 
