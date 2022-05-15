@@ -11,7 +11,7 @@
 /**
  * @constant FIELD_CODES
  */
- const FIELD_CODES = {
+const FIELD_CODES = {
   'n': 'num', // numeric
   'c': 'cat', // categorical
   'f': 'fea', // feature set
@@ -54,6 +54,20 @@ function initImportCtrl(mo) {
       cacheTotAbundance(mo);
     });
   }
+
+  // whether there is header
+  byId('has-header-chk').addEventListener('change', function () {
+    const row = byId('import-tbody').rows[0];
+    const cell = row.cells[1];
+    if (this.checked) {
+      cell.innerHTML = row.getAttribute('data-name');
+    } else {
+      cell.innerHTML = '';
+      const input = document.createElement('input');
+      input.type = 'text';
+      cell.appendChild(input);
+    }
+  });
 }
 
 
@@ -80,10 +94,23 @@ function initImportCtrl(mo) {
     return;
   }
 
-  // guess whether first line is header
-  // no header only when: 1) appending, 2) two columns, 3) cell 1 found in
-  // existing contig Ids
-  if (!isNew && n === 2 && names[0] in mo.cache.ixmap) impo.head = false;
+  let hasHead;
+
+  // for map (2 columns)
+  if (n === 2) {
+
+    // guess whether first line is header (no header only when:
+    // 1) name is guessed, 2) cell 1 found in existing contig Ids)
+    hasHead = !(guess[1] && names[0] in mo.cache.ixmap);
+    byId('has-header-p').classList.remove('hidden');
+  }
+
+  // for table (3+ columns)
+  else {
+    hasHead = true;
+    byId('has-header-p').classList.add('hidden');
+  }
+  byId('has-header-chk').checked = hasHead;
 
   // guess special fields
   const cols = {'names': names, 'types': types};
@@ -106,23 +133,42 @@ function initImportCtrl(mo) {
     if (types[i] === 'id') continue;
     if (types[i].endsWith('wt')) continue;
     row = table.insertRow(-1);
-    row.setAttribute('data-index', i)
+    row.setAttribute('data-index', i);
+    row.setAttribute('data-name', names[i]);
 
     // 1. drop field button
-    btn = document.createElement('button');
-    btn.innerHTML = '&#x2715;'; // cross mark
-    btn.title = 'Delete field';
-    btn.addEventListener('click', function () {
-      const row = this.parentElement.parentElement;
-      row.parentElement.parentElement.deleteRow(row.rowIndex);
-    });
     cell = row.insertCell(-1);
-    cell.appendChild(btn);
+    if (n > 2) {
+      btn = document.createElement('button');
+      btn.innerHTML = '&#x2715;'; // cross mark
+      btn.title = 'Delete field';
+      btn.addEventListener('click', function () {
+        const row = this.parentElement.parentElement;
+        row.parentElement.parentElement.deleteRow(row.rowIndex);
+      });
+      cell.appendChild(btn);
+    }
 
     // 2. field name
     cell = row.insertCell(-1);
-    cell.innerHTML = names[i];
-    
+
+    // 2a. name is fixed (for table and coded map)
+    if (hasHead) cell.innerHTML = names[i];
+
+    // 2b. name is customizable
+    else {
+      input = document.createElement('input');
+      input.type = 'text';
+
+      // use filename as field name
+      const lix = fname.lastIndexOf('.');
+      input.value = lix > -1 ? fname.substring(0, lix) : fname;
+      cell.appendChild(input);
+    }
+
+    // 3. data type
+    cell = row.insertCell(-1);
+
     // 3a. let user select data type
     if (guess[i]) input = createDTypeSel(i);
 
@@ -133,7 +179,6 @@ function initImportCtrl(mo) {
       input.disabled = true;
     }
     input.value = FIELD_DESCS[types[i]];
-    cell = row.insertCell(-1);
     cell.appendChild(input);
 
     // 4. special field (numeric only)
@@ -261,7 +306,8 @@ function importTable(mo) {
   let i, val, btn;
   let splen = null,
       spcov = null;
-  for (let row of byId('import-tbody').rows) {
+  const rows = byId('import-tbody').rows;
+  for (let row of rows) {
     i = parseInt(row.getAttribute('data-index'));
     idx.push(i);
     namex.push(names[i]);
@@ -285,13 +331,26 @@ function importTable(mo) {
     return;
   }
 
+  // custom name for map
+  if (!byId('has-header-chk').checked) {
+    let val = rows[0].cells[1].firstElementChild.value;
+    if (!val) {
+      toastMsg('A field name is required.', mo.stat);
+      return;
+    }
+    namex[1] = val;
+  }
+
+  // strip head line
+  else {
+    const text = impo.text
+    impo.text = text.substring(text.indexOf('\n') + 1);
+  }
+
+  // update cache
   impo.names = namex;
   impo.types = typex;
   impo.idx = idx;
-
-  // strip head line
-  const text = impo.text
-  impo.text = text.substring(text.indexOf('\n') + 1);
 
   // parse table body
   byId('import-title').classList.add('hidden');
@@ -318,7 +377,21 @@ function importTable(mo) {
  */
 function importTableNext(mo, splen, spcov) {
   const impo = mo.impo;
-  let [data, names, types, ixmap] = parseTableBody(impo);
+
+  // parse table body (expensive)
+  let res;
+  try { res = parseTableBody(impo); }
+  catch (err) {
+    toastMsg(err.message, mo.stat);
+    byId('import-prog').classList.add('hidden');
+    byId('import-modal').classList.add('hidden');
+    return;
+  }
+  let data = res[0],
+      names = res[1],
+      types = res[2],
+      ixmap = res[3];
+
   let nctg = 0,
       ncol = 0;
 
@@ -473,6 +546,11 @@ function updateDataFromText(text, fname, mo) {
 
     // parse as a table
     else {
+      // const ncol = text.split(/\r?\n/, 1)[0].split('\t').length;
+      // if (ncol === 1) {
+      //   throw new Error('Input is not a tab-separated file.');
+      // }
+
       try {
         [impo.names, impo.types, impo.guess] = parseTableHead(text);
       } catch (err) {
@@ -527,7 +605,7 @@ function parseTableHead(text) {
   for (let i = 1; i < m; i++) {
     name = head[i];
     l = name.length;
-    if (l === 0) throw new Error(`Column ${i} has no name.`);
+    // if (l === 0) throw new Error(`Column ${i} has no name.`);
 
     // look for field type code (e.g., "length|n")
     if (l > 2 && name.charAt(l - 2) == '|') {
@@ -595,6 +673,7 @@ function parseTableBody(impo) {
         idx = impo.idx;
   const m = names.length;
 
+  // split text into lines
   const lines = text.split(/\r?\n/);
   const last = lines.pop();
   if (last !== '') lines.push(last);
