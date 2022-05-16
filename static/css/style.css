@@ -156,15 +156,14 @@ button.inside {
 /** panel head */
 
 div.panel-head {
+  display: flex;
+  justify-content: flex-end;
+  flex-direction: row;
   background-color: dimgray;
   height: 32px;
   min-height: 32px;
   color: white;
   position: relative;
-}
-
-div.panel-head span {
-  height: 100%;
 }
 
 div.panel-head button {
@@ -174,12 +173,17 @@ div.panel-head button {
   font-size: 9pt;
 }
 
-div.panel-head span:last-of-type {
-  display: block;
-  overflow: hidden;
+div.panel-head button:hover {
+  background: darkgray;
 }
 
-div.panel-head span:last-of-type button:hover:after {
+/* 
+div.panel-head button:first-of-type {
+  display: block;
+  overflow: hidden;
+} */
+
+div.panel-head button:first-of-type:hover:after {
   position: absolute;
   content: "";
   top: 11px;
@@ -190,15 +194,17 @@ div.panel-head span:last-of-type button:hover:after {
   border-color: transparent transparent transparent white;
 }
 
-div.panel-head span:last-of-type button {
+div.panel-head button:first-of-type {
   width: 100%;
   text-align: left;
   padding-left: 20px;
 }
 
-div.panel-head button:hover {
-  background: darkgray;
+div.panel-head button:not(:first-of-type) {
+  min-width: 32px;
 }
+
+/** currently not used */
 
 div.panel-head select {
   position: absolute;
@@ -213,6 +219,49 @@ div.panel-head select {
 
 div.panel-head select:hover {
   border-bottom: 1px solid dimgray;
+}
+
+div.panel-head > div {
+  min-width: 32px;
+  text-align: center;
+  line-height: 32px;
+}
+
+div.panel-head > div:hover {
+  background-color: darkgray;
+}
+
+div.panel-head > div > div.expand {
+  position: absolute;
+  display: none;
+  top: 32px;
+  z-index: 2;
+  box-shadow: 3px 3px 15px rgba(0, 0, 0, 0.15);
+  flex-direction: column;
+  color: black;
+  background-color: white;
+}
+
+div.panel-head > div:hover > div.expand {
+  display: flex;
+  transform: translateX(-100% + 32px);
+}
+
+div.panel-head > div > div.expand > p {
+  margin: 0;
+  line-height: 100%;
+  text-align: right;
+  overflow: hidden;
+}
+
+#bins-menu {
+  width: 100px;
+  transform: translateX(-68px);
+}
+
+#info-menu {
+  width: 120px;
+  transform: translateX(-88px);
 }
 
 
@@ -406,7 +455,7 @@ div.toolbar span.spacer {
 #toast {
   min-width: 250px;
   margin-left: -125px;
-  background-color: dimgray;
+  background-color: #444;
   opacity: 0.75;
   color: white;
   text-align: center;
@@ -436,14 +485,6 @@ div.toolbar span.spacer {
   background-color: lightgray;
 }
 
-/* loading dots */
-#toast-dots { margin-right: 10px;}
-#toast-dots > span { animation: toast-blink 1.2s linear infinite; }
-#toast-dots > span:nth-child(1) { animation-delay: 0.4s; }
-#toast-dots > span:nth-child(2) { animation-delay: 0.8s; }
-#toast-dots > span:nth-child(3) { animation-delay: 1.2s; }
-@keyframes toast-blink { from { opacity: 0; } to { opacity: 1; } }
-
 
 /**
  * Modal (separate window opened on top of the window).
@@ -451,7 +492,7 @@ div.toolbar span.spacer {
 
 div.modal {
   position: fixed;
-  z-index: 3;
+  z-index: 2;
   left: 0;
   top: 0;
   width: 100%;
@@ -481,9 +522,35 @@ div.modal-head {
   background-color: dimgray;
 }
 
+/* top left controls */
+
 div.modal-head > span:first-child {
   height: 100%;
 }
+
+div.modal-head > span:first-child button {
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
+div.modal-head > span:first-child button:last-of-type {
+  background-color: tomato;
+}
+
+div.modal-head > span:first-child button:last-of-type:hover {
+  background-color: lightpink;
+}
+
+div.modal-head > span:first-child button:first-of-type {
+  background-color: limegreen;
+}
+
+div.modal-head > span:first-child button:first-of-type:hover {
+  background-color: lightgreen;
+}
+
+
+/* top right controls */
 
 div.modal-head > span:last-child {
   height: 100%;
@@ -534,6 +601,19 @@ div.modal-body > div {
 
 
 /**
+ * Loading dots (in modal title).
+ */
+#toast-dots { margin-right: 10px;}
+#toast-dots > span { animation: toast-blink 1.2s linear infinite; }
+#toast-dots > span:nth-child(1) { animation-delay: 0.4s; }
+#toast-dots > span:nth-child(2) { animation-delay: 0.8s; }
+#toast-dots > span:nth-child(3) { animation-delay: 1.2s; }
+@keyframes toast-blink { from { opacity: 0; } to { opacity: 1; } }
+
+
+
+
+/**
  * Button group (currently not used).
  */
 
@@ -565,7 +645,7 @@ clicking in the blank area. */
 
 div.popup {
   position: fixed;
-  z-index: 2;
+  z-index: 3;
   background-color: white;
   box-shadow: 3px 3px 15px rgba(0, 0, 0, 0.15);
 }
@@ -662,6 +742,32 @@ table.square td:hover {
   width: 100%;
 }
 
+/** memlst select */
+
+#memlst-table {
+  width: 240px;
+}
+
+#memlst-table tr.mlField td {
+  background-color: #EEE;
+  line-height: 18px;
+}
+
+#memlst-table tr.mlGroup td {
+  height: 24px;
+  color: dimgray;
+  cursor: pointer;
+}
+
+#memlst-table tr.mlGroup td:first-child:hover {
+  background-color: lightgray;
+  color: black;
+}
+
+#memlst-table tr.mlGroup td:last-child {
+  width: 24px;
+}
+
 
 /**
  * Main plot.
@@ -731,7 +837,7 @@ canvas.main-plot {
   font-weight: bold;
 }
 
-/** dast button (main button) */
+/** dash button (main button) */
 
 #dash-btn {
   width: 32px;
@@ -1020,7 +1126,7 @@ div.dash-content > table tr td:last-child > span button:hover {
   right: 0;
 }
 
-#show-side-btn, #hide-side-btn{
+#show-side-btn {
   height: 32px;
   width: 32px;
 }
@@ -1247,7 +1353,6 @@ table.sheet thead {
 
 table.sheet thead th {
   background-color: lightgray;
-  font-weight: bold;
   text-align: center;
   line-height: 200%;
   position: sticky;
@@ -1255,6 +1360,10 @@ table.sheet thead th {
   z-index: 1;
   padding-left: 5px;
   padding-right: 5px;
+}
+
+table.sheet thead th:hover {
+  text-decoration: underline;
 }
 
 table.sheet tbody td {
@@ -1278,6 +1387,18 @@ table.sheet tbody tr td:nth-last-child(2)+td {
   padding-left: 10px;
   text-align: left;
 }
+
+table.sheet thead th button {
+  display: none;
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+
+table.sheet thead th:hover button {
+  display: block;
+}
+
 
 /** sorting arrow */
 
@@ -1589,6 +1710,103 @@ div.legend:hover div.clip {
 
 
 /**
+ * Data import.
+ */
+
+#import-modal > .modal-content {
+  width: 600px;
+}
+
+#import-table-wrap {
+  padding: 5px;
+  width: 400px;
+  max-height: 360px;
+}
+
+#import-table {
+  border: none;
+  table-layout: fixed;
+  overflow-y: scroll;
+  width: 100%;
+}
+
+#import-thead th {
+  position: sticky;
+  top: 0;
+  font-weight: normal;
+}
+
+#import-thead th:not(:first-child) {
+  background-color: #EEE;
+}
+
+#import-thead th:not(:first-child):hover {
+  background-color: lightgray;
+}
+
+#import-thead th:first-child  { width: 24px;  }
+#import-thead th:nth-child(2) { width: 150px; }
+#import-thead th:nth-child(3) { width: 100px; }
+#import-thead th:last-child   { width: 32px;  }
+
+#import-tbody td {
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+/* drop field button */
+
+#import-tbody td:first-child button {
+  display: none;
+  background: #EEE;
+  color: dimgray;
+}
+
+#import-tbody tr:hover td:first-child button {
+  display: block;
+}
+
+#import-tbody tr td:first-child button:hover {
+  background-color: lightgray;
+  color: black;
+}
+
+/* special field button */
+
+#import-tbody td:last-child {
+  text-align: center;
+}
+
+#import-tbody td:last-child button {
+  width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  color: dimgray;
+}
+
+#import-tbody tr:hover td:last-child button {
+  background-color: #EEE;
+}
+
+#import-tbody tr td:last-child button:hover {
+  background-color: lightgray;
+  color: black;
+}
+
+
+/* running dots */
+
+.prog-dots > span { animation: dots-blink 1.2s linear infinite; }
+.prog-dots > span:nth-child(1) { animation-delay: 0.4s; }
+.prog-dots > span:nth-child(2) { animation-delay: 0.8s; }
+.prog-dots > span:nth-child(3) { animation-delay: 1.2s; }
+@keyframes dots-blink { from { opacity: 0; } to { opacity: 1; } }
+
+
+/**
  * Silhouette calculation.
  */
 
@@ -1596,37 +1814,10 @@ div.legend:hover div.clip {
   width: 600px;
 }
 
-#silh-calc-btn {
-  background-color: tomato;
-  padding-left: 10px;
-  padding-right: 10px;
-}
-
-#silh-calc-btn:hover {
-  background-color: lightpink;
-}
-
-#silh-done-btn {
-  background-color: limegreen;
-  padding-left: 10px;
-  padding-right: 10px;
-}
-
-#silh-done-btn:hover {
-  background-color: lightgreen;
-}
-
 #silh-prog-span {
   text-align: center;
   padding-left: 10px;
 }
-
-/* loading dots */
-#calc-dots > span { animation: calc-blink 1.2s linear infinite; }
-#calc-dots > span:nth-child(1) { animation-delay: 0.4s; }
-#calc-dots > span:nth-child(2) { animation-delay: 0.8s; }
-#calc-dots > span:nth-child(3) { animation-delay: 1.2s; }
-@keyframes calc-blink { from { opacity: 0; } to { opacity: 1; } }
 
 #silh-body-div {
   display: flex;
@@ -1689,6 +1880,16 @@ div.legend:hover div.clip {
 #silh-tbody tr td:not(:first-child) {
   text-align: right;
 }
+
+
+/**
+ * Membership list.
+ */
+
+#memlst-modal > .modal-content {
+  width: 300px;
+}
+
 
 
 /**

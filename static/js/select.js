@@ -73,7 +73,7 @@ function initSelTools(mo) {
     mo.rena.focus();
   });
 
-  /** Undo masking */
+  /** Undo masking. */
   byId('undo-mask-btn').addEventListener('click', function () {
     const prev = mo.cache.maskh.pop();
     if (prev === undefined) return;
@@ -189,6 +189,18 @@ function initSelTools(mo) {
       updateSelection(mo);
     }
     mo.rena.focus();
+  });
+
+  /** Calculate completeness/contamination */
+  byId('comcon-a').addEventListener('click', function () {
+    const n = fillMemLstTable(mo);
+    if (n === 0) {
+      toastMsg(`No feature group is available. Please import.`, mo.stat);
+      return;
+    }
+    const div = byId('memlst-select');
+    popupPos(this, div, 'left');
+    div.classList.remove('hidden');
   });
 
 }
@@ -417,7 +429,7 @@ function buildInfoTable(mo) {
 
   const names = mo.cols.names,
         types = mo.cols.types;
-  const lencol = mo.cache.speci.len;
+  const splen = mo.cache.splen;
 
   // create rows
   const n = names.length;
@@ -455,7 +467,7 @@ function buildInfoTable(mo) {
       // with reference (default: length)
       if (metric.endsWith('by')) {
         row.setAttribute('data-met', metric.substring(0, metric.length - 2));
-        row.setAttribute('data-ref', lencol);
+        row.setAttribute('data-ref', splen);
       }
 
       // no reference
@@ -467,7 +479,7 @@ function buildInfoTable(mo) {
 
     // categorical: weight by length, metric not relevant
     else if (type === 'cat') {
-      row.setAttribute('data-ref', lencol);
+      row.setAttribute('data-ref', splen);
     }
 
     // row hover event: append control span
@@ -546,6 +558,9 @@ function updateInfoTable(mo) {
 
   // display count in info panel head
   const label = `Selected: ${npick}`;
+
+  // show/hide panel head menu
+  byId('info-menu-wrap').classList.toggle('hidden', !npick);
 
   // no contig is selected
   if (npick === 0) {

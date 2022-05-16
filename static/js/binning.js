@@ -30,15 +30,14 @@ function initBinCtrl(mo) {
   // load bins from a categorical field
   byId('plan-sel-txt').addEventListener('click', function () {
     const lst = listColsByType(cols, 'cat');
-    listSelect(['&nbsp;'].concat(lst), this, 'down', true);
+    listSelect([''].concat(lst), this, 'down', true);
   });
 
   byId('plan-sel-txt').addEventListener('focus', function () {
     const plan = this.value;
 
     // empty option: unload any binning plan
-    if (plan.match(/\s/)) {
-      this.value = '';
+    if (plan === '') {
       this.setAttribute('data-col', '');
       mo.binned.fill('');
       mo.cache.binns.clear();
@@ -208,14 +207,14 @@ function initBinCtrl(mo) {
   });
 
   // calculate silhouette coefficients
-  byId('silhouet-btn').addEventListener('click', function () {
+  byId('silhouet-a').addEventListener('click', function () {
     if (this.classList.contains('disabled')) return;
     updateCalcBoxCtrl(mo);
     byId('silh-modal').classList.remove('hidden');
   });
 
   // calculate adjusted Rand index
-  byId('adj-rand-btn').addEventListener('click', function () {
+  byId('adj-rand-a').addEventListener('click', function () {
     if (this.classList.contains('disabled')) return;
     if (!this.value) {
       const lst = listColsByType(mo.cols, 'cat');
@@ -227,7 +226,7 @@ function initBinCtrl(mo) {
   });
 
   // export current binning plan
-  byId('export-plan-btn').addEventListener('click', function () {
+  byId('export-plan-a').addEventListener('click', function () {
     exportBinPlan(mo.binned, data[0]);
   });
 
@@ -390,12 +389,8 @@ function updateBinCtrl(mo) {
   const n = mo.cache.binns.size;
 
   // update bins panel head
-  byId('bins-head').lastElementChild.firstElementChild
-    .innerHTML = 'Bins: ' + n;
-
-  byId('silhouet-btn').classList.toggle('hidden', !n);
-  byId('adj-rand-btn').classList.toggle('hidden', !n);
-  byId('export-plan-btn').classList.toggle('hidden', !n);
+  byId('bins-head-btn').innerHTML = 'Bins: ' + n;
+  byId('bins-menu-wrap').classList.toggle('hidden', !n);
   byId('bin-thead').classList.toggle('hidden', !n);
   byId('mask-bin-btn').classList.toggle('hidden', !n || !mo.cache.nmask);
 
@@ -494,7 +489,7 @@ function updateBinRow(row, ctgs, mo) {
 
   // stop if no length
   const cache = mo.cache;
-  const ilen = cache.speci.len;
+  const ilen = cache.splen;
   if (!ilen) {
     cells[2].innerHTML = 'na';
     cells[3].innerHTML = 'na';
@@ -504,7 +499,7 @@ function updateBinRow(row, ctgs, mo) {
   // 3rd cell: total length (kb)
   const data = mo.data;
   const L = data[ilen];
-  const icov = cache.speci.cov;
+  const icov = cache.spcov;
   let sumlen = 0;
   if (!icov) {
     for (let i = 0; i < n; i++) sumlen += L[ctgs[i]];
@@ -581,7 +576,7 @@ function createBin(binns, name) {
   if (name === undefined) {
     name = newName(binns, 'bin');
   } else if (binns.has(name)) {
-    throw `Error: Bin name "${name}" already exists.`;
+    throw new Error(`Bin name "${name}" already exists.`);
   }
   binns.add(name);
   return name;
@@ -598,7 +593,7 @@ function createBin(binns, name) {
  * @returns {boolean} whether renaming is successful
  */
 function renameBin(old, neo, binns, binned) {
-  if (binns.has(neo)) throw `Error: Bin name ${neo} already exists.`;
+  if (binns.has(neo)) throw new Error(`Bin name ${neo} already exists.`);
   binns.add(neo);
   binns.delete(old);
   const n = binned.length;
@@ -757,7 +752,7 @@ function removeFromBin(name, picked, binned) {
  */
 function deleteBins(table, binns, binned) {
   const [idxes, deleted] = selectedBins(table);
-  if (idxes.length === 0) throw 'Error: No bin is selected.';
+  if (idxes.length === 0) throw new Error('No bin is selected.');
 
   // delete rows from bottom to top so that row indices won't change
   for (let i = idxes.length - 1; i >= 0; i--) table.deleteRow(idxes[i]);
