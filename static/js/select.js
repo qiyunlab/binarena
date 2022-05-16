@@ -73,7 +73,7 @@ function initSelTools(mo) {
     mo.rena.focus();
   });
 
-  /** Undo masking */
+  /** Undo masking. */
   byId('undo-mask-btn').addEventListener('click', function () {
     const prev = mo.cache.maskh.pop();
     if (prev === undefined) return;
@@ -189,6 +189,13 @@ function initSelTools(mo) {
       updateSelection(mo);
     }
     mo.rena.focus();
+  });
+
+  /** Calculate completeness/contamination */
+  byId('comcon-btn').addEventListener('click', function () {
+    const div = byId('memlst-select');
+    popupPos(this, div, 'left');
+    div.classList.remove('hidden');
   });
 
 }

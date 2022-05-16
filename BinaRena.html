@@ -471,6 +471,8 @@
         <button id="update-bin-btn" class="hidden" title="Update bin with selected contigs (/)">&#8634;</button>
         <span class="spacer"></span>
         <button id="invert-btn" class="hidden" title="Invert selection">&#9680;</button>
+        <span class="spacer"></span>
+        <button id="comcon-btn" class="dropdown" title="Calculate completeness/contamination of feature group">&plusmn;</button>
       </div>
 
       <!-- info table -->
@@ -577,13 +579,29 @@
     </div>
   </div>
 
+  <!-- membership list import -->
+  <div id="memlst-modal" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-head">
+        <span><button id="memlst-import-btn" title="Import membership list">Import</button></span>
+        <span><span id="memlst-title">Membership</span></span>
+        <span id="memlst-ctrl-span"></span>
+      </div>
+      <div class="modal-body">
+        <table id="memlst-options">
+          <tr><td>Name:</td><td><input type="text" id="memlst-name-txt" title="Enter membership list name"></td></tr>
+          <tr><td>For:</td><td><select id="memlst-field-sel" title="Select a feature set field"></select></td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
   <!-- Silhouette calculation -->
   <div id="silh-modal" class="modal hidden">
     <div class="modal-content">
       <div class="modal-head">
         <span>
-          <button id="silh-calc-btn">Calculate</button><!--
-          --><button id="silh-done-btn">Done</button>
+          <button id="silh-done-btn">Done</button><button id="silh-calc-btn">Calculate</button>
         </span>
         <span>
           <span id="silh-title">Silhouette coefficient</span>
@@ -678,6 +696,11 @@
     <div class="sequ disc hidden"><p>Sequential</p></div>
     <div class="dive cont hidden"><p>Diverging</p></div>
     <div class="dive disc hidden"><p>Diverging</p></div>
+  </div>
+
+  <!-- feature group select dropdown -->
+  <div id="memlst-select" class="popup hidden">
+    <table id="memlst-table"></table>
   </div>
 
 

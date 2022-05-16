@@ -68,6 +68,11 @@ function initImportCtrl(mo) {
       cell.appendChild(input);
     }
   });
+
+  // import membership list button
+  byId('memlst-import-btn').addEventListener('click', function () {
+    importMemlst(mo);
+  });
 }
 
 
@@ -76,7 +81,7 @@ function initImportCtrl(mo) {
  * @function fillImportTable
  * @param {Object} mo - main object
  */
- function fillImportTable(mo) {
+function fillImportTable(mo) {
   const impo = mo.impo;
   const names = impo.names,
         types = impo.types,
@@ -542,24 +547,27 @@ function updateDataFromText(text, fname, mo) {
     // parse as an assembly
     if (text.charAt() === '>') {
       parseAssembly(text, mo.data, mo.cols, mo.filter);
+      return;
+    }
+
+    // parse as membership list
+    const ncol = text.split(/\r?\n/, 1)[0].split('\t').length;
+    if (ncol === 1) {
+      impo.text = text;
+      fillMemlstModal(mo);
+      return;
     }
 
     // parse as a table
-    else {
-      // const ncol = text.split(/\r?\n/, 1)[0].split('\t').length;
-      // if (ncol === 1) {
-      //   throw new Error('Input is not a tab-separated file.');
-      // }
-
-      try {
-        [impo.names, impo.types, impo.guess] = parseTableHead(text);
-      } catch (err) {
-        toastMsg(err.message, mo.stat);
-        return;
-      }
-      impo.text = text;
-      fillImportTable(mo);
+    try {
+      [impo.names, impo.types, impo.guess] = parseTableHead(text);
+    } catch (err) {
+      toastMsg(err.message, mo.stat);
+      return;
     }
+    impo.text = text;
+    fillImportTable(mo);
+
   }
 }
 
@@ -1316,4 +1324,62 @@ function updateSpFieldCtrl(cols, cache) {
     }
     sel.value = cache[`sp${key}`];
   }
+}
+
+
+/**
+ * Populate membership list import modal.
+ * @function fillMemlstModal
+ * @param {Object} mo - main object
+ */
+function fillMemlstModal(mo) {
+  const names = mo.cols.names,
+        types = mo.cols.types;
+  const sel = byId('memlst-field-sel');
+  sel.innerHTML = '';
+  let opt;
+  let hasFea = false;
+  for (let i = 1; i < names.length; i ++) {
+    if (types[i] === 'fea') {
+      opt = document.createElement('option');
+      opt.value = i;
+      opt.text = names[i];
+      sel.add(opt);
+      hasFea = true;
+    }
+  }
+  if (!hasFea) {
+    toastMsg(
+      'Attempting to import a membership list, however there' +
+      '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>' +
+      'is no feature set field in the current dataset.', mo.stat, 3000);
+    return;
+  }
+  const fname = mo.impo.fname;
+  const txt = byId('memlst-name-txt');
+  const lix = fname.lastIndexOf('.');
+  txt.value = lix > -1 ? fname.substring(0, lix) : fname;
+  byId('memlst-modal').classList.remove('hidden');
+}
+
+
+/**
+ * Import a membership list.
+ * @function importMemLst
+ * @param {Object} mo - main object
+ * @description Called from within the "memlst" modal.
+ */
+function importMemlst(mo) {
+  const mems = mo.mems;
+  const idx = byId('memlst-field-sel').value;
+  const name = byId('memlst-name-txt').value;
+  const lines = mo.impo.text.split(/\r?\n/);
+  const last = lines.pop();
+  if (last !== '') lines.push(last);
+  if (!(idx in mems)) mems[idx] = {};
+  mems[idx][name] = lines;
+  toastMsg(`Imported ${plural('member', lines.length)} ` +
+    `of ${name} for ${mo.cols.names[idx]}.`, mo.stat);
+  byId('memlst-modal').classList.add('hidden');
+  fillMemLstTable(mo);
 }

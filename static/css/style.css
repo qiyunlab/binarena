@@ -436,14 +436,6 @@ div.toolbar span.spacer {
   background-color: lightgray;
 }
 
-/* loading dots */
-#toast-dots { margin-right: 10px;}
-#toast-dots > span { animation: toast-blink 1.2s linear infinite; }
-#toast-dots > span:nth-child(1) { animation-delay: 0.4s; }
-#toast-dots > span:nth-child(2) { animation-delay: 0.8s; }
-#toast-dots > span:nth-child(3) { animation-delay: 1.2s; }
-@keyframes toast-blink { from { opacity: 0; } to { opacity: 1; } }
-
 
 /**
  * Modal (separate window opened on top of the window).
@@ -481,9 +473,35 @@ div.modal-head {
   background-color: dimgray;
 }
 
+/* top left controls */
+
 div.modal-head > span:first-child {
   height: 100%;
 }
+
+div.modal-head > span:first-child button {
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
+div.modal-head > span:first-child button:last-of-type {
+  background-color: tomato;
+}
+
+div.modal-head > span:first-child button:last-of-type:hover {
+  background-color: lightpink;
+}
+
+div.modal-head > span:first-child button:first-of-type {
+  background-color: limegreen;
+}
+
+div.modal-head > span:first-child button:first-of-type:hover {
+  background-color: lightgreen;
+}
+
+
+/* top right controls */
 
 div.modal-head > span:last-child {
   height: 100%;
@@ -531,6 +549,19 @@ div.modal-body > div {
   padding: 8px 15px;
   padding-top: 0 !important;
 }
+
+
+/**
+ * Loading dots (in modal title).
+ */
+#toast-dots { margin-right: 10px;}
+#toast-dots > span { animation: toast-blink 1.2s linear infinite; }
+#toast-dots > span:nth-child(1) { animation-delay: 0.4s; }
+#toast-dots > span:nth-child(2) { animation-delay: 0.8s; }
+#toast-dots > span:nth-child(3) { animation-delay: 1.2s; }
+@keyframes toast-blink { from { opacity: 0; } to { opacity: 1; } }
+
+
 
 
 /**
@@ -660,6 +691,32 @@ table.square td:hover {
   display: inline-block;
   height: 100%;
   width: 100%;
+}
+
+/** memlst select */
+
+#memlst-table {
+  width: 240px;
+}
+
+#memlst-table tr.mlField td {
+  background-color: #EEE;
+  line-height: 18px;
+}
+
+#memlst-table tr.mlGroup td {
+  height: 24px;
+  color: dimgray;
+  cursor: pointer;
+}
+
+#memlst-table tr.mlGroup td:first-child:hover {
+  background-color: lightgray;
+  color: black;
+}
+
+#memlst-table tr.mlGroup td:last-child {
+  width: 24px;
 }
 
 
@@ -1611,20 +1668,10 @@ div.legend:hover div.clip {
   width: 600px;
 }
 
-#import-btn {
-  background-color: limegreen;
-  padding-left: 10px;
-  padding-right: 10px;
-}
-
-#import-btn:hover {
-  background-color: lightgreen;
-}
-
 #import-table-wrap {
   padding: 5px;
   width: 400px;
-  max-height: 360px
+  max-height: 360px;
 }
 
 #import-table {
@@ -1718,37 +1765,10 @@ div.legend:hover div.clip {
   width: 600px;
 }
 
-#silh-calc-btn {
-  background-color: tomato;
-  padding-left: 10px;
-  padding-right: 10px;
-}
-
-#silh-calc-btn:hover {
-  background-color: lightpink;
-}
-
-#silh-done-btn {
-  background-color: limegreen;
-  padding-left: 10px;
-  padding-right: 10px;
-}
-
-#silh-done-btn:hover {
-  background-color: lightgreen;
-}
-
 #silh-prog-span {
   text-align: center;
   padding-left: 10px;
 }
-
-/* loading dots */
-/* #calc-dots > span { animation: calc-blink 1.2s linear infinite; }
-#calc-dots > span:nth-child(1) { animation-delay: 0.4s; }
-#calc-dots > span:nth-child(2) { animation-delay: 0.8s; }
-#calc-dots > span:nth-child(3) { animation-delay: 1.2s; }
-@keyframes calc-blink { from { opacity: 0; } to { opacity: 1; } } */
 
 #silh-body-div {
   display: flex;
@@ -1811,6 +1831,16 @@ div.legend:hover div.clip {
 #silh-tbody tr td:not(:first-child) {
   text-align: right;
 }
+
+
+/**
+ * Membership list.
+ */
+
+#memlst-modal > .modal-content {
+  width: 300px;
+}
+
 
 
 /**

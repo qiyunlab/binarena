@@ -103,6 +103,13 @@ function mainObj() {
     types: []
   };
 
+  /**
+   * Membership lists for feature sets.
+   * @member {Object.<Array>} mems
+   * @description Mapping of feature set field index to membership list.
+   */
+  this.mems = {};
+
 
   /**
    * Dictionary of categories and features.
