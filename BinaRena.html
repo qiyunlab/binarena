@@ -106,7 +106,7 @@
 
       <!-- search panel -->
       <div id="search-head" class="panel-head">
-        <span><button title="Show/hide search panel">Search</button></span>
+        <button title="Show/hide search panel">Search</button>
       </div>
       <div class="dash-content">
 
@@ -156,7 +156,7 @@
       <!-- It defines five display elements of the main plot: x-axis, y-axis,
       size, opacity, and color. -->
       <div id="display-head" class="panel-head">
-        <span><button title="Show/hide display panel">Display</button></span>
+        <button title="Show/hide display panel">Display</button>
       </div>
       <div class="dash-content">
         <table>
@@ -269,7 +269,7 @@
 
       <!-- mini plot panel -->
       <div id="mini-head" class="panel-head">
-        <span><button title="Show/hide plot panel">Plot</button></span>
+        <button title="Show/hide plot panel">Plot</button>
       </div>
       <div id="mini-content" class="dash-content hastool hidden" style="position: relative;">
 
@@ -314,7 +314,7 @@
     <div id="set-panel">
       <button id="set-btn" title="Show settings">&vellip;</button>
       <div class="dock active hidden">
-        <div class="panel-head"><span><button disabled>Settings</button></span></div>
+        <div class="panel-head"><button disabled>Settings</button></div>
         <div class="dash-content">
           <p><label><b>Special:</b></label></p>
           <p><label>Length</label><select id="len-col-sel" title="Field that represents contig length (bp)" style="width: 50%;"></select></p>
@@ -348,9 +348,10 @@
         <p>
           <span id="masked-span">Masked: 0</span>
           <span id="unmask-span" class="hidden">
-            <button id="undo-mask-btn" title="Undo last masking (Z)">&#8617;</button>
-            <button id="clear-mask-btn" title="Unmask all contigs">&#10005;</button>
+            <button id="undo-mask-btn" title="Undo last masking (Z)">&#8617;</button><!--
+            --><button id="clear-mask-btn" title="Unmask all contigs">&#10005;</button>
           </span>
+        </p>
       </div>
     </div>
     <div class="freq">
@@ -394,24 +395,23 @@
       Displays a table of bins in current binning plan.
     -->
     <div id="bins-head" class="panel-head">
-      <span style="float: right;"><button id="hide-side-btn" title="Hide side frame"></button></span>
-      <span><button title="Show/hide bins panel">Bins</button></span>
+      <button id="bins-head-btn" title="Show/hide bins panel">Bins</button>
+      <div id="bins-menu-wrap" class="hidden">
+        <label>&equiv;</label>
+        <div id="bins-menu" class="expand menu">
+          <p><a id="silhouet-a" title="Evaluate binning confidence using silhouette coefficient">Evaluate</a></p>
+          <p><a id="adj-rand-a" class="dropdown" title="Compare with another binning plan using adjusted Rand index">Compare</a></p>
+          <hr>
+          <p><a id="export-plan-a" title="Export current binning plan">Export</a></p>
+        </div>
+      </div>
+      <button id="hide-side-btn" title="Hide side frame"></button>
     </div>
 
     <div id="bins-content" class="side-content hastool">
 
       <!-- binning plan -->
-      <div class="hastool">
-
-        <!-- toolbar -->
-        <div class="toolbar left">
-          <button id="silhouet-btn" class="hidden" title="Evaluate binning confidence using silhouette coefficient">&#9739;</button>
-          <button id="adj-rand-btn" class="dropdown hidden" title="Compare with another binning plan using adjusted Rand index">&harr;</button>
-          <span class="spacer"></span>
-          <button id="export-plan-btn" class="hidden" title="Export current binning plan" style="transform: rotate(90deg)">&rarrb;</button>
-        </div>
-
-        <!-- plan selector -->
+      <div>
         <div class="dash-content">
           <table>
             <tr>
@@ -459,7 +459,14 @@
       Summarizes information of currently selected contigs.
     -->
     <div id="info-head" class="panel-head">
-      <span><button id="info-head-btn" title="Show/hide selected panel">Selected</button></span>
+      <button id="info-head-btn" title="Show/hide selected panel">Selected</button>
+      <div id="info-menu-wrap" class="hidden">
+        <label>&equiv;</label>
+        <div id="info-menu" class="expand menu">
+          <p><a id="comcon-a" class="dropdown" title="Calculate completeness/contamination of feature group">Feature group</a></p>
+        </div>
+      </div>
+      <button disabled></button>
     </div>
     <div class="side-content hastool" style="overflow: auto; flex-grow: 1;"><!-- filling remaing height -->
 
@@ -471,8 +478,6 @@
         <button id="update-bin-btn" class="hidden" title="Update bin with selected contigs (/)">&#8634;</button>
         <span class="spacer"></span>
         <button id="invert-btn" class="hidden" title="Invert selection">&#9680;</button>
-        <span class="spacer"></span>
-        <button id="comcon-btn" class="dropdown" title="Calculate completeness/contamination of feature group">&plusmn;</button>
       </div>
 
       <!-- info table -->
@@ -579,17 +584,17 @@
     </div>
   </div>
 
-  <!-- membership list import -->
+  <!-- feature group import -->
   <div id="memlst-modal" class="modal hidden">
     <div class="modal-content">
       <div class="modal-head">
-        <span><button id="memlst-import-btn" title="Import membership list">Import</button></span>
-        <span><span id="memlst-title">Membership</span></span>
+        <span><button id="memlst-import-btn" title="Import a feature group membership list">Import</button></span>
+        <span><span id="memlst-title">Feature group</span></span>
         <span id="memlst-ctrl-span"></span>
       </div>
       <div class="modal-body">
         <table id="memlst-options">
-          <tr><td>Name:</td><td><input type="text" id="memlst-name-txt" title="Enter membership list name"></td></tr>
+          <tr><td>Name:</td><td><input type="text" id="memlst-name-txt" title="Enter a name for the feature group"></td></tr>
           <tr><td>For:</td><td><select id="memlst-field-sel" title="Select a feature set field"></select></td></tr>
         </table>
       </div>

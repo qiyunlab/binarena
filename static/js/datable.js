@@ -215,9 +215,6 @@ function deleteColumn(th, mo) {
     if (idx === cache.spcov) cache.spcov = 0;
   }
 
-  // delete cache category / feature frequencies
-  else if (idx in cache.freqs) delete cache.freqs[idx];
-
   // decide number of fields to delete (add weight if available)
   let k = (idx + 1 < n && types[idx + 1].endsWith('wt')) ? 2 : 1;
 
@@ -225,6 +222,20 @@ function deleteColumn(th, mo) {
   data.splice(idx, k);
   names.splice(idx, k);
   types.splice(idx, k);
+
+  // delete cache category / feature frequencies
+  // delete membership lists
+  // shift the remaining ones
+  for (const obj of [cache.freqs, mo.mems]) {
+    if (idx in obj) delete obj[idx];
+    const keys = Object.keys(obj);
+    for (const key of keys) {
+      if (key > idx) {
+        obj[key - k] = obj[key];
+        delete obj[key];
+      }
+    }
+  }
 
   // table column index
   idx = th.cellIndex;

@@ -1381,5 +1381,4 @@ function importMemlst(mo) {
   toastMsg(`Imported ${plural('member', lines.length)} ` +
     `of ${name} for ${mo.cols.names[idx]}.`, mo.stat);
   byId('memlst-modal').classList.add('hidden');
-  fillMemLstTable(mo);
 }

@@ -153,9 +153,9 @@ function resizeWindow(mo) {
  */
 function initPanelHeads() {
   for (let btn of document.querySelectorAll(
-    '.panel-head span:last-of-type button')) {
+    '.panel-head button:first-of-type')) {
     btn.addEventListener('click', function () {
-      const panel = this.parentElement.parentElement.nextElementSibling;
+      const panel = this.parentElement.nextElementSibling;
       if (panel !== null) panel.classList.toggle("hidden");
     });
   }

@@ -349,6 +349,7 @@ function calcAdjRand(mo, field) {
  * Populate feature group table.
  * @function fillMemLstTable
  * @param {Object} mo - main object
+ * @returns {number} - number of items
  */
 function fillMemLstTable(mo) {
   const table = byId('memlst-table');
@@ -356,12 +357,15 @@ function fillMemLstTable(mo) {
   const names = mo.cols.names,
         types = mo.cols.types;
   const mems = mo.mems;
-  let keys, row, cell;
+  let res = 0;
+  let keys, row, cell, n, key;
   for (let i = 1; i < names.length; i++) {
     if (!(types[i] === 'fea')) continue;
     if (!(i in mems)) continue;
     keys = Object.keys(mems[i]);
-    if (keys.length === 0) continue;
+    n = keys.length;
+    if (n === 0) continue;
+    res += n;
 
     // feature set name
     row = table.insertRow(-1);
@@ -370,7 +374,7 @@ function fillMemLstTable(mo) {
     cell.innerHTML = names[i];
 
     // feature groups
-    for (let key of keys) {
+    for (const key of keys) {
       row = table.insertRow(-1);
       row.setAttribute('data-index', i);
       row.setAttribute('data-group', key);
@@ -388,6 +392,7 @@ function fillMemLstTable(mo) {
       });
     }
   }
+  return res;
 }
 
 

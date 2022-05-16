@@ -207,14 +207,14 @@ function initBinCtrl(mo) {
   });
 
   // calculate silhouette coefficients
-  byId('silhouet-btn').addEventListener('click', function () {
+  byId('silhouet-a').addEventListener('click', function () {
     if (this.classList.contains('disabled')) return;
     updateCalcBoxCtrl(mo);
     byId('silh-modal').classList.remove('hidden');
   });
 
   // calculate adjusted Rand index
-  byId('adj-rand-btn').addEventListener('click', function () {
+  byId('adj-rand-a').addEventListener('click', function () {
     if (this.classList.contains('disabled')) return;
     if (!this.value) {
       const lst = listColsByType(mo.cols, 'cat');
@@ -226,7 +226,7 @@ function initBinCtrl(mo) {
   });
 
   // export current binning plan
-  byId('export-plan-btn').addEventListener('click', function () {
+  byId('export-plan-a').addEventListener('click', function () {
     exportBinPlan(mo.binned, data[0]);
   });
 
@@ -389,12 +389,8 @@ function updateBinCtrl(mo) {
   const n = mo.cache.binns.size;
 
   // update bins panel head
-  byId('bins-head').lastElementChild.firstElementChild
-    .innerHTML = 'Bins: ' + n;
-
-  byId('silhouet-btn').classList.toggle('hidden', !n);
-  byId('adj-rand-btn').classList.toggle('hidden', !n);
-  byId('export-plan-btn').classList.toggle('hidden', !n);
+  byId('bins-head-btn').innerHTML = 'Bins: ' + n;
+  byId('bins-menu-wrap').classList.toggle('hidden', !n);
   byId('bin-thead').classList.toggle('hidden', !n);
   byId('mask-bin-btn').classList.toggle('hidden', !n || !mo.cache.nmask);
 

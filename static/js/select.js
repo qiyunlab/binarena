@@ -192,7 +192,12 @@ function initSelTools(mo) {
   });
 
   /** Calculate completeness/contamination */
-  byId('comcon-btn').addEventListener('click', function () {
+  byId('comcon-a').addEventListener('click', function () {
+    const n = fillMemLstTable(mo);
+    if (n === 0) {
+      toastMsg(`No feature group is available. Please import.`, mo.stat);
+      return;
+    }
     const div = byId('memlst-select');
     popupPos(this, div, 'left');
     div.classList.remove('hidden');
@@ -553,6 +558,9 @@ function updateInfoTable(mo) {
 
   // display count in info panel head
   const label = `Selected: ${npick}`;
+
+  // show/hide panel head menu
+  byId('info-menu-wrap').classList.toggle('hidden', !npick);
 
   // no contig is selected
   if (npick === 0) {

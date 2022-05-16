@@ -156,15 +156,14 @@ button.inside {
 /** panel head */
 
 div.panel-head {
+  display: flex;
+  justify-content: flex-end;
+  flex-direction: row;
   background-color: dimgray;
   height: 32px;
   min-height: 32px;
   color: white;
   position: relative;
-}
-
-div.panel-head span {
-  height: 100%;
 }
 
 div.panel-head button {
@@ -174,12 +173,17 @@ div.panel-head button {
   font-size: 9pt;
 }
 
-div.panel-head span:last-of-type {
-  display: block;
-  overflow: hidden;
+div.panel-head button:hover {
+  background: darkgray;
 }
 
-div.panel-head span:last-of-type button:hover:after {
+/* 
+div.panel-head button:first-of-type {
+  display: block;
+  overflow: hidden;
+} */
+
+div.panel-head button:first-of-type:hover:after {
   position: absolute;
   content: "";
   top: 11px;
@@ -190,15 +194,17 @@ div.panel-head span:last-of-type button:hover:after {
   border-color: transparent transparent transparent white;
 }
 
-div.panel-head span:last-of-type button {
+div.panel-head button:first-of-type {
   width: 100%;
   text-align: left;
   padding-left: 20px;
 }
 
-div.panel-head button:hover {
-  background: darkgray;
+div.panel-head button:not(:first-of-type) {
+  min-width: 32px;
 }
+
+/** currently not used */
 
 div.panel-head select {
   position: absolute;
@@ -213,6 +219,49 @@ div.panel-head select {
 
 div.panel-head select:hover {
   border-bottom: 1px solid dimgray;
+}
+
+div.panel-head > div {
+  min-width: 32px;
+  text-align: center;
+  line-height: 32px;
+}
+
+div.panel-head > div:hover {
+  background-color: darkgray;
+}
+
+div.panel-head > div > div.expand {
+  position: absolute;
+  display: none;
+  top: 32px;
+  z-index: 2;
+  box-shadow: 3px 3px 15px rgba(0, 0, 0, 0.15);
+  flex-direction: column;
+  color: black;
+  background-color: white;
+}
+
+div.panel-head > div:hover > div.expand {
+  display: flex;
+  transform: translateX(-100% + 32px);
+}
+
+div.panel-head > div > div.expand > p {
+  margin: 0;
+  line-height: 100%;
+  text-align: right;
+  overflow: hidden;
+}
+
+#bins-menu {
+  width: 100px;
+  transform: translateX(-68px);
+}
+
+#info-menu {
+  width: 120px;
+  transform: translateX(-88px);
 }
 
 
@@ -406,7 +455,7 @@ div.toolbar span.spacer {
 #toast {
   min-width: 250px;
   margin-left: -125px;
-  background-color: dimgray;
+  background-color: #444;
   opacity: 0.75;
   color: white;
   text-align: center;
@@ -1077,7 +1126,7 @@ div.dash-content > table tr td:last-child > span button:hover {
   right: 0;
 }
 
-#show-side-btn, #hide-side-btn{
+#show-side-btn {
   height: 32px;
   width: 32px;
 }
