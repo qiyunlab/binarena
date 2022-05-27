@@ -17,13 +17,13 @@ def main():
     for line in fileinput.input():
         if line.startswith('#'):
             continue
-        line = line.rstrip().split('\t')[-1]
+        line = line.rstrip().split('\t')[5]
         break
     mss = re.findall(r'{.*?}', line)
     res = []
     for ms in mss:
         res.extend(ms[1:-1].replace("'", '').split(', '))
-    for key in sorted(res):
+    for key in sorted(set(res)):
         print(key)
 
 
