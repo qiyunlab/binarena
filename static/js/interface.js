@@ -46,6 +46,7 @@ function initGUI(mo) {
   initDataTableCtrl(mo); // data table controls ( 'datable.js'   )
   initCalcBoxCtrl(mo);   // calculator controls ( 'calculate.js' )
   initCanvas(mo);        // main canvas         ( 'render.js'    )
+  initImportCtrl(mo);    // data input controls ( 'input.js'     )
 
 }
 
@@ -68,11 +69,11 @@ function resetControls() {
  * @param {Object} mo - main object
  */
 function updateControls(mo) {
-  const cols = mo.cols,
-        view = mo.view;
+  const cols = mo.cols;
   updateSearchCtrl(cols);
-  updateDisplayCtrl(cols, view);
+  updateDisplayCtrl(cols, mo.view);
   updateMiniPlotCtrl(cols);
+  updateSpFieldCtrl(cols, mo.cache);
 }
 
 
@@ -152,9 +153,9 @@ function resizeWindow(mo) {
  */
 function initPanelHeads() {
   for (let btn of document.querySelectorAll(
-    '.panel-head span:last-of-type button')) {
+    '.panel-head button:first-of-type')) {
     btn.addEventListener('click', function () {
-      const panel = this.parentElement.parentElement.nextElementSibling;
+      const panel = this.parentElement.nextElementSibling;
       if (panel !== null) panel.classList.toggle("hidden");
     });
   }
@@ -211,11 +212,13 @@ function initCloseBtns() {
  */
 function initListSel() {
   byId('list-options').addEventListener('click', function (e) {
-    let src;
+    let src, val;
     for (let row of this.rows) {
       if (row.contains(e.target)) {
+        val = row.cells[0].textContent;
+        if (val.match(/\s/)) val = '';
         src = byId(this.getAttribute('data-target-id'));
-        src.value = row.cells[0].textContent;
+        src.value = val;
         if (src.nodeName.toLowerCase() == 'input') {
           src.focus(); // for text box etc.
         } else {
@@ -286,12 +289,12 @@ function initContextMenu(mo) {
   // close current data
   byId('close-data-a').addEventListener('click', function () {
     closeData(mo);
-    updateViewByData(mo);
+    resetWorkspace(mo);
   });
 
   // export bins
   byId('export-bins-a').addEventListener('click', function () {
-    exportBinPlan(mo.binned);
+    exportBinPlan(mo.binned, mo.data[0]);
   });
 
   // export data table as JSON
@@ -359,7 +362,7 @@ function initSideFrame(mo) {
  * transfer the selection back to the source DOM and trigger a display item
  * change event.
  */
- function initScaleSel(mo) {
+function initScaleSel(mo) {
 
   // scale select buttons
   // It is a dropdown menu of various scaling methods.
@@ -581,8 +584,8 @@ function popupPos(source, target, direc, same) {
 /**
  * Let user select from a list displayed in a dropdown menu.
  * @function listSelect
- * @param {Object} src - source DOM
  * @param {string[]} lst - list of options
+ * @param {Object} src - source DOM
  * @param {string} direc - direction of list expansion
  * @param {boolean} same - keep same dimension
  */
@@ -596,7 +599,7 @@ function listSelect(lst, src, direc, same) {
   for (let item of lst) {
     const row = table.insertRow(-1);
     const cell = row.insertCell(-1);
-    cell.innerHTML = item;
+    cell.innerHTML = item ? item : '&nbsp;';
   }
   div.classList.remove('hidden');
 }
@@ -725,7 +728,7 @@ function autoComplete(src, arr) {
  * @param {Object} mo - main object
  */
 function formatValueLabel(value, icol, digits, unit, mo) {
-  const ilen = mo.cache.speci.len;
+  const ilen = mo.cache.splen;
   if (ilen && icol === ilen) {
     const fmtlen = FormatLength(value);
     let res = formatNum(fmtlen[0], digits);

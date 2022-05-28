@@ -191,6 +191,10 @@ function initCanvas(mo) {
       case 'Z':
         byId('undo-mask-btn').click();
         break;
+      case 'f':
+      case 'F':
+        byId('focus-btn').click();
+        break;
       case ' ':
         byId('as-new-bin-btn').click();
         break;

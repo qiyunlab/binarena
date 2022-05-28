@@ -103,6 +103,13 @@ function mainObj() {
     types: []
   };
 
+  /**
+   * Membership lists for feature sets.
+   * @member {Object.<Array>} mems
+   * @description Mapping of feature set field index to membership list.
+   */
+  this.mems = {};
+
 
   /**
    * Dictionary of categories and features.
@@ -137,12 +144,10 @@ function mainObj() {
    * 
    * @property {number} nctg - number of contigs in the dataset
    * Equivalent to data[0].length. Stored in case dataset is closed.
+   * @property {number} ixmap - contig Id to index mapping
    * 
-   * @property {Object.<number>} speci - indices of special columns
-   * Three contig properties are special in the analysis:
-   * @param len - length
-   * @param cov - coverage
-   * @param gc  - GC content
+   * @property {number} splen - index of "length" column
+   * @property {number} spcov - index of "coverage" column
    * 
    * @property {number} abund - total abundance of contigs
    * Equals to the sum of (length x coverage) of all contigs.
@@ -171,7 +176,9 @@ function mainObj() {
    */
   this.cache = {
     nctg:  0,
-    speci: {},
+    ixmap: {},
+    splen: 0,
+    spcov: 0,
     abund: 0,
     freqs: {},
     npick: 0,
@@ -316,14 +323,16 @@ function mainObj() {
 
 
   /**
-   * Contig selection and masking
+   * Contig selection, masking and focusing
    * @member {Array.<boolean>} picked
    * @member {Array.<boolean>} masked
+   * @member {Array.<boolean>} blured
    * @description They are 1D arrays of the same size as data columns. Their
    * elements are true/false values.
    */
   this.picked = [];
   this.masked = [];
+  this.blured = [];
 
 
   /**
@@ -333,6 +342,7 @@ function mainObj() {
    * n corresponds to highlight color indices.
    */
   this.highed = [];
+
 
   /**
    * Binning plan.
@@ -344,13 +354,34 @@ function mainObj() {
 
 
   /**
-   * Contigs displayed in data table
+   * Contigs displayed in data table.
    * @member {Array.<number>} tabled
    * @description They are indices of contigs that should be displayed in the
    * data table. They are not a boolean array as above because the order of
    * indices matters.
    */
   this.tabled = [];
+
+
+  /**
+   * Data being imported.
+   * @member {Array} impo
+   * @property {string}    fname - file name
+   * @property {string}    text  - multi-line text containing data
+   * @property {string[]}  names - field names
+   * @property {string[]}  types - data types
+   * @property {boolean[]} guess - whether data types are guessed
+   * @property {number[]}  idx   - field indices (optional)
+   */
+  this.impo = {
+    fname: null,
+    text:  null,
+    head:  true,
+    names: [],
+    types: [],
+    guess: [],
+    idx:   [],
+  };
 
 
   /**
@@ -422,11 +453,11 @@ window.addEventListener('load', function () {
   // load program theme
   mo.theme = loadTheme();
 
-  // initiate graphical user interface
+  // initiate interface
   initGUI(mo);
 
-  // update view based on data
-  updateViewByData(mo);
+  // reset workplace
+  resetWorkspace(mo);
 
 });
 

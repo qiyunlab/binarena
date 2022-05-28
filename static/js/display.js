@@ -57,6 +57,7 @@ function initDisplayCtrl(mo) {
       updateControls(mo);
       prepDataForDisplay(mo, ['x', 'y']);
       renderArena(mo);
+      renderSelection(mo);
     });
   }
 
@@ -590,12 +591,12 @@ function updateView(mo) {
 
 
 /**
- * Update view based on data.
- * @function updateViewByData
+ * Reset workspace when dataset is open or closed.
+ * @function resetWorkspace
  * @param {Object} mo - main object
  * @description Singling out cache is for performance consideration.
  */
-function updateViewByData(mo) {
+function resetWorkspace(mo) {
   resetControls();
 
   // check whether there is data
@@ -603,24 +604,27 @@ function updateViewByData(mo) {
         cache = mo.cache;
   if (data.length === 0) cache.nctg = 0;
   else cache.nctg = data[0].length;
-  const N = cache.nctg;
+  const n = cache.nctg;
 
   // reset working progress
-  mo.picked = Array(N).fill(false);
-  mo.masked = Array(N).fill(false);
-  mo.highed = Array(N).fill(0);
-  mo.binned = Array(N).fill('');
-  mo.tabled = N ? [...data[0].keys()] : [];
+  mo.picked = Array(n).fill(false);
+  mo.masked = Array(n).fill(false);
+  mo.blured = Array(n).fill(false);
+  mo.highed = Array(n).fill(0);
+  mo.binned = Array(n).fill('');
+  mo.tabled = n ? [...data[0].keys()] : [];
+  
+  // reset binning plan
+  byId('bin-tbody').innerHTML = '';
 
   // reset transformed data
   const trans = mo.trans;
   for (let item of ['x', 'y', 'size', 'opacity', 'color', 'rgb', 'rgba']) {
-    trans[item] = Array(N);
+    trans[item] = Array(n);
   }
 
   // clear cache
   cache.abund = 0;
-  cache.speci = {};
   cache.freqs = {};
   cache.npick = 0;
   cache.nmask = 0;
@@ -628,76 +632,124 @@ function updateViewByData(mo) {
   cache.binns.clear();
   cache.pdist = [];
 
-  // data is closed
-  if (!N) {
-    byId('hide-side-btn').click();
-    byId('show-side-btn').disabled = true;
-    byId('drop-sign').classList.remove('hidden');
-    const btn = byId('dash-btn');
-    if (btn.classList.contains('active')) btn.click();
-    byId('dash-panel').classList.add('hidden');
-    mo.view.grid = false;
-    byId('nav-panel').classList.add('hidden');
-    for (let div of byId('widget-frame').querySelectorAll('div.freq')) {
-      div.classList.add('hidden');
-    }
+  // new data is open
+  if (n) {
+    resetGUINewData(mo);
+    cacheFrequencies(mo);
+    cacheTotAbundance(mo);
   }
 
-  // data is open
+  // no data is open
   else {
-    byId('show-side-btn').disabled = false;
-    byId('show-side-btn').click();
-    byId('drop-sign').classList.add('hidden');
-    const btn = byId('dash-btn');
-    if (!btn.classList.contains('active')) btn.click();
-    mo.view.grid = byId('grid-chk').checked;
-    if (byId('nav-chk').checked) byId('nav-panel').classList.remove('hidden');
-    if (byId('freq-chk').checked) {
-      for (let div of byId('widget-frame').querySelectorAll('div.freq')) {
-        div.classList.remove('hidden');
-      }
-    }
-
-    // guess special columns
-    const cols = mo.cols;
-    cache.speci = {
-      len: guessLenColumn(cols),
-      cov: guessCovColumn(cols),
-      gc:  guessGCColumn(cols)
-    };
-
-    // calculate category and feature frequencies
-    const types = cols.types;
-    for (let i = 0; i < types.length; i++) {
-      const type = types[i];
-      if (type === 'cat') {
-        cache.freqs[i] = listCats(data[i]);
-      } else if (type === 'fea') {
-        cache.freqs[i] = listFeas(data[i]);
-      }
-    }
-
-    // calculate total abundance
-    if (cache.speci.len && cache.speci.cov) {
-      const L = data[cache.speci.len],
-            C = data[cache.speci.cov];
-      const n = L.length;
-      for (let i = 0; i < n; i++) {
-        cache.abund += L[i] * C[i];
-      }
-    }
+    resetGUINoData(mo);
+    cache.splen = 0;
+    cache.spcov = 0;
   }
 
-  // manipulate interface
+  // reset display items
   initDisplayItems(mo);
+  updateWorkspace(mo);
+
+  // reset view
+  resetView(mo);
+}
+
+
+/**
+ * Update workspace when there is new data.
+ * @function updateWorkspace
+ * @param {Object} mo - main object
+ */
+function updateWorkspace(mo) {
   updateColorMap(mo);
   updateControls(mo);
   buildInfoTable(mo);
   buildDataTable(mo);
-  byId('bin-tbody').innerHTML = '';
+}
 
-  // reset view
-  resetView(mo);
+
+/**
+ * Reset GUI when no data is open.
+ * @function resetGUINoData
+ * @param {Object} mo - main object
+ */
+function resetGUINoData(mo) {
+  byId('hide-side-btn').click();
+  byId('show-side-btn').disabled = true;
+  byId('drop-sign').classList.remove('hidden');
+  const btn = byId('dash-btn');
+  if (btn.classList.contains('active')) btn.click();
+  byId('dash-panel').classList.add('hidden');
+  mo.view.grid = false;
+  byId('nav-panel').classList.add('hidden');
+  for (let div of byId('widget-frame').querySelectorAll('div.freq')) {
+    div.classList.add('hidden');
+  }
+}
+
+
+/**
+ * Reset GUI when new data is open.
+ * @function resetGUINewData
+ * @param {Object} mo - main object
+ */
+function resetGUINewData(mo) {
+  byId('show-side-btn').disabled = false;
+  byId('show-side-btn').click();
+  byId('drop-sign').classList.add('hidden');
+  const btn = byId('dash-btn');
+  if (!btn.classList.contains('active')) btn.click();
+  mo.view.grid = byId('grid-chk').checked;
+  if (byId('nav-chk').checked) byId('nav-panel').classList.remove('hidden');
+  if (byId('freq-chk').checked) {
+    for (let div of byId('widget-frame').querySelectorAll('div.freq')) {
+      div.classList.remove('hidden');
+    }
+  }
+}
+
+
+/**
+ * Calculate category and feature frequencies.
+ * @function cacheFrequencies
+ * @param {Object} mo - main object
+ * @param {boolean} append - whether in append mode
+ */
+function cacheFrequencies(mo, append) {
+  const data = mo.data,
+        types = mo.cols.types,
+        freqs = mo.cache.freqs;
+  for (let i = 0; i < types.length; i++) {
+    if (i in freqs && append) continue;
+    switch (types[i]) {
+      case 'cat':
+        freqs[i] = listCats(data[i]);
+        break;
+      case 'fea':
+        freqs[i] = listFeas(data[i]);
+        break;  
+    }
+  }
+}
+
+
+/**
+ * Calculate total abundance of contigs.
+ * @function cacheTotAbundance
+ * @param {Object} mo - main object
+ * @description Total abundance = sum of length x contig
+ */
+function cacheTotAbundance(mo) {
+  const data = mo.data,
+        cache = mo.cache;
+  if (cache.splen && cache.spcov) {
+    const L = data[cache.splen],
+          C = data[cache.spcov];
+    const m = L.length;
+    for (let i = 0; i < m; i++) {
+      cache.abund += L[i] * C[i];
+    }
+  } else cache.abund = 0;
 }
 
 
@@ -933,6 +985,7 @@ function displayItemChange(item, i, scale, mo) {
   if (isCat) updateColorMap(mo);
   prepDataForDisplay(mo, [item]);
   renderArena(mo);
+  renderSelection(mo);
   updateLegends(mo, [item]);
 }
 
@@ -946,4 +999,5 @@ function closeData(mo) {
   mo.data.length = 0; // clear an array in place
   mo.cols.names.length = 0;
   mo.cols.types.length = 0;
+  mo.mems = {};
 }

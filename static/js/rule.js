@@ -23,7 +23,7 @@ function isMissing(str) {
   try {
     str = str.replace(/^[#-]+/, '');
   } catch (e) {
-    throw e.message + ' ' + str;
+    throw new Error(e.message + ' ' + str);
   }
   return nulls.includes(str.toLowerCase());
 }
@@ -33,9 +33,7 @@ function isMissing(str) {
  * Define display items based on data.
  * @function guessDisplayFields
  * @param {Object} mo - main object
- * @throws if x and y cannot be determined
- * @returns {[number, number, ?number, ?number, ?number]} field indices for
- * x, y, size, opacity, color
+ * @returns {Object.<number>} display item to index mapping
  * @description Specifically, five display items are to be inferred:
  *    x, y, size, opacity : {idx, factor, scale, min, max}
  * factor is a number to be multiplied.
@@ -46,62 +44,73 @@ function isMissing(str) {
  * Options are: number, category, feature, description.
  */
 function guessDisplayFields(mo) {
-  const res = {
-    x: null,
-    y: null,
-    size: null,
-    opacity: null,
-    color: null
-  };
+  const items = ['x', 'y', 'size', 'opacity', 'color'];
+  const res = {}
+  for (const item of items) res[item] = null;
+
   const cols = mo.cols,
         cache = mo.cache;
   const names = cols.names,
         types = cols.types;
+
+  // guess GC and rank columns
+  const igc = guessGCColumn(cols);
+  const irank = guessRankColumn(cols);
 
   // first, locate x and y (mandatory)
   const xaxes = ['x', 'xaxis', 'x1', 'axis1', 'dim1', 'pc1', 'pca1', 'tsne1',
                  'umap1', 'pcoa1', 'nmds1'];
   const yaxes = ['y', 'yaxis', 'x2', 'axis2', 'dim2', 'pc2', 'pca2', 'tsne2',
                  'umap2', 'pcoa2', 'nmds2'];
+
   const xyCand = [null, null];
   let name;
   for (let i = 1; i < names.length; i++) {
     if (types[i] !== 'num') continue;
     name = names[i].toLowerCase().replace(/[\s_-]/g, '');
-    if (xaxes.indexOf(name) !== -1) {
-      xyCand[0] = i;
-    } else if (yaxes.indexOf(name) !== -1) {
-      xyCand[1] = i;
-    }
+    if (xaxes.indexOf(name) !== -1) xyCand[0] = i;
+    else if (yaxes.indexOf(name) !== -1) xyCand[1] = i;
   }
 
   // be satisfied if both obtained
   if (xyCand[0] !== null && xyCand[1] !== null) {
-    res.x = xyCand[0];
-    res.y = xyCand[1];
+    res['x'] = xyCand[0];
+    res['y'] = xyCand[1];
 
     // add other items
-    res.size = cache.speci.len || null;
-    res.opacity = cache.speci.cov || null;
-    res.color = guessRankColumn(cols) || cache.speci.gc || null;
+    res['size'] = cache.splen || null;
+    res['opacity'] = cache.spcov || null;
+    res['color'] = irank || igc || null;
+    return res;
   }
 
   // otherwise, get gc -> coverage -> length
-  else {
-    const avails = [];
-    let icol;
-    for (let key of ['gc', 'cov', 'len']) {
-      icol = cache.speci[key];
-      if (icol) avails.push(icol);
-    }
-    if (avails.length >= 2) {
-      res.x = avails[0];
-      res.y = avails[1];
-      if (avails.length === 3) {
-        res.size = avails[2];
+  const avails = [];
+  if (igc) avails.push(igc);
+  if (cache.spcov) avails.push(cache.spcov);
+  if (cache.splen) avails.push(cache.splen);
+
+  // if not enough, get anything that is numeric
+  if (avails.length < 2) {
+    for (let i = 1; i < types.length; i++) {
+      if (types[i] === 'num' & avails.indexOf(i) === -1) {
+        avails.push(i);
+        if (avails.length === 2) break;
       }
     }
   }
+
+  // take first two as x and y
+  if (avails.length >= 2) {
+    res['x'] = avails[0];
+    res['y'] = avails[1];
+
+    // take 3rd if available as size
+    if (avails.length === 3) res['size'] = avails[2];
+    return res;
+  }
+
+  // otherwise, return null
   return res;
 }
 
@@ -110,22 +119,23 @@ function guessDisplayFields(mo) {
  * Guess display scales of items.
  * @function guessDisplayScales
  * @param {string[]} mo - main object
- * @returns {Object} display item to scale mapping
+ * @returns {Object.<string>} display item to scale mapping
  * @description Currently it guesses about two special columns:
  * - length: cubic root
  * - coverage: square root
  */
 function guessDisplayScales(mo) {
   const view = mo.view;
-  const speci = mo.cache.speci;
+  const splen = mo.cache.splen,
+        spcov = mo.cache.spcov;
   const items = ['x', 'y', 'size', 'opacity', 'color'];
   const res = {};
   let i;
-  for (let item of items) {
+  for (const item of items) {
     i = view[item].i
     if (!i) res[item] = 'none';
-    else if (speci.len === i) res[item] = 'cbrt';
-    else if (speci.cov === i) res[item] = 'sqrt';
+    else if (splen === i) res[item] = 'cbrt';
+    else if (spcov === i) res[item] = 'sqrt';
     else res[item] = 'none';
   }
   return res;

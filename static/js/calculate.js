@@ -343,3 +343,90 @@ function calcAdjRand(mo, field) {
   toastMsg(`Adjusted Rand index between current binning plan and ` +
     `"${field}": ${ari.toFixed(5)}.`, mo.stat, 0, false, true);
 }
+
+
+/**
+ * Populate feature group table.
+ * @function fillMemLstTable
+ * @param {Object} mo - main object
+ * @returns {number} - number of items
+ */
+function fillMemLstTable(mo) {
+  const table = byId('memlst-table');
+  table.innerHTML = '';
+  const names = mo.cols.names,
+        types = mo.cols.types;
+  const mems = mo.mems;
+  let res = 0;
+  let keys, row, cell, n, key;
+  for (let i = 1; i < names.length; i++) {
+    if (!(types[i] === 'fea')) continue;
+    if (!(i in mems)) continue;
+    keys = Object.keys(mems[i]);
+    n = keys.length;
+    if (n === 0) continue;
+    res += n;
+
+    // feature set name
+    row = table.insertRow(-1);
+    row.classList.add('mlField');
+    cell = row.insertCell(-1);
+    cell.innerHTML = names[i];
+
+    // feature groups
+    for (const key of keys) {
+      row = table.insertRow(-1);
+      row.setAttribute('data-index', i);
+      row.setAttribute('data-group', key);
+      row.classList.add('mlGroup');
+      cell = row.insertCell(-1);
+      cell.innerHTML = key;
+      cell.addEventListener('click', function () {
+        const row = this.parentElement;
+        const field = parseInt(row.getAttribute('data-index'));
+        const group = row.getAttribute('data-group');
+        const [comp, cont] = calcComCon(mo, field, group);
+        toastMsg(`Completeness: ${(comp * 100).toFixed(2)}%, ` +
+                 `contamination: ${(cont * 100).toFixed(2)}%.`,
+                 mo.stat, 0, false, true);
+      });
+    }
+  }
+  return res;
+}
+
+
+/**
+ * Calculate completeness and contamination of current selection given a
+ * feature group.
+ * @function calcComCon
+ * @param {Object} mo - main object
+ * @param {number} field - feature set field index
+ * @param {string} group - feature group name
+ * @description The metrics are analogous to CheckM's.
+ * Completeness - number of features seen vs total number of features in group.
+ * Contamination - number of times features are found more than once vs total
+ * number of features in group.
+ */
+function calcComCon(mo, field, group) {
+  let feaset = new Set(mo.mems[field][group]);
+  const tot = feaset.size;
+  const n = mo.cache.nctg;
+  const picked = mo.picked;
+  const col = mo.data[field];
+  const seen = new Set();
+  let ndup = 0;
+  let datum, j, val;
+  for (let i = 0; i < n; i ++) {
+    if (!picked[i]) continue;
+    datum = col[i];
+    for (j = 0; j < datum.length; j ++) {
+      val = datum[j];
+      if (feaset.has(val)) {
+        if (seen.has(val)) ndup ++;
+        else seen.add(val);
+      }
+    }
+  }
+  return [seen.size / tot, ndup / tot];
+}

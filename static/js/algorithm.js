@@ -195,20 +195,20 @@ function silhouetteSample(x, label, dist) {
  * @param {number[]} data - the entries of the matrix
  * @param {number[]} shape - the shape of coordinate matrix
  * @param {boolean} sparse - true to return a sparse matrix, default to false
- * @return {number[]} the coordinate matrix 
+ * @return {number[]} the coordinate matrix
  */
 function coordinateMatrix(row, col, data, shape, sparse=false) {
-  const res = Array(shape[0]).fill().map(() => Array(shape[1]).fill(0));
+  const n0 = shape[0],
+        n1 = shape[1];
+  const res = Array(n0).fill().map(() => Array(n1).fill(0));
   const n = row.length;
   let i, j;
   for (i = 0; i < n; i++) {
     res[row[i]][col[i]] += data[i];
-  }  
+  }
   if (!sparse) return res;
   const key = [],
         value = [];
-  const n0 = res[0].length,
-        n1 = res[1].length;
   for (i = 0; i < n0; i++) {
     for (j = 0; j < n1; j++) {
       if (res[i][j] !== 0) {
@@ -245,7 +245,7 @@ function contingencyMatrix(labelTrue, labelPred) {
  * @param {number[]} labelTrue - the array of true labels
  * @param {number[]} labelPred - the array of predicted labels
  * @return {number} adjusted Rand index
- */ 
+ */
 function adjustedRandScore(labelTrue, labelPred) {
   let nSamples = labelTrue.length;
   let nClasses = unique(labelTrue).length;

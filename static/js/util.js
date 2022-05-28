@@ -116,10 +116,10 @@ function scaleNum(num, scale) {
       case 'sin':
         return Math.sign(num) * Math.sin(num) ** 2;
       default:
-        throw `Error: Invalid scale name "${scale}".`;
+        throw new Error(`Invalid scale name "${scale}".`);
     }
   } else {
-    throw 'Error: Invalid scale type.';
+    throw new Error('Invalid scale type.');
   }
 }
 
@@ -189,10 +189,10 @@ function scaleArr(arr, scale) {
         }
         break;
       default:
-        throw `Error: Invalid scale name "${scale}".`;
+        throw new Error(`Invalid scale name "${scale}".`);
     }
   } else {
-    throw 'Error: Invalid scale type.';
+    throw new Error('Invalid scale type.');
   }
   return res;
 }
@@ -229,7 +229,7 @@ function unscale(scale) {
   } else if (typeof(scale) === 'string') {
     if (scale in dict) return dict[scale];
   } else {
-    throw 'Error: Invalid scale type.';
+    throw new Error('Invalid scale type.');
   }
 }
 

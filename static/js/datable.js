@@ -59,7 +59,7 @@ function initDataTableCtrl(mo) {
   'id':  'identifier',   // id
   'num': 'numeric',     // numeric
   'cat': 'categorical', // categorical
-  'fea': 'feature set', // feature sets
+  'fea': 'feature set', // feature set
   'des': 'descriptive'  // descriptive
 };
 
@@ -96,14 +96,14 @@ function buildDataTable(mo) {
   const thead = table.createTHead();
   const row = thead.insertRow(-1);
   const n = names.length;
-  let cell, name, type;
+  let cell, name, type, btn;
   let w = 0;
 
   // create individual head cells
   for (let i = 0; i < n; i++) {
     name = names[i];
     type = types[i];
-    if (type.endsWith('wt')) continue;
+    if (type.endsWith('wt')) continue; // skip weight
     cell = document.createElement('th');
     cell.setAttribute('data-idx', i);      // column index
     cell.setAttribute('data-name', names); // column name
@@ -112,7 +112,24 @@ function buildDataTable(mo) {
     cell.title = `Field: ${name}\nType: ${FIELD_NAMES[type]}`;
     if (type === 'num') cell.classList.add('sortable');
     cell.innerHTML = names[i];
-    cell.addEventListener('click', sortByColumn);
+
+    // click head to sort a column
+    cell.addEventListener('click', function () {
+      sortByColumn(this, mo);
+    });
+
+    // delete field
+    if (i) {
+      btn = document.createElement('button');
+      btn.innerHTML = '&#x2715;'; // cross mark
+      btn.title = 'Delete field';
+      btn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        // e.preventDefault();
+        deleteColumn(this.parentElement, mo);
+      });
+      cell.appendChild(btn);
+    }
     row.appendChild(cell);
 
     // one has to set both header cell widths and table width in order to get
@@ -122,44 +139,156 @@ function buildDataTable(mo) {
   }
   table.style.width = w + 'px';
   table.appendChild(document.createElement('tbody'));
+}
 
-  // click head to sort a column
-  function sortByColumn() {
-    const idx = parseInt(this.getAttribute('data-idx'));
-    if (mo.cols.types[idx] !== 'num') return;
 
-    // clear arrow of previously sorted head
-    const prev = parseInt(table.getAttribute('data-arrow'));
-    if (prev && prev !== this.cellIndex) {
-      const prev_cell = table.tHead.rows[0].cells[prev];
-      prev_cell.classList.remove('descending');
-      prev_cell.classList.remove('ascending');
-    }
+/**
+ * Sort data table by column.
+ * @function sortByColumn
+ * @param {Object} th - table head to sort by
+ * @param {Object} mo - main object
+ */
+function sortByColumn(th, mo) {
+  const table = th.parentElement.parentElement.parentElement;
+  const idx = parseInt(th.getAttribute('data-idx'));
+  if (mo.cols.types[idx] !== 'num') return;
 
-    // same head, toggle order
-    let order;
-    if (idx === parseInt(table.getAttribute('data-sort'))) {
-      order = !parseInt(table.getAttribute('data-order'));
-      table.setAttribute('data-order', Number(order));
-    }
-    
-    // new head, default is descending order (true)
-    else {
-      order = true;
-      table.setAttribute('data-sort', idx);
-      table.setAttribute('data-order', 1);
-      table.setAttribute('data-arrow', this.cellIndex);
-    }
-
-    // draw arrow
-    this.classList.toggle('descending', order);
-    this.classList.toggle('ascending', !order);
-
-    // sort by column and update table
-    sortDataTable(mo, idx, order);
-    fillDataTable(mo, 'Dataset');
+  // clear arrow of previously sorted head
+  const prev = parseInt(table.getAttribute('data-arrow'));
+  if (prev && prev !== th.cellIndex) {
+    const prev_cell = table.tHead.rows[0].cells[prev];
+    prev_cell.classList.remove('descending');
+    prev_cell.classList.remove('ascending');
   }
 
+  // same head, toggle order
+  let order;
+  if (idx === parseInt(table.getAttribute('data-sort'))) {
+    order = !parseInt(table.getAttribute('data-order'));
+    table.setAttribute('data-order', Number(order));
+  }
+  
+  // new head, default is descending order (true)
+  else {
+    order = true;
+    table.setAttribute('data-sort', idx);
+    table.setAttribute('data-order', 1);
+    table.setAttribute('data-arrow', th.cellIndex);
+  }
+
+  // draw arrow
+  th.classList.toggle('descending', order);
+  th.classList.toggle('ascending', !order);
+
+  // sort by column and update table
+  sortDataTable(mo, idx, order);
+  fillDataTable(mo, 'Dataset');
+}
+
+
+/**
+ * Delete data column.
+ * @function deleteColumn
+ * @param {Object} th - table head to delete
+ * @param {Object} mo - main object
+ */
+function deleteColumn(th, mo) {
+  const data = mo.data,
+        view = mo.view,
+        cols = mo.cols,
+        cache = mo.cache;
+  const names = cols.names,
+        types = cols.types;
+
+  // data field index
+  let idx = parseInt(th.getAttribute('data-idx'));
+
+  let n = names.length;
+  let type = types[idx];
+  if (type === 'num') {
+
+    // must keep at least two numeric fields
+    if (types.filter(x => x === 'num').length < 3) return;
+
+    // reset special fields
+    if (idx === cache.splen) cache.splen = 0;
+    if (idx === cache.spcov) cache.spcov = 0;
+  }
+
+  // decide number of fields to delete (add weight if available)
+  let k = (idx + 1 < n && types[idx + 1].endsWith('wt')) ? 2 : 1;
+
+  // delete data
+  data.splice(idx, k);
+  names.splice(idx, k);
+  types.splice(idx, k);
+
+  // delete cache category / feature frequencies
+  // delete membership lists
+  // shift the remaining ones
+  for (const obj of [cache.freqs, mo.mems]) {
+    if (idx in obj) delete obj[idx];
+    const keys = Object.keys(obj);
+    for (const key of keys) {
+      if (key > idx) {
+        obj[key - k] = obj[key];
+        delete obj[key];
+      }
+    }
+  }
+
+  // table column index
+  idx = th.cellIndex;
+  let row = th.parentElement;
+
+  // change display items if needed
+  let changed = false;
+  const keys = ['x', 'y', 'size', 'opacity', 'color'];
+  for (const key of keys) {
+    if (idx === view[key].i) {
+      changed = true;
+      
+      // for others, remove display
+      if (key !== 'x' && key !== 'y') view[key].i = 0;
+
+      // for axes, find another numeric field
+      else {
+        for (let i = 1; i < names.length; i ++) {
+          if (types[i] === 'num') {
+            if ((key === 'x' && i !== view['y'].i) ||
+                (key === 'x' && i !== view['y'].i)) {
+              view[key].i = i;
+              break;
+            }
+          }
+        }
+      }
+      view[key].scale = 'none';
+    }
+  }
+
+  // reset plot if needed
+  if (changed) resetView(mo);
+
+  // shift indices of subsequent columns
+  const cells = row.cells;
+  for (let i = idx + 1; i < cells.length; i ++) {
+    cells[i].setAttribute('data-idx', parseInt(cells[i].getAttribute(
+      'data-idx')) - k);
+  }
+
+  // delete table column
+  row.deleteCell(idx);
+  const table = row.parentElement.parentElement;
+  const rows = table.tBodies[0].rows;
+  for (let i = 0; i < rows.length; i ++) {
+    rows[i].deleteCell(idx);
+  }
+
+  updateDisplayCtrl(cols, view);
+  updateColorMap(mo);
+  updateControls(mo);
+  buildInfoTable(mo);
 }
 
 

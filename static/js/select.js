@@ -66,14 +66,14 @@ function initSelTools(mo) {
     history.push(res);
     if (history.length > 50) history.shift();
     toastMsg(`Masked ${plural('contig', m)}.`, mo.stat);
-    prepDataForDisplay(mo);
+    prepDataForDisplay(mo, ['size', 'opacity', 'color']);
     updateLegends(mo);
     renderArena(mo);
     updateSelection(mo);
     mo.rena.focus();
   });
 
-  /** Undo masking */
+  /** Undo masking. */
   byId('undo-mask-btn').addEventListener('click', function () {
     const prev = mo.cache.maskh.pop();
     if (prev === undefined) return;
@@ -139,6 +139,35 @@ function initSelTools(mo) {
     addHighlight(mo, 1);
   });
 
+  /** Focus on selection. */
+  byId('focus-btn').addEventListener('click', function () {
+    
+    // remove current focus
+    if (this.classList.contains('pressed')) {
+      removeFocus(mo);
+      this.classList.remove('pressed');
+    }
+
+    // focus on current selection
+    else {
+      if (!mo.cache.npick) return;
+      setFocus(mo);
+      this.classList.add('pressed');
+    }
+  });
+
+  /** Calculate completeness/contamination */
+  byId('comcon-a').addEventListener('click', function () {
+    const n = fillMemLstTable(mo);
+    if (n === 0) {
+      toastMsg(`No feature group is available. Please import.`, mo.stat);
+      return;
+    }
+    const div = byId('memlst-select');
+    popupPos(this, div, 'left');
+    div.classList.remove('hidden');
+  });
+
 }
 
 
@@ -202,6 +231,68 @@ function clearHighlight(mo, idx, btn) {
   btn.previousSibling.innerHTML = '&nbsp;';
   btn.classList.add('hidden');
   renderArena(mo);
+}
+
+
+/**
+ * Focus on current selection.
+ * @function setFocus
+ * @param {Object} mo - main object
+ */
+function setFocus(mo) {
+  const n = mo.cache.nctg;
+  const mask = mo.masked,
+        blur = mo.blured,
+        pick = mo.picked;
+  let m = 0,
+      k = 0;
+  for (let i = 0; i < n; i++) {
+    if (pick[i]) {
+      pick[i] = false;
+      m ++;
+    } else if (!mask[i]) {
+      mask[i] = true;
+      blur[i] = true;
+      k ++;
+    }
+  }
+  mo.cache.npick -= m;
+  mo.cache.nmask += k;
+  toastMsg(`Focused on ${plural('contig', m)}.`, mo.stat);
+  prepDataForDisplay(mo, ['size', 'opacity', 'color']);
+  updateLegends(mo);
+  renderArena(mo);
+  updateSelection(mo);
+  mo.rena.focus();
+}
+
+
+/**
+ * Remove current focus.
+ * @function removeFocus
+ * @param {Object} mo - main object
+ */
+function removeFocus(mo) {
+  const n = mo.cache.nctg;
+  const mask = mo.masked,
+        blur = mo.blured;
+  let m = 0;
+  for (let i = 0; i < n; i++) {
+    if (blur[i]) {
+      blur[i] = false;
+      if (mask[i]) {
+        mask[i] = false;
+        m ++;
+      }
+    }
+  }
+  mo.cache.nmask -= m;
+  toastMsg('Unfocused contigs.', mo.stat);
+  prepDataForDisplay(mo);
+  updateLegends(mo);
+  renderArena(mo);
+  updateMaskCtrl(mo);
+  mo.rena.focus();
 }
 
 
@@ -365,7 +456,7 @@ function buildInfoTable(mo) {
 
   const names = mo.cols.names,
         types = mo.cols.types;
-  const lencol = mo.cache.speci.len;
+  const splen = mo.cache.splen;
 
   // create rows
   const n = names.length;
@@ -403,7 +494,7 @@ function buildInfoTable(mo) {
       // with reference (default: length)
       if (metric.endsWith('by')) {
         row.setAttribute('data-met', metric.substring(0, metric.length - 2));
-        row.setAttribute('data-ref', lencol);
+        row.setAttribute('data-ref', splen);
       }
 
       // no reference
@@ -415,7 +506,7 @@ function buildInfoTable(mo) {
 
     // categorical: weight by length, metric not relevant
     else if (type === 'cat') {
-      row.setAttribute('data-ref', lencol);
+      row.setAttribute('data-ref', splen);
     }
 
     // row hover event: append control span
@@ -494,6 +585,9 @@ function updateInfoTable(mo) {
 
   // display count in info panel head
   const label = `Selected: ${npick}`;
+
+  // show/hide panel head menu
+  byId('info-menu-wrap').classList.toggle('hidden', !npick);
 
   // no contig is selected
   if (npick === 0) {
