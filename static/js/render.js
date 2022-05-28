@@ -26,7 +26,7 @@ function initCanvas(mo) {
 
   resizeArena(mo);
 
-  // mouse events
+  /** mouse events */
   rena.addEventListener('mousedown', function (e) {
     stat.mousedown = true;
     stat.dragX = e.clientX - view.posX;
@@ -70,7 +70,7 @@ function initCanvas(mo) {
     canvasMouseClick(e, mo);
   });
 
-  /** drag & drop file to upload */
+  /** drag & drop file */
   rena.addEventListener('dragover', function (e) {
     e.preventDefault();
   });
@@ -85,7 +85,38 @@ function initCanvas(mo) {
     uploadFile(e.dataTransfer.files[0], mo);
   });
 
-  // keyboard events
+  /** touch events */
+  rena.addEventListener('touchstart', function (e) {
+    const stat = mo.stat;
+    const X = stat.touchX,
+          Y = stat.touchY;
+    X.length = 0;
+    Y.length = 0;
+    const t = e.touches;
+    for (let i = 0; i < t.length; i++) {
+      X.push(t[i].clientX);
+      Y.push(t[i].clientY);
+    }
+  });
+
+  rena.addEventListener('touchmove', function (e) {
+    const t = e.touches;
+    if (t.length !== mo.stat.touchX.length) return;
+
+    // move (single touch)
+    if (t.length === 1) {
+      e.preventDefault();
+      canvasTouchMove(mo, t);
+    }
+
+    // zoom (double touch)
+    else if (t.length === 2) {
+      e.preventDefault();
+      canvasTouchZoom(mo, t);
+    }
+  });
+
+  /** keyboard events */
   rena.addEventListener('keydown', function (e) {
     // const t0 = performance.now();
     switch (e.key) {
@@ -179,6 +210,27 @@ function canvasMove(d, mo) {
 
 
 /**
+ * Canvas moving by touch.
+ * @function canvasTouchMove
+ * @param {Object} mo - main object
+ * @param {number} t - touches
+ */
+function canvasTouchMove(mo, t) {
+  const view = mo.view,
+        stat = mo.stat;
+  const X = stat.touchX,
+        Y = stat.touchY;
+  const dx = X[0] - t[0].clientX,
+        dy = Y[0] - t[0].clientY;
+  X[0] = t[0].clientX;
+  Y[0] = t[0].clientY;
+  view.posX -= dx;
+  view.posY -= dy;
+  updateView(mo);
+}
+
+
+/**
  * Canvas zooming by keys.
  * @function canvasKeyZoom
  * @param {boolean} isin - zoom in (true) or out (false)
@@ -197,6 +249,7 @@ function canvasKeyZoom(isin, mo) {
   updateView(mo);
 }
 
+
 /**
  * Canvas zooming by mouse.
  * @function canvasMouseZoom
@@ -205,7 +258,7 @@ function canvasKeyZoom(isin, mo) {
  * @param {number} x - x-coordinate of mouse pointer
  * @param {number} y - y-coordinate of mouse pointer
  */
- function canvasMouseZoom(isin, mo, x, y) {
+function canvasMouseZoom(isin, mo, x, y) {
   let ratio = 0.75;
   if (isin) ratio = 1 / ratio;
   const view = mo.view;
@@ -213,7 +266,47 @@ function canvasKeyZoom(isin, mo) {
   view.posX = x - (x - view.posX) * ratio;
   view.posY = y - (y - view.posY) * ratio;
   updateView(mo);
- }
+}
+
+
+/**
+ * Canvas zooming by touch.
+ * @function canvasTouchZoom
+ * @param {Object} mo - main object
+ * @param {number} t - touches
+ */
+function canvasTouchZoom(mo, t) {
+  const view = mo.view,
+        stat = mo.stat,
+        rena = mo.rena;
+  const X = stat.touchX,
+        Y = stat.touchY;
+
+  // current xy coordinates of touches
+  const newX = [t[0].clientX, t[1].clientX],
+        newY = [t[0].clientY, t[1].clientY];
+
+  // find midpoint of current touches
+  const newMid = [(newX[0] + newX[1]) / 2, (newY[0] + newY[1]) / 2];
+
+  // ratio of distances between old and new coordinates
+  const dist = Math.sqrt(((X[0] - X[1]) / rena.width) ** 2 + ((
+    Y[0] - Y[1]) / rena.height) ** 2);
+  const newDist = Math.sqrt(((newX[0] - newX[1]) / rena.width) ** 2 + ((
+    newY[0] - newY[1]) / rena.height) ** 2);
+  const ratio = newDist / dist;
+
+  // set old coordinates to be new coordinates
+  X.splice(0, 2, ...newX);
+  Y.splice(0, 2, ...newY);
+
+  // updating view
+  view.scale *= ratio;
+  view.posX = newMid[0] - (newMid[0] - view.posX) * ratio;
+  view.posY = newMid[1] - (newMid[1] - view.posY) * ratio;
+  updateView(mo);
+}
+
 
 /**
  * Canvas mouse move event.
@@ -221,7 +314,7 @@ function canvasKeyZoom(isin, mo) {
  * @param {Object} e - event object
  * @param {Object} mo - main object
  */
- function canvasMouseMove(e, mo) {
+function canvasMouseMove(e, mo) {
   const view = mo.view,
         stat = mo.stat,
         rena = mo.rena;
