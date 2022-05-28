@@ -301,20 +301,24 @@ function mainObj() {
    * @description Transcient status of the program. Used to determine the
    * correct behavior of the program.
    * 
-   * @property {boolean} mousedown - mouse is down
-   * @property {boolean} mousemove - mouse is moving
-   * @property {number}  dragX     - dragging position X
-   * @property {number}  dragY     - dragging position Y
-   * @property {boolean} drawing   - polygon drawing is ongoing
+   * @property {boolean}  mousedown - mouse is down
+   * @property {boolean}  mousemove - mouse is moving
+   * @property {number}   dragX     - dragging position X
+   * @property {number}   dragY     - dragging position Y
+   * @property {number[]} touchX    - touching positions X
+   * @property {number[]} touchY    - touching positions Y
+   * @property {boolean}  drawing   - polygon drawing is ongoing
    * @property {Array.<{x: number, y: number}>} polygon - vertices of polygon
-   * @property {number}  resizing  - window resizing is ongoing
-   * @property {number}  toasting  - toasting is ongoing
+   * @property {number}   resizing  - window resizing is ongoing
+   * @property {number}   toasting  - toasting is ongoing
    */
   this.stat = {
     mousedown: false,
     mousemove: false,
     dragX:     0,
     dragY:     0,
+    touchX:    [],
+    touchY:    [],
     drawing:   false,
     polygon:   [],
     resizing:  null,
