@@ -141,54 +141,19 @@ function initSelTools(mo) {
 
   /** Focus on selection. */
   byId('focus-btn').addEventListener('click', function () {
-    const n = mo.cache.nctg;
-    const mask = mo.masked,
-          blur = mo.blured;
     
     // remove current focus
     if (this.classList.contains('pressed')) {
-      let m = 0;
-      for (let i = 0; i < n; i++) {
-        if (blur[i]) {
-          mask[i] = false;
-          blur[i] = false;
-          m ++;
-        }
-      }
-      mo.cache.nmask -= m;
+      removeFocus(mo);
       this.classList.remove('pressed');
-      toastMsg('Unfocused contigs.', mo.stat);
-      prepDataForDisplay(mo, ['size', 'opacity', 'color']);
-      updateLegends(mo);
-      renderArena(mo);
     }
 
     // focus on current selection
     else {
       if (!mo.cache.npick) return;
-      const pick = mo.picked;
-      let m = 0,
-          k = 0;
-      for (let i = 0; i < n; i++) {
-        if (pick[i]) {
-          pick[i] = false;
-          m ++;
-        } else if (!mask[i]) {
-          mask[i] = true;
-          blur[i] = true;
-          k ++;
-        }
-      }
-      mo.cache.npick -= m;
-      mo.cache.nmask += k;
+      setFocus(mo);
       this.classList.add('pressed');
-      toastMsg(`Focused on ${plural('contig', m)}.`, mo.stat);
-      prepDataForDisplay(mo, ['size', 'opacity', 'color']);
-      updateLegends(mo);
-      renderArena(mo);
-      updateSelection(mo);
     }
-    mo.rena.focus();
   });
 
   /** Calculate completeness/contamination */
@@ -266,6 +231,68 @@ function clearHighlight(mo, idx, btn) {
   btn.previousSibling.innerHTML = '&nbsp;';
   btn.classList.add('hidden');
   renderArena(mo);
+}
+
+
+/**
+ * Focus on current selection.
+ * @function setFocus
+ * @param {Object} mo - main object
+ */
+function setFocus(mo) {
+  const n = mo.cache.nctg;
+  const mask = mo.masked,
+        blur = mo.blured,
+        pick = mo.picked;
+  let m = 0,
+      k = 0;
+  for (let i = 0; i < n; i++) {
+    if (pick[i]) {
+      pick[i] = false;
+      m ++;
+    } else if (!mask[i]) {
+      mask[i] = true;
+      blur[i] = true;
+      k ++;
+    }
+  }
+  mo.cache.npick -= m;
+  mo.cache.nmask += k;
+  toastMsg(`Focused on ${plural('contig', m)}.`, mo.stat);
+  prepDataForDisplay(mo, ['size', 'opacity', 'color']);
+  updateLegends(mo);
+  renderArena(mo);
+  updateSelection(mo);
+  mo.rena.focus();
+}
+
+
+/**
+ * Remove current focus.
+ * @function removeFocus
+ * @param {Object} mo - main object
+ */
+function removeFocus(mo) {
+  const n = mo.cache.nctg;
+  const mask = mo.masked,
+        blur = mo.blured;
+  let m = 0;
+  for (let i = 0; i < n; i++) {
+    if (blur[i]) {
+      blur[i] = false;
+      if (mask[i]) {
+        mask[i] = false;
+        m ++;
+      }
+    }
+  }
+  mo.cache.nmask -= m;
+  toastMsg('Unfocused contigs.', mo.stat);
+  prepDataForDisplay(mo);
+  updateLegends(mo);
+  renderArena(mo);
+  updateMaskCtrl(mo);
+  mo.rena.focus();
 }
 
 

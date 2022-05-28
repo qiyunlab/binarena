@@ -323,7 +323,7 @@ function mainObj() {
 
 
   /**
-   * Contig selection and masking
+   * Contig selection, masking and focusing
    * @member {Array.<boolean>} picked
    * @member {Array.<boolean>} masked
    * @member {Array.<boolean>} blured
