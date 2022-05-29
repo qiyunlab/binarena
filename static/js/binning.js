@@ -322,7 +322,7 @@ function initBinCtrl(mo) {
   // Click column header to sort data.
   for (let head of byId('bin-thead').rows[0].cells) {
     head.addEventListener('click' , function() {
-      sortBinTable(this.cellIndex);
+      sortBinTable(this.cellIndex, this.asc = !this.asc);
     });
   }
 
@@ -609,7 +609,7 @@ function renameBin(old, neo, binns, binned) {
  * @param {Object} table - bin table
  * @param {string} bin - bin name
  */
- function selectBin(table, bin) {
+function selectBin(table, bin) {
   for (let row of table.rows) {
     if (row.cells[0].firstElementChild.innerHTML === bin) {
       row.scrollIntoView();
@@ -721,7 +721,7 @@ function removeFromBin(name, picked, binned) {
  * @param {string[]} binned - binning plan
  * @returns {number[], number[]} indices of added and removed contigs
  */
- function updateBinWith(name, picked, binned) {
+function updateBinWith(name, picked, binned) {
   const added = [], removed = [], unchanged = [];
   const n = picked.length;
   for (let i = 0; i < n; i++) {
@@ -808,46 +808,17 @@ function updateSavePlanBtn(mo, edited) {
  * Sort bin table by clicking header.
  * @function sortBinTable
  * @param {number} idx - index of table column to sort with
+ * @param {boolean} asc - ascending (true) or descending (false)
  * @description Modified based on:
- * @see {@link https://www.w3schools.com/howto/howto_js_sort_table.asp}
+ * @see {@link https://stackoverflow.com/questions/14267781/}
  */
-function sortBinTable(idx) {
+function sortBinTable(idx, asc) {
   const table = byId('bin-tbody');
-  let switching = true;
-  let ascending = false;
-  let switchcount = 0;
-  let rows, i, a, b, shouldSwitch;
-  while (switching) {
-    switching = false;
-    rows = table.rows;
-    for (i = 0; i < (rows.length - 1); i++) {
-      shouldSwitch = false;
-      a = rows[i].cells[idx].textContent;
-      b = rows[i + 1].cells[idx].textContent;
-      if (ascending) {
-        if (a.localeCompare(b, undefined, {numeric: true}) > 0) {
-          shouldSwitch = true;
-          break;
-        }
-      } else {
-        if (a.localeCompare(b, undefined, {numeric: true}) < 0) {
-          shouldSwitch = true;
-          break;
-        }
-      }
-    }
-    if (shouldSwitch) {
-      rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
-      switching = true;
-      switchcount ++;
-    } else {
-      if (switchcount === 0 && !ascending) {
-        ascending = true;
-        switching = true;
-      }
-    }
-  }
-}
+  Array.from(table.rows).sort((a, b) =>
+    (asc ? a : b).cells[idx].textContent.localeCompare(
+    (asc ? b : a).cells[idx].textContent, undefined, {
+    numeric: true})).forEach(row => table.appendChild(row));
+};
 
 
 /**
