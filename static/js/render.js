@@ -500,7 +500,7 @@ function resizeArena(mo) {
  * 
  * @todo Skipping contigs outside the visible region results in significant
  * performance gain when zooming in. However it voids another potential
- * optimization: draw the entire image (not matter how large it is) in an
+ * optimization: draw the entire image (no matter how large it is) in an
  * off-screen canvas and draw part of it as needed to the main canvas using
  * `drawImage`. Needs further thinking.`
  */
@@ -582,9 +582,13 @@ function renderArena(mo) {
 
     // determine x- and y-coordinates
     // skip contigs outside visible region
-    x = Math.round(X[i] * w);
+    // x = Math.round(X[i] * w);
+    x = X[i] * w;
+    x = x + (x > 0 ? 0.5 : -0.5) << 0;
     if (x + rad < vleft || x - rad > vright) continue;
-    y = Math.round(Y[i] * h);
+    // y = Math.round(Y[i] * h);
+    y = Y[i] * h;
+    y = y + (y > 0 ? 0.5 : -0.5) << 0;
     if (y + rad < vtop || y - rad > vbottom) continue;
 
     // determine fill style (color and opacity)
@@ -593,18 +597,21 @@ function renderArena(mo) {
 
     // if a contig occupies less than four pixels on screen, draw a square
     if (vrad < min2) {
-      paths[fs].square.push([x, y, Math.round(rad * pi1_2)]);
+      // paths[fs].square.push([x, y, Math.round(rad * pi1_2)]);
+      paths[fs].square.push([x, y, rad * pi1_2 + 0.5 << 0]);
     }
 
     // if bigger, draw a circle
     else {
-      paths[fs].circle.push([x, y, Math.round(rad)]);
+      // paths[fs].circle.push([x, y, Math.round(rad)]);
+      paths[fs].circle.push([x, y, rad + 0.5 << 0]);
     }
 
     // highlight circle
     hi = high[i];
     if (hi) {
-      highs[hi - 1].push([x, y, Math.round(rad + hirad)]);
+      // highs[hi - 1].push([x, y, Math.round(rad + hirad)]);
+      highs[hi - 1].push([x, y, rad + hirad + 0.5 << 0]);
     }
   } // end for i
 
@@ -705,9 +712,14 @@ function renderSelection(mo) {
   ctx.beginPath();
   for (let i = 0; i < n; i++) {
     if (!pick[i]) continue;
-    r = Math.round(S[i]);
-    x = Math.round(X[i] * w);
-    y = Math.round(Y[i] * h);
+    // r = Math.round(S[i]);
+    r = S[i] + 0.5 << 0
+    // x = Math.round(X[i] * w);
+    x = X[i] * w;
+    x = x + (x > 0 ? 0.5 : -0.5) << 0;
+    // y = Math.round(Y[i] * h);
+    y = Y[i] * h;
+    y = y + (y > 0 ? 0.5 : -0.5) << 0;
     ctx.moveTo(x, y);
     ctx.arc(x, y, r, 0, pi2, true);
   }
