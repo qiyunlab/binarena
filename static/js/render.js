@@ -627,33 +627,29 @@ function renderArena(mo) {
   // render contigs
   let squares, sq, circles, circ;
   for (let fs in paths) {
-    ctx.fillStyle = fs;
+    ctx.beginPath();
 
     // draw squares
     squares = paths[fs].square;
     n = squares.length;
     for (let i = 0; i < n; i++) {
       sq = squares[i];
-      ctx.fillRect(sq[0], sq[1], sq[2], sq[2]);
+      ctx.rect(sq[0], sq[1], sq[2], sq[2]);
     }
-    // ctx.beginPath();
-    // for (let i = 0; i < n; i++) {
-    //   sq = squares[i];
-    //   ctx.rect(sq[0], sq[1], sq[2], sq[2]);
-    // }
-    // ctx.fill();
 
     // draw circles
     circles = paths[fs].circle;
     n = circles.length;
-    if (n === 0) continue;
-    ctx.beginPath();
     for (let i = 0; i < n; i++) {
       circ = circles[i];
       ctx.moveTo(circ[0], circ[1]);
       ctx.arc(circ[0], circ[1], circ[2], 0, pi2, true);
     }
+
+    // fill markers
+    ctx.fillStyle = fs;
     ctx.fill();
+
   } // end for fs
 
   // draw grid
