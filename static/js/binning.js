@@ -322,7 +322,7 @@ function initBinCtrl(mo) {
   // Click column header to sort data.
   for (let head of byId('bin-thead').rows[0].cells) {
     head.addEventListener('click' , function() {
-      sortBinTable(this.cellIndex, this.asc = !this.asc);
+      sortTableByHead(this);
     });
   }
 
@@ -802,23 +802,6 @@ function updateSavePlanBtn(mo, edited) {
     btn.classList.remove('hidden');
   }
 }
-
-
-/**
- * Sort bin table by clicking header.
- * @function sortBinTable
- * @param {number} idx - index of table column to sort with
- * @param {boolean} asc - ascending (true) or descending (false)
- * @description Modified based on:
- * @see {@link https://stackoverflow.com/questions/14267781/}
- */
-function sortBinTable(idx, asc) {
-  const table = byId('bin-tbody');
-  Array.from(table.rows).sort((a, b) =>
-    (asc ? a : b).cells[idx].textContent.localeCompare(
-    (asc ? b : a).cells[idx].textContent, undefined, {
-    numeric: true})).forEach(row => table.appendChild(row));
-};
 
 
 /**

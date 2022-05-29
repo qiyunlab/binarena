@@ -469,7 +469,6 @@ function initSettings(mo) {
  * @param {Object} mo - main object
  */
 function initWidgets(mo) {
-  const view = mo.view;
 
   // draw polygon to select contigs
   byId('polygon-btn').addEventListener('click', function (e) {
@@ -716,6 +715,24 @@ function autoComplete(src, arr) {
     }
   }
 }
+
+
+/**
+ * Sort a table by clicking its header.
+ * @function sortTableByHead
+ * @param {object} th - table header
+ * @description Assuming there are thead and tbody. Modified based on:
+ * @see {@link https://stackoverflow.com/questions/14267781/}
+ */
+function sortTableByHead(th) {
+  const idx = th.cellIndex;
+  const asc = th.asc = !th.asc;
+  const tbody = th.closest('table').tBodies[0];
+  Array.from(tbody.rows).sort((a, b) =>
+    (asc ? a : b).cells[idx].textContent.localeCompare(
+    (asc ? b : a).cells[idx].textContent, undefined, {
+    numeric: true})).forEach(row => tbody.appendChild(row));
+};
 
 
 /**
