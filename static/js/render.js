@@ -118,7 +118,7 @@ function initCanvas(mo) {
 
   /** keyboard events */
   rena.addEventListener('keydown', function (e) {
-    // const t0 = performance.now();
+    const t0 = performance.now();
     switch (e.key) {
       case 'Up':
       case 'ArrowUp':
@@ -187,8 +187,8 @@ function initCanvas(mo) {
         e.preventDefault(); // otherwise it will open Firefox quick find bar
         break;
     }
-    // const t1 = performance.now();
-    // console.log(t1 - t0);
+    const t1 = performance.now();
+    console.log(t1 - t0);
   });
 } // end initializing controls
 
@@ -636,6 +636,12 @@ function renderArena(mo) {
       sq = squares[i];
       ctx.fillRect(sq[0], sq[1], sq[2], sq[2]);
     }
+    // ctx.beginPath();
+    // for (let i = 0; i < n; i++) {
+    //   sq = squares[i];
+    //   ctx.rect(sq[0], sq[1], sq[2], sq[2]);
+    // }
+    // ctx.fill();
 
     // draw circles
     circles = paths[fs].circle;

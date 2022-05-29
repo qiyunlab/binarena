@@ -163,15 +163,15 @@ describe('input.js', function() {
     arr = [1, 2, 3, 4, 5];
     obs = calcEntropy(arr);
     exp = Math.log2(5);
-    expect(obs).toEqual(exp);
+    expect(obs).toBeCloseTo(exp, 15);
 
     // categories
     arr = ['a', 'a', 'b', 'c', 'b', 
-          'a', 'c', 'c', 'b', 'b'];
+           'a', 'c', 'c', 'b', 'b'];
     obs = calcEntropy(arr);
     exp = Math.log2(0.3 ** -0.3) + Math.log2(0.4 ** -0.4)
           + Math.log2(0.3 ** -0.3);
-    expect(obs).toEqual(exp);
+    expect(obs).toBeCloseTo(exp, 15);
 
     // array with blanks
     arr = [1, , 2, 2, , 3, 4, , , 4];
@@ -179,7 +179,7 @@ describe('input.js', function() {
     exp = Math.log2(0.1 ** -0.1) + Math.log2(0.1 ** -0.1) 
           + Math.log2(0.4 ** -0.4) + Math.log2(0.2 ** -0.2)
           + Math.log2(0.2 ** -0.2);
-    expect(obs).toEqual(exp);
+    expect(obs).toBeCloseTo(exp, 15);
 
     // empty input
     expect(calcEntropy([])).toEqual(0);
