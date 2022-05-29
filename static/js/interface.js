@@ -507,19 +507,19 @@ function initWidgets(mo) {
 
   // move around
   byId('up-btn').addEventListener('click', function () {
-    canvasMove(0, mo);
+    canvasKeyMove(0, mo);
   });
 
   byId('right-btn').addEventListener('click', function () {
-    canvasMove(1, mo);
+    canvasKeyMove(1, mo);
   });
 
   byId('down-btn').addEventListener('click', function () {
-    canvasMove(2, mo);
+    canvasKeyMove(2, mo);
   });
 
   byId('left-btn').addEventListener('click', function () {
-    canvasMove(3, mo);
+    canvasKeyMove(3, mo);
   });
 
 }

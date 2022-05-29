@@ -118,23 +118,23 @@ function initCanvas(mo) {
 
   /** keyboard events */
   rena.addEventListener('keydown', function (e) {
-    // const t0 = performance.now();
+    const t0 = performance.now();
     switch (e.key) {
       case 'Up':
       case 'ArrowUp':
-        canvasMove(0, mo);
+        canvasKeyMove(0, mo);
         break;
       case 'Right':
       case 'ArrowRight':
-        canvasMove(1, mo);
+        canvasKeyMove(1, mo);
         break;
       case 'Down':
       case 'ArrowDown':
-        canvasMove(2, mo);
+        canvasKeyMove(2, mo);
         break;
       case 'Left':
       case 'ArrowLeft':
-        canvasMove(3, mo);
+        canvasKeyMove(3, mo);
         break;
       case '-':
       case '_':
@@ -187,21 +187,21 @@ function initCanvas(mo) {
         e.preventDefault(); // otherwise it will open Firefox quick find bar
         break;
     }
-    // const t1 = performance.now();
-    // console.log(t1 - t0);
+    const t1 = performance.now();
+    console.log(t1 - t0);
   });
 } // end initializing controls
 
 
 /**
  * Canvas moving.
- * @function canvasMove
+ * @function canvasKeyMove
  * @param {number} d - move direction
  * @param {Object} mo - main object
  * @description Direction: 0 (top), 1 (right), 2 (bottom), 3 (left), the same
  * as JavaScript margins.
  */
-function canvasMove(d, mo) {
+function canvasKeyMove(d, mo) {
   const step = 15;
   if (d & 1) mo.view.posX += d >> 1 ? -step : step;
   else mo.view.posY += d >> 1 ? step : -step;
@@ -500,7 +500,7 @@ function resizeArena(mo) {
  * 
  * @todo Skipping contigs outside the visible region results in significant
  * performance gain when zooming in. However it voids another potential
- * optimization: draw the entire image (not matter how large it is) in an
+ * optimization: draw the entire image (no matter how large it is) in an
  * off-screen canvas and draw part of it as needed to the main canvas using
  * `drawImage`. Needs further thinking.`
  */
@@ -582,9 +582,13 @@ function renderArena(mo) {
 
     // determine x- and y-coordinates
     // skip contigs outside visible region
-    x = Math.round(X[i] * w);
+    // x = Math.round(X[i] * w);
+    x = X[i] * w;
+    x = x + (x > 0 ? 0.5 : -0.5) << 0;
     if (x + rad < vleft || x - rad > vright) continue;
-    y = Math.round(Y[i] * h);
+    // y = Math.round(Y[i] * h);
+    y = Y[i] * h;
+    y = y + (y > 0 ? 0.5 : -0.5) << 0;
     if (y + rad < vtop || y - rad > vbottom) continue;
 
     // determine fill style (color and opacity)
@@ -593,18 +597,21 @@ function renderArena(mo) {
 
     // if a contig occupies less than four pixels on screen, draw a square
     if (vrad < min2) {
-      paths[fs].square.push([x, y, Math.round(rad * pi1_2)]);
+      // paths[fs].square.push([x, y, Math.round(rad * pi1_2)]);
+      paths[fs].square.push([x, y, rad * pi1_2 + 0.5 << 0]);
     }
 
     // if bigger, draw a circle
     else {
-      paths[fs].circle.push([x, y, Math.round(rad)]);
+      // paths[fs].circle.push([x, y, Math.round(rad)]);
+      paths[fs].circle.push([x, y, rad + 0.5 << 0]);
     }
 
     // highlight circle
     hi = high[i];
     if (hi) {
-      highs[hi - 1].push([x, y, Math.round(rad + hirad)]);
+      // highs[hi - 1].push([x, y, Math.round(rad + hirad)]);
+      highs[hi - 1].push([x, y, rad + hirad + 0.5 << 0]);
     }
   } // end for i
 
@@ -627,27 +634,29 @@ function renderArena(mo) {
   // render contigs
   let squares, sq, circles, circ;
   for (let fs in paths) {
-    ctx.fillStyle = fs;
+    ctx.beginPath();
 
     // draw squares
     squares = paths[fs].square;
     n = squares.length;
     for (let i = 0; i < n; i++) {
       sq = squares[i];
-      ctx.fillRect(sq[0], sq[1], sq[2], sq[2]);
+      ctx.rect(sq[0], sq[1], sq[2], sq[2]);
     }
 
     // draw circles
     circles = paths[fs].circle;
     n = circles.length;
-    if (n === 0) continue;
-    ctx.beginPath();
     for (let i = 0; i < n; i++) {
       circ = circles[i];
       ctx.moveTo(circ[0], circ[1]);
       ctx.arc(circ[0], circ[1], circ[2], 0, pi2, true);
     }
+
+    // fill markers
+    ctx.fillStyle = fs;
     ctx.fill();
+
   } // end for fs
 
   // draw grid
@@ -703,9 +712,14 @@ function renderSelection(mo) {
   ctx.beginPath();
   for (let i = 0; i < n; i++) {
     if (!pick[i]) continue;
-    r = Math.round(S[i]);
-    x = Math.round(X[i] * w);
-    y = Math.round(Y[i] * h);
+    // r = Math.round(S[i]);
+    r = S[i] + 0.5 << 0
+    // x = Math.round(X[i] * w);
+    x = X[i] * w;
+    x = x + (x > 0 ? 0.5 : -0.5) << 0;
+    // y = Math.round(Y[i] * h);
+    y = Y[i] * h;
+    y = y + (y > 0 ? 0.5 : -0.5) << 0;
     ctx.moveTo(x, y);
     ctx.arc(x, y, r, 0, pi2, true);
   }

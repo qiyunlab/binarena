@@ -58,22 +58,10 @@ function guessDisplayFields(mo) {
   const irank = guessRankColumn(cols);
 
   // first, locate x and y (mandatory)
-  const xaxes = ['x', 'xaxis', 'x1', 'axis1', 'dim1', 'pc1', 'pca1', 'tsne1',
-                 'umap1', 'pcoa1', 'nmds1'];
-  const yaxes = ['y', 'yaxis', 'x2', 'axis2', 'dim2', 'pc2', 'pca2', 'tsne2',
-                 'umap2', 'pcoa2', 'nmds2'];
-
-  const xyCand = [null, null];
-  let name;
-  for (let i = 1; i < names.length; i++) {
-    if (types[i] !== 'num') continue;
-    name = names[i].toLowerCase().replace(/[\s_-]/g, '');
-    if (xaxes.indexOf(name) !== -1) xyCand[0] = i;
-    else if (yaxes.indexOf(name) !== -1) xyCand[1] = i;
-  }
+  const xyCand = guessXYColumns(cols);
 
   // be satisfied if both obtained
-  if (xyCand[0] !== null && xyCand[1] !== null) {
+  if (xyCand[0] && xyCand[1]) {
     res['x'] = xyCand[0];
     res['y'] = xyCand[1];
 
@@ -173,7 +161,7 @@ function guessCovColumn(cols) {
  * @returns {number} - index of "gc" column
  */
 function guessGCColumn(cols) {
-  const keys = ['gc', 'g+c', 'gc%', 'gc-content', 'gc-ratio'];
+  const keys = ['gc', 'g+c', 'gc%', 'g+c%', 'gc-content', 'gc-ratio'];
   return findColumnByKeys(cols, keys, ['num']);
 }
 
@@ -192,6 +180,60 @@ function guessRankColumn(cols) {
 
 
 /**
+ * Guess which columns represent the x- and y-axes.
+ * @function guessXYColumns
+ * @param {Object} cols - cols object
+ * @returns {[number, number]} - indices of "x" and "y" columns
+ */
+function guessXYColumns(cols) {
+  const names = cols.names,
+        types = cols.types;
+  const n = names.length;
+  let res = [0, 0];
+  let name;
+
+  // check "x" and "y"
+  let axes = ['x', 'y'];
+  for (let i = 1; i < n; i++) {
+    if (types[i] !== 'num') continue;
+    name = names[i].toLowerCase().replace(/[\s_-]/g, '');
+    for (let j = 0; j < 2; j++) {
+      if (name === axes[j] || name === `${axes[j]}axis`) {
+        res[j] = i;
+        break;
+      }
+    }
+  }
+  if (res[0] && res[1]) return res;
+  else res = [0, 0];
+
+  // check common axis labels
+  const labs = ['x', 'axis', 'dim', 'pc', 'pca', 'tsne', 't-sne',
+                'umap', 'pcoa', 'nmds'];
+  const regs = labs.map((x) => new RegExp(
+    '(^|[\s_-])' + x + '[\s_-]?([12])([\s_-]|$)', 'i'));
+  const m = labs.length;
+  let match, idx;
+  for (let i = 1; i < n; i++) {
+    if (types[i] !== 'num') continue;
+    name = names[i];
+    for (let j = 0; j < m; j++) {
+      match = name.match(regs[j]);
+      if (match) {
+        idx = parseInt(match[2]) - 1;
+        if (res[idx] === 0) res[idx] = i;
+        break;
+      }
+    }
+  }
+  if (res[0] && res[1]) return res;
+
+  // if not found
+  return [0, 0];
+}
+
+
+/**
  * Find column by keywords.
  * @function findColumnByKeys
  * @param {Object} cols - cols object
@@ -202,7 +244,7 @@ function guessRankColumn(cols) {
  * try prefix matching, using a fixed list of delimiters.
  */
 function findColumnByKeys(cols, keys, types) {
-  const delims = [' ', '/', '_', '.'];
+  const seps = [' ', '/', '_', '.'];
   const n = cols.names.length;
   let type, whole = 0, prefix = 0;
   for (let i = 1; i < n; i ++) {
@@ -219,7 +261,7 @@ function findColumnByKeys(cols, keys, types) {
 
     // prefix matching
     if (prefix) continue;
-    for (let d of delims) {
+    for (let d of seps) {
       if (keys.indexOf(str.substring(0, str.indexOf(d))) !== -1) {
         prefix = i;
         break;
