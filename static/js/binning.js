@@ -321,7 +321,7 @@ function initBinCtrl(mo) {
 
   // Click column header to sort data.
   for (let head of byId('bin-thead').rows[0].cells) {
-    head.addEventListener('click' , function() {
+    head.addEventListener('click', function() {
       sortTableByHead(this);
     });
   }

@@ -36,6 +36,13 @@ function initCalcBoxCtrl(mo) {
     window.open('https://github.com/qiyunlab/binarena#' +
       'binning-confidence-evaluation', '_blank');
   });
+
+  for (let head of byId('silh-thead').rows[0].cells) {
+    head.addEventListener('click', function() {
+      sortTableByHead(this);
+    });
+  }
+  
 }
 
 
