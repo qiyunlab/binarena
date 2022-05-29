@@ -122,19 +122,19 @@ function initCanvas(mo) {
     switch (e.key) {
       case 'Up':
       case 'ArrowUp':
-        canvasMove(0, mo);
+        canvasKeyMove(0, mo);
         break;
       case 'Right':
       case 'ArrowRight':
-        canvasMove(1, mo);
+        canvasKeyMove(1, mo);
         break;
       case 'Down':
       case 'ArrowDown':
-        canvasMove(2, mo);
+        canvasKeyMove(2, mo);
         break;
       case 'Left':
       case 'ArrowLeft':
-        canvasMove(3, mo);
+        canvasKeyMove(3, mo);
         break;
       case '-':
       case '_':
@@ -195,13 +195,13 @@ function initCanvas(mo) {
 
 /**
  * Canvas moving.
- * @function canvasMove
+ * @function canvasKeyMove
  * @param {number} d - move direction
  * @param {Object} mo - main object
  * @description Direction: 0 (top), 1 (right), 2 (bottom), 3 (left), the same
  * as JavaScript margins.
  */
-function canvasMove(d, mo) {
+function canvasKeyMove(d, mo) {
   const step = 15;
   if (d & 1) mo.view.posX += d >> 1 ? -step : step;
   else mo.view.posY += d >> 1 ? step : -step;
