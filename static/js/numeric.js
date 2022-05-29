@@ -60,7 +60,7 @@ function objMinMax(obj) {
  * @param {Object.<string, number>} obj - input object
  * @returns {[string, number]} min key-value pair
  */
- function objMin(obj) {
+function objMin(obj) {
   const arr = Object.keys(obj);
   const n = arr.length;
   let key = arr[0];

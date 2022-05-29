@@ -51,7 +51,7 @@ function pnpoly(x, y, polygon) {
  * @description adopted from markE's answer at:
  * @see {@link: https://stackoverflow.com/questions/21089959/}
  */
- function rectCircleColliding(circle, rect){
+function rectCircleColliding(circle, rect){
   const distX = Math.abs(circle.x - rect.x - rect.w / 2),
         distY = Math.abs(circle.y - rect.y - rect.h / 2);
 
@@ -154,7 +154,7 @@ function silhouetteSample(x, label, dist) {
  * distance matrix instead of a 1D condensed distance matrix. It is slower
  * but it can handle larger datasets.
  */
- function silhouetteSample2D(x, label, dist) {
+function silhouetteSample2D(x, label, dist) {
   const n = x.length;
   const count = bincount(label);
   const c = count.length;

@@ -919,7 +919,7 @@ function polygonSelect(mo, shift) {
  * @function exportPNG
  * @param {Object} canvas - canvas DOM to export
  */
- function exportPNG(canvas) {
+function exportPNG(canvas) {
   const a = document.createElement('a');
   a.href = canvas.toDataURL('image/png');
   a.download = 'image.png';

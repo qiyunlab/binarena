@@ -177,7 +177,7 @@ function initSelTools(mo) {
  * @param {Object} mo - main object
  * @param {number} idx - highlight color index
  */
- function addHighlight(mo, idx) {
+function addHighlight(mo, idx) {
   if (!mo.cache.npick) return;
   const n = mo.cache.nctg;
   const pick = mo.picked,
