@@ -316,17 +316,18 @@
       <div class="dock active hidden">
         <div class="panel-head"><button disabled>Settings</button></div>
         <div class="dash-content">
-          <p><label><b>Special:</b></label></p>
+          <p class="title"><label>Special fields:</label></p>
           <p><label>Length</label><select id="len-col-sel" title="Field that represents contig length (bp)" style="width: 50%;"></select></p>
           <p><label>Coverage</label><select id="cov-col-sel" title="Field that represents contig coverage (depth)" style="width: 50%;"></select></p>
           <!-- temporarily disabled -->
           <div class="hidden">
-            <p><label><b>Filter:</b></label></p>
+            <p class="title"><label>Filter:</label></p>
             <p><label>Length</label><input type="text" id="len-filt" title="Minimum contig length threshold" style="width: 40%; text-align: right;"></p>
             <p><label>Coverage</label><input type="text" id="cov-filt" title="Minimum contig coverage threshold" style="width: 40%; text-align: right;"></p>
           </div>
-          <p><label><b>Show:</b></label></p>
-          <p><label>Grid</label><input type="checkbox" id="grid-chk"></p>
+          <p class="title"><label>Show:</label></p>
+          <p><label>Night mode</label><input type="checkbox" id="night-chk"></p>
+          <p><label>Plot grid</label><input type="checkbox" id="grid-chk"></p>
           <p><label>Navigation bar</label><input type="checkbox" id="nav-chk"></p>
           <p><label>Quick buttons</label><input type="checkbox" id="freq-chk" checked></p>
         </div>
@@ -466,7 +467,9 @@
       <div id="info-menu-wrap" class="hidden">
         <label>&equiv;</label>
         <div id="info-menu" class="expand menu">
-          <p><a id="comcon-a" class="dropdown" title="Calculate completeness/contamination of feature group">Feature group</a></p>
+          <p><a id="sel-comred-a" class="dropdown" title="Calculate completeness/redundancy of feature group">Feature group</a></p>
+          <hr>
+          <p><a id="export-sel-a" title="Export selected contig list">Export</a></p>
         </div>
       </div>
       <button disabled></button>
@@ -750,6 +753,9 @@
     hidden elements
   -->
   <div style="display:none">
+    <!-- file download link -->
+    <a id="download-a"></a>
+
     <!-- file I/O cache -->
     <textarea id="text-cache"></textarea>
 

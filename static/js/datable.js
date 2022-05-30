@@ -448,13 +448,8 @@ function exportDataTable(mo) {
   }
 
   // create file for download
-  const a = document.createElement('a');
-  a.href = "data:text/tab-separated-values;charset=utf-8," +
-    encodeURIComponent(tsv);
-  a.download = 'data.tsv';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
+  downloadFile(tsv, 'data.tsv',
+    'data:text/tab-separated-values;charset=utf-8');
 }
 
 
@@ -466,11 +461,6 @@ function exportDataTable(mo) {
  * This way avoids saving the lengthy href.
  */
 function exportJSON(data) {
-  const a = document.createElement('a');
-  a.href = 'data:text/json;charset=utf-8,' +
-    encodeURIComponent(JSON.stringify(data, null, 2));
-  a.download = 'data.json';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
+  downloadFile(JSON.stringify(data, null, 2), 'data.json',
+    'data:text/json;charset=utf-8');
 }

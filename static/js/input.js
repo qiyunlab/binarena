@@ -456,6 +456,14 @@ function importTableNext(mo, splen, spcov) {
   if (splen) mo.cache.splen = mo.cols.names.indexOf(splen);
   if (spcov) mo.cache.spcov = mo.cols.names.indexOf(spcov);
 
+  // update view by data
+  if (n === 0) resetWorkspace(mo);
+  else {
+    cacheFrequencies(mo, true);
+    if (splen || spcov) cacheTotAbundance(mo);
+    updateWorkspace(mo);
+  }
+
   // clean up
   impo.fname = null;
   impo.text = null;
@@ -465,14 +473,7 @@ function importTableNext(mo, splen, spcov) {
   impo.guess = [];
   impo.idx = [];
 
-  // update view by data
-  if (n === 0) resetWorkspace(mo);
-  else {
-    cacheFrequencies(mo, true);
-    if (splen || spcov) cacheTotAbundance(mo);
-    updateWorkspace(mo);
-  }
-
+  // report status
   byId('import-prog').classList.add('hidden');
   byId('import-modal').classList.add('hidden');
   toastMsg(`Read ${plural('data field', ncol)} ` +
@@ -1358,7 +1359,7 @@ function fillMemlstModal(mo) {
   const fname = mo.impo.fname;
   const txt = byId('memlst-name-txt');
   const lix = fname.lastIndexOf('.');
-  txt.value = lix > -1 ? fname.substring(0, lix) : fname;
+  txt.value = lix > 0 ? fname.substring(0, lix) : fname;
   byId('memlst-modal').classList.remove('hidden');
 }
 

@@ -227,7 +227,7 @@ function initBinCtrl(mo) {
 
   // export current binning plan
   byId('export-plan-a').addEventListener('click', function () {
-    exportBinPlan(mo.binned, data[0]);
+    exportBinPlan(mo.binned, data[0], byId('plan-sel-txt').value);
   });
 
 
@@ -321,8 +321,8 @@ function initBinCtrl(mo) {
 
   // Click column header to sort data.
   for (let head of byId('bin-thead').rows[0].cells) {
-    head.addEventListener('click' , function() {
-      sortBinTable(this.cellIndex, this.asc = !this.asc);
+    head.addEventListener('click', function() {
+      sortTableByHead(this);
     });
   }
 
@@ -805,45 +805,34 @@ function updateSavePlanBtn(mo, edited) {
 
 
 /**
- * Sort bin table by clicking header.
- * @function sortBinTable
- * @param {number} idx - index of table column to sort with
- * @param {boolean} asc - ascending (true) or descending (false)
- * @description Modified based on:
- * @see {@link https://stackoverflow.com/questions/14267781/}
- */
-function sortBinTable(idx, asc) {
-  const table = byId('bin-tbody');
-  Array.from(table.rows).sort((a, b) =>
-    (asc ? a : b).cells[idx].textContent.localeCompare(
-    (asc ? b : a).cells[idx].textContent, undefined, {
-    numeric: true})).forEach(row => table.appendChild(row));
-};
-
-
-/**
  * Export binning plan as a text file.
  * @function exportBinPlan
  * @param {string[]} binned - binning plan
  * @param {string[]} ids - contig Ids
- * @description The output file format is like:
- * bin1 <tab> ctg4,ctg15,ctg23
- * bin2 <tab> ctg12,ctg18
- * bin4 <tab> ctg3,ctg5,ctg20
- * ...
+ * @param {string} [name=] - plan name
  */
-function exportBinPlan(binned, ids) {
-  const bin2ctgs = arrGroupByF(binned);
-  if (Object.keys(bin2ctgs).length === 0) return;
+function exportBinPlan(binned, ids, name) {
+  const fname = name ? `${name}.tsv` : 'untitled.tsv';
   let tsv = '';
-  for (const [name, ctgs] of Object.entries(bin2ctgs)) {
-    tsv += (name + '\t' + ctgs.sort().map(x => ids[x]).join(',') + '\n');
+  const n = binned.length;
+  for (let i = 0; i < n; i++) {
+    tsv += `${ids[i]}\t${binned[i]}\n`;
   }
-  const a = document.createElement('a');
-  a.href = "data:text/tab-separated-values;charset=utf-8," +
-    encodeURIComponent(tsv);
-  a.download = 'bins.tsv';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
+  downloadFile(tsv, fname,
+    'data:text/tab-separated-values;charset=utf-8');
 }
+
+
+/**
+ * Previous export function (bin-to-contigs map).
+ */
+// function exportBinPlan(binned, ids) {
+//   const bin2ctgs = arrGroupByF(binned);
+//   if (Object.keys(bin2ctgs).length === 0) return;
+//   let tsv = '';
+//   for (const [name, ctgs] of Object.entries(bin2ctgs)) {
+//     tsv += (name + '\t' + ctgs.sort().map(x => ids[x]).join(',') + '\n');
+//   }
+//   downloadFile(tsv, 'bins.tsv',
+//     'data:text/tab-separated-values;charset=utf-8');
+// }

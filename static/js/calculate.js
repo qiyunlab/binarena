@@ -36,6 +36,13 @@ function initCalcBoxCtrl(mo) {
     window.open('https://github.com/qiyunlab/binarena#' +
       'binning-confidence-evaluation', '_blank');
   });
+
+  for (let head of byId('silh-thead').rows[0].cells) {
+    head.addEventListener('click', function() {
+      sortTableByHead(this);
+    });
+  }
+  
 }
 
 
@@ -319,13 +326,8 @@ function exportSilh(mo) {
   for (let i = 0; i < n; i++) {
     tsv += ([ids[ctgs[i]], bins[labels[i]], scores[i]].join('\t') + '\n');
   }
-  const a = document.createElement('a');
-  a.href = "data:text/tab-separated-values;charset=utf-8," +
-    encodeURIComponent(tsv);
-  a.download = 'silhouette.tsv';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
+  downloadFile(tsv, 'silhouette.tsv',
+    'data:text/tab-separated-values;charset=utf-8');
 }
 
 
@@ -385,9 +387,9 @@ function fillMemLstTable(mo) {
         const row = this.parentElement;
         const field = parseInt(row.getAttribute('data-index'));
         const group = row.getAttribute('data-group');
-        const [comp, cont] = calcComCon(mo, field, group);
+        const [comp, cont] = calcComRed(mo, field, group);
         toastMsg(`Completeness: ${(comp * 100).toFixed(2)}%, ` +
-                 `contamination: ${(cont * 100).toFixed(2)}%.`,
+                 `redundancy: ${(cont * 100).toFixed(2)}%.`,
                  mo.stat, 0, false, true);
       });
     }
@@ -397,18 +399,18 @@ function fillMemLstTable(mo) {
 
 
 /**
- * Calculate completeness and contamination of current selection given a
+ * Calculate completeness and redundancy of current selection given a
  * feature group.
- * @function calcComCon
+ * @function calcComRed
  * @param {Object} mo - main object
  * @param {number} field - feature set field index
  * @param {string} group - feature group name
  * @description The metrics are analogous to CheckM's.
  * Completeness - number of features seen vs total number of features in group.
- * Contamination - number of times features are found more than once vs total
+ * Redundancy - number of times features are found more than once vs total
  * number of features in group.
  */
-function calcComCon(mo, field, group) {
+function calcComRed(mo, field, group) {
   let feaset = new Set(mo.mems[field][group]);
   const tot = feaset.size;
   const n = mo.cache.nctg;
