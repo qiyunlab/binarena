@@ -156,8 +156,8 @@ function initSelTools(mo) {
     }
   });
 
-  /** Calculate completeness/contamination */
-  byId('comcon-a').addEventListener('click', function () {
+  /** Calculate completeness/redundancy */
+  byId('sel-comred-a').addEventListener('click', function () {
     const n = fillMemLstTable(mo);
     if (n === 0) {
       toastMsg(`No feature group is available. Please import.`, mo.stat);

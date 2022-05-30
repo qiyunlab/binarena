@@ -33,6 +33,6 @@ python checkm_marker_list.py Bacteria.ms > Bacteria.lst
 
 The output file `Bacteria.lst` can be imported into BinaRena as a feature group membership list.
 
-Step 6. Then one can use the "feature group" menu item to calculate **completeness** and **contamination** scores of selection contigs in real time!
+Step 6. Then one can use the "feature group" menu item to calculate **completeness** and **redundancy** (contamination) scores of selection contigs in real time!
 
-**Note**: The output values are analogous to CheckM's completeness and contamination scores, and they can be intepreted in a similar way. However there is one difference: CheckM considers the **collocation** of marker genes when calculating these metrics. BinaRena does not, however, as of the current version, and the output values are based on a plain list of features.
+**Note**: The output values are analogous to CheckM's completeness and redundancy scores, and they can be intepreted in a similar way. However there is one difference: CheckM considers the **collocation** of marker genes when calculating these metrics. BinaRena does not, however, as of the current version, and the output values are based on a plain list of features.
