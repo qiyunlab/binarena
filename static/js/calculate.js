@@ -326,13 +326,8 @@ function exportSilh(mo) {
   for (let i = 0; i < n; i++) {
     tsv += ([ids[ctgs[i]], bins[labels[i]], scores[i]].join('\t') + '\n');
   }
-  const a = document.createElement('a');
-  a.href = "data:text/tab-separated-values;charset=utf-8," +
-    encodeURIComponent(tsv);
-  a.download = 'silhouette.tsv';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
+  downloadFile(tsv, 'silhouette.tsv',
+    'data:text/tab-separated-values;charset=utf-8');
 }
 
 

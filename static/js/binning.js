@@ -822,11 +822,6 @@ function exportBinPlan(binned, ids) {
   for (const [name, ctgs] of Object.entries(bin2ctgs)) {
     tsv += (name + '\t' + ctgs.sort().map(x => ids[x]).join(',') + '\n');
   }
-  const a = document.createElement('a');
-  a.href = "data:text/tab-separated-values;charset=utf-8," +
-    encodeURIComponent(tsv);
-  a.download = 'bins.tsv';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
+  downloadFile(tsv, 'bins.tsv',
+    'data:text/tab-separated-values;charset=utf-8');
 }

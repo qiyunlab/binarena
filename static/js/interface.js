@@ -759,12 +759,27 @@ function formatValueLabel(value, icol, digits, unit, mo) {
 
 /**
  * Append an element to a container with inner HTML
+ * @function downloadFile
+ * @param {string} content - file content
+ * @param {string} name - file name
+ * @param {string} type - file type
+ */
+function downloadFile(content, name, type) {
+  const blob = new Blob([content], {type: type});
+  const a = byId('download-a');
+  a.download = name;
+  a.href = URL.createObjectURL(blob); 
+  a.click();
+}
+
+
+/**
+ * Append an element to a container with inner HTML
  * @function appendHTML
  * @param {Object} dom - container DOM
  * @param {string} tag - element tag
  * @param {string} html - inner HTML of element
  */
-
 function appendHTML(dom, tag, html) {
   let e = document.createElement(tag);
   e.innerHTML = html;
