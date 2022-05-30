@@ -441,6 +441,11 @@ function initSettings(mo) {
     }
   });
 
+  // Enable/disable night mode.
+  byId('night-chk').addEventListener('change', function () {
+    mo.oray.style.backgroundColor = this.checked ? 'black' : '';
+  });
+
   // Show/hide grid.
   byId('grid-chk').addEventListener('change', function () {
     mo.view.grid = this.checked;
