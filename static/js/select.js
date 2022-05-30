@@ -168,6 +168,11 @@ function initSelTools(mo) {
     div.classList.remove('hidden');
   });
 
+  /** Export selected contigs. */
+  byId('export-sel-a').addEventListener('click', function () {
+    exportSelection(mo);
+  });
+
 }
 
 
@@ -293,6 +298,24 @@ function removeFocus(mo) {
   renderArena(mo);
   updateMaskCtrl(mo);
   mo.rena.focus();
+}
+
+
+/**
+ * Export selected contigs.
+ * @function exportSelection
+ * @param {Object} mo - main object
+ */
+function exportSelection(mo) {
+  if (!mo.cache.npick) return;
+  const n = mo.cache.nctg;
+  const pick = mo.picked;
+  const ids = mo.data[0];
+  let txt = '';
+  for (let i = 0; i < n; i++) {
+    if (pick[i]) txt += ids[i] + '\n';
+  }
+  downloadFile(txt, 'selected.txt', 'data:text/plain;charset=utf-8');
 }
 
 

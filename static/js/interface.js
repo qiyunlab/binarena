@@ -767,7 +767,7 @@ function formatValueLabel(value, icol, digits, unit, mo) {
  * @function downloadFile
  * @param {string} content - file content
  * @param {string} name - file name
- * @param {string} type - file type
+ * @param {string} type - MIME type string
  */
 function downloadFile(content, name, type) {
   const blob = new Blob([content], {type: type});
