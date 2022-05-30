@@ -227,7 +227,7 @@ function initBinCtrl(mo) {
 
   // export current binning plan
   byId('export-plan-a').addEventListener('click', function () {
-    exportBinPlan(mo.binned, data[0]);
+    exportBinPlan(mo.binned, data[0], byId('plan-sel-txt').value);
   });
 
 
@@ -809,19 +809,30 @@ function updateSavePlanBtn(mo, edited) {
  * @function exportBinPlan
  * @param {string[]} binned - binning plan
  * @param {string[]} ids - contig Ids
- * @description The output file format is like:
- * bin1 <tab> ctg4,ctg15,ctg23
- * bin2 <tab> ctg12,ctg18
- * bin4 <tab> ctg3,ctg5,ctg20
- * ...
+ * @param {string} [name=] - plan name
  */
-function exportBinPlan(binned, ids) {
-  const bin2ctgs = arrGroupByF(binned);
-  if (Object.keys(bin2ctgs).length === 0) return;
+function exportBinPlan(binned, ids, name) {
+  const fname = name ? `${name}.tsv` : 'untitled.tsv';
   let tsv = '';
-  for (const [name, ctgs] of Object.entries(bin2ctgs)) {
-    tsv += (name + '\t' + ctgs.sort().map(x => ids[x]).join(',') + '\n');
+  const n = binned.length;
+  for (let i = 0; i < n; i++) {
+    tsv += `${ids[i]}\t${binned[i]}\n`;
   }
-  downloadFile(tsv, 'bins.tsv',
+  downloadFile(tsv, fname,
     'data:text/tab-separated-values;charset=utf-8');
 }
+
+
+/**
+ * Previous export function (bin-to-contigs map).
+ */
+// function exportBinPlan(binned, ids) {
+//   const bin2ctgs = arrGroupByF(binned);
+//   if (Object.keys(bin2ctgs).length === 0) return;
+//   let tsv = '';
+//   for (const [name, ctgs] of Object.entries(bin2ctgs)) {
+//     tsv += (name + '\t' + ctgs.sort().map(x => ids[x]).join(',') + '\n');
+//   }
+//   downloadFile(tsv, 'bins.tsv',
+//     'data:text/tab-separated-values;charset=utf-8');
+// }

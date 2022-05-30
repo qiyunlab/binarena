@@ -294,7 +294,7 @@ function initContextMenu(mo) {
 
   // export bins
   byId('export-bins-a').addEventListener('click', function () {
-    exportBinPlan(mo.binned, mo.data[0]);
+    exportBinPlan(mo.binned, mo.data[0], byId('plan-sel-txt').value);
   });
 
   // export data table as JSON
