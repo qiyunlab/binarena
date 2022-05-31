@@ -920,7 +920,7 @@ function prepDataForDisplay(mo, items) {
         const base = v.base;
         for (let i = 0; i < n_; i++) {
           i_ = index[i];
-          rgb[i_] = cmap[Math.round(target[i_])] || base;
+          rgb[i_] = cmap[target[i_] + 0.5 << 0] || base;
         }
         if (ni > 0) {
           let nanval = v.base;
