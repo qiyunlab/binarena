@@ -498,21 +498,6 @@ function renderSVG(mo, legs) {
   /**
    * Export SVG file.
    */
-
-  svg = svg.join('\n');
-  const blob = new Blob([svg], {type: 'data:image/svg+xml;charset=utf-8'});
-  const a = document.createElement('a');
-  a.download = 'image.svg';
-  a.href = URL.createObjectURL(blob); 
-  a.click();
-
-  // setTimeout(function () {
-  //   const a = document.createElement('a');
-  //   a.href = "data:image/svg+xml;charset=utf-8," +
-  //     encodeURIComponent(svg);
-  //   a.download = 'image.svg';
-  //   document.body.appendChild(a);
-  //   a.click();
-  //   document.body.removeChild(a);
-  // }, 0);
+  downloadFile(svg.join('\n'), 'image.svg',
+    'data:image/svg+xml;charset=utf-8');
 }

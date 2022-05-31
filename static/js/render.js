@@ -118,7 +118,7 @@ function initCanvas(mo) {
 
   /** keyboard events */
   rena.addEventListener('keydown', function (e) {
-    const t0 = performance.now();
+    // const t0 = performance.now();
     switch (e.key) {
       case 'Up':
       case 'ArrowUp':
@@ -187,8 +187,8 @@ function initCanvas(mo) {
         e.preventDefault(); // otherwise it will open Firefox quick find bar
         break;
     }
-    const t1 = performance.now();
-    console.log(t1 - t0);
+    // const t1 = performance.now();
+    // console.log(t1 - t0);
   });
 } // end initializing controls
 
@@ -919,7 +919,7 @@ function polygonSelect(mo, shift) {
  * @function exportPNG
  * @param {Object} canvas - canvas DOM to export
  */
- function exportPNG(canvas) {
+function exportPNG(canvas) {
   const a = document.createElement('a');
   a.href = canvas.toDataURL('image/png');
   a.download = 'image.png';

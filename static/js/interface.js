@@ -294,7 +294,7 @@ function initContextMenu(mo) {
 
   // export bins
   byId('export-bins-a').addEventListener('click', function () {
-    exportBinPlan(mo.binned, mo.data[0]);
+    exportBinPlan(mo.binned, mo.data[0], byId('plan-sel-txt').value);
   });
 
   // export data table as JSON
@@ -441,6 +441,11 @@ function initSettings(mo) {
     }
   });
 
+  // Enable/disable night mode.
+  byId('night-chk').addEventListener('change', function () {
+    mo.oray.style.backgroundColor = this.checked ? 'black' : '';
+  });
+
   // Show/hide grid.
   byId('grid-chk').addEventListener('change', function () {
     mo.view.grid = this.checked;
@@ -469,7 +474,6 @@ function initSettings(mo) {
  * @param {Object} mo - main object
  */
 function initWidgets(mo) {
-  const view = mo.view;
 
   // draw polygon to select contigs
   byId('polygon-btn').addEventListener('click', function (e) {
@@ -719,6 +723,24 @@ function autoComplete(src, arr) {
 
 
 /**
+ * Sort a table by clicking its header.
+ * @function sortTableByHead
+ * @param {object} th - table header
+ * @description Assuming there are thead and tbody. Modified based on:
+ * @see {@link https://stackoverflow.com/questions/14267781/}
+ */
+function sortTableByHead(th) {
+  const idx = th.cellIndex;
+  const asc = th.asc = !th.asc;
+  const tbody = th.closest('table').tBodies[0];
+  Array.from(tbody.rows).sort((a, b) =>
+    (asc ? a : b).cells[idx].textContent.localeCompare(
+    (asc ? b : a).cells[idx].textContent, undefined, {
+    numeric: true})).forEach(row => tbody.appendChild(row));
+};
+
+
+/**
  * Format a value to be a label depending on content.
  * @function formatValueLabel
  * @param {number} value - value to format
@@ -742,12 +764,27 @@ function formatValueLabel(value, icol, digits, unit, mo) {
 
 /**
  * Append an element to a container with inner HTML
+ * @function downloadFile
+ * @param {string} content - file content
+ * @param {string} name - file name
+ * @param {string} type - MIME type string
+ */
+function downloadFile(content, name, type) {
+  const blob = new Blob([content], {type: type});
+  const a = byId('download-a');
+  a.download = name;
+  a.href = URL.createObjectURL(blob); 
+  a.click();
+}
+
+
+/**
+ * Append an element to a container with inner HTML
  * @function appendHTML
  * @param {Object} dom - container DOM
  * @param {string} tag - element tag
  * @param {string} html - inner HTML of element
  */
-
 function appendHTML(dom, tag, html) {
   let e = document.createElement(tag);
   e.innerHTML = html;

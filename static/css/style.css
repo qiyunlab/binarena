@@ -879,6 +879,11 @@ div.dash-content p *:first-child {
   margin-right: auto;
 }
 
+div.dash-content p.title label {
+  padding-top: 5px;
+  font-weight: bold;
+}
+
 div.dash-content button {
   height: 24px;
   padding: 0 5px;
@@ -1097,7 +1102,7 @@ div.dash-content > table tr td:last-child > span button:hover {
 }
 
 #set-panel > div {
-  width: 180px;
+  width: 240px;
 }
 
 
@@ -1183,9 +1188,7 @@ div.side-content {
 #bin-thead th {
   position: sticky;
   top: 0;
-  background-color: #EEE;}
-
-#bin-thead th {
+  background-color: #EEE;
   font-weight: normal;
   cursor: pointer;
 }
@@ -1714,7 +1717,7 @@ div.legend:hover div.clip {
  */
 
 #import-modal > .modal-content {
-  width: 600px;
+  width: 480px;
 }
 
 #import-table-wrap {
@@ -1859,6 +1862,7 @@ div.legend:hover div.clip {
   top: 0;
   background-color: #EEE;
   font-weight: normal;
+  cursor: pointer;
 }
 
 #silh-thead th:hover {

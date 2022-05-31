@@ -367,7 +367,6 @@ function fillDataTable(mo, title, n, p) {
 function sortDataTable(mo, idx, order) {
   const tabled = mo.tabled;
   const col = mo.data[idx];
-
   if (order) { // descending
     tabled.sort((a, b) => { return col[b] - col[a]; });
   } else { // ascending
@@ -381,7 +380,7 @@ function sortDataTable(mo, idx, order) {
  * @function exportDataTable
  * @param {Object} mo - main object
  */
- function exportDataTable(mo) {
+function exportDataTable(mo) {
   if (!mo.cache.nctg) return;
   const data = mo.data,
         cols = mo.cols;
@@ -449,13 +448,8 @@ function sortDataTable(mo, idx, order) {
   }
 
   // create file for download
-  const a = document.createElement('a');
-  a.href = "data:text/tab-separated-values;charset=utf-8," +
-    encodeURIComponent(tsv);
-  a.download = 'data.tsv';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
+  downloadFile(tsv, 'data.tsv',
+    'data:text/tab-separated-values;charset=utf-8');
 }
 
 
@@ -466,12 +460,7 @@ function sortDataTable(mo, idx, order) {
  * @see {@link https://stackoverflow.com/questions/17527713/}
  * This way avoids saving the lengthy href.
  */
- function exportJSON(data) {
-  const a = document.createElement('a');
-  a.href = 'data:text/json;charset=utf-8,' +
-    encodeURIComponent(JSON.stringify(data, null, 2));
-  a.download = 'data.json';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
+function exportJSON(data) {
+  downloadFile(JSON.stringify(data, null, 2), 'data.json',
+    'data:text/json;charset=utf-8');
 }

@@ -295,7 +295,7 @@ function arrGroupBy(arr) {
  * @param {Array} arr - input array
  * @returns {Object} output object
  */
- function arrGroupByF(arr) {
+function arrGroupByF(arr) {
   const res = {};
   const n = arr.length;
   let item;
@@ -377,7 +377,7 @@ function listCats(arr) {
  * weights
  * @description NaN weights are skipped.
  */
- function listCatsW(arr1, arr2) {
+function listCatsW(arr1, arr2) {
   const res = {};
   const n = arr1.length;
   let cat, wt;
@@ -516,7 +516,7 @@ function countTrue(arr) {
  * @param {Array} arr - input array
  * @returns {number} indices of true elements
  */
- function indexTrue(arr) {
+function indexTrue(arr) {
   const n = arr.length;
   const res = [];
   for (let i = 0; i < n; i++) {

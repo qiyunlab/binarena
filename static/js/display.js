@@ -599,6 +599,16 @@ function updateView(mo) {
 function resetWorkspace(mo) {
   resetControls();
 
+  // change document title
+  let title = 'BinaRena';
+  let fname = mo.impo.fname;
+  if (fname) {
+    const idx = fname.lastIndexOf('.');
+    if (idx > 0) fname = fname.substring(0, idx);
+    title += ` - ${fname}`;
+  }
+  document.title = title;
+
   // check whether there is data
   const data = mo.data,
         cache = mo.cache;
