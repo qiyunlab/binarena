@@ -982,13 +982,16 @@ function displayItemChange(item, i, scale, mo) {
 
   // if x- or y-coordinates change, reset view
   if (item === 'x' || item === 'y') centerView(mo);
-  else updateLegends(mo, [item]);
 
   // toggle color map list
-  const isCat = (item === 'color' && mo.cols.types[i] === 'cat');
-  if (isCat) updateColorMap(mo);
+  if (item === 'color' && mo.cols.types[i] === 'cat') updateColorMap(mo);
 
+  // update data cache
   prepDataForDisplay(mo, [item]);
+
+  // update legend
+  if (item !== 'x' && item !== 'y') updateLegends(mo, [item]);
+
   renderArena(mo, true);
   renderSelect(mo, true);
 }
