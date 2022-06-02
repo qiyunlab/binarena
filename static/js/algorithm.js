@@ -68,21 +68,21 @@ function rectCircleColliding(circle, rect){
 
 
 /**
- * Compute the silhouette coefficient for each contig.
- * @function silhouetteSample
- * @param {number[]} x - input data
- * @param {number[]} label - labels of input data
- * @param {number[]} dist - pairwise distances among input data
+ * Compute silhouette coefficients of contigs.
+ * @function silhouetteSamplePre
+ * @param {number[]} dist - condensed distance matrix among data
+ * @param {number[]} label - labels of data
+ * @param {number} n - number of data points
  * @return {number[]} silhouette coefficient of each contig
  * @description The silhouette coefficient measures how similar a contig is to
  * other contigs in the same bin, as in contrast to contigs in other bins.
  * @see {@link https://en.wikipedia.org/wiki/Silhouette_(clustering)}
  * @description It requires calculation of a distance matrix of all contigs,
  * which is expensive. Therefore it is pre-calculated, stored, and fed to the
- * current function.
+ * current function. This solution is effective only when the number of data
+ * points in not large.
  */
-function silhouetteSample(x, label, dist) {
-  const n = x.length;
+function silhouetteSamplePre(dm, label, n) {
   const count = bincount(label); // bin sizes
   const c = count.length;
 
@@ -115,9 +115,9 @@ function silhouetteSample(x, label, dist) {
 
         // determine intra- or inter-bin distance
         if (li === label[j]) {
-          distIn += dist[idx];
+          distIn += dm[idx];
         } else {
-          distOut[label[j]] += dist[idx];
+          distOut[label[j]] += dm[idx];
         }
       }
 
@@ -144,30 +144,39 @@ function silhouetteSample(x, label, dist) {
 
 
 /**
- * Compute the silhouette coefficient for each contig.
- * @function silhouetteSample2D
- * @param {number[]} x - input data
+ * Compute silhouette coefficients of contigs.
+ * @function silhouetteSampleIns
+ * @param {number[][]} x - input data (array of data points of dimensions)
  * @param {number[]} label - labels of input data
- * @param {number[]} dist - pairwise distances among input data
  * @return {number[]} silhouette coefficient of each contig
- * @description This is the 2D version of the function. It takes a 2D square
- * distance matrix instead of a 1D condensed distance matrix. It is slower
- * but it can handle larger datasets.
+ * @description This algorithm calculates pairwise distances in real-time,
+ * instead of pre-calculating the entire distance matrix. It is twice as slow
+ * as the latter (because for each pair it calculates the distance twice), but
+ * it is memory-efficient because it does not store the distance matrix.
  */
-function silhouetteSample2D(x, label, dist) {
+function silhouetteSampleIns(x, label) {
   const n = x.length;
+  const m = x[0].length;
   const count = bincount(label);
   const c = count.length;
   let distIn, distOut, li, j;
   const res = Array(n).fill();
+  let xi, xj, sum, k, d;
   for (let i = 0; i < n; i++) {
     li = label[i];
+    xi = x[i];
     if (count[li] > 1) {
       distIn = 0;
       distOut = Array(c).fill(0);
       for (j = 0; j < n; j++) {
-        if (li === label[j]) distIn += dist[i][j];
-        else distOut[label[j]] += dist[i][j];
+        xj = x[j];
+        sum = 0;
+        for (k = 0; k < m; k++) {
+          sum += (xi[k] - xj[k]) ** 2;
+        }
+        d = Math.sqrt(sum);
+        if (li === label[j]) distIn += d;
+        else distOut[label[j]] += d;
       }
       for (j = 0; j < c; j++) distOut[j] /= count[j];
       distOut = Math.min.apply(null, distOut.filter(Boolean));
@@ -180,11 +189,41 @@ function silhouetteSample2D(x, label, dist) {
 
 
 /**
- * @summary Adjusted Rand index (ARI)
- * @description The adjusted Rand index (ARI) measures the similarity between
- * two binning plans (sets of bins).
- * @see {@link https://en.wikipedia.org/wiki/Rand_index}
+ * Compute silhouette coefficients of contigs.
+ * @function silhouetteSamplePre2D
+ * @param {number[]} dm - redundant distance matrix among data
+ * @param {number[]} label - labels of data
+ * @return {number[]} silhouette coefficient of each contig
+ * @description This is the 2D version of the function. It takes a 2D square
+ * distance matrix instead of a 1D condensed distance matrix. It is slower
+ * but it can handle larger datasets.
+ * @description This is a reference implementation that is not actually used
+ * in the program, because it is memory-inefficient to store a large distance
+ * matrix. One should use `silhouetteSampleIns` instead.
  */
+ function silhouetteSamplePre2D(dm, label) {
+  const n = dm.length;
+  const count = bincount(label);
+  const c = count.length;
+  let distIn, distOut, li, j;
+  const res = Array(n).fill();
+  for (let i = 0; i < n; i++) {
+    li = label[i];
+    if (count[li] > 1) {
+      distIn = 0;
+      distOut = Array(c).fill(0);
+      for (j = 0; j < n; j++) {
+        if (li === label[j]) distIn += dm[i][j];
+        else distOut[label[j]] += dm[i][j];
+      }
+      for (j = 0; j < c; j++) distOut[j] /= count[j];
+      distOut = Math.min.apply(null, distOut.filter(Boolean));
+      distIn /= (count[li] - 1);
+      res[i] = (distOut - distIn) / Math.max(distOut, distIn);
+    } else res[i] = 0;
+  }
+  return res;
+}
 
 
 /**
@@ -245,6 +284,9 @@ function contingencyMatrix(labelTrue, labelPred) {
  * @param {number[]} labelTrue - the array of true labels
  * @param {number[]} labelPred - the array of predicted labels
  * @return {number} adjusted Rand index
+ * @description The adjusted Rand index (ARI) measures the similarity between
+ * two binning plans (sets of bins).
+ * @see {@link https://en.wikipedia.org/wiki/Rand_index}
  */
 function adjustedRandScore(labelTrue, labelPred) {
   let nSamples = labelTrue.length;
