@@ -138,7 +138,7 @@ function initWindow(mo) {
  * @description also manually triggered when user resizes main frame
  */
 function resizeWindow(mo) {
-  const [w, h] = calcArenaDimensions(mo);
+  const [w, h] = calcArenaDims(mo);
   toastMsg(`Plot size: ${w} x ${h}`, mo.stat);
   clearTimeout(mo.stat.resizing);
   mo.stat.resizing = setTimeout(function () {
@@ -497,7 +497,7 @@ function initWidgets(mo) {
 
   // reset graph
   byId('reset-btn').addEventListener('click', function () {
-    resetView(mo);
+    centerView(mo);
   });
 
   // zoom in/out

@@ -242,11 +242,9 @@ function deleteColumn(th, mo) {
   let row = th.parentElement;
 
   // change display items if needed
-  let changed = false;
   const keys = ['x', 'y', 'size', 'opacity', 'color'];
   for (const key of keys) {
     if (idx === view[key].i) {
-      changed = true;
       
       // for others, remove display
       if (key !== 'x' && key !== 'y') view[key].i = 0;
@@ -262,13 +260,12 @@ function deleteColumn(th, mo) {
             }
           }
         }
+        centerView(mo);
       }
       view[key].scale = 'none';
+      displayItemChange(key, 0, 'none', mo);
     }
   }
-
-  // reset plot if needed
-  if (changed) resetView(mo);
 
   // shift indices of subsequent columns
   const cells = row.cells;

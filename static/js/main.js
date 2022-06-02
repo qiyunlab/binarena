@@ -200,6 +200,9 @@ function mainObj() {
    * @property {number}  posY    - viewport position y
    * @property {number}  scale   - scaling factor
    * 
+   * @property {number}  offX    - offscreen position x
+   * @property {number}  offY    - offscreen position y
+   * 
    * @property {Object}  x       - x-axis variable
    * @property {Object}  y       - y-axis variable
    * @property {Object}  size    - size variable
@@ -219,6 +222,9 @@ function mainObj() {
     posX:    0,
     posY:    0,
     scale:   1.0,
+    offed:   false,
+    offX:    0,
+    offY:    0,
     /** display variables */
     x:       {},
     y:       {},
