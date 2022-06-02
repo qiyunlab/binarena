@@ -181,24 +181,42 @@ function calcSilhouette(mo) {
     const vals = transpose(filt_data);
 
     // calculate pairwise distance if not already
+
+    // in JavaScript, the maximum array size is 2 ** 32 - 1 = 4,294,967,295
+    // a condensed distance matrix for n data points has n * (n - 1) / 2
+    // elements, therefore the maximum number of data points is 92,681, which
+    // translates into 4,294,837,540 elements
+
     // if (cache.pdist.length === 0) cache.pdist = pdist(vals);
     // note: can no longer use cache pdist
-    console.log('Calculating pairwise Euclidean distances...');
+
+    let scores;
+    if (n_ctg < 20000) {
+      console.log('Calculating pairwise Euclidean distances...');
+      const dm = pdist(vals);
+      console.log('Calculating silhouette coefficients...');
+      scores = silhouetteSamplePre(dm, labels, n_ctg);
+    }
+    else {
+      console.log('Calculating silhouette coefficients...');
+      scores = silhouetteSampleIns(vals, labels);
+    }
 
     // switch to 2D version if there are too many contigs
-    const use2d = n_ctg >= 20000;
-    if (use2d) console.log('Switched to 2D calculation (slower but can ' +
-      'handle more data points.');
+    // const use2d = n_ctg >= 20000;
+    // if (use2d) console.log('Switched to 2D calculation (slower but can ' +
+    //   'handle more data points.');
 
     // const t0 = performance.now();
-    const dm = use2d ? pdist2d(vals) : pdist(vals);
+    // const dm = use2d ? pdist2d(vals) : pdist(vals);
     // const t1 = performance.now();
     // console.log(t1 - t0);
 
     // calculate silhouette scores
-    console.log('Calculating silhouette coefficients...');
-    let scores = use2d ? silhouetteSample2D(vals, labels, dm) :
-      silhouetteSample(vals, labels, dm);
+    // console.log('Calculating silhouette coefficients...');
+    // const scores = silhouetteSampleIns(vals, labels);
+    // let scores = use2d ? silhouetteSample2D(vals, labels, dm) :
+    //   silhouetteSample(vals, labels, dm);
 
     // cache result
     console.log('Calculation completed.');
