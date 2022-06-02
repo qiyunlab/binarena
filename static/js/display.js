@@ -56,8 +56,8 @@ function initDisplayCtrl(mo) {
       }
       updateControls(mo);
       prepDataForDisplay(mo, ['x', 'y']);
-      renderArena(mo);
-      renderSelection(mo);
+      renderArena(mo, true);
+      renderSelect(mo, true);
     });
   }
 
@@ -103,8 +103,7 @@ function initDisplayCtrl(mo) {
           updateColorMap(mo);
         }
         prepDataForDisplay(mo, ['color']);
-        renderArena(mo);
-        updateLegends(mo, ['color']);
+        renderArena(mo, true);
       });
     }
   }
@@ -113,18 +112,14 @@ function initDisplayCtrl(mo) {
   byId('add-color-btn').addEventListener('click', function () {
     view.ncolor += 1;
     updateColorMap(mo);
-    prepDataForDisplay(mo, ['color']);
-    renderArena(mo);
-    updateLegends(mo, ['color']);
+    updateViewByData(mo, ['color']);
   });
 
   byId('remove-color-btn').addEventListener('click', function () {
     if (view.ncolor === 1) return;
     view.ncolor -= 1;
     updateColorMap(mo);
-    prepDataForDisplay(mo, ['color']);
-    renderArena(mo);
-    updateLegends(mo, ['color']);
+    updateViewByData(mo, ['color']);
   });
 
 
@@ -238,9 +233,7 @@ function initDisplayCtrl(mo) {
         const item = this.parentElement.getAttribute('data-item');
         view[item][ranging]= parseInt(this.parentElement.querySelector(
           '.range.' + ranging).getAttribute('data-tick')) * 10;
-        prepDataForDisplay(mo, [item]);
-        renderArena(mo);
-        updateLegends(mo, [item]);
+        updateViewByData(mo, [item]);
       }
     });
   }
@@ -264,9 +257,7 @@ function initDisplayCtrl(mo) {
     const item = this.parentElement.getAttribute('data-item');
     view[item][checkClassName(this, ['lower', 'upper'])] =
       this.getAttribute('data-tick') * 10;
-    prepDataForDisplay(mo, [item]);
-    renderArena(mo);
-    updateLegends(mo, [item]);
+    updateViewByData(mo, [item]);
   }
 
   for (let label of document.querySelectorAll('.legend .min')) {
@@ -274,9 +265,7 @@ function initDisplayCtrl(mo) {
     label.addEventListener('click', function () {
       const item = this.parentElement.getAttribute('data-item');
       view[item].zero = !view[item].zero;
-      prepDataForDisplay(mo, [item]);
-      renderArena(mo);
-      updateLegends(mo, [item]);
+      updateViewByData(mo, [item]);
     });
   }
 
@@ -581,10 +570,11 @@ function updateColorMap(mo) {
  * Update view given current view parameters.
  * @function updateView
  * @param {Object} mo - main object
+ * @param {boolean} [redo=] - force re-rendering
  */
-function updateView(mo) {
-  renderArena(mo);
-  renderSelection(mo);
+function updateView(mo, redo) {
+  renderArena(mo, redo);
+  renderSelect(mo, redo);
   if (mo.stat.drawing) drawPolygon(mo);
   mo.rena.focus();
 }
@@ -659,9 +649,11 @@ function resetWorkspace(mo) {
   // reset display items
   initDisplayItems(mo);
   updateWorkspace(mo);
+  prepDataForDisplay(mo);
+  updateLegends(mo);
 
-  // reset view
-  resetView(mo);
+  // center view
+  centerView(mo);
 }
 
 
@@ -765,29 +757,33 @@ function cacheTotAbundance(mo) {
 
 /**
  * Initiate or restore default view given data.
- * @function resetView
+ * @function centerView
  * @param {Object} mo - main object
  */
-function resetView(mo) {
-
-  // center view
+function centerView(mo) {
   const view = mo.view;
   view.scale = 1.0;
   const rena = mo.rena;
   view.posX = rena.width / 2;
   view.posY = rena.height / 2;
+  updateView(mo, true);
+}
 
-  // transforme data for display
-  prepDataForDisplay(mo);
-  updateLegends(mo);
-
-  // render plots
-  resizeArena(mo);
+/**
+ * Update view based on data.
+ * @function updateViewByData
+ * @param {Object} mo - main object
+ * @param {string[]} [items] - display item(s) to update
+ */
+function updateViewByData(mo, items) {
+  prepDataForDisplay(mo, items);
+  updateLegends(mo, items);
+  renderArena(mo, true);
 }
 
 
 /**
- * Prepare data for visualization.
+ * Pre-calculate display metrics from data.
  * @function prepDataForDisplay
  * @param {Object} mo - main object
  * @param {string[]} [items] - display item(s) to prepare
@@ -985,18 +981,16 @@ function displayItemChange(item, i, scale, mo) {
   mo.view[item].scale = scale;
 
   // if x- or y-coordinates change, reset view
-  if (item === 'x' || item === 'y') {
-    resetView(mo);
-    return;
-  }
+  if (item === 'x' || item === 'y') centerView(mo);
+  else updateLegends(mo, [item]);
 
-  // otherwise, keep current viewport
+  // toggle color map list
   const isCat = (item === 'color' && mo.cols.types[i] === 'cat');
   if (isCat) updateColorMap(mo);
+
   prepDataForDisplay(mo, [item]);
-  renderArena(mo);
-  renderSelection(mo);
-  updateLegends(mo, [item]);
+  renderArena(mo, true);
+  renderSelect(mo, true);
 }
 
 

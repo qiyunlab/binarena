@@ -66,9 +66,7 @@ function initSelTools(mo) {
     history.push(res);
     if (history.length > 50) history.shift();
     toastMsg(`Masked ${plural('contig', m)}.`, mo.stat);
-    prepDataForDisplay(mo, ['size', 'opacity', 'color']);
-    updateLegends(mo);
-    renderArena(mo);
+    updateViewByData(mo, ['size', 'opacity', 'color']);
     updateSelection(mo);
     mo.rena.focus();
   });
@@ -90,9 +88,7 @@ function initSelTools(mo) {
     if (!m) return;
     mo.cache.nmask -= m;
     toastMsg(`Unmasked ${plural('contig', m)}.`, mo.stat);
-    prepDataForDisplay(mo);
-    updateLegends(mo);
-    renderArena(mo);
+    updateViewByData(mo);
     updateMaskCtrl(mo);
     mo.rena.focus();
   });
@@ -103,9 +99,7 @@ function initSelTools(mo) {
     mo.cache.nmask = 0;
     mo.cache.maskh.length = 0;
     toastMsg(`Unmasked all contigs.`, mo.stat);
-    prepDataForDisplay(mo);
-    updateLegends(mo);
-    renderArena(mo);
+    updateViewByData(mo);
     updateMaskCtrl(mo);
     mo.rena.focus();
   });
@@ -197,7 +191,7 @@ function addHighlight(mo, idx) {
   }
   mo.cache.npick -= m;
   toastMsg(`Highlighted ${plural('contig', m)}.`, mo.stat);
-  renderArena(mo);
+  renderArena(mo, true);
   updateSelection(mo);
   updateHighlight(mo);
   mo.rena.focus();
@@ -264,9 +258,7 @@ function setFocus(mo) {
   mo.cache.npick -= m;
   mo.cache.nmask += k;
   toastMsg(`Focused on ${plural('contig', m)}.`, mo.stat);
-  prepDataForDisplay(mo, ['size', 'opacity', 'color']);
-  updateLegends(mo);
-  renderArena(mo);
+  updateViewByData(mo, ['size', 'opacity', 'color']);
   updateSelection(mo);
   mo.rena.focus();
 }
@@ -294,8 +286,7 @@ function removeFocus(mo) {
   mo.cache.nmask -= m;
   toastMsg('Unfocused contigs.', mo.stat);
   prepDataForDisplay(mo);
-  updateLegends(mo);
-  renderArena(mo);
+  renderArena(mo, true);
   updateMaskCtrl(mo);
   mo.rena.focus();
 }
@@ -425,7 +416,7 @@ function treatSelection(ctgs, mo, shift) {
  * @param {Object} mo - main object
  */
 function updateSelection(mo) {
-  renderSelection(mo);
+  renderSelect(mo, true);
   updateMiniPlot(mo);
   updateBinCtrl(mo);
   updateInfoTable(mo);

@@ -17,6 +17,12 @@ function initCanvas(mo) {
   // the two main canvases that render the assembly plot
   mo.rena = byId('arena-canvas');
   mo.oray = byId('overlay-canvas');
+
+  // off-screen canvases to cache image
+  mo.rena.offs = document.createElement('canvas');
+  mo.oray.offs = document.createElement('canvas');
+
+  // minimum dimensions of plot
   mo.view.minW = parseInt(getComputedStyle(mo.rena).minWidth);
   mo.view.minH = parseInt(getComputedStyle(mo.rena).minHeight);
 
@@ -235,6 +241,7 @@ function canvasTouchMove(mo, t) {
  * @function canvasKeyZoom
  * @param {boolean} isin - zoom in (true) or out (false)
  * @param {Object} mo - main object
+ * @description It zooms from the plot center.
  */
 function canvasKeyZoom(isin, mo) {
   let ratio = 0.75;
@@ -246,7 +253,7 @@ function canvasKeyZoom(isin, mo) {
   view.scale *= ratio;
   view.posX = (view.posX - w2) * ratio + w2;
   view.posY = (view.posY - h2) * ratio + h2;
-  updateView(mo);
+  updateView(mo, true);
 }
 
 
@@ -257,6 +264,7 @@ function canvasKeyZoom(isin, mo) {
  * @param {Object} mo - main object
  * @param {number} x - x-coordinate of mouse pointer
  * @param {number} y - y-coordinate of mouse pointer
+ * @description It zooms from the mouse position.
  */
 function canvasMouseZoom(isin, mo, x, y) {
   let ratio = 0.75;
@@ -265,7 +273,7 @@ function canvasMouseZoom(isin, mo, x, y) {
   view.scale *= ratio;
   view.posX = x - (x - view.posX) * ratio;
   view.posY = y - (y - view.posY) * ratio;
-  updateView(mo);
+  updateView(mo, true);
 }
 
 
@@ -274,6 +282,7 @@ function canvasMouseZoom(isin, mo, x, y) {
  * @function canvasTouchZoom
  * @param {Object} mo - main object
  * @param {number} t - touches
+ * @description It zooms from the midpoint between two fingers.
  */
 function canvasTouchZoom(mo, t) {
   const view = mo.view,
@@ -304,7 +313,7 @@ function canvasTouchZoom(mo, t) {
   view.scale *= ratio;
   view.posX = newMid[0] - (newMid[0] - view.posX) * ratio;
   view.posY = newMid[1] - (newMid[1] - view.posY) * ratio;
-  updateView(mo);
+  updateView(mo, true);
 }
 
 
@@ -433,17 +442,16 @@ function canvasMouseClick(e, mo) {
 
 /**
  * Calculate arena dimensions based on style and container.
- * @function calcArenaDimensions
+ * @function calcArenaDims
  * @param {Object} mo - main object
  * @returns {[number, number]} - width and height of arena
  */
-function calcArenaDimensions(mo) {
+function calcArenaDims(mo) {
   const frame = byId('main-frame');
   const w = Math.max(mo.view.minW, frame.offsetWidth);
   const h = Math.max(mo.view.minH, frame.offsetHeight);
   return [w, h];
 }
-
 
 
 /**
@@ -456,22 +464,21 @@ function calcArenaDimensions(mo) {
 function resizeArena(mo) {
   const rena = mo.rena,
         oray = mo.oray;
-  const [w, h] = calcArenaDimensions(mo);
+  const [w, h] = calcArenaDims(mo);
 
   // update width
-  if (rena.style.width !== w) rena.style.width = w;
-  if (rena.width !== w) rena.width = w;
-  if (oray.style.width !== w) oray.style.width = w;
-  if (oray.width !== w) oray.width = w;
+  if (rena.width !== w) {
+    rena.width = oray.width = w;
+    rena.offs.width = oray.offs.width = 3 * w;
+  }
 
   // update height
-  if (rena.style.height !== h) rena.style.height = h;
-  if (rena.height !== h) rena.height = h;
-  if (oray.style.height !== h) oray.style.height = h;
-  if (oray.height !== h) oray.height = h;
+  if (rena.height !== h) {
+    rena.height = oray.height = h;
+    rena.offs.height = oray.offs.height = 3 * h;
+  }
 
-  // re-draw plots
-  updateView(mo);
+  updateView(mo, true);
 }
 
 
@@ -479,71 +486,84 @@ function resizeArena(mo) {
  * Render arena given current data and view.
  * @function renderArena
  * @param {Object} mo - main object
- * @description This is the main rendering engine of the program. It is also a
- * computationally expensive task. Several resorts have been adopted to improve
- * performance, including:
- * - Minimize fill style changes.
- * - Minimize number of paths.
- * - Round numbers to integers.
- * - For small circles draw squares instead.
- * - Skip contigs outside the visible region.
- * 
- * @todo {@link https://stackoverflow.com/questions/21089959/}
- * 
- * @todo Rounding floats into integers improves performance. There are more
- * performant methods than the built-in `Math.round` function. Examples are
- * bitwise operations like `~~ (0.5 + num)`. However they don't work well
- * with negative numbers. In this case, x- and y-axis can be negative numbers.
- * 
- * A solution may be changing the way the canvas is positioned to make all
- * coordinates positive.
- * 
- * @todo Skipping contigs outside the visible region results in significant
- * performance gain when zooming in. However it voids another potential
- * optimization: draw the entire image (no matter how large it is) in an
- * off-screen canvas and draw part of it as needed to the main canvas using
- * `drawImage`. Needs further thinking.`
+ * @param {boolean} [redo=] - force re-rendering instead of using cached image
  */
-function renderArena(mo) {
+function renderArena(mo, redo) {
   const view = mo.view,
-        rena = mo.rena,
-        mask = mo.masked,
-        high = mo.highed;
-  let n = mo.cache.nctg;
+        rena = mo.rena;
 
-  // prepare canvas context
-  // note: origin (0, 0) is at the upper-left corner
+  // get canvas context
   const ctx = rena.getContext('2d');
 
   // clear canvas
   const w = rena.width,
         h = rena.height;
   ctx.clearRect(0, 0, w, h);
-  ctx.save();
 
-  // move to current position
-  ctx.translate(view.posX, view.posY);
+  // cannot render if no data, or no x- or y-axis
+  if (!mo.cache.nctg || !view.x.i || !view.y.i) return;
 
-  // scale canvas
-  const scale = view.scale;
-  ctx.scale(scale, scale);
+  // determine position of canvas
+  const posX = view.posX,
+        posY = view.posY,
+        offX = view.offX,
+        offY = view.offY;
 
-  // cannot render if there is no data, or no x- or y-axis
-  if (!n || !view.x.i || !view.y.i) {
-    ctx.restore();
-    return;
+  // if needed, render image in off-screen canvas first, then transfer to
+  // on-screen canvas
+  if (redo || !view.offed ||
+      posX < offX - w || posX > offX + w ||
+      posY < offY - h || posY > offY + h) {
+    renderArenaOS(mo);
+    ctx.drawImage(rena.offs, w, h, w, h, 0, 0, w, h);
   }
 
-  // alternative: css scale, which is theoretically faster, but it blurs when
-  // zoom in
-  // rena.style.transformOrigin = '0 0';
-  // rena.style.transform = 'scale(' + view.scale + ')';
+  // otherwise, directly transfer cached image
+  else {
+    ctx.drawImage(rena.offs, offX - posX + w, offY - posY + h,
+      w, h, 0, 0, w, h);  
+  }
+
+  // (optional) draw grid
+  if (view.grid) drawGrid(ctx, w, h, view);
+}
+
+
+/**
+ * Render main plot in an off-screen canvas (as cache).
+ * @function renderArenaOS
+ * @param {Object} mo - main object
+ * @param {boolean} [redo=] - force re-rendering instead of using cached image
+ * @description This is the main rendering engine of the program. It is also a
+ * computationally expensive task. Several resorts have been adopted to improve
+ * performance, including:
+ * - Minimize fill style changes.
+ * - Minimize number of paths.
+ * - Round numbers to integers.
+ * - Bitwise operation for rounding.
+ * x For small circles draw squares instead.
+ * - Skip contigs outside the visible region.
+ * @todo {@link https://stackoverflow.com/questions/21089959/}
+ */
+function renderArenaOS(mo) {
+  const view = mo.view,
+        rena = mo.rena,
+        mask = mo.masked,
+        high = mo.highed;
+
+  // prepare off-screen canvas context
+  // note: origin (0, 0) is at the upper-left corner
+  const offs = rena.offs;
+  const ctx = offs.getContext('2d');
+
+  // clear canvas
+  const w = rena.width,
+        h = rena.height;
+  ctx.clearRect(0, 0, w * 3, h * 3);
 
   // cache constants
   const pi2 = Math.PI * 2,
-        pi1_2 = Math.sqrt(Math.PI),
-        min1 = Math.sqrt(1 / Math.PI),
-        min2 = Math.sqrt(4 / Math.PI);
+        min1 = Math.sqrt(1 / Math.PI);
 
   // transformed data
   const trans = mo.trans;
@@ -552,67 +572,60 @@ function renderArena(mo) {
         S = trans.size,
         C = trans.rgba;
 
-  // calculate edges of visible region
-  const vleft = -view.posX / scale,
-        vright = (w - view.posX) / scale,
-        vtop = -view.posY / scale,
-        vbottom = (h - view.posY) / scale;
+  // far edges of visible region
+  const w3 = w * 3, h3 = h * 3;
 
-  // elements to be rendered, grouped by fill style, then by circle or square
+  // cache scale
+  const scale = view.scale;
+  const x_times = w * scale,
+        y_times = h * scale;
+
+  // cache offset
+  const posX = view.posX,
+        posY = view.posY;
+  const x_plus = posX + w + 0.5,
+        y_plus = posY + h + 0.5;
+
+  // elements to be rendered, grouped by fill style
   const paths = {};
-
-  // intermediates
-  let rad, vrad, x, y, fs, hi;
 
   // highlights
   const nhigh = HIGHLIGHT_PALETTE.length;
   const highs = Array(nhigh).fill().map(() => Array());
-  const hirad = 8 / scale;
+  const hirad = 8;
+
+  // intermediates
+  let r, x, y, fs, hi;
 
   // determine appearance of contigs
+  const n = mo.cache.nctg;
   for (let i = 0; i < n; i++) {
     if (mask[i]) continue;
 
-    // determine radius (size)
-    rad = S[i];
-    vrad = rad * scale;
+    // determine radius (size; round to integer)
+    r = S[i] * scale + 0.5 << 0;
 
     // if contig occupies less than one pixel on screen, skip
-    if (vrad < min1) continue;
+    if (r < min1) continue;
 
     // determine x- and y-coordinates
     // skip contigs outside visible region
-    // x = Math.round(X[i] * w);
-    x = X[i] * w;
-    x = x + (x > 0 ? 0.5 : -0.5) << 0;
-    if (x + rad < vleft || x - rad > vright) continue;
-    // y = Math.round(Y[i] * h);
-    y = Y[i] * h;
-    y = y + (y > 0 ? 0.5 : -0.5) << 0;
-    if (y + rad < vtop || y - rad > vbottom) continue;
+    x = X[i] * x_times + x_plus << 0;
+    if (x + r < 0 || x - r > w3) continue;
+    y = Y[i] * y_times + y_plus << 0;
+    if (y + r < 0 || y - r > h3) continue;
 
     // determine fill style (color and opacity)
     fs = `rgba(${C[i]})`;
-    if (!(fs in paths)) paths[fs] = { 'square': [], 'circle': [] };
+    if (!(fs in paths)) paths[fs] = [];
 
-    // if a contig occupies less than four pixels on screen, draw a square
-    if (vrad < min2) {
-      // paths[fs].square.push([x, y, Math.round(rad * pi1_2)]);
-      paths[fs].square.push([x, y, rad * pi1_2 + 0.5 << 0]);
-    }
-
-    // if bigger, draw a circle
-    else {
-      // paths[fs].circle.push([x, y, Math.round(rad)]);
-      paths[fs].circle.push([x, y, rad + 0.5 << 0]);
-    }
+    // draw a circle
+    paths[fs].push([x, y, r]);
 
     // highlight circle
     hi = high[i];
-    if (hi) {
-      // highs[hi - 1].push([x, y, Math.round(rad + hirad)]);
-      highs[hi - 1].push([x, y, rad + hirad + 0.5 << 0]);
-    }
+    if (hi) highs[hi - 1].push([x, y, r + hirad]);
+
   } // end for i
 
   // render highlights
@@ -632,50 +645,38 @@ function renderArena(mo) {
   }
 
   // render contigs
-  let squares, sq, circles, circ;
+  let circs, circ;
   for (let fs in paths) {
     ctx.beginPath();
-
-    // draw squares
-    squares = paths[fs].square;
-    n = squares.length;
-    for (let i = 0; i < n; i++) {
-      sq = squares[i];
-      ctx.rect(sq[0], sq[1], sq[2], sq[2]);
-    }
-
-    // draw circles
-    circles = paths[fs].circle;
-    n = circles.length;
-    for (let i = 0; i < n; i++) {
-      circ = circles[i];
+    circs = paths[fs];
+    m = circs.length;
+    for (let i = 0; i < m; i++) {
+      circ = circs[i];
       ctx.moveTo(circ[0], circ[1]);
       ctx.arc(circ[0], circ[1], circ[2], 0, pi2, true);
     }
-
-    // fill markers
     ctx.fillStyle = fs;
     ctx.fill();
 
   } // end for fs
 
-  // draw grid
-  if (view.grid) drawGrid(rena, view);
-
-  ctx.restore();
+  // save status
+  view.offed = true;
+  view.offX = posX;
+  view.offY = posY;
 }
 
 
 /**
  * Render shadows around selected contigs.
- * @function renderSelection
+ * @function renderSelect
  * @param {Object} mo - main object
+ * @param {boolean} [redo=] - force re-rendering
  * @see renderArena
  */
-function renderSelection(mo) {
+function renderSelect(mo, redo) {
   const view = mo.view,
-        oray = mo.oray,
-        pick = mo.picked;
+        oray = mo.oray;
   const w = oray.width,
         h = oray.height;
 
@@ -683,14 +684,54 @@ function renderSelection(mo) {
   const ctx = oray.getContext('2d');
   ctx.clearRect(0, 0, w, h);
 
+  // no (selected) contigs
+  if (!mo.cache.nctg) return;
   if (mo.cache.npick === 0) return;
-  const n = mo.cache.nctg;
-  if (!n) return;
+
+  // determine position of canvas
+  const posX = view.posX,
+        posY = view.posY,
+        offX = view.offX,
+        offY = view.offY;
+
+  // if needed, cache image in off-screen canvas
+  // this canvas has the sam position and dimensions as the main plot's
+  // off-screen canvas
+  if (redo || !view.offed ||
+      posX < offX - w || posX > offX + w ||
+      posY < offY - h || posY > offY + h) {
+    renderSelectOS(mo);
+  }
+
+  // then transfer to on-screen canvas
+  ctx.drawImage(oray.offs, offX - posX + w, offY - posY + h,
+    w, h, 0, 0, w, h);
+}
+
+
+/**
+ * Render selection shadows in an off-screen canvas.
+ * @function renderSelectOS
+ * @param {Object} mo - main object
+ * @param {boolean} [redo=] - force re-rendering
+ * @see renderArenaOS
+ */
+function renderSelectOS(mo) {
+  const view = mo.view,
+        oray = mo.oray,
+        pick = mo.picked;
 
   // prepare canvas
-  ctx.save();
-  ctx.translate(view.posX, view.posY);
-  ctx.scale(view.scale, view.scale);
+  const offs = oray.offs;
+  const ctx = offs.getContext('2d');
+
+  // clear canvas
+  const w = oray.width,
+        h = oray.height;
+  ctx.clearRect(0, 0, w * 3, h * 3);
+
+  // far edges of visible region
+  const w3 = w * 3, h3 = h * 3;
 
   // define shadow style
   const color = mo.theme.selection;
@@ -707,24 +748,34 @@ function renderSelection(mo) {
         S = trans.size;
   const pi2 = Math.PI * 2;
 
+  // cache scale
+  const scale = view.scale;
+  const x_times = w * scale,
+        y_times = h * scale;
+
+  // cache offset
+  // note: it inherits the position of the main plot's off-screen canvas,
+  // rather than the viewport.
+  const offX = view.offX,
+        offY = view.offY;
+  const x_plus = offX + w + 0.5,
+        y_plus = offY + h + 0.5;
+
   // render shadows around selected contigs
   let r, x, y;
   ctx.beginPath();
+  const n = mo.cache.nctg;
   for (let i = 0; i < n; i++) {
     if (!pick[i]) continue;
-    // r = Math.round(S[i]);
-    r = S[i] + 0.5 << 0
-    // x = Math.round(X[i] * w);
-    x = X[i] * w;
-    x = x + (x > 0 ? 0.5 : -0.5) << 0;
-    // y = Math.round(Y[i] * h);
-    y = Y[i] * h;
-    y = y + (y > 0 ? 0.5 : -0.5) << 0;
+    r = S[i] * scale + 0.5 << 0;
+    x = X[i] * x_times + x_plus << 0;
+    if (x + r < 0 || x - r > w3) continue;
+    y = Y[i] * y_times + y_plus << 0;
+    if (y + r < 0 || y - r > h3) continue;
     ctx.moveTo(x, y);
     ctx.arc(x, y, r, 0, pi2, true);
   }
   ctx.fill();
-  ctx.restore();
 }
 
 
@@ -740,55 +791,56 @@ function drawPolygon(mo) {
         oray = mo.oray;
   const vertices = stat.polygon;
   const pi2 = Math.PI * 2;
-  const radius = 5 / view.scale;
+  const radius = 5;
   const color = mo.theme.polygon;
   const ctx = oray.getContext('2d');
   ctx.clearRect(0, 0, oray.width, oray.height);
-  ctx.save();
-  ctx.translate(view.posX, view.posY);
-  ctx.scale(view.scale, view.scale);
+  const posX = view.posX,
+        posY = view.posY;
+  const scale = view.scale;
   ctx.fillStyle = color;
   ctx.strokeStyle = color;
   const n = vertices.length;
-  let vertex, j;
+  let vertex, x, y, j;
   ctx.beginPath();
   for (let i = 0; i < n; i++) {
     vertex = vertices[i];
-    ctx.arc(vertex.x, vertex.y, radius, 0, pi2, true);
-    ctx.lineWidth = 1 / view.scale;
-    ctx.moveTo(vertex.x, vertex.y);
+    x = Math.round(vertex.x * scale + posX);
+    y = Math.round(vertex.y * scale + posY);
+    ctx.arc(x, y, radius, 0, pi2, true);
+    ctx.moveTo(x, y);
     j = i + 1;
     if (j == n) j = 0;
     vertex = vertices[j];
-    ctx.lineTo(vertex.x, vertex.y);
+    x = Math.round(vertex.x * scale + posX);
+    y = Math.round(vertex.y * scale + posY);
+    ctx.lineTo(x, y);
   }
+  ctx.lineWidth = 1;
   ctx.stroke();
-  ctx.restore();
 }
 
 
 /**
- * Render graph grid.
+ * Render plot grid.
  * @function drawGrid
- * @param {Object} rena - arena canvas DOM
+ * @param {Object} ctx - canvas context
+ * @param {number} w - canvas width
+ * @param {number} h - canvas height
  * @param {Object} view - view object
  */
-function drawGrid(rena, view) {
-  const w = rena.width,
-        h = rena.height;
+function drawGrid(ctx, w, h, view) {
   const scale = view.scale;
+  const ww = w * scale,
+        hh = h * scale;
   const xmin = view.x.min,
         xmax = view.x.max,
         xran = xmax - xmin;
   const ymin = view.y.min,
         ymax = view.y.max,
         yran = ymax - ymin;
-
-  // get viewport edges
-  const vleft = -view.posX / scale,
-        vright = (w - view.posX) / scale,
-        vtop = -view.posY / scale,
-        vbottom = (h - view.posY) / scale;
+  const posX = view.posX,
+        posY = view.posY;
 
   // calculate grid density (number of steps)
   // note: grid density increases when zooming in, and descreases to at least
@@ -803,27 +855,20 @@ function drawGrid(rena, view) {
   const nxtick = xticks.length,
         nytick = yticks.length;
 
-  // calculate best precisions
-  const xdigits = Math.max(0, Math.ceil(-Math.log10((xticks[nxtick - 1] -
-          xticks[0]) / (nxtick - 1)))),
-        ydigits = Math.max(0, Math.ceil(-Math.log10((yticks[nytick - 1] -
-          yticks[0]) / (nytick - 1))));
-
   // render vertical lines
-  const ctx = rena.getContext('2d');
-  ctx.strokeStyle = 'lightgray';
-  ctx.lineWidth = 1 / scale;
+  ctx.save();
+  ctx.beginPath();
   const xposes = [], xtickz = [];
   let xtick, xpos;
   for (let i = 0; i < nxtick; i++) {
     xtick = xticks[i];
-    xpos = ((xtick - xmin) / xran - 0.5) * w;
-    if (xpos < vleft) continue;
-    if (xpos > vright) break;
+    xpos = Math.round(((xtick - xmin) / xran - 0.5) * ww + posX);
+    if (xpos < 0) continue;
+    if (xpos > w) break;
     xposes.push(xpos);
     xtickz.push(xtick);
-    ctx.moveTo(xpos, -h * 0.5);
-    ctx.lineTo(xpos, h * 0.5);
+    ctx.moveTo(xpos, 0);
+    ctx.lineTo(xpos, h);
   }
 
   // render horizontal lines
@@ -831,14 +876,17 @@ function drawGrid(rena, view) {
   let ytick, ypos;
   for (let i = 0; i < nytick; i++) {
     ytick = yticks[i];
-    ypos = ((ymax - ytick) / yran - 0.5) * h;
-    if (ypos > vbottom) continue;
-    if (ypos < vtop) break;
-    ctx.moveTo(-w * 0.5, ypos);
-    ctx.lineTo(w * 0.5, ypos);
+    ypos = Math.round(((ymax - ytick) / yran - 0.5) * hh + posY);
+    if (ypos > h) continue;
+    if (ypos < 0) break;
+    ctx.moveTo(0, ypos);
+    ctx.lineTo(w, ypos);
     yposes.push(ypos);
     ytickz.push(ytick);
   }
+
+  ctx.strokeStyle = 'lightgray';
+  ctx.lineWidth = 1;
   ctx.stroke();
 
   // determine text label positions
@@ -846,8 +894,14 @@ function drawGrid(rena, view) {
   const xlabpos = xposes[Math.round(xposes.length / 2 - 1)],
         ylabpos = yposes[Math.round(yposes.length / 2 - 1)];
 
+  // calculate best precisions
+  const xdigits = Math.max(0, Math.ceil(-Math.log10((xticks[nxtick - 1] -
+          xticks[0]) / (nxtick - 1)))),
+        ydigits = Math.max(0, Math.ceil(-Math.log10((yticks[nytick - 1] -
+          yticks[0]) / (nytick - 1))));
+
   // render text labels
-  ctx.font = (1 / scale).toFixed(5) + 'em monospace';
+  ctx.font = '1em monospace';
   ctx.fillStyle = 'dimgray';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'top';
@@ -861,6 +915,7 @@ function drawGrid(rena, view) {
   for (let i = 0; i < nypos; i++) {
     ctx.fillText(ytickz[i].toFixed(ydigits), xlabpos, yposes[i]);
   }
+  ctx.restore();
 }
 
 
