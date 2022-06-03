@@ -229,7 +229,7 @@ function clearHighlight(mo, idx, btn) {
   }
   btn.previousSibling.innerHTML = '&nbsp;';
   btn.classList.add('hidden');
-  renderArena(mo);
+  renderArena(mo, true);
 }
 
 

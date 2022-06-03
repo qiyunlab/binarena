@@ -19,11 +19,16 @@ function initCalcBoxCtrl(mo) {
   byId('silh-calc-btn').addEventListener('click', function () {
     calcSilhouette(mo);
   });
+
   for (let item of ['x', 'y', 'size', 'opacity', 'color']) {
     byId(`${item}-calc-chk`).addEventListener('change', function () {
       updateCalcBoxCtrl(mo);
     });
   }
+
+  byId('silh-stop-btn').addEventListener('click', function () {
+    mo.stat.stopping = true;
+  });
 
   byId('silh-done-btn').addEventListener('click', function () {
     byId('silh-modal').classList.add('hidden');
@@ -56,9 +61,11 @@ function updateCalcBoxCtrl(mo) {
   byId('silh-table-wrap').classList.add('hidden');
   byId('silh-calc-btn').classList.remove('hidden');
   byId('silh-title').classList.remove('hidden');
+  byId('silh-flag-div').classList.remove('hidden');
   byId('silh-progress').classList.add('hidden');
   byId('silh-done-div').classList.add('hidden');
   byId('silh-done-btn').classList.add('hidden');
+  byId('silh-stop-btn').classList.add('hidden');
 
   const view = mo.view,
         cols = mo.cols;
@@ -94,11 +101,13 @@ function calcSilhouette(mo) {
 
   byId('silh-calc-btn').classList.add('hidden');
   byId('silh-title').classList.add('hidden');
+  byId('silh-flag-div').classList.add('hidden');
   byId('silh-progress').classList.remove('hidden');
 
   // const data = mo.data,
   const data = mo.data,
         view = mo.view,
+        stat = mo.stat,
         binned = mo.binned,
         masked = mo.masked;
 
@@ -169,6 +178,7 @@ function calcSilhouette(mo) {
   // starting the calculation. This can only be achieved through an async
   // operation. There is no good sync way to force the browser to "flush".
   // See: https://stackoverflow.com/questions/16876394/
+
   setTimeout(function () {
 
     // min-max scaling of each variable
@@ -180,57 +190,150 @@ function calcSilhouette(mo) {
     // transpose data matrix
     const vals = transpose(filt_data);
 
-    // calculate pairwise distance if not already
+    // to store results
+    let scores;
+    console.log('Calculating silhouette coefficients...');
+
+    // choose calculation method based on data size
+    // 20000 is an empirically determined number
 
     // in JavaScript, the maximum array size is 2 ** 32 - 1 = 4,294,967,295
     // a condensed distance matrix for n data points has n * (n - 1) / 2
     // elements, therefore the maximum number of data points is 92,681, which
     // translates into 4,294,837,540 elements
 
-    // if (cache.pdist.length === 0) cache.pdist = pdist(vals);
-    // note: can no longer use cache pdist
+    // for small dataset, calculate distance matrix first, then calculate
+    // silhouette scores synchronously; don't display progress
 
-    let scores;
     if (n_ctg < 20000) {
-      console.log('Calculating pairwise Euclidean distances...');
+      // obsolete: use cached pdist
+      // if (cache.pdist.length === 0) cache.pdist = pdist(vals);
       const dm = pdist(vals);
-      console.log('Calculating silhouette coefficients...');
       scores = silhouetteSamplePre(dm, labels, n_ctg);
+      finishCalc();
     }
-    else {
-      console.log('Calculating silhouette coefficients...');
+
+    // for large dataset, divide calculation into chunks and display progress
+    // in real-time; to achieve this, the algorithm is modified into animation
+    // as follows; see silhouetteSampleIns in algorithm.js
+
+    // note: this modification makes the entire calculation slower than the
+    // non-interactive silhouetteSampleIns function
+
+    // non-interactive mode, which is faster
+    else if (!(byId('silh-progress-chk').checked)) {
       scores = silhouetteSampleIns(vals, labels);
+      finishCalc();
     }
 
-    // switch to 2D version if there are too many contigs
-    // const use2d = n_ctg >= 20000;
-    // if (use2d) console.log('Switched to 2D calculation (slower but can ' +
-    //   'handle more data points.');
+    // interactive mode (show progress), which is slower
+    // dunno why; perhaps related to JS engine optimization
+    else {
+      byId('silh-stop-btn').classList.remove('hidden');
+      const n = vals.length;
+      const m = vals[0].length;
+      const count = bincount(labels);
+      const c = count.length;
+      let distIn, distOut, li, j;
+      scores = Array(n).fill();
 
-    // const t0 = performance.now();
-    // const dm = use2d ? pdist2d(vals) : pdist(vals);
-    // const t1 = performance.now();
-    // console.log(t1 - t0);
+      // current progress (0-100)
+      let progress = 0;
 
-    // calculate silhouette scores
-    // console.log('Calculating silhouette coefficients...');
-    // const scores = silhouetteSampleIns(vals, labels);
-    // let scores = use2d ? silhouetteSample2D(vals, labels, dm) :
-    //   silhouetteSample(vals, labels, dm);
+      // display progress in this span
+      const span = byId('silh-progress').firstChild;
+      const prefix = span.textContent;
+      span.textContent = `${prefix} (${progress}%)`;
 
-    // cache result
-    console.log('Calculation completed.');
-    mo.cache.silhs = [filt_ctgs, labels, bins, scores];
+      // progress updates at 1% of data size
+      const percent = n / 100 >> 0;
 
-    fillSilhTable(mo, byId('silh-tbody'));
+      // each chunk has 1000 rows
+      const step = 1000;
 
-    byId('silh-table-wrap').classList.remove('hidden');
-    byId('silh-title').classList.remove('hidden');
-    byId('silh-progress').classList.add('hidden');
-    byId('silh-done-div').classList.remove('hidden');
-    byId('silh-done-btn').classList.remove('hidden');
+      let beg = 0;
+      let end = Math.min(beg + step, n);
+      let xi, xj, sum, k, d, p;
+      requestAnimationFrame(chunk);
 
-  }, 100); // this 0.1 sec delay is to wait for loading dots to start blinking
+      // each chunk of calculation
+      function chunk() {
+        for (let i = beg; i < end; i++) {
+          li = labels[i];
+          xi = vals[i];
+          if (count[li] > 1) {
+            distIn = 0;
+            distOut = Array(c).fill(0);
+            for (j = 0; j < n; j++) {
+              xj = vals[j];
+              sum = 0;
+              for (k = 0; k < m; k++) {
+                sum += (xi[k] - xj[k]) ** 2;
+              }
+              d = Math.sqrt(sum);
+              if (li === labels[j]) distIn += d;
+              else distOut[labels[j]] += d;
+            }
+            for (j = 0; j < c; j++) distOut[j] /= count[j];
+            distOut = Math.min.apply(null, distOut.filter(Boolean));
+            distIn /= (count[li] - 1);
+            scores[i] = (distOut - distIn) / Math.max(distOut, distIn);
+          } else scores[i] = 0;
+        }
+
+        // check current progress; update span if needed
+        p = end / percent >> 0;
+        if (p > progress) {
+          span.textContent = `${prefix} (${p}%)`;
+          progress = p;
+        }
+
+        // abort calculation
+        if (stat.stopping) {
+          span.textContent = prefix;
+          stat.stopping = false;
+          abortCalc();
+        }
+
+        // move to next chunk
+        else if (end < n) {
+          beg = end;
+          end = Math.min(beg + step, n);
+          requestAnimationFrame(chunk);
+        }
+
+        // finish calculation
+        else {
+          span.textContent = prefix;
+          stat.stopping = false;
+          finishCalc();
+        }
+      }
+    }
+
+    // things to do after calculation
+    function finishCalc() {
+      console.log('Calculation completed.');
+      mo.cache.silhs = [filt_ctgs, labels, bins, scores];
+      fillSilhTable(mo, byId('silh-tbody'));
+      byId('silh-table-wrap').classList.remove('hidden');
+      byId('silh-title').classList.remove('hidden');
+      byId('silh-progress').classList.add('hidden');
+      byId('silh-done-div').classList.remove('hidden');
+      byId('silh-done-btn').classList.remove('hidden');
+      byId('silh-stop-btn').classList.add('hidden');
+    }
+
+    // calculation terminated prematurely
+    function abortCalc() {
+      console.log('Calculation aborted.');
+      byId('silh-title').classList.remove('hidden');
+      byId('silh-progress').classList.add('hidden');
+      byId('silh-calc-btn').classList.remove('hidden');
+      byId('silh-stop-btn').classList.add('hidden');
+      byId('silh-modal').classList.add('hidden');
+    }
+  }, 100); // this 0.1 sec delay is to let progress dots start blinking
 }
 
 
