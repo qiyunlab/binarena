@@ -317,6 +317,8 @@ function mainObj() {
    * @property {Array.<{x: number, y: number}>} polygon - vertices of polygon
    * @property {number}   resizing  - window resizing is ongoing
    * @property {number}   toasting  - toasting is ongoing
+   * @property {number}   stopping  - calculation is stopping
+   * @property {number}   progress  - calculation progress
    */
   this.stat = {
     mousedown: false,
@@ -328,7 +330,9 @@ function mainObj() {
     drawing:   false,
     polygon:   [],
     resizing:  null,
-    toasting:  null
+    toasting:  null,
+    stopping:  false,
+    progress:  null
   };
 
 

@@ -612,11 +612,11 @@
     <div class="modal-content">
       <div class="modal-head">
         <span>
-          <button id="silh-done-btn">Done</button><button id="silh-calc-btn">Calculate</button>
+          <button id="silh-done-btn">Done</button><button id="silh-stop-btn">Abort</button><button id="silh-calc-btn">Calculate</button>
         </span>
         <span>
           <span id="silh-title">Silhouette coefficient</span>
-          <span id="silh-progress">Calculating&nbsp;&nbsp;<span class="prog-dots"><span>&bull;</span> <span>&bull;</span> <span>&bull;</span></span></span>
+          <span id="silh-progress"><span>Calculating</span>&nbsp;&nbsp;<span class="prog-dots"><span>&bull;</span> <span>&bull;</span> <span>&bull;</span></span></span>
         </span>
         <span><button id="silh-help-btn">&quest;</button></span>
       </div>
@@ -631,6 +631,9 @@
               <tr><td><input type="checkbox" id="opacity-calc-chk">&nbsp;Opacity:</td><td id="opacity-calc-var"></td></tr>
               <tr><td><input type="checkbox" id="color-calc-chk">&nbsp;Color:</td><td id="color-calc-var"></td></tr>
             </table>
+            <div id="silh-flag-div">
+              <p title="Display % progress and an &quot;abort&quot; button during calculation, which however is slower than not"><input type="checkbox" id="silh-progress-chk" checked>&nbsp;Interactive mode</p>
+            </div>
             <div id="silh-done-div" class="hidden">
               <p>Calculation completed.</p>
               <table id="silh-res-todo">
