@@ -453,8 +453,11 @@ div.toolbar span.spacer {
  */
 
 #toast {
+  display: flex;
+  justify-content: flex-end;
+  flex-direction: row;
+  align-items: start;
   min-width: 250px;
-  margin-left: -125px;
   background-color: #444;
   opacity: 0.75;
   color: white;
@@ -464,25 +467,26 @@ div.toolbar span.spacer {
   position: fixed;
   z-index: 3;
   left: 50%;
+  transform: translateX(-50%);
   bottom: 50px;
 }
 
 #toast-msg {
   margin: 5px 30px;
   vertical-align: middle;
+  flex: 1;
 }
 
 #toast-close-btn {
   font-size: 1.5em;
-  background-color: dimgray;
+  background-color: transparent;
   color: white;
   vertical-align: middle;
   margin-right: 10px;
 }
 
 #toast-close-btn:hover {
-  color: black;
-  background-color: lightgray;
+  background-color: dimgray;
 }
 
 

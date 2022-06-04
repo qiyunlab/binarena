@@ -459,12 +459,41 @@ function exportSilh(mo) {
  * @param {string} field - categorical field to serve as reference
  */
 function calcAdjRand(mo, field) {
-  if (!mo.cache.nctg) return;
-  const ari = adjustedRandScore(factorize(mo.binned)[0],
-    factorize(mo.data[mo.cols.names.indexOf(field)])[0]);
+  const n = mo.cache.nctg;
+  if (!n) return;
 
-  toastMsg(`Adjusted Rand index between current binning plan and ` +
-    `"${field}": ${ari.toFixed(5)}.`, mo.stat, 0, false, true);
+  // keep contigs assigned in both plans
+  const plan1 = mo.binned;
+  const plan2 = mo.data[mo.cols.names.indexOf(field)];
+  const plan1f = [], plan2f = [];
+  let n1 = 0, n2 = 0, nx = 0;
+  let bin1, bin2;
+  for (let i = 0; i < n; i++) {
+    bin1 = plan1[i];
+    bin2 = plan2[i];
+    if (bin1) {
+      n1++;
+      if (bin2) {
+        n2++;
+        nx++;
+        plan1f.push(bin1);
+        plan2f.push(bin2);
+      }
+    } else if (bin2) {
+      n2++;
+    }
+  }
+
+  // calculate adjusted Rand index
+  const ari = adjustedRandScore(factorize(plan1f)[0],
+                                factorize(plan2f)[0]);
+
+  // report result
+  toastMsg('<div style="text-align: left;">' + 
+           '<p>Number of binned contigs:<br>' +
+           `Current: ${n1}, ${field}: ${n2}, both: ${nx}.</p>` +
+           `<p>Adjusted Rand index: ${ari.toFixed(5)}.</p>` +
+           '</div>', mo.stat, 0, false, true);
 }
 
 
