@@ -2,18 +2,22 @@
 """Convert a CheckM marker set into a list of markers.
 
 Usage:
-    python me.py taxon.ms > taxon.lst
+    python me.py taxon.ms > marker.lst
 
 Note:
     This input file can be generated using (for example):
     checkm taxon_set phylum Cyanobacteria cyanobacteria.ms
 """
 
+import sys
 import fileinput
 import re
 
 
 def main():
+    if sys.stdin.isatty() and len(sys.argv) < 2:
+        print(__doc__)
+        sys.exit(1)
     for line in fileinput.input():
         if line.startswith('#'):
             continue
