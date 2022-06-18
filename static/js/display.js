@@ -576,7 +576,7 @@ function updateView(mo, redo) {
   renderArena(mo, redo);
   renderSelect(mo, redo);
   if (mo.stat.drawing) drawPolygon(mo);
-  mo.rena.focus();
+  mo.olay.focus();
 }
 
 
@@ -619,15 +619,17 @@ function resetWorkspace(mo) {
 
   // reset transformed data
   const trans = mo.trans;
-  for (let item of ['x', 'y', 'size', 'opacity', 'color', 'rgb', 'rgba']) {
+  for (let item of ['x', 'y', 'size', 'opacity', 'color', 'rgb']) {
     trans[item] = Array(n);
   }
+  trans.fses = {};
 
   // clear cache
   cache.abund = 0;
   cache.freqs = {};
   cache.npick = 0;
   cache.nmask = 0;
+  cache.nhigh = 0;
   cache.maskh = [];
   cache.binns.clear();
   cache.pdist = [];
@@ -763,9 +765,9 @@ function cacheTotAbundance(mo) {
 function centerView(mo) {
   const view = mo.view;
   view.scale = 1.0;
-  const rena = mo.rena;
-  view.posX = rena.width / 2;
-  view.posY = rena.height / 2;
+  const plot = mo.plot;
+  view.posX = plot.width / 2;
+  view.posY = plot.height / 2;
   updateView(mo, true);
 }
 
@@ -959,12 +961,17 @@ function prepDataForDisplay(mo, items) {
   // for opacity and color, combine into RGBA
   if (items.includes('opacity') || items.includes('color')) {
     const opacity = trans.opacity,
-          rgb = trans.rgb,
-          rgba = trans.rgba;
+          rgb = trans.rgb;
+    const fses = {};
+    let fs;
     for (let i = 0; i < n; i++) {
-      rgba[i] = rgb[i] + ',' + opacity[i].toFixed(2);
+      fs = `rgba(${rgb[i]},${opacity[i].toFixed(2)})`;
+      if (fs in fses) fses[fs].push(i);
+      else fses[fs] = [i];
     }
+    trans.fses = fses;
   }
+
 }
 
 
@@ -973,7 +980,7 @@ function prepDataForDisplay(mo, items) {
  * @function displayItemChange
  * @param {Object} item - display item
  * @param {Object} i - new field index
- * @param {Object} scale - new scaling factor
+ * @param {Object} scale - new scale factor
  * @param {Object} mo - main object
  */
 function displayItemChange(item, i, scale, mo) {

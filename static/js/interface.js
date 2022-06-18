@@ -138,11 +138,11 @@ function initWindow(mo) {
  * @description also manually triggered when user resizes main frame
  */
 function resizeWindow(mo) {
-  const [w, h] = calcArenaDims(mo);
+  const [w, h] = calcPlotDims(mo);
   toastMsg(`Plot size: ${w} x ${h}`, mo.stat);
   clearTimeout(mo.stat.resizing);
   mo.stat.resizing = setTimeout(function () {
-    resizeArena(mo);
+    resizePlot(mo);
   }, 250); // redraw canvas after 0.25 sec
 }
 
@@ -304,7 +304,7 @@ function initContextMenu(mo) {
 
   // export image as PNG
   byId('export-png-a').addEventListener('click', function () {
-    exportPNG(mo.rena);
+    exportPNG(mo.plot);
   });
 
   // export image as SVG
@@ -334,7 +334,7 @@ function initSideFrame(mo) {
     const mf = byId('main-frame');
     mf.style.resize = 'none';
     mf.style.width = '100%';
-    resizeArena(mo);
+    resizePlot(mo);
   });
 
   byId('show-side-btn').addEventListener('click', function () {
@@ -345,7 +345,7 @@ function initSideFrame(mo) {
     mf.style.resize = 'horizontal';
     const w = mf.getAttribute('data-width');
     if (w) mf.style.width = w;
-    resizeArena(mo);
+    resizePlot(mo);
     mf.style.overflow = "auto";
   });
 
@@ -443,7 +443,7 @@ function initSettings(mo) {
 
   // Enable/disable night mode.
   byId('night-chk').addEventListener('change', function () {
-    mo.oray.style.backgroundColor = this.checked ? 'black' : '';
+    mo.olay.style.backgroundColor = this.checked ? 'black' : '';
   });
 
   // Show/hide grid.
@@ -487,7 +487,7 @@ function initWidgets(mo) {
 
   // generate PNG
   byId('png-btn').addEventListener('click', function () {
-    exportPNG(mo.rena);
+    exportPNG(mo.plot);
   });
 
   // generate SVG

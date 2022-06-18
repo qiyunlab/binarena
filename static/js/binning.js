@@ -60,7 +60,7 @@ function initBinCtrl(mo) {
     const n = mo.cache.binns.size;
     if (n === 0) return;
     toastMsg(`Loaded ${n} bins from "${plan}".`, stat);
-    mo.rena.focus();
+    mo.olay.focus();
   });
 
   byId('plan-sel-txt').addEventListener('input', function () {
@@ -110,7 +110,7 @@ function initBinCtrl(mo) {
     // hide itself when done
     this.setAttribute('data-edit', 0);
     this.classList.add('hidden');
-    mo.rena.focus();
+    mo.olay.focus();
   });
 
 
@@ -129,7 +129,7 @@ function initBinCtrl(mo) {
     const table = byId('bin-tbody');
     selectBin(table, name);
     toastMsg(`Created "${name}".`, stat);
-    mo.rena.focus();
+    mo.olay.focus();
   });
 
   // delete current bin(s)
@@ -144,7 +144,7 @@ function initBinCtrl(mo) {
     const suffix = plural('contig', unbinned.length);
     if (n === 1) toastMsg(`Deleted "${deleted[0]}" (${suffix}).`, stat);
     else toastMsg(`Deleted ${plural('bin', n)} (${suffix}).`, stat);
-    mo.rena.focus();
+    mo.olay.focus();
   });
 
   // merge currently selected bins
@@ -165,7 +165,7 @@ function initBinCtrl(mo) {
       `"${name}" (${suffix}).`, stat);
     else toastMsg(`Merged ${plural('bin', n)} into "${name}" (${suffix}).`,
       stat,);
-    mo.rena.focus();
+    mo.olay.focus();
   });
 
   // remove masked contigs from all bins
@@ -185,7 +185,7 @@ function initBinCtrl(mo) {
       updateBinCtrl(mo);
     }
     toastMsg(`Removed ${plural('contig', count)} from bins.`, mo.stat);
-    mo.rena.focus();
+    mo.olay.focus();
   });
 
   // show contig data in bins
@@ -258,7 +258,7 @@ function initBinCtrl(mo) {
     const table = byId('bin-tbody');
     selectBin(table, name);
     toastMsg(`Created "${name}" (${plural('contig', added.length)}).`, stat);
-    mo.rena.focus();
+    mo.olay.focus();
   });
 
   // Add selected contigs to current bin.
@@ -274,7 +274,7 @@ function initBinCtrl(mo) {
       updateBinRow(table.rows[idx], added.concat(existing), mo);
     }
     toastMsg(`Added ${plural('contig', n)} to "${name}".`, stat);
-    mo.rena.focus();
+    mo.olay.focus();
   });
 
   // Remove selected contigs from current bin.
@@ -292,7 +292,7 @@ function initBinCtrl(mo) {
       updateBinRow(table.rows[idx], remaining, mo);
     }
     toastMsg(`Removed ${plural('contig', n)} from "${name}".`, stat);
-    mo.rena.focus();
+    mo.olay.focus();
   });
 
   // Update current bin with selected contigs.
@@ -311,7 +311,7 @@ function initBinCtrl(mo) {
     }
     toastMsg(`Updated "${name}" (added ${plural('contig', n)}, removed ${
       plural('contig', m)}).`, stat);
-    mo.rena.focus();
+    mo.olay.focus();
   });
 
 
@@ -372,7 +372,7 @@ function initBinCtrl(mo) {
       }
       mo.cache.npick = npick;
       updateSelection(mo);
-      mo.rena.focus();
+      mo.olay.focus();
     }
   });
 
@@ -551,7 +551,7 @@ function binNameKeyUp(e, mo) {
         label.innerHTML = val;
         label.classList.remove('hidden');
         updateSavePlanBtn(mo, true);
-        mo.rena.focus();
+        mo.olay.focus();
       } catch (ex) {
         toastMsg(ex, mo.stat);
         text.value = name;

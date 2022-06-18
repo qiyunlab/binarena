@@ -37,8 +37,8 @@
  * @property {Object} highed - contig highlighting
  * @property {Object} tabled - contigs in table
  * @property {Object} bins   - binning plan
- * @property {Object} rena   - arena canvas
- * @property {Object} oray   - overlay canvas
+ * @property {Object} plots  - main plots
+ * @property {Object} worker - web worker
  * @property {Object} mini   - mini plot
  * @property {Object} theme  - program theme
  */
@@ -160,6 +160,7 @@ function mainObj() {
    * 
    * @property {number} npick - number of contigs selected
    * @property {number} nmask - number of contigs masked
+   * @property {number} nhigh - number of contigs highlighted
    * 
    * @property {number[]} maskh - masking history
    * 
@@ -183,8 +184,8 @@ function mainObj() {
     freqs: {},
     npick: 0,
     nmask: 0,
-    maskh: [],
     nhigh: 0,
+    maskh: [],
     binns: new Set(),
     pdist: [],
     silhs: []
@@ -198,10 +199,7 @@ function mainObj() {
    * 
    * @property {number}  posX    - viewport position x
    * @property {number}  posY    - viewport position y
-   * @property {number}  scale   - scaling factor
-   * 
-   * @property {number}  offX    - offscreen position x
-   * @property {number}  offY    - offscreen position y
+   * @property {number}  scale   - scale factor
    * 
    * @property {Object}  x       - x-axis variable
    * @property {Object}  y       - y-axis variable
@@ -222,9 +220,6 @@ function mainObj() {
     posX:    0,
     posY:    0,
     scale:   1.0,
-    offed:   false,
-    offX:    0,
-    offY:    0,
     /** display variables */
     x:       {},
     y:       {},
@@ -284,7 +279,7 @@ function mainObj() {
    * @property {number[]} opacity - opacity variable
    * @property {number[]} color   - color variable
    * @property {string[]} rgb     - RGB value
-   * @property {string[]} rgba    - RGBA value
+   * @property {Object.number[]} fses - canvas fill style (RGBA)
    * They are 1D arrays of the same size as the dataset. They store transformed
    * data for visualization purpose to avoid duplicated calculations. They need
    * to be updated when the dataset is updated or the corresponding display
@@ -297,7 +292,7 @@ function mainObj() {
     opacity: [],
     color:   [],
     rgb:     [],
-    rgba:    []
+    fses:    {}
   };
 
 
@@ -332,7 +327,8 @@ function mainObj() {
     resizing:  null,
     toasting:  null,
     stopping:  false,
-    progress:  null
+    progress:  null,
+    tracing:   0
   };
 
 
@@ -399,12 +395,53 @@ function mainObj() {
 
 
   /**
-   * Main and overlay plots.
-   * @member {Object} rena
-   * @member {Object} oray
+   * Main plot canvases.
+   * @member {Object} plot - main scatter plot
+   * @member {Object} olay - overlay (for selection etc.)
    */
-  this.rena = null;
-  this.oray = null;
+  this.plot = null;
+  this.olay = null;
+
+
+  /**
+   * Cached paths.
+   * @member {Object} paths
+   * @description 2D paths that can be rendered to the canvases. Only one set
+   * of paths is available at a time.
+   * 
+   * @property {Object} sele  - selection shadows (one path)
+   * @property {Object} main  - main scatter plot (one path per fill style)
+   * @property {Array}  high  - highlight borders (one path per color)
+   * @property {number} posX  - viewport position x
+   * @property {number} posY  - viewport position y
+   * @property {number} scale - scale factor
+   */
+  this.paths = {
+    sele:  null,
+    main:  null,
+    high:  [],
+    posX:  0,
+    posY:  0,
+    scale: 1
+  };
+
+
+  /**
+   * Cached images.
+   * @member {Array} images
+   * @description A fixed-sized array, with each element representing one set
+   * of cached images (plot and olay), and its position and scale. An image
+   * may be a canvas or a bitmap, which has its width and height, and can be
+   * drawn to another (on-screen) canvas.
+   */
+  this.images = null;
+
+
+  /**
+   * Web worker for rendering.
+   * @member {Object} worker
+   */
+  this.worker = null;
 
 
   /**

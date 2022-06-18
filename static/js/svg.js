@@ -36,9 +36,9 @@ function renderSVG(mo, legs) {
    */
 
   // canvas size
-  const rena = mo.rena;
-  const w = rena.width,
-        h = rena.height;
+  const plot = mo.plot;
+  const w = plot.width,
+        h = plot.height;
 
   // image scale and offset
   const view = mo.view;

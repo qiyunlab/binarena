@@ -23,13 +23,14 @@
   <script src="static/js/rule.js"></script>
   <script src="static/js/resource.js"></script>
   <script src="static/js/svg.js"></script>
+  <script src="static/js/worker.js"></script>
 </head>
 
 <!--
   The program interface consists of:
   1. rendering area (main-frame)
-    arena-canvas: scatter plot
-    overlay-canvas: selection etc.
+    main-canvas: scatter plot
+    sele-canvas: selection etc.
   2. docked panel:
     dashboard (dash-frame): top left
       start-panels:
@@ -69,16 +70,16 @@
   -->
   <div id="main-frame" style="height: 100vh; width: 100%; overflow: auto;">
 
-    <!-- from bottom to top:
-      z = 2: coordinates
-      z = 1: arena canvas
-      z = 0: overlay canvas
-      z = -1: drop sign
+    <!-- from top to bottom:
+      z = 2:   coordinate sign
+      z = 1:   overlay canvas
+      z = 0:   main plot canvas
+      z = -1:  drop sign
     -->
     <div style="position: relative; height: 100%;">
       <div id="coords-label" class="hidden" style="z-index: 2;"></div>
-      <canvas id="arena-canvas" class="main-plot" tabindex="1" style="z-index: 1;"></canvas>
-      <canvas id="overlay-canvas" class="main-plot" style="z-index: 0;"></canvas>
+      <canvas id="olay-canvas" class="main-plot" tabindex="1" style="z-index: 1;"></canvas>
+      <canvas id="plot-canvas" class="main-plot" style="z-index: 0;"></canvas>
       <div id="drop-sign" style="z-index:-1;">
         <p>Drag & drop data table here</p>
       </div>

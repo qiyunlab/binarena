@@ -42,7 +42,7 @@ function initSelTools(mo) {
     mo.cache.npick = m;
     toastMsg(`Selected ${plural('contig', m)}.`, mo.stat);
     updateSelection(mo);
-    mo.rena.focus();
+    mo.olay.focus();
   });
 
   /** Mask selection. */
@@ -68,7 +68,7 @@ function initSelTools(mo) {
     toastMsg(`Masked ${plural('contig', m)}.`, mo.stat);
     updateViewByData(mo, ['size', 'opacity', 'color']);
     updateSelection(mo);
-    mo.rena.focus();
+    mo.olay.focus();
   });
 
   /** Undo masking. */
@@ -90,7 +90,7 @@ function initSelTools(mo) {
     toastMsg(`Unmasked ${plural('contig', m)}.`, mo.stat);
     updateViewByData(mo);
     updateMaskCtrl(mo);
-    mo.rena.focus();
+    mo.olay.focus();
   });
 
   /** Clear mask. */
@@ -101,7 +101,7 @@ function initSelTools(mo) {
     toastMsg(`Unmasked all contigs.`, mo.stat);
     updateViewByData(mo);
     updateMaskCtrl(mo);
-    mo.rena.focus();
+    mo.olay.focus();
   });
 
   /** Highlight colors. */
@@ -194,7 +194,7 @@ function addHighlight(mo, idx) {
   renderArena(mo, true);
   updateSelection(mo);
   updateHighlight(mo);
-  mo.rena.focus();
+  mo.olay.focus();
 }
 
 
@@ -206,12 +206,15 @@ function addHighlight(mo, idx) {
 function updateHighlight(mo) {
   const counts = listCats(mo.highed);
   const ps = byId('high-menu').children;
+  let n = 0;
   let p;
   for (const [idx, count] of Object.entries(counts)) {
     p = ps.item(idx - 1);
     p.firstChild.innerHTML = count ? count : '&nbsp;';
     p.lastChild.classList.toggle('hidden', !count);
+    n += count;
   }
+  mo.cache.nhigh = n;
 }
 
 
@@ -260,7 +263,7 @@ function setFocus(mo) {
   toastMsg(`Focused on ${plural('contig', m)}.`, mo.stat);
   updateViewByData(mo, ['size', 'opacity', 'color']);
   updateSelection(mo);
-  mo.rena.focus();
+  mo.olay.focus();
 }
 
 
@@ -288,7 +291,7 @@ function removeFocus(mo) {
   prepDataForDisplay(mo);
   renderArena(mo, true);
   updateMaskCtrl(mo);
-  mo.rena.focus();
+  mo.olay.focus();
 }
 
 
@@ -406,7 +409,7 @@ function treatSelection(ctgs, mo, shift) {
   }
 
   updateSelection(mo);
-  mo.rena.focus();
+  mo.olay.focus();
 }
 
 

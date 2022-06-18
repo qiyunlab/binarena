@@ -265,7 +265,7 @@ function miniPlotSelect(mo) {
   }
   mo.cache.npick = npick;
   updateSelection(mo);
-  mo.rena.focus();
+  mo.olay.focus();
 }
 
 
