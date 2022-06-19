@@ -45,7 +45,7 @@ function initGUI(mo) {
   initMiniPlotCtrl(mo);  // mini plot controls  ( 'miniplot.js'  )
   initDataTableCtrl(mo); // data table controls ( 'datable.js'   )
   initCalcBoxCtrl(mo);   // calculator controls ( 'calculate.js' )
-  initCanvas(mo);        // main canvas         ( 'render.js'    )
+  initPlotCtrl(mo);      // main plot controls  ( 'plot.js'      )
   initImportCtrl(mo);    // data input controls ( 'input.js'     )
 
 }
@@ -304,7 +304,7 @@ function initContextMenu(mo) {
 
   // export image as PNG
   byId('export-png-a').addEventListener('click', function () {
-    exportPNG(mo.plot);
+    exportPNG(mo);
   });
 
   // export image as SVG
@@ -443,14 +443,14 @@ function initSettings(mo) {
 
   // Enable/disable night mode.
   byId('night-chk').addEventListener('change', function () {
-    mo.olay.style.backgroundColor = this.checked ? 'black' : '';
+    mo.plot.sele.style.backgroundColor = this.checked ? 'black' : '';
   });
 
   // Show/hide grid.
   byId('grid-chk').addEventListener('change', function () {
     mo.view.grid = this.checked;
     byId('coords-label').classList.toggle('hidden', !this.checked);
-    renderArena(mo);
+    renderPlot(mo);
   });
 
   // Show/hide navigation controls.
@@ -487,7 +487,7 @@ function initWidgets(mo) {
 
   // generate PNG
   byId('png-btn').addEventListener('click', function () {
-    exportPNG(mo.plot);
+    exportPNG(mo);
   });
 
   // generate SVG

@@ -197,10 +197,6 @@ function mainObj() {
    * @member {Object} view
    * @description Visual properties of the main plot.
    * 
-   * @property {number}  posX    - viewport position x
-   * @property {number}  posY    - viewport position y
-   * @property {number}  scale   - scale factor
-   * 
    * @property {Object}  x       - x-axis variable
    * @property {Object}  y       - y-axis variable
    * @property {Object}  size    - size variable
@@ -328,7 +324,7 @@ function mainObj() {
     toasting:  null,
     stopping:  false,
     progress:  null,
-    tracing:   0
+    painting:   0
   };
 
 
@@ -395,31 +391,21 @@ function mainObj() {
 
 
   /**
-   * Main plot canvases.
-   * @member {Object} plot - main scatter plot
-   * @member {Object} olay - overlay (for selection etc.)
-   */
-  this.plot = null;
-  this.olay = null;
-
-
-  /**
-   * Cached paths.
-   * @member {Object} paths
-   * @description 2D paths that can be rendered to the canvases. Only one set
-   * of paths is available at a time.
+   * Scatter plot of data.
+   * @member {Object} plot
+   * @description Canvases and their properties.
    * 
-   * @property {Object} sele  - selection shadows (one path)
-   * @property {Object} main  - main scatter plot (one path per fill style)
-   * @property {Array}  high  - highlight borders (one path per color)
+   * @property {Object} main  - main scatter plot
+   * @property {Object} sele  - selection shadows
+   * @property {Object} high  - highlight borders
    * @property {number} posX  - viewport position x
    * @property {number} posY  - viewport position y
    * @property {number} scale - scale factor
    */
-  this.paths = {
-    sele:  null,
+  this.plot = {
     main:  null,
-    high:  [],
+    sele:  null,
+    high:  null,
     posX:  0,
     posY:  0,
     scale: 1
@@ -434,7 +420,7 @@ function mainObj() {
    * may be a canvas or a bitmap, which has its width and height, and can be
    * drawn to another (on-screen) canvas.
    */
-  this.images = null;
+  this.images = [];
 
 
   /**

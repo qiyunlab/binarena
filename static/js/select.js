@@ -42,7 +42,7 @@ function initSelTools(mo) {
     mo.cache.npick = m;
     toastMsg(`Selected ${plural('contig', m)}.`, mo.stat);
     updateSelection(mo);
-    mo.olay.focus();
+    mo.plot.main.focus();
   });
 
   /** Mask selection. */
@@ -67,8 +67,7 @@ function initSelTools(mo) {
     if (history.length > 50) history.shift();
     toastMsg(`Masked ${plural('contig', m)}.`, mo.stat);
     updateViewByData(mo, ['size', 'opacity', 'color']);
-    updateSelection(mo);
-    mo.olay.focus();
+    mo.plot.main.focus();
   });
 
   /** Undo masking. */
@@ -90,7 +89,7 @@ function initSelTools(mo) {
     toastMsg(`Unmasked ${plural('contig', m)}.`, mo.stat);
     updateViewByData(mo);
     updateMaskCtrl(mo);
-    mo.olay.focus();
+    mo.plot.main.focus();
   });
 
   /** Clear mask. */
@@ -101,7 +100,7 @@ function initSelTools(mo) {
     toastMsg(`Unmasked all contigs.`, mo.stat);
     updateViewByData(mo);
     updateMaskCtrl(mo);
-    mo.olay.focus();
+    mo.plot.main.focus();
   });
 
   /** Highlight colors. */
@@ -191,10 +190,10 @@ function addHighlight(mo, idx) {
   }
   mo.cache.npick -= m;
   toastMsg(`Highlighted ${plural('contig', m)}.`, mo.stat);
-  renderArena(mo, true);
+  renderPlot(mo, true);
   updateSelection(mo);
   updateHighlight(mo);
-  mo.olay.focus();
+  mo.plot.main.focus();
 }
 
 
@@ -232,7 +231,7 @@ function clearHighlight(mo, idx, btn) {
   }
   btn.previousSibling.innerHTML = '&nbsp;';
   btn.classList.add('hidden');
-  renderArena(mo, true);
+  renderPlot(mo, true);
 }
 
 
@@ -262,8 +261,7 @@ function setFocus(mo) {
   mo.cache.nmask += k;
   toastMsg(`Focused on ${plural('contig', m)}.`, mo.stat);
   updateViewByData(mo, ['size', 'opacity', 'color']);
-  updateSelection(mo);
-  mo.olay.focus();
+  mo.plot.main.focus();
 }
 
 
@@ -289,9 +287,9 @@ function removeFocus(mo) {
   mo.cache.nmask -= m;
   toastMsg('Unfocused contigs.', mo.stat);
   prepDataForDisplay(mo);
-  renderArena(mo, true);
+  renderPlot(mo, true);
   updateMaskCtrl(mo);
-  mo.olay.focus();
+  mo.plot.main.focus();
 }
 
 
@@ -409,7 +407,7 @@ function treatSelection(ctgs, mo, shift) {
   }
 
   updateSelection(mo);
-  mo.olay.focus();
+  mo.plot.main.focus();
 }
 
 
@@ -419,7 +417,7 @@ function treatSelection(ctgs, mo, shift) {
  * @param {Object} mo - main object
  */
 function updateSelection(mo) {
-  renderSelect(mo, true);
+  renderSelection(mo);
   updateMiniPlot(mo);
   updateBinCtrl(mo);
   updateInfoTable(mo);

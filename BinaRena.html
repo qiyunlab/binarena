@@ -15,6 +15,7 @@
   <script src="static/js/search.js"></script>
   <script src="static/js/miniplot.js"></script>
   <script src="static/js/datable.js"></script>
+  <script src="static/js/plot.js"></script>
   <script src="static/js/render.js"></script>
   <script src="static/js/calculate.js"></script>
   <script src="static/js/util.js"></script>
@@ -72,14 +73,16 @@
 
     <!-- from top to bottom:
       z = 2:   coordinate sign
-      z = 1:   overlay canvas
-      z = 0:   main plot canvas
+      z = 1:   selection shadows
+      z = 0.5: main scatter plot
+      z = 0:   highlight borders
       z = -1:  drop sign
     -->
     <div style="position: relative; height: 100%;">
       <div id="coords-label" class="hidden" style="z-index: 2;"></div>
-      <canvas id="olay-canvas" class="main-plot" tabindex="1" style="z-index: 1;"></canvas>
-      <canvas id="plot-canvas" class="main-plot" style="z-index: 0;"></canvas>
+      <canvas id="main-canvas" class="main-plot" tabindex="1" style="z-index: 1;"></canvas>
+      <canvas id="sele-canvas" class="main-plot" style="z-index: 0.5;"></canvas>
+      <canvas id="high-canvas" class="main-plot" style="z-index: 0;"></canvas>
       <div id="drop-sign" style="z-index:-1;">
         <p>Drag & drop data table here</p>
       </div>

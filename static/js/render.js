@@ -2,606 +2,669 @@
 
 /**!
  * @module render
- * @file Main assembly plot rendering functions.
- * @description The main plot is a scatter plot of contigs in an assembly.
+ * @file Rendering engine from main scatter plot
+ * @description It uses HTML5 canvas for rendering.
  */
 
 
 /**
- * Initialize canvas.
- * @function initCanvas
- * @param {Object} mo - main object
+ * Add a new image set to cache.
+ * @function addImageCache
+ * @param {Array} images - cached image sets
+ * @returns {number} array index
+ * @description This function limits the maximum number of image sets.
  */
-function initCanvas(mo) {
-
-  // initiate canvases
-  mo.olay = byId('olay-canvas');
-  mo.plot = byId('plot-canvas');
-  mo.offs = document.createElement('canvas');
-
-  // initiate highlight paths
-  mo.paths.high = Array(HIGHLIGHT_PALETTE.length).fill(null);
-
-  // off-screen canvas
-  // const offs = plots.offs.transferControlToOffscreen();
-
-  // create web worker
-  // this way allows running a web worker in the local filesystem
-  const blob = new Blob(['(' + renderWorker.toString() + ')()'],
-                        {type: 'text/javascript'});
-  mo.worker = new Worker(URL.createObjectURL(blob));
-
-  // initiate offscreen canvas in worker
-  // mo.worker.postMessage(
-  //   {msg: 'init', 
-  //    canvas: plots.offs,
-  //    highpal: HIGHLIGHT_PALETTE,
-  //    shadcol: mo.theme.selection},
-  //   [plots.offs]);
-
-  // render image when done
-  mo.worker.onmessage = function(e) {
-    if (e.data.msg === 'main') {
-      plots.offs = e.data.bitmap;
-      mo.view.mainoff = true;
-      // mo.view.offX = e.data.offX;
-      // mo.view.offY = e.data.offY;
-      // setTimeout(function() {
-      //   const rena = mo.rena;
-      //   const ctx = rena.getContext('2d');
-      //   const w = rena.width,
-      //         h = rena.height;
-      //   ctx.drawImage(rena.offs, w, h, w, h, 0, 0, w, h);
-      // }, 50);
-    }
-    else if (e.data.msg === 'shad') {
-      mo.view.shadoff = true;
-    }
+function addImageCache(images) {
+  const maxlen = 5;
+  if (images.length === maxlen) images.shift();
+  const img = {
+    'main': document.createElement('canvas'),
+    'sele': document.createElement('canvas'),
+    'high': document.createElement('canvas'),
+    posX: 0, posY: 0, scale: 1, done: false
   }
-
-  // events take place on overlay canvas
-  const olay = mo.olay;
-
-  // minimum dimensions of plot
-  mo.view.minW = parseInt(getComputedStyle(olay).minWidth);
-  mo.view.minH = parseInt(getComputedStyle(olay).minHeight);
-
-  const view = mo.view,
-        stat = mo.stat;
-
-  resizePlot(mo);
-
-  /** mouse events */
-  olay.addEventListener('mousedown', function (e) {
-    stat.mousedown = true;
-    stat.dragX = e.clientX - view.posX;
-    stat.dragY = e.clientY - view.posY;
-  });
-
-  olay.addEventListener('mouseup', function () {
-    stat.mousedown = false;
-  });
-
-  olay.addEventListener('mouseover', function () {
-    stat.mousedown = false;
-  });
-
-  olay.addEventListener('mouseout', function () {
-    stat.mousedown = false;
-    stat.mousemove = false;
-  });
-
-  olay.addEventListener('mousemove', function (e) {
-    canvasMouseMove(e, mo);
-  });
-
-  olay.addEventListener('mousewheel', function (e) {
-    canvasMouseZoom(e.wheelDelta > 0, mo, e.clientX, e.clientY);
-  });
-
-  olay.addEventListener('DOMMouseScroll', function (e) {
-    canvasMouseZoom(e.detail < 0, mo, e.clientX, e.clientY);
-  });
-
-  olay.addEventListener('contextmenu', function (e) {
-    e.preventDefault();
-    const menu = byId('context-menu');
-    menu.style.top = e.clientY + 'px';
-    menu.style.left = e.clientX + 'px';
-    menu.classList.remove('hidden');
-  });
-
-  olay.addEventListener('click', function (e) {
-    canvasMouseClick(e, mo);
-  });
-
-  /** drag & drop file */
-  olay.addEventListener('dragover', function (e) {
-    e.preventDefault();
-  });
-
-  olay.addEventListener('dragenter', function (e) {
-    e.preventDefault();
-  });
-
-  olay.addEventListener('drop', function (e) {
-    e.stopPropagation();
-    e.preventDefault();
-    uploadFile(e.dataTransfer.files[0], mo);
-  });
-
-  /** touch events */
-  olay.addEventListener('touchstart', function (e) {
-    const stat = mo.stat;
-    const X = stat.touchX,
-          Y = stat.touchY;
-    X.length = 0;
-    Y.length = 0;
-    const t = e.touches;
-    for (let i = 0; i < t.length; i++) {
-      X.push(t[i].clientX);
-      Y.push(t[i].clientY);
-    }
-  });
-
-  olay.addEventListener('touchmove', function (e) {
-    const t = e.touches;
-    if (t.length !== mo.stat.touchX.length) return;
-
-    // move (single touch)
-    if (t.length === 1) {
-      e.preventDefault();
-      canvasTouchMove(mo, t);
-    }
-
-    // zoom (double touch)
-    else if (t.length === 2) {
-      e.preventDefault();
-      canvasTouchZoom(mo, t);
-    }
-  });
-
-  /** keyboard events */
-  olay.addEventListener('keydown', function (e) {
-    const t0 = performance.now();
-    switch (e.key) {
-      case 'Up':
-      case 'ArrowUp':
-        canvasKeyMove(0, mo);
-        break;
-      case 'Right':
-      case 'ArrowRight':
-        canvasKeyMove(1, mo);
-        break;
-      case 'Down':
-      case 'ArrowDown':
-        canvasKeyMove(2, mo);
-        break;
-      case 'Left':
-      case 'ArrowLeft':
-        canvasKeyMove(3, mo);
-        break;
-      case '-':
-      case '_':
-        canvasKeyZoom(false, mo);
-        break;
-      case '=':
-      case '+':
-        canvasKeyZoom(true, mo);
-        break;
-      case '0':
-        byId('reset-btn').click();
-        break;
-      case 'Enter':
-        polygonSelect(mo, e.shiftKey);
-        break;
-      case 'l':
-      case 'L':
-        byId('high-btn').click();
-        break;
-      case 'p':
-      case 'P':
-        byId('image-btn').click();
-        break;
-      case 'Delete':
-      case 'Backspace':
-        byId('mask-btn').click();
-        break;
-      case 'z':
-      case 'Z':
-        byId('undo-mask-btn').click();
-        break;
-      case 'f':
-      case 'F':
-        byId('focus-btn').click();
-        break;
-      case ' ':
-        byId('as-new-bin-btn').click();
-        break;
-      case '.':
-      case '>':
-        byId('add-to-bin-btn').click();
-        break;
-      case ',':
-      case '<':
-        byId('remove-from-bin-btn').click();
-        break;
-      case '/':
-      case '?':
-        byId('update-bin-btn').click();
-        e.preventDefault(); // otherwise it will open Firefox quick find bar
-        break;
-    }
-    const t1 = performance.now();
-    console.log(t1 - t0);
-  });
-} // end initializing controls
-
-
-/**
- * Canvas moving.
- * @function canvasKeyMove
- * @param {number} d - move direction
- * @param {Object} mo - main object
- * @description Direction: 0 (top), 1 (right), 2 (bottom), 3 (left), the same
- * as JavaScript margins.
- */
-function canvasKeyMove(d, mo) {
-  const step = 15;
-  if (d & 1) mo.view.posX += d >> 1 ? -step : step;
-  else mo.view.posY += d >> 1 ? step : -step;
-  updateView(mo);
-}
-
-
-/**
- * Canvas moving by touch.
- * @function canvasTouchMove
- * @param {Object} mo - main object
- * @param {number} t - touches
- */
-function canvasTouchMove(mo, t) {
-  const view = mo.view,
-        stat = mo.stat;
-  const X = stat.touchX,
-        Y = stat.touchY;
-  const dx = X[0] - t[0].clientX,
-        dy = Y[0] - t[0].clientY;
-  X[0] = t[0].clientX;
-  Y[0] = t[0].clientY;
-  view.posX -= dx;
-  view.posY -= dy;
-  updateView(mo);
-}
-
-
-/**
- * Canvas zooming by keys.
- * @function canvasKeyZoom
- * @param {boolean} isin - zoom in (true) or out (false)
- * @param {Object} mo - main object
- * @description It zooms from the plot center.
- */
-function canvasKeyZoom(isin, mo) {
-  let ratio = 0.75;
-  if (isin) ratio = 1 / ratio;
-  const view = mo.view;
-  const plot = mo.plot;
-  const w2 = plot.width / 2,
-        h2 = plot.height / 2;
-  view.scale *= ratio;
-  view.posX = (view.posX - w2) * ratio + w2;
-  view.posY = (view.posY - h2) * ratio + h2;
-  updateView(mo, true);
-}
-
-
-/**
- * Canvas zooming by mouse.
- * @function canvasMouseZoom
- * @param {boolean} isin - zoom in (true) or out (false)
- * @param {Object} mo - main object
- * @param {number} x - x-coordinate of mouse pointer
- * @param {number} y - y-coordinate of mouse pointer
- * @description It zooms from the mouse position.
- */
-function canvasMouseZoom(isin, mo, x, y) {
-  let ratio = 0.75;
-  if (isin) ratio = 1 / ratio;
-  const view = mo.view;
-  view.scale *= ratio;
-  view.posX = x - (x - view.posX) * ratio;
-  view.posY = y - (y - view.posY) * ratio;
-  updateView(mo, true);
-}
-
-
-/**
- * Canvas zooming by touch.
- * @function canvasTouchZoom
- * @param {Object} mo - main object
- * @param {number} t - touches
- * @description It zooms from the midpoint between two fingers.
- */
-function canvasTouchZoom(mo, t) {
-  const view = mo.view,
-        stat = mo.stat,
-        plot = mo.plot;
-  const w = plot.width,
-        h = plot.height;
-  const X = stat.touchX,
-        Y = stat.touchY;
-
-  // current xy coordinates of touches
-  const newX = [t[0].clientX, t[1].clientX],
-        newY = [t[0].clientY, t[1].clientY];
-
-  // find midpoint of current touches
-  const newMid = [(newX[0] + newX[1]) / 2, (newY[0] + newY[1]) / 2];
-
-  // ratio of distances between old and new coordinates
-  const dist = Math.sqrt(((X[0] - X[1]) / w) ** 2 + (
-    (Y[0] - Y[1]) / h) ** 2);
-  const newDist = Math.sqrt(((newX[0] - newX[1]) / w) ** 2 + ((
-    newY[0] - newY[1]) / h) ** 2);
-  const ratio = newDist / dist;
-
-  // set old coordinates to be new coordinates
-  X.splice(0, 2, ...newX);
-  Y.splice(0, 2, ...newY);
-
-  // updating view
-  view.scale *= ratio;
-  view.posX = newMid[0] - (newMid[0] - view.posX) * ratio;
-  view.posY = newMid[1] - (newMid[1] - view.posY) * ratio;
-  updateView(mo, true);
-}
-
-
-/**
- * Canvas mouse move event.
- * @function canvasMouseMove
- * @param {Object} e - event object
- * @param {Object} mo - main object
- */
-function canvasMouseMove(e, mo) {
-  const view = mo.view,
-        stat = mo.stat,
-        plot = mo.plot;
-
-  // drag to move the canvas
-  if (stat.mousedown) {
-    const posX = e.clientX - stat.dragX,
-          posY = e.clientY - stat.dragY;
-
-    // won't move if offset is within a pixel
-    // this is to prevent accidential tiny moves while clicking
-    if (Math.abs(posX - view.posX) > 1 || Math.abs(posY - view.posY) > 1) {
-      stat.mousemove = true;
-      view.posX = posX;
-      view.posY = posY;
-      updateView(mo);
-    }
-  }
-
-  // show current coordinates
-  else if (mo.view.grid) {
-    const x = ((e.offsetX - view.posX) / view.scale / plot.width + 0.5) *
-      (view.x.max - view.x.min) + view.x.min;
-    const y = view.y.max - ((e.offsetY - view.posY) / view.scale /
-      plot.height + 0.5) * (view.y.max - view.y.min);
-    byId('coords-label').innerHTML = x.toFixed(3) + ',' + y.toFixed(3);
-  }
-}
-
-
-/**
- * Canvas mouse click event.
- * @function canvasMouseClick
- * @param {Object} e - event object
- * @param {Object} mo - main object
- */
-function canvasMouseClick(e, mo) {
-  const view = mo.view,
-        stat = mo.stat,
-        plot = mo.plot;
-
-  // mouse up after dragging
-  if (stat.mousemove) {
-    stat.mousemove = false;
-  }
-
-  // keep drawing polygon
-  else if (stat.drawing) {
-    stat.polygon.push({
-      x: (e.offsetX - view.posX) / view.scale,
-      y: (e.offsetY - view.posY) / view.scale,
-    });
-    drawPolygon(mo);
-  }
-
-  // determine which contigs are clicked
-  else {
-    const n = mo.cache.nctg;
-    if (!n) return;
-    const pick = mo.picked,
-          mask = mo.masked;
-
-    // clear current selection
-    if (!e.shiftKey) {
-      pick.fill(false);
-      mo.cache.npick = 0;
-    }
-
-    // get canvas size
-    const w = plot.width,
-          h = plot.height;
-
-    // get mouse position    
-    const x0 = (e.offsetX - view.posX) / view.scale,
-          y0 = (e.offsetY - view.posY) / view.scale;
-
-    // transformed data
-    const trans = mo.trans;
-    const X = trans.x,
-          Y = trans.y,
-          S = trans.size;
-
-    const arr = [];
-    let x2y2;
-    for (let i = 0; i < n; i++) {
-      if (mask[i]) continue;
-
-      // calculate distance to center
-      x2y2 = (X[i] * w - x0) ** 2 + (Y[i] * h - y0) ** 2;
-
-      // if mouse is within contig area, consider as a click
-      if (x2y2 < S[i] ** 2) arr.push([i, x2y2]);
-    }
-
-    // if one or more contigs are clicked
-    if (arr.length > 0) {
-
-      // sort clicked contigs by proximity from center to mouse position
-      // no need to square root because it is monotonic
-      arr.sort((a, b) => a[1] - b[1]);
-      let ctg = arr[0][0];
-
-      // if already selected, unselect; else, select
-      if (pick[ctg]) {
-        pick[ctg] = false;
-        mo.cache.npick -= 1;
-      } else {
-        pick[ctg] = true;
-        mo.cache.npick += 1;
-      }
-    }
-    updateSelection(mo);
-  }
-}
-
-
-/**
- * Calculate plot dimensions based on style and container.
- * @function calcPlotDims
- * @param {Object} mo - main object
- * @returns {[number, number]} - width and height of arena
- */
-function calcPlotDims(mo) {
-  const frame = byId('main-frame');
-  const w = Math.max(mo.view.minW, frame.offsetWidth);
-  const h = Math.max(mo.view.minH, frame.offsetHeight);
-  return [w, h];
-}
-
-
-/**
- * Update canvas dimensions.
- * @function resizePlot
- * @param {Object} mo - main object
- */
-function resizePlot(mo) {
-  const plot = mo.plot;
-  const [w, h] = calcPlotDims(mo);
-  if (plot.width !== w) mo.olay.width = plot.width = w;
-  if (plot.height !== h) mo.olay.height = plot.height = h;
-  updateView(mo, true);
+  images.push(img);
+  return img;
 }
 
 
 /**
  * Render arena given current data and view.
- * @function renderArena
+ * @function renderPlot
  * @param {Object} mo - main object
  * @param {boolean} [redo=] - force redrawing instead of using cached image
  */
-function renderArena(mo, redo) {
-  const view = mo.view,
-        plot = mo.plot,
-        stat = mo.stat,
-        paths = mo.paths;
-  const w = plot.width,
-        h = plot.height;
-  const posX = view.posX,
-        posY = view.posY,
-        scale = view.scale;
+function renderPlot(mo, redo) {
 
-  // cannot render if no data, or no x- or y-axis
+  // cannot render if no data, no x- or no y-axis
+  const view = mo.view;
   if (!mo.cache.nctg || !view.x.i || !view.y.i) {
-    const ctx = plot.getContext('2d');
-    ctx.clearRect(0, 0, w, h);
+    clearPlot(mo);
     return;
   }
 
-  // a callback to paint cached paths, to be called by background tracer
-  function painter() {
-    pathToPlot(mo.offs, w * 2, h * 2, paths.main, paths.high,
-      -w / 2, -h / 2, 1, HIGHLIGHT_PALETTE);
-    mo.images = [mo.offs, null, posX + w / 2, posY + h / 2, scale];
+  // will render something
+  const plot = mo.plot,
+        stat = mo.stat,
+        images = mo.images;
+  const w = plot.main.width,
+        h = plot.main.height;
+  const posX = plot.posX,
+        posY = plot.posY,
+        scale = plot.scale;
+
+  // check of any of the cached image sets can be used
+  let i, img, found = false;
+  if (!redo) {
+    for (i = images.length - 1; i >= 0; i--) {
+      img = images[i];
+      if (img.done && img.scale === scale &&
+          img.posX >= posX && img.posX + w <= posX + img.main.width &&
+          img.posY >= posY && img.posY + h <= posY + img.main.height) {
+        found = true;
+        break;
+      }
+    }
   }
 
-  // check cached image
-  // if no cached image matches, draw a new one
-  let img = mo.images;
-  if (redo || img === null || img[4] !== scale ||
-      img[2] - posX < 0 || img[2] - posX + w > img[0].width ||
-      img[3] - posY < 0 || img[3] - posY + h > img[0].height) {
+  // if found, copy the proper region of the image set to canvases
+  if (found) {
 
-    let posXp = paths.posX,
-        posYp = paths.posY;
-
-    // relative scale (from paths to image)
-    let rs = scale / paths.scale;
-
-    // check cached paths
-    // if paths don't match, trace new paths
-    // because tracing is expensive, it will be executed in the background,
-    // while the plot is directly and independently rendered to canvas
-    if (redo || paths.main === null ||
-        posX > posXp * rs || (w - posX) > (w * 3 - posXp) * rs ||
-        posY > posYp * rs || (h - posY) > (h * 3 - posYp) * rs) {
-
-      // directly render main canvas
-      drawMain(plot, posX, posY, scale, 0, 0, mo.trans, mo.masked,
-        mo.highed, HIGHLIGHT_PALETTE);
-      if (view.grid) drawGrid(ctx, w, h, view);
-
-      // trace paths in background (3x dimension)
-      console.log('tracing...');
-      stat.tracing = Date.now();
-      traceMainBg(w, h, posX, posY, scale, 1, mo.trans, mo.masked, paths, stat,
-                  painter);
-      return;
+    // draw cached images to canvases
+    for (const key of ['main', 'sele', 'high']) {
+      let ctx = plot[key].getContext('2d');
+      ctx.clearRect(0, 0, w, h);
+      ctx.drawImage(img[key], img.posX - posX, img.posY - posY,
+        w, h, 0, 0, w, h);
     }
 
-    // paint off-screen canvas (2x dimension)
-    console.log('painting...');
-    pathToPlot(mo.offs, w * 2, h * 2, paths.main, paths.high,
-              posX + w / 2 - posXp * rs, posY + h / 2 - posYp * rs,
-              rs, HIGHLIGHT_PALETTE);
-
-    // update image cache
-    // data structure: [main plot image, overlay image, posx, posy, scale]
-    img = mo.images = [mo.offs, null, posX + w / 2, posY + h / 2, scale];
+    // draw grid (optional)
+    if (view.grid) drawGrid(w, h, plot, view);
   }
 
-  // draw image to canvas
-  const ctx = plot.getContext('2d');
-  ctx.clearRect(0, 0, w, h);
-  ctx.drawImage(img[0], img[2] - posX, img[3] - posY, w, h, 0, 0, w, h);
+  // if no cached image set matches, directly draw a new one on canvases,
+  // then add a larger one to the cache in the background
+  else {
 
-  // draw grid (optional)
-  if (view.grid) drawGrid(ctx, w, h, view);
+    // directly draw on main plot canvas
+    drawMain(plot, w, h, posX, posY, scale, mo.trans, mo.masked, mo.picked,
+             mo.highed, mo.theme.selection, HIGHLIGHT_PALETTE);
+    if (view.grid) drawGrid(w, h, plot, view);
+
+    // a callback to update image cache
+    function save_cache() {
+      img.done = true;
+      img.posX = posX + w;
+      img.posY = posY + h;
+      img.scale = scale;
+      console.log('cached');
+    }
+
+    // set up a check point
+    const uid = stat.painting = Date.now();
+
+    // wait a bit before proceeding
+    setTimeout(function() {
+
+      // abort if there is a newer task
+      // (so as to prevent too many caching operations when user is
+      // dragging and scrolling)
+      if (uid !== stat.painting) return;
+
+      // start caching
+      console.log('caching...');
+      img = addImageCache(images);
+
+      // cached image is 3x dimensions of plot area
+      resizeCanvases(img, w * 3, h * 3);
+      drawMainBg(img, w, h, posX + w, posY + h, scale, mo.trans, mo.masked,
+                 mo.picked, mo.highed, mo.theme.selection, HIGHLIGHT_PALETTE,
+                 stat, save_cache);
+    }, 50);
+  }
+}
+
+
+/**
+ * Draw main scatter plot.
+ * @function drawMain
+ * @param {Object} target  - plot object
+ * @param {number} pltW    - plot area width
+ * @param {number} pltH    - plot area height
+ * @param {number} offX    - x-axis offset
+ * @param {number} offY    - y-axis offset
+ * @param {number} scale   - scale factor
+ * @param {Object} trans   - transformed data
+ * @param {Array}  mask    - masked contigs
+ * @param {Array}  pick    - selected contigs
+ * @param {Array}  high    - highlighted contigs
+ * @param {Array}  highpal - highlight palette
+ * @param {string} selcol  - selection color
+ */
+ function drawMain(target, pltW, pltH, offX, offY, scale, trans, mask, pick,
+  high, selcol, highpal) {
+
+  // get main canvas context
+  let canvas = target.main;
+  let ctx = canvas.getContext('2d');
+
+  // clear canvas
+  const w = canvas.width,
+        h = canvas.height;
+  ctx.clearRect(0, 0, w, h);
+
+  // cache constants
+  const pi2 = Math.PI * 2,
+        min1 = Math.sqrt(1 / Math.PI);
+
+  // transformed data
+  const X = trans.x,
+        Y = trans.y,
+        S = trans.size,
+        F = trans.fses;
+
+  // cache scale
+  const x_times = pltW * scale,
+        y_times = pltH * scale;
+
+  // cache offset
+  const x_plus = offX + 0.5,
+        y_plus = offY + 0.5;
+
+  // selection
+  const picks = [];
+
+  // highlight
+  const nhigh = highpal.length;
+  const highs = Array(nhigh).fill().map(() => Array());
+
+  // render contigs
+  let i, j, m, I, x, y, r, hi;
+  for (const f in F) {
+    I = F[f];
+    m = I.length;
+    if (!m) continue;
+
+    // iterate over indices
+    ctx.beginPath();
+    for (j = 0; j < m; j++) {
+      i = I[j];
+
+      // skip if masked
+      if (mask[i]) continue;
+
+      // determine radius (size; round to integer)
+      r = S[i] * scale + 0.5 << 0;
+
+      // skip if circle occupies less than one pixel on screen
+      if (r < min1) continue;
+
+      // determine x- and y-coordinates
+      // skip contigs outside visible region
+      x = X[i] * x_times + x_plus << 0;
+      if (x + r < 0 || x - r > w) continue;
+      y = Y[i] * y_times + y_plus << 0;
+      if (y + r < 0 || y - r > h) continue;
+
+      // draw circle
+      ctx.moveTo(x, y);
+      ctx.arc(x, y, r, 0, pi2, true);
+
+      // add to selection
+      if (pick[i]) picks.push([x, y, r]);
+
+      // add to highlight
+      if (hi = high[i]) highs[hi - 1].push([x, y, r]);
+    }
+
+    // fill circles of current style
+    ctx.fillStyle = f;
+    ctx.fill();
+
+  } // end for f
+
+  // render selection shadows
+  canvas = target.sele;
+  ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, w, h);
+  m = picks.length;
+  if (m) {
+
+    // define shadow style
+    ctx.save();
+    ctx.fillStyle = selcol;
+    ctx.shadowColor = selcol;
+    ctx.shadowBlur = 10; // note: canvas shadow blur is expensive
+    ctx.shadowOffsetX = 0;
+    ctx.shadowOffsetY = 0;
+
+    // paint shadows around selected
+    ctx.beginPath();
+    let c;
+    for (let i = 0; i < m; i++) {
+      c = picks[i];
+      ctx.moveTo(c[0], c[1]);
+      ctx.arc(c[0], c[1], c[2], 0, pi2, true);
+    }
+    ctx.fill();
+    ctx.restore();
+  }
+
+  // render highlight borders
+  canvas = target.high;
+  ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, w, h);
+  let hs, c;
+  r = 8 // highlight border width
+  for (let i = 0; i < nhigh; i++) {
+    hs = highs[i];
+    m = hs.length;
+    if (!m) continue;
+    ctx.fillStyle = highpal[i] + '66'; // alpha = 0.4
+    ctx.beginPath();
+    for (j = 0; j < m; j++) {
+      c = hs[j];
+      ctx.moveTo(c[0], c[1]);
+      ctx.arc(c[0], c[1], c[2] + r, 0, pi2, true);
+    }
+    ctx.fill();
+  }
+
+}
+
+
+/**
+ * Draw main scatter plot in background.
+ * @function drawMainBg
+ * @see drawMain
+ * @param {object} stat - stat object
+ * @param {function} callback - callback function
+ */
+function drawMainBg(target, pltW, pltH, offX, offY, scale, trans, mask, pick,
+                    high, selcol, highpal, stat, callback) {
+  const uid = stat.painting;
+  let canvas = target.main;
+  let ctx = canvas.getContext('2d');
+  const w = canvas.width,
+        h = canvas.height;
+  ctx.clearRect(0, 0, w, h);
+  const pi2 = Math.PI * 2,
+        min1 = Math.sqrt(1 / Math.PI);
+  const X = trans.x,
+        Y = trans.y,
+        S = trans.size,
+        F = trans.fses;
+  const x_times = pltW * scale,
+        y_times = pltH * scale;
+  const x_plus = offX + 0.5,
+        y_plus = offY + 0.5;
+  const picks = [];
+  const nhigh = highpal.length;
+  const highs = Array(nhigh).fill().map(() => Array());
+  const fs = Object.keys(F);
+  const n = fs.length;
+  let f, i, j, m, I, x, y, r, hi;
+
+  let idx = 0;
+  requestIdleCallback(chunk);
+
+  function chunk() {
+    let cnt = 25; // chunk size (empirically determined)
+    while (cnt-- && idx < n) {
+      f = fs[idx];
+      I = F[f];
+      m = I.length;
+      if (m) {
+        ctx.beginPath();
+        for (j = 0; j < m; j++) {
+          i = I[j];
+          if (mask[i]) continue;
+          r = S[i] * scale + 0.5 << 0;
+          if (r < min1) continue;
+          x = X[i] * x_times + x_plus << 0;
+          if (x + r < 0 || x - r > w) continue;
+          y = Y[i] * y_times + y_plus << 0;
+          if (y + r < 0 || y - r > h) continue;
+          ctx.moveTo(x, y);
+          ctx.arc(x, y, r, 0, pi2, true);
+          if (pick[i]) picks.push([x, y, r]);
+          if (hi = high[i]) highs[hi - 1].push([x, y, r]);
+        }
+        ctx.fillStyle = f;
+        ctx.fill();
+      }
+      ++idx;
+    } // end while
+
+    // abort or move to next step
+    if (stat.painting !== uid) return;
+    if (idx < n) requestIdleCallback(chunk);
+    else requestIdleCallback(fill_sele);
+  } // end chunk
+
+  // callback to fill selection shadows
+  function fill_sele() {
+    canvas = target.sele;
+    ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, w, h);
+    m = picks.length;
+    if (m) {
+      ctx.save();
+      ctx.fillStyle = selcol;
+      ctx.shadowColor = selcol;
+      ctx.shadowBlur = 10;
+      ctx.shadowOffsetX = 0;
+      ctx.shadowOffsetY = 0;
+      ctx.beginPath();
+      let c;
+      for (let i = 0; i < m; i++) {
+        c = picks[i];
+        ctx.moveTo(c[0], c[1]);
+        ctx.arc(c[0], c[1], c[2], 0, pi2, true);
+      }
+      ctx.fill();
+      ctx.restore();
+    }
+
+    // abort or move to next step
+    if (stat.painting !== uid) return;
+    else requestIdleCallback(fill_high);
+  }
+
+  // callback to fill highlight borders
+  function fill_high() {
+    canvas = target.high;
+    ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, w, h);
+    let hs, c;
+    r = 8;
+    for (let i = 0; i < nhigh; i++) {
+      hs = highs[i];
+      m = hs.length;
+      if (m) {
+        ctx.fillStyle = highpal[i] + '66';
+        ctx.beginPath();
+        for (j = 0; j < m; j++) {
+          c = hs[j];
+          ctx.moveTo(c[0], c[1]);
+          ctx.arc(c[0], c[1], c[2] + r, 0, pi2, true);
+        }
+        ctx.fill();
+      }
+    }
+
+    // abort or move to next step
+    if (stat.painting !== uid) return;
+    else requestIdleCallback(callback);
+  }
+}
+
+
+/**
+ * Render selection shadows only.
+ * @function renderSelection
+ * @param {Object} mo - main object
+ * @see renderPlot
+ */
+function renderSelection(mo) {
+
+  // mark cached images unusable
+  const images = mo.images;
+  for (const img of images) img.done = false;
+
+  // no (selected) contigs
+  if (!mo.cache.nctg || (mo.cache.npick === 0)) {
+    clearPlot(mo, ['sele']);
+    return;
+  }
+
+  const plot = mo.plot,
+        stat = mo.stat;
+  const posX = plot.posX,
+        posY = plot.posY,
+        scale = plot.scale;
+  const canvas = plot.sele;
+  const w = canvas.width,
+        h = canvas.height;
+
+  // directly draw on selection canvas
+  drawSelection(canvas, w, h, posX, posY, scale, mo.trans, mo.masked,
+                mo.picked, mo.theme.selection);
+
+  // then modify cached images
+  const uid = stat.painting = Date.now();
+  setTimeout(function() {
+    if (uid !== stat.painting) return;
+    console.log('sele caching...');
+    let img;
+    for (let i = images.length - 1; i >= 0; i--) {
+      img = images[i];
+      function save_cache() {
+        img.done = true;
+        console.log(`sele cached ${i}`);
+      }
+      drawSelectionBg(img.sele, w, h, img.posX, img.posY, img.scale,
+                      mo.trans, mo.masked, mo.picked, mo.theme.selection,
+                      stat, save_cache);
+    }
+  }, 50);
+
+}
+
+
+/**
+ * Draw selection shadows.
+ * @function drawSelection
+ * @param {Object} canvas - selection canvas
+ * @param {number} pltW   - plot area width
+ * @param {number} pltH   - plot area height
+ * @param {number} offX   - x-axis offset
+ * @param {number} offY   - y-axis offset
+ * @param {number} scale  - scale factor
+ * @param {Object} trans  - transformed data
+ * @param {Array}  mask   - masked contigs
+ * @param {Array}  pick   - selected contigs
+ * @param {string} color  - shadow color
+ * @description This function only draws selection shadows, therefore the
+ * process is faster than drawing everything, and the algorithm is optimized
+ * accordingly (iterating over all data instead of grouped data).
+ * @see drawMain
+ */
+function drawSelection(canvas, pltW, pltH, offX, offY, scale,
+                       trans, mask, pick, color) {
+  const ctx = canvas.getContext('2d');
+  const w = canvas.width,
+        h = canvas.height;
+  ctx.clearRect(0, 0, w, h);
+
+  // define shadow style
+  ctx.save();
+  ctx.fillStyle = color;
+  ctx.shadowColor = color;
+  ctx.shadowBlur = 10; // note: canvas shadow blur is expensive
+  ctx.shadowOffsetX = 0;
+  ctx.shadowOffsetY = 0;
+
+  // cache data
+  const X = trans.x,
+        Y = trans.y,
+        S = trans.size;
+  const x_times = pltW * scale,
+        y_times = pltH * scale;
+  const x_plus = offX + 0.5,
+        y_plus = offY + 0.5;
+  const pi2 = Math.PI * 2;
+
+  // render shadows around selected contigs
+  let r, x, y;
+  ctx.beginPath();
+  const n = pick.length;
+  for (let i = 0; i < n; i++) {
+    if (!pick[i]) continue;
+    if (mask[i]) continue;
+    r = S[i] * scale + 0.5 << 0;
+    x = X[i] * x_times + x_plus << 0;
+    if (x + r < 0 || x - r > w) continue;
+    y = Y[i] * y_times + y_plus << 0;
+    if (y + r < 0 || y - r > h) continue;
+    ctx.moveTo(x, y);
+    ctx.arc(x, y, r, 0, pi2, true);
+  }
+  ctx.fill();
+  ctx.restore();
+}
+
+
+/**
+ * Draw selection shadows in background.
+ * @function drawSelectionBg
+ * @see drawSelection 
+ * @param {object} stat - stat object
+ * @param {function} callback - callback function
+ */
+function drawSelectionBg(canvas, pltW, pltH, offX, offY, scale,
+                         trans, mask, pick, color, stat, callback) {
+  const uid = stat.painting;
+  const ctx = canvas.getContext('2d');
+  const w = canvas.width,
+        h = canvas.height;
+  ctx.clearRect(0, 0, w, h);
+  ctx.save();
+  ctx.fillStyle = color;
+  ctx.shadowColor = color;
+  ctx.shadowBlur = 10;
+  ctx.shadowOffsetX = 0;
+  ctx.shadowOffsetY = 0;
+  const X = trans.x,
+        Y = trans.y,
+        S = trans.size;
+  const x_times = pltW * scale,
+        y_times = pltH * scale;
+  const x_plus = offX + 0.5,
+        y_plus = offY + 0.5;
+  const pi2 = Math.PI * 2;
+  let i, r, x, y;
+  ctx.beginPath();
+  const n = pick.length;
+  let idx = 0;
+  function chunk() {
+    let cnt = 1000;
+    while (cnt-- && idx < n) {
+      i = idx++;
+      if (!pick[i]) continue;
+      if (mask[i]) continue;
+      r = S[i] * scale + 0.5 << 0;
+      x = X[i] * x_times + x_plus << 0;
+      if (x + r < 0 || x - r > w) continue;
+      y = Y[i] * y_times + y_plus << 0;
+      if (y + r < 0 || y - r > h) continue;
+      ctx.moveTo(x, y);
+      ctx.arc(x, y, r, 0, pi2, true);
+    }
+    if (stat.painting !== uid) return;
+    if (idx < n) requestIdleCallback(chunk);
+    else requestIdleCallback(function() {
+      ctx.fill();
+      ctx.restore();
+      requestIdleCallback(callback);
+    });
+  }
+  requestIdleCallback(chunk);
 }
 
 
 /**
  * Render arena given current data and view.
- * @function renderArena
+ * @function renderPlot
  * @param {Object} mo - main object
  * @param {boolean} [redo=] - force redrawing instead of using cached image
  */
-// function renderArenaY(mo, redo) {
+// function renderPlot(mo, redo) {
+//   const view = mo.view,
+//         plot = mo.plot,
+//         stat = mo.stat;
+//   const w = plot.width,
+//         h = plot.height;
+//   const posX = view.posX,
+//         posY = view.posY,
+//         scale = view.scale;
+
+//   // cannot render if no data, or no x- or y-axis
+//   if (!mo.cache.nctg || !view.x.i || !view.y.i) {
+//     const ctx = plot.getContext('2d');
+//     ctx.clearRect(0, 0, w, h);
+//     return;
+//   }
+
+//   // a callback to paint cached paths, to be called by background tracer
+//   function painter() {
+//     pathToPlot(mo.offs, w * 2, h * 2, paths.main, paths.high,
+//       -w / 2, -h / 2, 1, HIGHLIGHT_PALETTE);
+//     mo.images = [mo.offs, null, posX + w / 2, posY + h / 2, scale];
+//   }
+
+//   // check cached image
+//   // if no cached image matches, draw a new one
+//   let img = mo.images;
+//   if (redo || img === null || img[4] !== scale ||
+//       img[2] - posX < 0 || img[2] - posX + w > img[0].width ||
+//       img[3] - posY < 0 || img[3] - posY + h > img[0].height) {
+
+//     let posXp = paths.posX,
+//         posYp = paths.posY;
+
+//     // relative scale (from paths to image)
+//     let rs = scale / paths.scale;
+
+//     // check cached paths
+//     // if paths don't match, trace new paths
+//     // because painting is expensive, it will be executed in the background,
+//     // while the plot is directly and independently rendered to canvas
+//     if (redo || paths.main === null ||
+//         posX > posXp * rs || (w - posX) > (w * 3 - posXp) * rs ||
+//         posY > posYp * rs || (h - posY) > (h * 3 - posYp) * rs) {
+
+//       // directly render main canvas
+//       drawMain(plot, posX, posY, scale, 0, 0, mo.trans, mo.masked,
+//         mo.highed, HIGHLIGHT_PALETTE);
+//       if (view.grid) drawGrid(ctx, w, h, view);
+
+//       // trace paths in background (3x dimension)
+//       console.log('painting...');
+//       stat.painting = Date.now();
+//       traceMainBg(w, h, posX, posY, scale, 1, mo.trans, mo.masked, paths, stat,
+//                   painter);
+//       return;
+//     }
+
+//     // paint off-screen canvas (2x dimension)
+//     console.log('painting...');
+//     pathToPlot(mo.offs, w * 2, h * 2, paths.main, paths.high,
+//               posX + w / 2 - posXp * rs, posY + h / 2 - posYp * rs,
+//               rs, HIGHLIGHT_PALETTE);
+
+//     // update image cache
+//     // data structure: [main plot image, overlay image, posx, posy, scale]
+//     img = mo.images = [mo.offs, null, posX + w / 2, posY + h / 2, scale];
+//   }
+
+//   // draw image to canvas
+//   const ctx = plot.getContext('2d');
+//   ctx.clearRect(0, 0, w, h);
+//   ctx.drawImage(img[0], img[2] - posX, img[3] - posY, w, h, 0, 0, w, h);
+
+//   // draw grid (optional)
+//   if (view.grid) drawGrid(ctx, w, h, view);
+// }
+
+
+/**
+ * Render arena given current data and view.
+ * @function renderPlot
+ * @param {Object} mo - main object
+ * @param {boolean} [redo=] - force redrawing instead of using cached image
+ */
+// function renderPlotY(mo, redo) {
 //   const view = mo.view,
 //         plot = mo.plot,
 //         paths = mo.paths;
@@ -636,7 +699,7 @@ function renderArena(mo, redo) {
 //         posY > posYp * rs || (h * 2 - posY) > (h * 3 - posYp) * rs) {
 
 //       // trace paths (3x dimension)
-//       console.log('tracing...');
+//       console.log('painting...');
 //       paths.main = traceMain(w, h, posX, posY, scale, 1, mo.trans, mo.masked);
 
 //       // update paths cache
@@ -668,579 +731,79 @@ function renderArena(mo, redo) {
 
 
 /**
- * Fill cached paths (main and high) in target canvas.
- * @function pathToPlot
- * @param {Object} canvas - canvas DOM
- * @param {number} w      - canvas width
- * @param {number} h      - canvas height
- * @param {Object} mpaths - main plot paths
- * @param {Object} hpaths - highlight paths
- * @param {number} x      - x-positon
- * @param {number} y      - y-positon
- * @param {number} s      - scale
- * @param {Array}  hcols  - highlight colors
- */
-function pathToPlot(canvas, w, h, mpaths, hpaths, x, y, s, hcols) {
-  if (canvas.width != w) canvas.width = w;
-  if (canvas.height != h) canvas.height = h;
-
-  // prepare drawing area
-  const ctx = canvas.getContext('2d');
-  ctx.clearRect(0, 0, w, h);
-  ctx.save();
-
-  // clip to visible region
-  // (doesn't change performance...)
-  ctx.rect(0, 0, w, h);
-  ctx.clip();
-
-  // transform canvas
-  ctx.translate(x, y);
-  if (s != 1) ctx.scale(s, s);
-
-  // fill highlight
-  const n = hpaths.length;
-  for (let i = 0; i < n; i++) {
-    if (hpaths[i] !== null) {
-      ctx.fillStyle = hcols[i];
-      ctx.fill(hpaths[i]);
-    }
-  }
-
-  // fill main plot
-  for (const f in mpaths) {
-    ctx.fillStyle = f;
-    ctx.fill(mpaths[f]);
-  }
-  ctx.restore();
-}
-
-
-/**
- * Fill cached paths (main and high) in target canvas.
- * @function pathToPlotX
- * @param {Object} canvas - canvas DOM
- * @param {number} w      - canvas width
- * @param {number} h      - canvas height
- * @param {Object} mpaths - main plot paths
- * @param {Object} hpaths - highlight paths
- * @param {number} x      - x-positon
- * @param {number} y      - y-positon
- * @param {number} s      - scale
- * @param {Array}  hcols  - highlight colors
- */
-function pathToPlotX(canvas, w, h, mpaths, hpaths, x, y, s, hcols, stat) {
-  if (canvas.width != w) canvas.width = w;
-  if (canvas.height != h) canvas.height = h;
-
-  // prepare drawing area
-  const ctx = canvas.getContext('2d');
-  ctx.clearRect(0, 0, w, h);
-  ctx.save();
-
-  // clip to visible region
-  // (doesn't change performance...)
-  ctx.rect(0, 0, w, h);
-  ctx.clip();
-
-  // transform canvas
-  ctx.translate(x, y);
-  if (s != 1) ctx.scale(s, s);
-
-  // fill highlight
-  const n = hpaths.length;
-  for (let i = 0; i < n; i++) {
-    if (hpaths[i] !== null) {
-      ctx.fillStyle = hcols[i];
-      ctx.fill(hpaths[i]);
-    }
-  }
-
-  // fill main plot
-  for (const f in mpaths) {
-    ctx.fillStyle = f;
-    ctx.fill(mpaths[f]);
-  }
-  ctx.restore();
-}
-
-
-/**
  * Render arena given current data and view.
- * @function renderArena
+ * @function renderPlot
  * @param {Object} mo - main object
  * @param {boolean} [redo=] - force redrawing instead of using cached image
  */
-function renderArenaX(mo, redo) {
-  const view = mo.view,
-        rena = mo.rena;
+// function renderPlotX(mo, redo) {
+//   const view = mo.view,
+//         rena = mo.rena;
 
-  // get canvas context
-  const ctx = rena.getContext('2d');
+//   // get canvas context
+//   const ctx = rena.getContext('2d');
 
-  // cannot render if no data, or no x- or y-axis
-  const w = rena.width,
-        h = rena.height;
-  if (!mo.cache.nctg || !view.x.i || !view.y.i) {
-    ctx.clearRect(0, 0, w, h);
-    return;
-  }
+//   // cannot render if no data, or no x- or y-axis
+//   const w = rena.width,
+//         h = rena.height;
+//   if (!mo.cache.nctg || !view.x.i || !view.y.i) {
+//     ctx.clearRect(0, 0, w, h);
+//     return;
+//   }
 
-  // determine position of canvas
-  const posX = view.posX,
-        posY = view.posY,
-        offX = view.offX,
-        offY = view.offY,
-        scale = view.scale;
-  if (redo || !view.mainoff ||
-      posX < offX - w || posX > offX + w ||
-      posY < offY - h || posY > offY + h) {
-    view.mainoff = false;
+//   // determine position of canvas
+//   const posX = view.posX,
+//         posY = view.posY,
+//         offX = view.offX,
+//         offY = view.offY,
+//         scale = view.scale;
+//   if (redo || !view.mainoff ||
+//       posX < offX - w || posX > offX + w ||
+//       posY < offY - h || posY > offY + h) {
+//     view.mainoff = false;
 
-    // directly render main arena
-    drawMain(rena, posX, posY, scale, 0, 0, mo.trans, mo.masked,
-             mo.highed, HIGHLIGHT_PALETTE);
+//     // directly render main arena
+//     drawMain(rena, posX, posY, scale, 0, 0, mo.trans, mo.masked,
+//              mo.highed, HIGHLIGHT_PALETTE);
 
-    // then cache a larger region in an offscreen canvas
-    // view.offX = posX;
-    // view.offY = posY;
-    // mo.worker.postMessage({msg: 'main', params: [
-    //   posX, posY, scale, w, h, mo.trans, mo.masked, mo.highed]});
-  }
+//     // then cache a larger region in an offscreen canvas
+//     // view.offX = posX;
+//     // view.offY = posY;
+//     // mo.worker.postMessage({msg: 'main', params: [
+//     //   posX, posY, scale, w, h, mo.trans, mo.masked, mo.highed]});
+//   }
 
-  // otherwise, directly transfer cached image
-  else {
-    ctx.clearRect(0, 0, w, h);
-    ctx.drawImage(rena.offs, offX - posX + w, offY - posY + h,
-      w, h, 0, 0, w, h);
-  }
+//   // otherwise, directly transfer cached image
+//   else {
+//     ctx.clearRect(0, 0, w, h);
+//     ctx.drawImage(rena.offs, offX - posX + w, offY - posY + h,
+//       w, h, 0, 0, w, h);
+//   }
 
-  // (optional) draw grid
-  if (view.grid) drawGrid(ctx, w, h, view);
-}
-
-
-function traceMainBg(w, h, posX, posY, scale, margin, trans, mask, paths, stat,
-                     callback) {
-  const uid = stat.tracing;
-  paths.main = null;
-  const P = {};
-  const X = trans.x,
-        Y = trans.y,
-        S = trans.size,
-        F = trans.fses;
-  const x_lim = w + w * margin * 2,
-        y_lim = h + h * margin * 2;
-  const x_times = w * scale,
-        y_times = h * scale;
-  const x_plus = posX + w * margin + 0.5,
-        y_plus = posY + h * margin + 0.5;
-  const pi2 = Math.PI * 2;
-  const fs = Object.keys(F);
-  const n = fs.length;
-  let f, i, j, m, I, x, y, r, p;
-  let idx = 0;
-  function chunk() {
-    let cnt = 25; // chunk size (empirically determined)
-    while (cnt-- && idx < n) {
-      f = fs[idx];
-      p = P[f] = new Path2D();
-      I = F[f];
-      m = I.length;
-      for (j = 0; j < m; j++) {
-        i = I[j];
-        if (mask[i]) continue;  
-        r = S[i] * scale + 0.5 << 0;
-        x = X[i] * x_times + x_plus << 0;
-        if (x + r < 0 || x - r > x_lim) continue;
-        y = Y[i] * y_times + y_plus << 0;
-        if (y + r < 0 || y - r > y_lim) continue;
-        p.moveTo(x, y);
-        p.arc(x, y, r, 0, pi2, true);
-      }
-      ++idx;
-    }
-    if (stat.tracing !== uid) return;
-    if (idx < n) requestIdleCallback(chunk);
-    else {
-      paths.main = P;
-      paths.posX = posX + w;
-      paths.posY = posY + h;
-      paths.scale = scale;
-      console.log('traced');
-      requestIdleCallback(callback);
-    };
-  }
-  requestIdleCallback(chunk);
-}
-
-
-/**
- * Generate 2D paths of main plot.
- * @function traceMain
- * @param {number} w      - canvas width
- * @param {number} h      - canvas height
- * @param {number} posX   - x-positon
- * @param {number} posY   - y-positon
- * @param {number} scale  - scale factor
- * @param {number} margin - margin factor
- * @param {Object} trans  - transformed data
- * @param {Array}  mask   - masking
- * @returns {Object} - main plot paths
- * @description Coordinates are based on top left corner (incl. margin).
- */
-function traceMain(w, h, posX, posY, scale, margin, trans, mask) {
-  const paths = {};
-  const X = trans.x,
-        Y = trans.y,
-        S = trans.size,
-        F = trans.fses;
-  const x_lim = w + w * margin * 2,
-        y_lim = h + h * margin * 2;
-  const x_times = w * scale,
-        y_times = h * scale;
-  const x_plus = posX + w * margin + 0.5,
-        y_plus = posY + h * margin + 0.5;
-  const pi2 = Math.PI * 2;
-  let i, j, m, I, x, y, r, p;
-  for (const f in F) {
-    p = paths[f] = new Path2D();
-    I = F[f];
-    m = I.length;
-    for (j = 0; j < m; j++) {
-      i = I[j];
-      if (mask[i]) continue;  
-      r = S[i] * scale + 0.5 << 0;
-      x = X[i] * x_times + x_plus << 0;
-      if (x + r < 0 || x - r > x_lim) continue;
-      y = Y[i] * y_times + y_plus << 0;
-      if (y + r < 0 || y - r > y_lim) continue;
-      p.moveTo(x, y);
-      p.arc(x, y, r, 0, pi2, true);
-    }
-  }
-  return paths;
-}
-
-
-/**
- * Generate 2D paths of main plot, without checking.
- * @function traceJustMain
- * @param {number} w     - canvas width
- * @param {number} h     - canvas height
- * @param {Object} trans - transformed data
- * @returns {Object} - main plot paths
- * @description For the first screen of a workspace.
- */
-function traceJustMain(w, h, trans) {
-  const paths = {};
-  const X = trans.x,
-        Y = trans.y,
-        S = trans.size,
-        F = trans.fses;
-  const pi2 = Math.PI * 2;
-  let i, j, m, I, x, y, r, p;
-  for (const f in F) {
-    p = paths[f] = new Path2D();
-    I = F[f];
-    m = I.length;
-    for (j = 0; j < m; j++) {
-      i = I[j];
-      r = S[i] + 0.5 << 0;
-      x = X[i] * w + 0.5 << 0;
-      y = Y[i] * h + 0.5 << 0;
-      p.moveTo(x, y);
-      p.arc(x, y, r, 0, pi2, true);
-    }
-  }
-  return paths;
-}
-
-
-/**
- * Render main plot.
- * @function cachePaths
- */
-function cachePaths(w, h, trans, mask, high, highpal) {
-  const paths = {};
-  const pi2 = Math.PI * 2;
-  const X = trans.x,
-        Y = trans.y,
-        S = trans.size,
-        F = trans.fses;
-  const nhigh = highpal.length;
-  const highs = Array(nhigh).fill().map(() => Array());
-  const hirad = 8;
-  let i, j, m, I, x, y, r, hi, p;
-  for (const f in F) {
-    p = paths[f] = new Path2D();
-    I = F[f];
-    m = I.length;
-    for (j = 0; j < m; j++) {
-      i = I[j];
-      if (mask[i]) continue;  
-      r = S[i] + 0.5 << 0;
-      x = X[i] * w + 0.5 << 0;
-      y = Y[i] * h + 0.5 << 0;
-      hi = high[i];
-      if (hi) highs[hi - 1].push([x, y, r + hirad]);
-      p.moveTo(x, y);
-      p.arc(x, y, r, 0, pi2, true);
-    }
-  }
-  let hs, hl;
-  for (let i = 0; i < nhigh; i++) {
-    hs = highs[i];
-    m = hs.length;
-    if (!m) continue;
-    p = paths[highpal[i] + '66'] = new Path2D();
-    for (j = 0; j < m; j++) {
-      hl = hs[j];
-      p.moveTo(hl[0], hl[1]);
-      p.arc(hl[0], hl[1], hl[2], 0, pi2, true);
-    }
-  }
-  return paths;
-}
-
-
-/**
- * Render main plot.
- * @function drawMain
- * @param {Object} canvas - canvas DOM
- * @param {number} posX - x-positon
- * @param {number} posY - y-positon
- * @param {number} scale - scale
- * @param {number} offX - x-offset
- * @param {number} offY - y-offset
- * @param {Object} trans - transformed data
- * @param {Array} mask - masking
- * @param {Array} high - highlighting
- * @param {Array} highpal - highlight palette
- */
-function drawMain(canvas, posX, posY, scale, offX, offY, trans, mask, high,
-                  highpal) {
-  // get canvas context
-  const ctx = canvas.getContext('2d');
-
-  // clear canvas
-  const w = canvas.width,
-        h = canvas.height;
-  ctx.clearRect(0, 0, w, h);
-
-  // cache constants
-  const pi2 = Math.PI * 2,
-        min1 = Math.sqrt(1 / Math.PI);
-
-  // transformed data
-  const X = trans.x,
-        Y = trans.y,
-        S = trans.size,
-        F = trans.fses;
-
-  // cache scale
-  const x_times = (w - 2 * offX) * scale,
-        y_times = (h - 2 * offY) * scale;
-
-  // cache offset
-  const x_plus = posX + offX + 0.5,
-        y_plus = posY + offY + 0.5;
-
-  // highlights
-  const nhigh = highpal.length;
-  const highs = Array(nhigh).fill().map(() => Array());
-  const hirad = 8;
-
-  // path per fill style
-  const paths = {};
-
-  // render contigs
-  let i, j, m, I, x, y, r, hi, p;
-  for (const f in F) {
-    p = paths[f] = new Path2D();
-
-    // iterate over indices
-    I = F[f];
-    m = I.length;
-    for (j = 0; j < m; j++) {
-      i = I[j];
-
-      // skip if masked
-      if (mask[i]) continue;  
-
-      // determine radius (size; round to integer)
-      r = S[i] * scale + 0.5 << 0;
-
-      // if contig occupies less than one pixel on screen, skip
-      if (r < min1) continue;
-
-      // determine x- and y-coordinates
-      // skip contigs outside visible region
-      x = X[i] * x_times + x_plus << 0;
-      if (x + r < 0 || x - r > w) continue;
-      y = Y[i] * y_times + y_plus << 0;
-      if (y + r < 0 || y - r > h) continue;
-
-      // highlight circle
-      hi = high[i];
-      if (hi) highs[hi - 1].push([x, y, r + hirad]);
-
-      // draw circle
-      p.moveTo(x, y);
-      p.arc(x, y, r, 0, pi2, true);
-    }
-  } // end for f
-
-  // render highlights
-  let hs, hl;
-  for (let i = 0; i < nhigh; i++) {
-    hs = highs[i];
-    m = hs.length;
-    if (!m) continue;
-    ctx.fillStyle = highpal[i] + '66'; // alpha = 0.4
-    ctx.beginPath();
-    for (j = 0; j < m; j++) {
-      hl = hs[j];
-      ctx.moveTo(hl[0], hl[1]);
-      ctx.arc(hl[0], hl[1], hl[2], 0, pi2, true);
-    }
-    ctx.fill();
-  }
-
-  // fill circles
-  for (const f in paths) {
-    ctx.fillStyle = f;
-    ctx.fill(paths[f]);
-  }
-
-}
-
-
-/**
- * Render shadows around selected contigs.
- * @function renderSelect
- * @param {Object} mo - main object
- * @param {boolean} [redo=] - force re-rendering
- * @see renderArena
- */
-function renderSelect(mo, redo) {
-  const view = mo.view,
-        olay = mo.olay;
-  const ctx = olay.getContext('2d');
-  const w = olay.width,
-        h = olay.height;
-
-  // no (selected) contigs
-  if (!mo.cache.nctg || (mo.cache.npick === 0)) {
-    ctx.clearRect(0, 0, w, h);
-    return;
-  }
-
-  // determine position of canvas
-  const posX = view.posX,
-        posY = view.posY,
-        offX = view.offX,
-        offY = view.offY,
-        scale = view.scale;
-
-  // if needed, cache image in off-screen canvas
-  // this canvas has the sam position and dimensions as the main plot's
-  // off-screen canvas
-  if (redo || !view.shadoff ||
-      posX < offX - w || posX > offX + w ||
-      posY < offY - h || posY > offY + h) {
-    view.shadoff = false;
-
-    // directly render selection shadows
-    drawShad(olay, posX, posY, scale, 0, 0, mo.trans, mo.picked,
-             mo.theme.selection);
-
-    // then cache a larger region in an offscreen canvas    
-    mo.worker.postMessage({msg: 'shad', params: [
-      posX, posY, scale, w, h, mo.trans, mo.picked]});
-  }
-
-  // or load cached image from offscreen canvas
-  else {
-    ctx.clearRect(0, 0, w, h);
-    ctx.drawImage(olay.offs, offX - posX + w, offY - posY + h,
-      w, h, 0, 0, w, h);
-  }
-}
-
-
-/**
- * Render selection shadows in an off-screen canvas.
- * @function drawShad
- * @param {Object} mo - main object
- * @see drawMain
- */
-function drawShad(canvas, posX, posY, scale, offX, offY, trans, pick, color) {
-  const ctx = canvas.getContext('2d');
-
-  // clear canvas
-  const w = canvas.width,
-        h = canvas.height;
-  ctx.clearRect(0, 0, w, h);
-
-  // define shadow style
-  ctx.save();
-  ctx.fillStyle = color;
-  ctx.shadowColor = color;
-  ctx.shadowBlur = 10; // note: canvas shadow blur is expensive
-  ctx.shadowOffsetX = 0;
-  ctx.shadowOffsetY = 0;
-
-  // cache data
-  const X = trans.x,
-        Y = trans.y,
-        S = trans.size;
-  const pi2 = Math.PI * 2;
-
-  // cache scale and offset
-  const x_times = (w - 2 * offX) * scale,
-        y_times = (h - 2 * offY) * scale;
-  const x_plus = posX + offX + 0.5,
-        y_plus = posY + offY + 0.5;
-
-  // render shadows around selected contigs
-  let r, x, y;
-  ctx.beginPath();
-  const n = pick.length;
-  for (let i = 0; i < n; i++) {
-    if (!pick[i]) continue;
-    r = S[i] * scale + 0.5 << 0;
-    x = X[i] * x_times + x_plus << 0;
-    if (x + r < 0 || x - r > w) continue;
-    y = Y[i] * y_times + y_plus << 0;
-    if (y + r < 0 || y - r > h) continue;
-    ctx.moveTo(x, y);
-    ctx.arc(x, y, r, 0, pi2, true);
-  }
-  ctx.fill();
-  ctx.restore();
-}
+//   // (optional) draw grid
+//   if (view.grid) drawGrid(ctx, w, h, view);
+// }
 
 
 /**
  * Render polygon drawn by user.
  * @function drawPolygon
  * @param {Object} mo - main object
- * @see renderArena
+ * @see renderPlot
  */
 function drawPolygon(mo) {
-  const view = mo.view,
-        stat = mo.stat,
-        olay = mo.olay;
+  const plot = mo.plot,
+        stat = mo.stat;
+  const canvas = plot.sele;
   const vertices = stat.polygon;
   const pi2 = Math.PI * 2;
   const radius = 5;
   const color = mo.theme.polygon;
-  const ctx = olay.getContext('2d');
-  ctx.clearRect(0, 0, olay.width, olay.height);
-  const posX = view.posX,
-        posY = view.posY;
-  const scale = view.scale;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  const posX = plot.posX,
+        posY = plot.posY,
+        scale = plot.scale;
   ctx.fillStyle = color;
   ctx.strokeStyle = color;
   const n = vertices.length;
@@ -1267,13 +830,16 @@ function drawPolygon(mo) {
 /**
  * Render plot grid.
  * @function drawGrid
- * @param {Object} ctx - canvas context
  * @param {number} w - canvas width
  * @param {number} h - canvas height
+ * @param {Object} plot - plot object
  * @param {Object} view - view object
  */
-function drawGrid(ctx, w, h, view) {
-  const scale = view.scale;
+function drawGrid(w, h, plot, view) {
+  const ctx = plot.main.getContext('2d');
+  const posX = plot.posX,
+        posY = plot.posY,
+        scale = plot.scale;
   const ww = w * scale,
         hh = h * scale;
   const xmin = view.x.min,
@@ -1282,8 +848,6 @@ function drawGrid(ctx, w, h, view) {
   const ymin = view.y.min,
         ymax = view.y.max,
         yran = ymax - ymin;
-  const posX = view.posX,
-        posY = view.posY;
 
   // calculate grid density (number of steps)
   // note: grid density increases when zooming in, and descreases to at least
@@ -1371,8 +935,8 @@ function drawGrid(ctx, w, h, view) {
 function polygonSelect(mo, shift) {
   let n = mo.cache.nctg;
   if (!n) return;
-  const stat = mo.stat,
-        olay = mo.olay;
+  const stat = mo.stat;
+  const canvas = mo.plot.sele;
 
   // change button appearance
   const btn = byId('polygon-btn');
@@ -1389,9 +953,9 @@ function polygonSelect(mo, shift) {
 
   // finish drawing
   else {
-    const w = olay.width,
-          h = olay.height;
-    olay.getContext('2d').clearRect(0, 0, w, h);
+    const w = canvas.width,
+          h = canvas.height;
+    canvas.getContext('2d').clearRect(0, 0, w, h);
 
     // find contigs within polygon
     const X = mo.trans.x,
@@ -1409,19 +973,4 @@ function polygonSelect(mo, shift) {
     // treat selected contigs
     treatSelection(ctgs, mo, shift);
   }
-}
-
-
-/**
- * Take a screenshot and export as a PNG image.
- * @function exportPNG
- * @param {Object} canvas - canvas DOM to export
- */
-function exportPNG(canvas) {
-  const a = document.createElement('a');
-  a.href = canvas.toDataURL('image/png');
-  a.download = 'image.png';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
 }

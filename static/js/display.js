@@ -56,8 +56,7 @@ function initDisplayCtrl(mo) {
       }
       updateControls(mo);
       prepDataForDisplay(mo, ['x', 'y']);
-      renderArena(mo, true);
-      renderSelect(mo, true);
+      renderPlot(mo, true);
     });
   }
 
@@ -103,7 +102,8 @@ function initDisplayCtrl(mo) {
           updateColorMap(mo);
         }
         prepDataForDisplay(mo, ['color']);
-        renderArena(mo, true);
+        updateLegends(mo, ['color']);
+        renderPlot(mo, true);
       });
     }
   }
@@ -573,10 +573,9 @@ function updateColorMap(mo) {
  * @param {boolean} [redo=] - force re-rendering
  */
 function updateView(mo, redo) {
-  renderArena(mo, redo);
-  renderSelect(mo, redo);
+  renderPlot(mo, redo);
   if (mo.stat.drawing) drawPolygon(mo);
-  mo.olay.focus();
+  mo.plot.main.focus();
 }
 
 
@@ -613,6 +612,7 @@ function resetWorkspace(mo) {
   mo.highed = Array(n).fill(0);
   mo.binned = Array(n).fill('');
   mo.tabled = n ? [...data[0].keys()] : [];
+  mo.images = [];
   
   // reset binning plan
   byId('bin-tbody').innerHTML = '';
@@ -763,11 +763,11 @@ function cacheTotAbundance(mo) {
  * @param {Object} mo - main object
  */
 function centerView(mo) {
-  const view = mo.view;
-  view.scale = 1.0;
   const plot = mo.plot;
-  view.posX = plot.width / 2;
-  view.posY = plot.height / 2;
+  plot.scale = 1.0;
+  const canvas = plot.main;
+  plot.posX = canvas.width / 2;
+  plot.posY = canvas.height / 2;
   updateView(mo, true);
 }
 
@@ -780,7 +780,7 @@ function centerView(mo) {
 function updateViewByData(mo, items) {
   prepDataForDisplay(mo, items);
   updateLegends(mo, items);
-  renderArena(mo, true);
+  renderPlot(mo, true);
 }
 
 
@@ -999,8 +999,7 @@ function displayItemChange(item, i, scale, mo) {
   // update legend
   if (item !== 'x' && item !== 'y') updateLegends(mo, [item]);
 
-  renderArena(mo, true);
-  renderSelect(mo, true);
+  renderPlot(mo, true);
 }
 
 
