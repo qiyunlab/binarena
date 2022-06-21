@@ -37,8 +37,9 @@
  * @property {Object} highed - contig highlighting
  * @property {Object} tabled - contigs in table
  * @property {Object} bins   - binning plan
- * @property {Object} rena   - arena canvas
- * @property {Object} oray   - overlay canvas
+ * @property {Object} plot   - main plots
+ * @property {Array}  images - cached images
+ * @property {Object} work   - web workers
  * @property {Object} mini   - mini plot
  * @property {Object} theme  - program theme
  */
@@ -130,6 +131,7 @@ function mainObj() {
    * will not be read into the dataset.
    * @property {number} len - minimum length threshold
    * @property {number} cov - minimum coverage threshold
+   * @todo Remove this feature.
    */
   this.filter = {
     len: 1000,
@@ -160,6 +162,7 @@ function mainObj() {
    * 
    * @property {number} npick - number of contigs selected
    * @property {number} nmask - number of contigs masked
+   * @property {number} nhigh - number of contigs highlighted
    * 
    * @property {number[]} maskh - masking history
    * 
@@ -183,8 +186,8 @@ function mainObj() {
     freqs: {},
     npick: 0,
     nmask: 0,
-    maskh: [],
     nhigh: 0,
+    maskh: [],
     binns: new Set(),
     pdist: [],
     silhs: []
@@ -195,13 +198,6 @@ function mainObj() {
    * Display properties.
    * @member {Object} view
    * @description Visual properties of the main plot.
-   * 
-   * @property {number}  posX    - viewport position x
-   * @property {number}  posY    - viewport position y
-   * @property {number}  scale   - scaling factor
-   * 
-   * @property {number}  offX    - offscreen position x
-   * @property {number}  offY    - offscreen position y
    * 
    * @property {Object}  x       - x-axis variable
    * @property {Object}  y       - y-axis variable
@@ -222,9 +218,6 @@ function mainObj() {
     posX:    0,
     posY:    0,
     scale:   1.0,
-    offed:   false,
-    offX:    0,
-    offY:    0,
     /** display variables */
     x:       {},
     y:       {},
@@ -284,7 +277,7 @@ function mainObj() {
    * @property {number[]} opacity - opacity variable
    * @property {number[]} color   - color variable
    * @property {string[]} rgb     - RGB value
-   * @property {string[]} rgba    - RGBA value
+   * @property {Object.number[]} fses - canvas fill style (RGBA)
    * They are 1D arrays of the same size as the dataset. They store transformed
    * data for visualization purpose to avoid duplicated calculations. They need
    * to be updated when the dataset is updated or the corresponding display
@@ -297,7 +290,7 @@ function mainObj() {
     opacity: [],
     color:   [],
     rgb:     [],
-    rgba:    []
+    fses:    {}
   };
 
 
@@ -319,6 +312,7 @@ function mainObj() {
    * @property {number}   toasting  - toasting is ongoing
    * @property {number}   stopping  - calculation is stopping
    * @property {number}   progress  - calculation progress
+   * @property {number}   painting  - unique identifier for painting task
    */
   this.stat = {
     mousedown: false,
@@ -332,7 +326,8 @@ function mainObj() {
     resizing:  null,
     toasting:  null,
     stopping:  false,
-    progress:  null
+    progress:  null,
+    painting:  0
   };
 
 
@@ -399,12 +394,66 @@ function mainObj() {
 
 
   /**
-   * Main and overlay plots.
-   * @member {Object} rena
-   * @member {Object} oray
+   * Scatter plot of data.
+   * @member {Object} plot
+   * @description Canvases and their properties.
+   * 
+   * @property {Element} main  - main scatter plot
+   * @property {Element} sele  - selection shadows
+   * @property {Element} high  - highlight borders
+   * @property {Element} offs  - off-screen canvas
+   * @property {number}  posX  - viewport position x
+   * @property {number}  posY  - viewport position y
+   * @property {number}  scale - scale factor
    */
-  this.rena = null;
-  this.oray = null;
+  this.plot = {
+    main:  null,
+    sele:  null,
+    high:  null,
+    offs:  null,
+    posX:  0,
+    posY:  0,
+    scale: 1
+  };
+
+
+  /**
+   * Cached images.
+   * @member {Array.<Object>} images
+   * @description A fixed-sized array, with each element representing one set
+   * of cached images, as well as their position and scale. An image may be a
+   * canvas or a bitmap, which has its width and height, and can be drawn to
+   * another (on-screen) canvas.
+   * 
+   * Each element has the following parameters:
+   * @property {number}  iid   - image index (incremental)
+   * @property {number}  uid   - ongoing drawing task Id
+   * @property {boolean} done  - ready to use
+   * @property {Element} main  - main scatter plot
+   * @property {Element} sele  - selection shadows
+   * @property {Element} high  - highlight borders
+   * @property {number}  w     - canvas width
+   * @property {number}  h     - canvas height
+   * @property {number}  posX  - viewport position x
+   * @property {number}  posY  - viewport position y
+   * @property {number}  scale - scale factor
+   * @see plot
+   */
+  this.images = [];
+
+
+  /**
+   * Web workers.
+   * @member {Object} work
+   * @description Web workers for calculation and rendering.
+   * 
+   * @property {Element} calc - worker for calculation
+   * @property {Element} draw - worker for rendering
+   */
+  this.work = {
+    calc: null,
+    draw: null
+  }
 
 
   /**
@@ -413,7 +462,7 @@ function mainObj() {
    * @description Properties of the mini plot showing a histogram of a given
    * numeric column of the selected contigs.
    * 
-   * @property {number}   canvas - mini canvas to plot data
+   * @property {Element}  canvas - mini canvas to plot data
    * @property {number}   field  - field index of data to plot
    * @property {boolean}  log    - whether log-transform data
    * @property {number}   nbin   - number of bins in histogram
@@ -458,6 +507,22 @@ window.addEventListener('load', function () {
 
   // single global main object
   const mo = new mainObj();
+  console.log('Program launched.');
+
+  // check web worker support
+  const work = mo.work;
+  if (window.Worker) {
+    work.calc = 'yes!'; // currently not in use
+
+    // check offscreen canvas support
+    if (HTMLCanvasElement.prototype.transferControlToOffscreen) {
+      const blob = new Blob(['(' + renderWorker.toString() + ')()'],
+                            {type: 'text/javascript'});
+      try { work.draw = new Worker(URL.createObjectURL(blob)); }
+      catch { work.draw = null; }
+      if (work.draw) console.log('Offscreen canvas enabled.');
+    }
+  }
 
   // load demo data, if available
   if (typeof dataPath !== 'undefined') {
@@ -474,12 +539,3 @@ window.addEventListener('load', function () {
   resetWorkspace(mo);
 
 });
-
-
-/**
- * Test function.
- * @function testFunction
- */
-function testFunction() {
-  console.log('Hi there!');
-}

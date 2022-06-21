@@ -27,6 +27,7 @@ function initGUI(mo) {
   initPanelHeads();      // panel heads
   initBtnGroups();       // button groups
   initCloseBtns();       // close buttons
+  // initModalKeys();       // modal keys
   initListSel();         // list select table
   initToast();           // toast
 
@@ -45,7 +46,7 @@ function initGUI(mo) {
   initMiniPlotCtrl(mo);  // mini plot controls  ( 'miniplot.js'  )
   initDataTableCtrl(mo); // data table controls ( 'datable.js'   )
   initCalcBoxCtrl(mo);   // calculator controls ( 'calculate.js' )
-  initCanvas(mo);        // main canvas         ( 'render.js'    )
+  initPlotCtrl(mo);      // main plot controls  ( 'plot.js'      )
   initImportCtrl(mo);    // data input controls ( 'input.js'     )
 
 }
@@ -138,11 +139,11 @@ function initWindow(mo) {
  * @description also manually triggered when user resizes main frame
  */
 function resizeWindow(mo) {
-  const [w, h] = calcArenaDims(mo);
+  const [w, h] = calcPlotDims(mo);
   toastMsg(`Plot size: ${w} x ${h}`, mo.stat);
   clearTimeout(mo.stat.resizing);
   mo.stat.resizing = setTimeout(function () {
-    resizeArena(mo);
+    resizePlot(mo);
   }, 250); // redraw canvas after 0.25 sec
 }
 
@@ -156,7 +157,7 @@ function initPanelHeads() {
     '.panel-head button:first-of-type')) {
     btn.addEventListener('click', function () {
       const panel = this.parentElement.nextElementSibling;
-      if (panel !== null) panel.classList.toggle("hidden");
+      if (panel !== null) panel.classList.toggle('hidden');
     });
   }
 }
@@ -199,6 +200,32 @@ function initCloseBtns() {
       div.parentElement.parentElement.classList.add('hidden');
     });
     div.lastElementChild.appendChild(btn);
+  }
+}
+
+
+/**
+ * Initialize modal key shortcuts.
+ * @function initModalKeys
+ * @todo Not useful in current form as div doesn't receive key events.
+ */
+function initModalKeys() {
+  for (let div of document.querySelectorAll('.modal-content')) {
+    const head = div.querySelector('.modal-head');
+    div.addEventListener('keyup', function (e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        const btn = head.firstElementChild.querySelector(
+          'button:not(.hidden)');
+        if (btn) btn.click();
+      }
+      else if (e.key === 'Esc' || e.key === 'Escape') {
+        e.preventDefault();
+        const btn = head.lastElementChild.querySelector(
+          'button:not(.hidden):last-of-type');
+        if (btn) btn.click();
+      }
+    });
   }
 }
 
@@ -304,7 +331,7 @@ function initContextMenu(mo) {
 
   // export image as PNG
   byId('export-png-a').addEventListener('click', function () {
-    exportPNG(mo.rena);
+    exportPNG(mo);
   });
 
   // export image as SVG
@@ -334,18 +361,18 @@ function initSideFrame(mo) {
     const mf = byId('main-frame');
     mf.style.resize = 'none';
     mf.style.width = '100%';
-    resizeArena(mo);
+    resizePlot(mo);
   });
 
   byId('show-side-btn').addEventListener('click', function () {
     byId('show-frame').classList.add('hidden');
     byId('side-frame').classList.remove('hidden');
     const mf = byId('main-frame');
-    mf.style.overflow = "hidden";
+    mf.style.overflow = 'hidden';
     mf.style.resize = 'horizontal';
     const w = mf.getAttribute('data-width');
     if (w) mf.style.width = w;
-    resizeArena(mo);
+    resizePlot(mo);
     mf.style.overflow = "auto";
   });
 
@@ -443,14 +470,14 @@ function initSettings(mo) {
 
   // Enable/disable night mode.
   byId('night-chk').addEventListener('change', function () {
-    mo.oray.style.backgroundColor = this.checked ? 'black' : '';
+    mo.plot.high.style.backgroundColor = this.checked ? 'black' : '';
   });
 
   // Show/hide grid.
   byId('grid-chk').addEventListener('change', function () {
     mo.view.grid = this.checked;
     byId('coords-label').classList.toggle('hidden', !this.checked);
-    renderArena(mo);
+    renderPlot(mo);
   });
 
   // Show/hide navigation controls.
@@ -487,7 +514,7 @@ function initWidgets(mo) {
 
   // generate PNG
   byId('png-btn').addEventListener('click', function () {
-    exportPNG(mo.rena);
+    exportPNG(mo);
   });
 
   // generate SVG
@@ -725,7 +752,7 @@ function autoComplete(src, arr) {
 /**
  * Sort a table by clicking its header.
  * @function sortTableByHead
- * @param {object} th - table header
+ * @param {Object} th - table header
  * @description Assuming there are thead and tbody. Modified based on:
  * @see {@link https://stackoverflow.com/questions/14267781/}
  */

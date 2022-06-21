@@ -42,7 +42,7 @@ function initSelTools(mo) {
     mo.cache.npick = m;
     toastMsg(`Selected ${plural('contig', m)}.`, mo.stat);
     updateSelection(mo);
-    mo.rena.focus();
+    mo.plot.main.focus();
   });
 
   /** Mask selection. */
@@ -67,8 +67,11 @@ function initSelTools(mo) {
     if (history.length > 50) history.shift();
     toastMsg(`Masked ${plural('contig', m)}.`, mo.stat);
     updateViewByData(mo, ['size', 'opacity', 'color']);
-    updateSelection(mo);
-    mo.rena.focus();
+    updateMaskCtrl(mo);
+    updateMiniPlot(mo);
+    updateBinCtrl(mo);
+    updateInfoTable(mo);
+    mo.plot.main.focus();
   });
 
   /** Undo masking. */
@@ -90,7 +93,7 @@ function initSelTools(mo) {
     toastMsg(`Unmasked ${plural('contig', m)}.`, mo.stat);
     updateViewByData(mo);
     updateMaskCtrl(mo);
-    mo.rena.focus();
+    mo.plot.main.focus();
   });
 
   /** Clear mask. */
@@ -101,7 +104,7 @@ function initSelTools(mo) {
     toastMsg(`Unmasked all contigs.`, mo.stat);
     updateViewByData(mo);
     updateMaskCtrl(mo);
-    mo.rena.focus();
+    mo.plot.main.focus();
   });
 
   /** Highlight colors. */
@@ -177,41 +180,40 @@ function initSelTools(mo) {
  * @param {number} idx - highlight color index
  */
 function addHighlight(mo, idx) {
-  if (!mo.cache.npick) return;
+  const m = mo.cache.npick;
+  if (!m) return;
   const n = mo.cache.nctg;
   const pick = mo.picked,
         high = mo.highed;
-  let m = 0;
   for (let i = 0; i < n; i++) {
-    if (pick[i]) {
-      high[i] = idx;
-      pick[i] = false;
-      m ++;
-    }
+    if (pick[i]) high[i] = idx;
   }
-  mo.cache.npick -= m;
   toastMsg(`Highlighted ${plural('contig', m)}.`, mo.stat);
-  renderArena(mo, true);
-  updateSelection(mo);
-  updateHighlight(mo);
-  mo.rena.focus();
+  const work = mo.work.draw;
+  if (work) work.postMessage({msg: 'data', high: high});
+  renderPlot(mo, true);
+  updateHighCtrl(mo);
+  mo.plot.main.focus();
 }
 
 
 /**
  * Update highlight control status.
- * @function updateHighlight
+ * @function updateHighCtrl
  * @param {Object} mo - main object
  */
-function updateHighlight(mo) {
+function updateHighCtrl(mo) {
   const counts = listCats(mo.highed);
   const ps = byId('high-menu').children;
+  let n = 0;
   let p;
   for (const [idx, count] of Object.entries(counts)) {
     p = ps.item(idx - 1);
     p.firstChild.innerHTML = count ? count : '&nbsp;';
     p.lastChild.classList.toggle('hidden', !count);
+    n += count;
   }
+  mo.cache.nhigh = n;
 }
 
 
@@ -229,7 +231,9 @@ function clearHighlight(mo, idx, btn) {
   }
   btn.previousSibling.innerHTML = '&nbsp;';
   btn.classList.add('hidden');
-  renderArena(mo, true);
+  const work = mo.work.draw;
+  if (work) work.postMessage({msg: 'data', high: high});
+  renderPlot(mo, true);
 }
 
 
@@ -259,8 +263,7 @@ function setFocus(mo) {
   mo.cache.nmask += k;
   toastMsg(`Focused on ${plural('contig', m)}.`, mo.stat);
   updateViewByData(mo, ['size', 'opacity', 'color']);
-  updateSelection(mo);
-  mo.rena.focus();
+  mo.plot.main.focus();
 }
 
 
@@ -286,9 +289,9 @@ function removeFocus(mo) {
   mo.cache.nmask -= m;
   toastMsg('Unfocused contigs.', mo.stat);
   prepDataForDisplay(mo);
-  renderArena(mo, true);
+  renderPlot(mo, true);
   updateMaskCtrl(mo);
-  mo.rena.focus();
+  mo.plot.main.focus();
 }
 
 
@@ -406,7 +409,7 @@ function treatSelection(ctgs, mo, shift) {
   }
 
   updateSelection(mo);
-  mo.rena.focus();
+  mo.plot.main.focus();
 }
 
 
@@ -416,11 +419,12 @@ function treatSelection(ctgs, mo, shift) {
  * @param {Object} mo - main object
  */
 function updateSelection(mo) {
-  renderSelect(mo, true);
+  const work = mo.work.draw;
+  if (work) work.postMessage({msg: 'data', pick: mo.picked});
+  renderSele(mo);
   updateMiniPlot(mo);
   updateBinCtrl(mo);
   updateInfoTable(mo);
-  updateMaskCtrl(mo);
 }
 
 

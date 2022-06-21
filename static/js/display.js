@@ -56,8 +56,7 @@ function initDisplayCtrl(mo) {
       }
       updateControls(mo);
       prepDataForDisplay(mo, ['x', 'y']);
-      renderArena(mo, true);
-      renderSelect(mo, true);
+      renderPlot(mo, true);
     });
   }
 
@@ -103,7 +102,8 @@ function initDisplayCtrl(mo) {
           updateColorMap(mo);
         }
         prepDataForDisplay(mo, ['color']);
-        renderArena(mo, true);
+        updateLegends(mo, ['color']);
+        renderPlot(mo, true);
       });
     }
   }
@@ -570,13 +570,14 @@ function updateColorMap(mo) {
  * Update view given current view parameters.
  * @function updateView
  * @param {Object} mo - main object
- * @param {boolean} [redo=] - force re-rendering
+ * @param {boolean} [redo=] - force redrawing
+ * @param {boolean} [wait=] - postpone caching
+ * @see renderPlot
  */
-function updateView(mo, redo) {
-  renderArena(mo, redo);
-  renderSelect(mo, redo);
+function updateView(mo, redo, wait) {
+  renderPlot(mo, redo, wait);
   if (mo.stat.drawing) drawPolygon(mo);
-  mo.rena.focus();
+  mo.plot.main.focus();
 }
 
 
@@ -613,24 +614,34 @@ function resetWorkspace(mo) {
   mo.highed = Array(n).fill(0);
   mo.binned = Array(n).fill('');
   mo.tabled = n ? [...data[0].keys()] : [];
+  mo.images = [];
   
   // reset binning plan
   byId('bin-tbody').innerHTML = '';
 
   // reset transformed data
   const trans = mo.trans;
-  for (let item of ['x', 'y', 'size', 'opacity', 'color', 'rgb', 'rgba']) {
+  for (let item of ['x', 'y', 'size', 'opacity', 'color', 'rgb']) {
     trans[item] = Array(n);
   }
+  trans.fses = {};
+
+  // reset web worker (if applicable)
+  const work = mo.work.draw;
+  if (work) work.postMessage({msg: 'reset'});
 
   // clear cache
   cache.abund = 0;
   cache.freqs = {};
   cache.npick = 0;
   cache.nmask = 0;
+  cache.nhigh = 0;
   cache.maskh = [];
   cache.binns.clear();
   cache.pdist = [];
+
+  // clear highlight menu
+  updateHighCtrl(mo);
 
   // new data is open
   if (n) {
@@ -761,13 +772,14 @@ function cacheTotAbundance(mo) {
  * @param {Object} mo - main object
  */
 function centerView(mo) {
-  const view = mo.view;
-  view.scale = 1.0;
-  const rena = mo.rena;
-  view.posX = rena.width / 2;
-  view.posY = rena.height / 2;
+  const plot = mo.plot;
+  plot.scale = 1.0;
+  const canvas = plot.main;
+  plot.posX = canvas.width / 2;
+  plot.posY = canvas.height / 2;
   updateView(mo, true);
 }
+
 
 /**
  * Update view based on data.
@@ -778,7 +790,7 @@ function centerView(mo) {
 function updateViewByData(mo, items) {
   prepDataForDisplay(mo, items);
   updateLegends(mo, items);
-  renderArena(mo, true);
+  renderPlot(mo, true);
 }
 
 
@@ -798,8 +810,14 @@ function prepDataForDisplay(mo, items) {
         mask = mo.masked,
         trans = mo.trans;
 
+  // items to update in web worker
+  // can only be 'x', 'y', 'size' and 'fses'
+  const worked = [];
+
   // transform data for each display item
   for (let item of items) {
+    if (['x', 'y', 'size'].includes(item)) worked.push(item);
+
     const v = view[item];
     const idx = v.i,
           scale = v.scale;
@@ -954,16 +972,30 @@ function prepDataForDisplay(mo, items) {
         }
       }
     }
-  }
+  } // end for item
 
   // for opacity and color, combine into RGBA
   if (items.includes('opacity') || items.includes('color')) {
+    worked.push('fses');
     const opacity = trans.opacity,
-          rgb = trans.rgb,
-          rgba = trans.rgba;
+          rgb = trans.rgb;
+    const fses = {};
+    let fs;
     for (let i = 0; i < n; i++) {
-      rgba[i] = rgb[i] + ',' + opacity[i].toFixed(2);
+      fs = `rgba(${rgb[i]},${opacity[i].toFixed(2)})`;
+      if (fs in fses) fses[fs].push(i);
+      else fses[fs] = [i];
     }
+    trans.fses = fses;
+  }
+
+  // update data in web worker (if applicable)
+  const work = mo.work.draw;
+  if (work) {
+    const data = {msg: 'data'};
+    for (const item of worked) data[item] = trans[item];
+    for (const item of ['mask', 'pick', 'high']) data[item] = mo[`${item}ed`];
+    work.postMessage(data);
   }
 }
 
@@ -973,7 +1005,7 @@ function prepDataForDisplay(mo, items) {
  * @function displayItemChange
  * @param {Object} item - display item
  * @param {Object} i - new field index
- * @param {Object} scale - new scaling factor
+ * @param {Object} scale - new scale factor
  * @param {Object} mo - main object
  */
 function displayItemChange(item, i, scale, mo) {
@@ -992,8 +1024,7 @@ function displayItemChange(item, i, scale, mo) {
   // update legend
   if (item !== 'x' && item !== 'y') updateLegends(mo, [item]);
 
-  renderArena(mo, true);
-  renderSelect(mo, true);
+  renderPlot(mo, true);
 }
 
 

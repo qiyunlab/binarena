@@ -36,17 +36,18 @@ function renderSVG(mo, legs) {
    */
 
   // canvas size
-  const rena = mo.rena;
-  const w = rena.width,
-        h = rena.height;
+  const plot = mo.plot,
+        view = mo.view;
+  const canvas = plot.main;
+  const w = canvas.width,
+        h = canvas.height;
 
   // image scale and offset
-  const view = mo.view;
-  const scale = view.scale;
+  const scale = plot.scale;
   let scaleX = w * scale,
       scaleY = h * scale;
-  let offsetX = view.posX,
-      offsetY = view.posY;
+  let offsetX = plot.posX,
+      offsetY = plot.posY;
 
   // get data range
   let xmin = view.x.min,
@@ -213,7 +214,8 @@ function renderSVG(mo, legs) {
   const X = trans.x,
         Y = trans.y,
         S = trans.size,
-        C = trans.rgba;
+        O = trans.opacity,
+        C = trans.rgb;
 
   // mask and highlight
   const mask = mo.masked,
@@ -232,7 +234,7 @@ function renderSVG(mo, legs) {
   const highs = Array(nhigh).fill().map(() => Array());
 
   // intermediates
-  let x, y, r, c, j, hi;
+  let x, y, r, hi;
 
   // determine appearance of data points
   const n = mo.cache.nctg;
@@ -254,18 +256,13 @@ function renderSVG(mo, legs) {
     y = (y + pmar).toFixed(3);
 
     // determine fill color and opacity
-    c = C[i];
-    j = c.lastIndexOf(',');
-
-    // add circle and color to scatter plot
     scatter.push('    <circle ' +
       `cx="${x}" cy="${y}" r="${r.toFixed(3)}" ` +
-      `fill="rgb(${c.substring(0, j)})" ` +
-      `fill-opacity="${c.substring(j + 1)}"` + '/>');
+      `fill="rgb(${C[i]})" ` +
+      `fill-opacity="${O[i].toFixed(2)}"` + '/>');
 
     // add circle without color to highlight
-    hi = high[i];
-    if (hi) highs[hi - 1].push('      <circle ' +
+    if (hi = high[i]) highs[hi - 1].push('      <circle ' +
       `cx="${x}" cy="${y}" r="${(r + 8).toFixed(3)}"` + '/>');
   }
 
@@ -374,7 +371,7 @@ function renderSVG(mo, legs) {
   // size legend
   v = mo.view.size;
   if (legs.includes('size') && v.i) {
-    drawNumLegFrame(v, view.scale);
+    drawNumLegFrame(v, plot.scale);
 
     // min and max sizes
     let minr = base * v.lower / 100,
