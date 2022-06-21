@@ -214,7 +214,8 @@ function renderSVG(mo, legs) {
   const X = trans.x,
         Y = trans.y,
         S = trans.size,
-        C = trans.rgba;
+        O = trans.opacity,
+        C = trans.rgb;
 
   // mask and highlight
   const mask = mo.masked,
@@ -233,7 +234,7 @@ function renderSVG(mo, legs) {
   const highs = Array(nhigh).fill().map(() => Array());
 
   // intermediates
-  let x, y, r, c, j, hi;
+  let x, y, r, hi;
 
   // determine appearance of data points
   const n = mo.cache.nctg;
@@ -255,18 +256,13 @@ function renderSVG(mo, legs) {
     y = (y + pmar).toFixed(3);
 
     // determine fill color and opacity
-    c = C[i];
-    j = c.lastIndexOf(',');
-
-    // add circle and color to scatter plot
     scatter.push('    <circle ' +
       `cx="${x}" cy="${y}" r="${r.toFixed(3)}" ` +
-      `fill="rgb(${c.substring(0, j)})" ` +
-      `fill-opacity="${c.substring(j + 1)}"` + '/>');
+      `fill="rgb(${C[i]})" ` +
+      `fill-opacity="${O[i].toFixed(2)}"` + '/>');
 
     // add circle without color to highlight
-    hi = high[i];
-    if (hi) highs[hi - 1].push('      <circle ' +
+    if (hi = high[i]) highs[hi - 1].push('      <circle ' +
       `cx="${x}" cy="${y}" r="${(r + 8).toFixed(3)}"` + '/>');
   }
 

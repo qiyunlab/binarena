@@ -37,8 +37,9 @@
  * @property {Object} highed - contig highlighting
  * @property {Object} tabled - contigs in table
  * @property {Object} bins   - binning plan
- * @property {Object} plots  - main plots
- * @property {Object} worker - web worker
+ * @property {Object} plot   - main plots
+ * @property {Array}  images - cached images
+ * @property {Object} work   - web workers
  * @property {Object} mini   - mini plot
  * @property {Object} theme  - program theme
  */
@@ -130,6 +131,7 @@ function mainObj() {
    * will not be read into the dataset.
    * @property {number} len - minimum length threshold
    * @property {number} cov - minimum coverage threshold
+   * @todo Remove this feature.
    */
   this.filter = {
     len: 1000,
@@ -310,6 +312,7 @@ function mainObj() {
    * @property {number}   toasting  - toasting is ongoing
    * @property {number}   stopping  - calculation is stopping
    * @property {number}   progress  - calculation progress
+   * @property {number}   painting  - unique identifier for painting task
    */
   this.stat = {
     mousedown: false,
@@ -324,7 +327,7 @@ function mainObj() {
     toasting:  null,
     stopping:  false,
     progress:  null,
-    painting:   0
+    painting:  0
   };
 
 
@@ -395,17 +398,19 @@ function mainObj() {
    * @member {Object} plot
    * @description Canvases and their properties.
    * 
-   * @property {Object} main  - main scatter plot
-   * @property {Object} sele  - selection shadows
-   * @property {Object} high  - highlight borders
-   * @property {number} posX  - viewport position x
-   * @property {number} posY  - viewport position y
-   * @property {number} scale - scale factor
+   * @property {Element} main  - main scatter plot
+   * @property {Element} sele  - selection shadows
+   * @property {Element} high  - highlight borders
+   * @property {Element} offs  - off-screen canvas
+   * @property {number}  posX  - viewport position x
+   * @property {number}  posY  - viewport position y
+   * @property {number}  scale - scale factor
    */
   this.plot = {
     main:  null,
     sele:  null,
     high:  null,
+    offs:  null,
     posX:  0,
     posY:  0,
     scale: 1
@@ -414,20 +419,41 @@ function mainObj() {
 
   /**
    * Cached images.
-   * @member {Array} images
+   * @member {Array.<Object>} images
    * @description A fixed-sized array, with each element representing one set
-   * of cached images (plot and olay), and its position and scale. An image
-   * may be a canvas or a bitmap, which has its width and height, and can be
-   * drawn to another (on-screen) canvas.
+   * of cached images, as well as their position and scale. An image may be a
+   * canvas or a bitmap, which has its width and height, and can be drawn to
+   * another (on-screen) canvas.
+   * 
+   * Each element has the following parameters:
+   * @property {number}  iid   - image index (incremental)
+   * @property {number}  uid   - ongoing drawing task Id
+   * @property {boolean} done  - ready to use
+   * @property {Element} main  - main scatter plot
+   * @property {Element} sele  - selection shadows
+   * @property {Element} high  - highlight borders
+   * @property {number}  w     - canvas width
+   * @property {number}  h     - canvas height
+   * @property {number}  posX  - viewport position x
+   * @property {number}  posY  - viewport position y
+   * @property {number}  scale - scale factor
+   * @see plot
    */
   this.images = [];
 
 
   /**
-   * Web worker for rendering.
-   * @member {Object} worker
+   * Web workers.
+   * @member {Object} work
+   * @description Web workers for calculation and rendering.
+   * 
+   * @property {Element} calc - worker for calculation
+   * @property {Element} draw - worker for rendering
    */
-  this.worker = null;
+  this.work = {
+    calc: null,
+    draw: null
+  }
 
 
   /**
@@ -436,7 +462,7 @@ function mainObj() {
    * @description Properties of the mini plot showing a histogram of a given
    * numeric column of the selected contigs.
    * 
-   * @property {number}   canvas - mini canvas to plot data
+   * @property {Element}  canvas - mini canvas to plot data
    * @property {number}   field  - field index of data to plot
    * @property {boolean}  log    - whether log-transform data
    * @property {number}   nbin   - number of bins in histogram
@@ -481,6 +507,22 @@ window.addEventListener('load', function () {
 
   // single global main object
   const mo = new mainObj();
+  console.log('Program launched.');
+
+  // check web worker support
+  const work = mo.work;
+  if (window.Worker) {
+    work.calc = 'yes!'; // currently not in use
+
+    // check offscreen canvas support
+    if (HTMLCanvasElement.prototype.transferControlToOffscreen) {
+      const blob = new Blob(['(' + renderWorker.toString() + ')()'],
+                            {type: 'text/javascript'});
+      try { work.draw = new Worker(URL.createObjectURL(blob)); }
+      catch { work.draw = null; }
+      if (work.draw) console.log('Offscreen canvas enabled.');
+    }
+  }
 
   // load demo data, if available
   if (typeof dataPath !== 'undefined') {
@@ -497,12 +539,3 @@ window.addEventListener('load', function () {
   resetWorkspace(mo);
 
 });
-
-
-/**
- * Test function.
- * @function testFunction
- */
-function testFunction() {
-  console.log('Hi there!');
-}

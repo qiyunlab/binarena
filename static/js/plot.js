@@ -19,53 +19,17 @@ function initPlotCtrl(mo) {
   plot.main = byId('main-canvas');
   plot.sele = byId('sele-canvas');
   plot.high = byId('high-canvas');
+  plot.offs = document.createElement('canvas');
 
-  // off-screen canvas
-  // const offs = plots.offs.transferControlToOffscreen();
-
-  // create web worker
-  // this way allows running a web worker in the local filesystem
-  const blob = new Blob(['(' + renderWorker.toString() + ')()'],
-                        {type: 'text/javascript'});
-  mo.worker = new Worker(URL.createObjectURL(blob));
-
-  // initiate offscreen canvas in worker
-  // mo.worker.postMessage(
-  //   {msg: 'init', 
-  //    canvas: plots.offs,
-  //    highpal: HIGHLIGHT_PALETTE,
-  //    shadcol: mo.theme.selection},
-  //   [plots.offs]);
-
-  // render image when done
-  mo.worker.onmessage = function(e) {
-    if (e.data.msg === 'main') {
-      plots.offs = e.data.bitmap;
-      mo.view.mainoff = true;
-      // mo.view.offX = e.data.offX;
-      // mo.view.offY = e.data.offY;
-      // setTimeout(function() {
-      //   const rena = mo.rena;
-      //   const ctx = rena.getContext('2d');
-      //   const w = rena.width,
-      //         h = rena.height;
-      //   ctx.drawImage(rena.offs, w, h, w, h, 0, 0, w, h);
-      // }, 50);
-    }
-    else if (e.data.msg === 'shad') {
-      mo.view.shadoff = true;
-    }
-  }
-
-  // events take place on overlay canvas
+  // setting up plot events
   const canvas = plot.main;
+  const stat = mo.stat;
 
   // minimum dimensions of plot
   mo.view.minW = parseInt(getComputedStyle(canvas).minWidth);
   mo.view.minH = parseInt(getComputedStyle(canvas).minHeight);
 
-  const stat = mo.stat;
-
+  // set plot dimensions
   resizePlot(mo);
 
   /** mouse events */
@@ -160,8 +124,10 @@ function initPlotCtrl(mo) {
 
   /** keyboard events */
   canvas.addEventListener('keydown', function (e) {
-    const t0 = performance.now();
+    // const t0 = performance.now();
     switch (e.key) {
+
+      // move
       case 'Up':
       case 'ArrowUp':
         canvasKeyMove(0, mo);
@@ -178,6 +144,8 @@ function initPlotCtrl(mo) {
       case 'ArrowLeft':
         canvasKeyMove(3, mo);
         break;
+
+      // zoom
       case '-':
       case '_':
         canvasKeyZoom(false, mo);
@@ -186,20 +154,30 @@ function initPlotCtrl(mo) {
       case '+':
         canvasKeyZoom(true, mo);
         break;
+
+      // reset
       case '0':
         byId('reset-btn').click();
         break;
+
+      // polygon select
       case 'Enter':
         polygonSelect(mo, e.shiftKey);
         break;
+
+      // highlight
       case 'l':
       case 'L':
         byId('high-btn').click();
         break;
+
+      // screenshot
       case 'p':
       case 'P':
         byId('image-btn').click();
         break;
+
+      // mask
       case 'Delete':
       case 'Backspace':
         byId('mask-btn').click();
@@ -208,10 +186,14 @@ function initPlotCtrl(mo) {
       case 'Z':
         byId('undo-mask-btn').click();
         break;
+
+      // focus
       case 'f':
       case 'F':
         byId('focus-btn').click();
         break;
+
+      // binning
       case ' ':
         byId('as-new-bin-btn').click();
         break;
@@ -229,9 +211,43 @@ function initPlotCtrl(mo) {
         e.preventDefault(); // otherwise it will open Firefox quick find bar
         break;
     }
-    const t1 = performance.now();
-    console.log(t1 - t0);
+    // const t1 = performance.now();
+    // console.log(t1 - t0);
   });
+
+  // web worker for drawing on offscreen canvas
+  const work = mo.work.draw;
+  if (!work) return;
+
+  // initiate offscreen canvas in worker
+  work.postMessage({
+    msg: 'init', 
+    highpal: HIGHLIGHT_PALETTE,
+    selcol: mo.theme.selection
+  });
+
+  // render image when done
+  // work.addEventListener('message', function(e) {
+  //   const data = e.data;
+  //   const msg = data.msg;
+  //   if (msg === 'main') {
+  //     plot.offs = data.bitmap;
+  //     mo.view.mainoff = true;
+  //     mo.view.offX = e.data.offX;
+  //     mo.view.offY = e.data.offY;
+  //     setTimeout(function() {
+  //       const rena = mo.rena;
+  //       const ctx = rena.getContext('2d');
+  //       const w = rena.width,
+  //             h = rena.height;
+  //       ctx.drawImage(rena.offs, w, h, w, h, 0, 0, w, h);
+  //     }, 50);
+  //   }
+  //   else if (msg === 'shad') {
+  //     mo.view.shadoff = true;
+  //   }
+  // });
+
 } // end initializing controls
 
 
@@ -247,7 +263,7 @@ function canvasKeyMove(d, mo) {
   const step = 15;
   if (d & 1) mo.plot.posX += d >> 1 ? -step : step;
   else mo.plot.posY += d >> 1 ? step : -step;
-  updateView(mo);
+  updateView(mo, false, true);
 }
 
 
@@ -268,7 +284,7 @@ function canvasTouchMove(mo, t) {
   Y[0] = t[0].clientY;
   plot.posX -= dx;
   plot.posY -= dy;
-  updateView(mo);
+  updateView(mo, false, true);
 }
 
 
@@ -289,7 +305,7 @@ function canvasKeyZoom(isin, mo) {
   plot.scale *= ratio;
   plot.posX = (plot.posX - w2) * ratio + w2;
   plot.posY = (plot.posY - h2) * ratio + h2;
-  updateView(mo);
+  updateView(mo, false, true);
 }
 
 
@@ -309,7 +325,7 @@ function canvasMouseZoom(isin, mo, x, y) {
   plot.scale *= ratio;
   plot.posX = x - (x - plot.posX) * ratio;
   plot.posY = y - (y - plot.posY) * ratio;
-  updateView(mo);
+  updateView(mo, false, true);
 }
 
 
@@ -352,7 +368,7 @@ function canvasTouchZoom(mo, t) {
   plot.scale *= ratio;
   plot.posX = newMid[0] - (newMid[0] - plot.posX) * ratio;
   plot.posY = newMid[1] - (newMid[1] - plot.posY) * ratio;
-  updateView(mo, true);
+  updateView(mo, false, true);
 }
 
 
@@ -378,7 +394,7 @@ function canvasMouseMove(e, mo) {
       stat.mousemove = true;
       plot.posX = posX;
       plot.posY = posY;
-      updateView(mo);
+      updateView(mo, false, true);
     }
   }
 
@@ -402,7 +418,8 @@ function canvasMouseMove(e, mo) {
  */
 function canvasMouseClick(e, mo) {
   const stat = mo.stat,
-        plot = mo.plot;
+        plot = mo.plot,
+        cache = mo.cache;
 
   // mouse up after dragging
   if (stat.mousemove) {
@@ -420,15 +437,18 @@ function canvasMouseClick(e, mo) {
 
   // determine which contigs are clicked
   else {
-    const n = mo.cache.nctg;
+    const n = cache.nctg;
     if (!n) return;
     const pick = mo.picked,
           mask = mo.masked;
 
+    // selected before clicking
+    const npick0 = cache.npick;
+
     // clear current selection
     if (!e.shiftKey) {
       pick.fill(false);
-      mo.cache.npick = 0;
+      cache.npick = 0;
     }
 
     // get canvas size
@@ -469,13 +489,17 @@ function canvasMouseClick(e, mo) {
       // if already selected, unselect; else, select
       if (pick[ctg]) {
         pick[ctg] = false;
-        mo.cache.npick -= 1;
+        cache.npick -= 1;
       } else {
         pick[ctg] = true;
-        mo.cache.npick += 1;
+        cache.npick += 1;
       }
     }
-    updateSelection(mo);
+
+    // if selection changed, update plot
+    if (npick0 !== 0 || cache.npick !== 0) {
+      updateSelection(mo);
+    }
   }
 }
 
@@ -533,20 +557,4 @@ function clearPlot(mo, keys) {
     const ctx = canvas.getContext('2d');
     ctx.clearRect(0, 0, canvas.width, canvas.height);
   }
-}
-
-
-/**
- * Take a screenshot and export as a PNG image.
- * @function exportPNG
- * @param {Object} mo - main object
- */
-function exportPNG(mo) {
-  const canvas = mo.plot.main;
-  const a = document.createElement('a');
-  a.href = canvas.toDataURL('image/png');
-  a.download = 'image.png';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
 }

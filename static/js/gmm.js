@@ -62,7 +62,7 @@ function det(x) {
   return res * m[i][i];
 }
 
-//console.log(det([[2,-3,1],[2,0,-1],[1,4,5]]));
+// console.log(det([[2,-3,1],[2,0,-1],[1,4,5]]));
 
 
 /**

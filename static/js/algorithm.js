@@ -201,7 +201,7 @@ function silhouetteSampleIns(x, label) {
  * in the program, because it is memory-inefficient to store a large distance
  * matrix. One should use `silhouetteSampleIns` instead.
  */
- function silhouetteSamplePre2D(dm, label) {
+function silhouetteSamplePre2D(dm, label) {
   const n = dm.length;
   const count = bincount(label);
   const c = count.length;

@@ -27,6 +27,7 @@ function initGUI(mo) {
   initPanelHeads();      // panel heads
   initBtnGroups();       // button groups
   initCloseBtns();       // close buttons
+  // initModalKeys();       // modal keys
   initListSel();         // list select table
   initToast();           // toast
 
@@ -156,7 +157,7 @@ function initPanelHeads() {
     '.panel-head button:first-of-type')) {
     btn.addEventListener('click', function () {
       const panel = this.parentElement.nextElementSibling;
-      if (panel !== null) panel.classList.toggle("hidden");
+      if (panel !== null) panel.classList.toggle('hidden');
     });
   }
 }
@@ -199,6 +200,32 @@ function initCloseBtns() {
       div.parentElement.parentElement.classList.add('hidden');
     });
     div.lastElementChild.appendChild(btn);
+  }
+}
+
+
+/**
+ * Initialize modal key shortcuts.
+ * @function initModalKeys
+ * @todo Not useful in current form as div doesn't receive key events.
+ */
+function initModalKeys() {
+  for (let div of document.querySelectorAll('.modal-content')) {
+    const head = div.querySelector('.modal-head');
+    div.addEventListener('keyup', function (e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        const btn = head.firstElementChild.querySelector(
+          'button:not(.hidden)');
+        if (btn) btn.click();
+      }
+      else if (e.key === 'Esc' || e.key === 'Escape') {
+        e.preventDefault();
+        const btn = head.lastElementChild.querySelector(
+          'button:not(.hidden):last-of-type');
+        if (btn) btn.click();
+      }
+    });
   }
 }
 
@@ -341,7 +368,7 @@ function initSideFrame(mo) {
     byId('show-frame').classList.add('hidden');
     byId('side-frame').classList.remove('hidden');
     const mf = byId('main-frame');
-    mf.style.overflow = "hidden";
+    mf.style.overflow = 'hidden';
     mf.style.resize = 'horizontal';
     const w = mf.getAttribute('data-width');
     if (w) mf.style.width = w;
@@ -443,7 +470,7 @@ function initSettings(mo) {
 
   // Enable/disable night mode.
   byId('night-chk').addEventListener('change', function () {
-    mo.plot.sele.style.backgroundColor = this.checked ? 'black' : '';
+    mo.plot.high.style.backgroundColor = this.checked ? 'black' : '';
   });
 
   // Show/hide grid.
@@ -725,7 +752,7 @@ function autoComplete(src, arr) {
 /**
  * Sort a table by clicking its header.
  * @function sortTableByHead
- * @param {object} th - table header
+ * @param {Object} th - table header
  * @description Assuming there are thead and tbody. Modified based on:
  * @see {@link https://stackoverflow.com/questions/14267781/}
  */

@@ -675,7 +675,7 @@ function matInv(x) {
       Ij[j] /= f;
     }
 
-    // eleminate non-zero values on other rows at column c
+    // eliminate non-zero values on other rows at column c
     for (let j = 0; j < r; j++) {
       if (j !== i) {
         let Ai = a[j];

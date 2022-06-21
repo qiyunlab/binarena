@@ -26,7 +26,7 @@ Please check out this [live demo](https://qiyunlab.github.io/binarena/demo.html)
 
 [Download](https://github.com/qiyunlab/binarena/archive/refs/heads/master.zip) this program, unzip, and double-click "**BinaRena.html**". That's it!
 
-BinaRena is a client-end web application. It is written in vanilla JavaScript, with minimum usage of third-party libraries, which are all bundled in the package. it does not require installation, nor does it require a web server running in the backend. In other words, it is literally a webpage running in your browser.
+BinaRena is a client-end web application. It is written in vanilla JavaScript, without using any third-party library. it does not require installation, nor does it require a web server running in the backend. In other words, it is literally a webpage running in your browser (see [details](#faq)).
 
 
 ## Main interface
@@ -59,7 +59,8 @@ The BinaRena interface is like a [**digital map**](https://www.google.com/maps) 
 - Click a selected contig to unselect it. Hold `Shift` and click to unselect multiple contigs.
 - Press `Enter` to enter **polygon selection** mode. Then use mouse clicks to draw a polygon to contain multiple contigs. Press `Enter` again to complete selection. Hold `Shift` while pressing the second `Enter` to add contigs to the existing selection.
 - Press `Delete` or `Backspace` to **mask** selected contigs. Press `Z` to undo.
-- Presee `L` to **highlight** selected contigs.
+- Press `L` to **highlight** selected contigs.
+- Press `F` to **focus** on (hide all but) selected contigs.
 - Press `Space` to **create a new bin** from selected contigs.
 - Click a **bin name** to select it and all member contigs. Click it again to edit its name. Hold Shift and click to select multiple bins.
 - Press `.` (`>`) to **add** selected contigs to the current bin, press `,` (`<`) to **remove** selected contigs from the current bin, press `/` to **update** the current bin with selected contigs (i.e., replace its content).
@@ -68,7 +69,7 @@ The BinaRena interface is like a [**digital map**](https://www.google.com/maps) 
 
 ## Input files
 
-BinaRena operates on one dataset at a time. A dataset is an entire **metagenomic assembly**, i.e., a collection of **contigs** (this document does not differentiate contigs and scaffolds). The information being handled is the properties of individual contigs.
+BinaRena operates on one dataset at a time. A dataset is an entire **metagenomic assembly**, i.e., a collection of **contigs** (note: this document does not differentiate contigs, scaffolds, or long reads). The information being handled is the properties of individual contigs.
 
 To load a dataset, simply **drag and drop** the file into the blank program window.
 
@@ -102,10 +103,10 @@ One can click `Show data` from the context menu to open a window to browse the c
 
 When a data table is loaded, BinaRena attempts to "guess" the meaning of data columns by their name and type, and displays the most relevant information. Specifically, the following fields and keyword patterns are recognized:
 
-- **Length (bp)**: "length", "size", "len", "bp", etc.
-- **Coverage (x)**: "coverage", "depth", "cov", etc.
-- **GC content (%)**: "gc", "g+c", "gc%", "gc-content", etc.
-- **_X_- (and _y_-axes)** (if available): "x", "xaxis", "x1", "axis1", "dim1", "pc1", "tsne1", "umap1", etc.
+- **Length (bp)**: `length`, `size`, `len`, `bp`, etc.
+- **Coverage (x)**: `coverage`, `depth`, `cov`, etc.
+- **GC content (%)**: `gc`, `g+c`, `gc%`, `gc-content`, etc.
+- **_X_- (and _y_-axes)** (if available): `x`, `xaxis`, `x1`, `axis1`, `dim1`, `pc1`, `tsne1`, `umap1`, etc.
 
 The matching process is case-insensitive. Suffixes after common delimiters (" ", "/", "_", ".") are stripped. For examples, `Length (bp)` and `size_of_scaffold` will be recognized as **length**.
 
@@ -215,6 +216,11 @@ The highlight will stay with the contigs no matter how the layout and display it
 Highlighting will not affect binning, search, calculation and operations. It serves as a visual annotation of contigs to make them noticeable to the user.
 
 
+## Contig focusing
+
+Press the `F` key or click the <span style="background-color: lightgrey">&#9673;</span> button in the corner to **focus** on selected contigs. That is, all but these contigs will be hidden, allowing you to concentrate on them. When you complete working on these contigs, press `F` again and bring back all other contigs.
+
+
 ## Contig summary
 
 BinaRena displays a summary of properties of the select contigs in real time to let the user see what's included. Each row represents a field. When the user moves the mouse over a row, a mini control panel will show up.
@@ -317,19 +323,47 @@ One may click the <span style="background-color: lightgrey">&harr;</span> button
 
 ## FAQ
 
-**Do old browsers support BinaRena?**
-
-BinaRena is written in JavaScript, using mordern language standards including [ES6](https://www.w3schools.com/js/js_es6.asp) and above. Mordern browsers shouldn't have problems as they normally auto-update to meet the latest standards. However, very outdated browsers such as Internet Explorer may not support BinaRena.
-
 **Does BinaRena expose my data to a remote server?**
 
 The standalone BinaRena program is a client-end webpage that runs in your browser. Theoretically and technically, it cannot communicate with a web server. There is no risk with regard to the confidentiality of your data.
 
 The live demo hosted by [GitHub Pages](https://pages.github.com/) can communicate with the GitHub repository, and the only thing it does is to [retrieve](demo.html) the sample dataset from the repository directory. It does not perform any other communication.
 
+**Is BinaRena really dependency-free?**
+
+That is accurate. The program uses zero third-party libraries, not even Node.js, either locally or remotely (i.e., it doesn't src any remote web framework or icon pack in the `<script>` section). The entire program is handcrafted. This minimizes the effort for deployment and usage.
+
+In addition, we use [Jasmine](https://jasmine.github.io/) for [unit testing](https://en.wikipedia.org/wiki/Unit_testing) core algorithms to ensure their soundness. Jasmine is bundled in the package, but it won't run when you use BinaRena.
+
+**Does BinaRena work on a touchscreen?**
+
+Yes! You can use your finger(s) to move and zoom the plot, as well as to select contigs, to click buttons, etc.
+
+**Do old browsers support BinaRena?**
+
+BinaRena is written in JavaScript, using modern language standards including [ES6](https://www.w3schools.com/js/js_es6.asp) and above. Modern browsers shouldn't have problems as they normally auto-update to meet the latest standards. However, very outdated browsers such as Internet Explorer may not support BinaRena.
+
+**Which browser works the best for BinaRena?**
+
+They all work very well. However some may bring you moderately smoother graphics than others do, for the following reason:
+
+For high responsiveness, BinaRena automatically caches images around the current viewport, so that it could immediately bring you to the destination when you move or zoom. BinaRena uses either of two mechanisms to achieve this: For browsers that support [OffscreenCanvas](https://developer.mozilla.org/en-US/docs/Web/API/OffscreenCanvas), BinaRena uses this technology to cache images in a separate thread so that it won't block the UI. For others, BinaRena scavenges [idle time](https://developer.mozilla.org/en-US/docs/Web/API/Window/requestIdleCallback) in the main thread to cache images, which could lag the graphics a little bit.
+
+So which browsers support this technology? As of 2022, Chrome does, out-of-the-box, therefore you get the highest FPS when you run BinaRena in Chrome. Firefox has support but you need to manually turn it on, by enabling `gfx.offscreencanvas.enabled` in `about:config` (see [details](https://developer.mozilla.org/en-US/docs/Web/API/OffscreenCanvas)). If you are too scared of this setting, just leave as is.
+
+If this causes any problem, you may comment out the code under "check offscreen canvas support" in [static/js/main.js](static/js/main.js) to disable OffscreenCanvas (even if the browser supports it).
+
+**BinaRena doesn't display graphics in my browser?**
+
+We haven't experienced this scenario in any modern browser. But just in case your browser is highly customized or restricted... See if the previous answer helps you. If not, you will need to install a clean browser.
+
 **How to precisely control the size of the plot?**
 
 Drag to resize the browser window. The plot will be resized along with it, during which its width and height (in unit of pixel) will be displayed in a floating message box.
+
+**Can BinaRena display axes and ticks?**
+
+Yes. Check "Plot grid" in "Settings". There will be an interactive grid with numbers. Alternatively, in the exported SVG, axes and labels are automatically rendered.
 
 **Where are the color palettes in BinaRena from?**
 
@@ -359,15 +393,13 @@ The contigs are filtered to exclude those 1) that are not in any bin, 2) that ar
 
 One can monitor the process and intermediates using the browser's **console**.
 
-**Why does the program stall / crash during silhouette coefficient calculation?**
+**Why does silhouette coefficient calculation take so long?**
 
-Calculation of silhouette coefficients requires the calculation of a Euclidean distance matrix among all contigs. This is a computationally expensive operation. Runtime and memory consumption quickly build up as the dataset expands (_O_(_n_<sup>2</sup>)).
+Calculation of silhouette coefficients requires calculating Euclidean distance between every pair of contigs, which is computationally expensive (_O_(_n_<sup>2</sup>)). Therefore the computing time quickly builds up as the dataset becomes larger.
 
-However, with a typical computer, it shouldn't take more than a few minutes even with tens of thousands of contigs. Just be bit patient before killing the browser tab.
+The program has an optimization for less than 20,000 contigs. Below this threshold, calculation is synchronous and faster (vs. data size). Above this threshold, the calculation progress will displayed and the user has the option to abort the calculation when running out of patience.
 
-- Note: Chrome and Edge have a mechanism to limit memory consumption per tab, hence blocking this function from handling more than some ten thousand of contigs. Firefox and Safari do not have this limitation.
-
-When compute is an issue, it is recommended to filter down the dataset (e.g., removing short and shallow contigs) to make the calculation smooth.
+For efficient computing, one may consider filtering down the dataset (e.g., removing short and shallow contigs) and/or masking irrelevant contig groups (masked contigs won't participate in calculation).
 
 
 ## Contact

@@ -67,6 +67,10 @@ function initSelTools(mo) {
     if (history.length > 50) history.shift();
     toastMsg(`Masked ${plural('contig', m)}.`, mo.stat);
     updateViewByData(mo, ['size', 'opacity', 'color']);
+    updateMaskCtrl(mo);
+    updateMiniPlot(mo);
+    updateBinCtrl(mo);
+    updateInfoTable(mo);
     mo.plot.main.focus();
   });
 
@@ -176,33 +180,29 @@ function initSelTools(mo) {
  * @param {number} idx - highlight color index
  */
 function addHighlight(mo, idx) {
-  if (!mo.cache.npick) return;
+  const m = mo.cache.npick;
+  if (!m) return;
   const n = mo.cache.nctg;
   const pick = mo.picked,
         high = mo.highed;
-  let m = 0;
   for (let i = 0; i < n; i++) {
-    if (pick[i]) {
-      high[i] = idx;
-      pick[i] = false;
-      m ++;
-    }
+    if (pick[i]) high[i] = idx;
   }
-  mo.cache.npick -= m;
   toastMsg(`Highlighted ${plural('contig', m)}.`, mo.stat);
+  const work = mo.work.draw;
+  if (work) work.postMessage({msg: 'data', high: high});
   renderPlot(mo, true);
-  updateSelection(mo);
-  updateHighlight(mo);
+  updateHighCtrl(mo);
   mo.plot.main.focus();
 }
 
 
 /**
  * Update highlight control status.
- * @function updateHighlight
+ * @function updateHighCtrl
  * @param {Object} mo - main object
  */
-function updateHighlight(mo) {
+function updateHighCtrl(mo) {
   const counts = listCats(mo.highed);
   const ps = byId('high-menu').children;
   let n = 0;
@@ -231,6 +231,8 @@ function clearHighlight(mo, idx, btn) {
   }
   btn.previousSibling.innerHTML = '&nbsp;';
   btn.classList.add('hidden');
+  const work = mo.work.draw;
+  if (work) work.postMessage({msg: 'data', high: high});
   renderPlot(mo, true);
 }
 
@@ -417,11 +419,12 @@ function treatSelection(ctgs, mo, shift) {
  * @param {Object} mo - main object
  */
 function updateSelection(mo) {
-  renderSelection(mo);
+  const work = mo.work.draw;
+  if (work) work.postMessage({msg: 'data', pick: mo.picked});
+  renderSele(mo);
   updateMiniPlot(mo);
   updateBinCtrl(mo);
   updateInfoTable(mo);
-  updateMaskCtrl(mo);
 }
 
 

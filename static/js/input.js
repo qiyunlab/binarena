@@ -195,6 +195,7 @@ function fillImportTable(mo) {
   }
   byId('import-table-wrap').classList.remove('hidden');
   byId('import-modal').classList.remove('hidden');
+  byId('import-modal').firstElementChild.firstElementChild.focus();
 
   // directly import if all data types are pre-defined
   if (!guess.some(Boolean)) importTable(mo);

@@ -570,10 +570,12 @@ function updateColorMap(mo) {
  * Update view given current view parameters.
  * @function updateView
  * @param {Object} mo - main object
- * @param {boolean} [redo=] - force re-rendering
+ * @param {boolean} [redo=] - force redrawing
+ * @param {boolean} [wait=] - postpone caching
+ * @see renderPlot
  */
-function updateView(mo, redo) {
-  renderPlot(mo, redo);
+function updateView(mo, redo, wait) {
+  renderPlot(mo, redo, wait);
   if (mo.stat.drawing) drawPolygon(mo);
   mo.plot.main.focus();
 }
@@ -624,6 +626,10 @@ function resetWorkspace(mo) {
   }
   trans.fses = {};
 
+  // reset web worker (if applicable)
+  const work = mo.work.draw;
+  if (work) work.postMessage({msg: 'reset'});
+
   // clear cache
   cache.abund = 0;
   cache.freqs = {};
@@ -633,6 +639,9 @@ function resetWorkspace(mo) {
   cache.maskh = [];
   cache.binns.clear();
   cache.pdist = [];
+
+  // clear highlight menu
+  updateHighCtrl(mo);
 
   // new data is open
   if (n) {
@@ -771,6 +780,7 @@ function centerView(mo) {
   updateView(mo, true);
 }
 
+
 /**
  * Update view based on data.
  * @function updateViewByData
@@ -800,8 +810,14 @@ function prepDataForDisplay(mo, items) {
         mask = mo.masked,
         trans = mo.trans;
 
+  // items to update in web worker
+  // can only be 'x', 'y', 'size' and 'fses'
+  const worked = [];
+
   // transform data for each display item
   for (let item of items) {
+    if (['x', 'y', 'size'].includes(item)) worked.push(item);
+
     const v = view[item];
     const idx = v.i,
           scale = v.scale;
@@ -956,10 +972,11 @@ function prepDataForDisplay(mo, items) {
         }
       }
     }
-  }
+  } // end for item
 
   // for opacity and color, combine into RGBA
   if (items.includes('opacity') || items.includes('color')) {
+    worked.push('fses');
     const opacity = trans.opacity,
           rgb = trans.rgb;
     const fses = {};
@@ -972,6 +989,14 @@ function prepDataForDisplay(mo, items) {
     trans.fses = fses;
   }
 
+  // update data in web worker (if applicable)
+  const work = mo.work.draw;
+  if (work) {
+    const data = {msg: 'data'};
+    for (const item of worked) data[item] = trans[item];
+    for (const item of ['mask', 'pick', 'high']) data[item] = mo[`${item}ed`];
+    work.postMessage(data);
+  }
 }
 
 

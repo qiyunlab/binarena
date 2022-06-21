@@ -15,150 +15,300 @@
  * @function renderWorker
  */
 function renderWorker() {
-  // let rena;    // offscreen main plot
-  let olay;    // offscreen overlay
+
+  // task identifier
+  let painting = 0;
+
+  // offscreen canvases
+  let canvases = [];
+
+  // graphics settings
   let highpal; // highlight color palette
-  let shadcol; // selection shadow color
+  let selcol;  // selection shadow color
 
+  // graphics data
+  let data = {};
+  const items = ['x', 'y', 'size', 'fses', 'mask', 'pick', 'high'];
+
+  // event listener
   onmessage = function(e) {
+    const edat = e.data;
+    const msg = edat.msg;
 
-    // transfer canvas ownership
-    if (e.data.msg === 'init') {
-      rena = e.data.rena;
-      olay = e.data.olay;
-      highpal = e.data.highpal;
-      shadcol = e.data.shadcol;
+    // get graphics settings
+    if (msg === 'init') {
+      highpal = edat.highpal;
+      selcol = edat.selcol;
+    }
+
+    // reset global variables
+    else if (msg === 'reset') {
+      painting = 0;
+      data = {};
+      canvases = [];
+    }
+
+    // receive transferred data
+    else if (msg === 'data') {
+      for (const item of items) {
+        if (item in edat) data[item] = edat[item];
+      }
+    }
+
+    // add offscreen canvas
+    else if (msg === 'add') {
+      canvases.push({
+        main: edat.main,
+        sele: edat.sele,
+        high: edat.high,
+      });
     }
 
     // render main plot on offscreen canvas
-    else if (e.data.msg === 'main') {
-      const [posX, posY, scale, w, h, trans, mask, high] = e.data.params;
-      const canvas = new OffscreenCanvas(w * 3, h * 3);
-      // if (rena.width !== w * 3) rena.width = w * 3;
-      // if (rena.height !== h * 3) rena.height = h * 3;
-      drawMain(canvas, posX, posY, scale, w, h, trans, mask, high, highpal);
-      const bitmap = canvas.transferToImageBitmap();
-      postMessage({msg: 'main', bitmap});
+    else if (msg === 'plot') {
+      const target = canvases[edat.idx];
+      painting = edat.uid;
+      resizeCanvases(target, edat.w, edat.h);
+
+      // call drawing function (async)
+      drawPlotWork(target, ...edat.args, plot_done);
+
+      // callback when drawing function completes
+      function plot_done() {
+
+        // this `requestAnimationFrame` trick can wait for drawing to complete,
+        // otherwise the main thread may load a blank image if drawing is still
+        // ongoing (discovered accidentally)
+        requestAnimationFrame(function() {
+          if (painting === edat.uid) postMessage(painting);
+          else postMessage(0);
+        });
+      }
     }
 
     // render selection shadows on offscreen canvas
-    else if (e.data.msg === 'shad') {
-      const [posX, posY, scale, w, h, trans, pick] = e.data.params;
-      if (olay.width !== w * 3) olay.width = w * 3;
-      if (olay.height !== h * 3) olay.height = h * 3;
-      drawShad(olay, posX, posY, scale, w, h, trans, pick, shadcol);
-      postMessage({msg: 'shad'});
+    else if (msg === 'sele') {
+      painting = edat.uid;
+      const canvas = canvases[edat.idx].sele;
+      drawSeleWork(canvas, ...edat.args, sele_done);
+      function sele_done() {
+        requestAnimationFrame(function() {
+          if (painting === edat.uid) postMessage(painting);
+          else postMessage(0);
+        });
+      }
     }
   }
 
-  // copied from render.js
-  function drawMain(canvas, posX, posY, scale, offX, offY,
-                    trans, mask, high, highpal) {
 
-    const ctx = canvas.getContext('2d');
+  /**
+   * Draw main scatter plot using web worker.
+   * @function drawPlotWork
+   * @see drawPlotBack
+   * @param {function} callback - callback function
+   * @description Copied from render.js, with modifications. Instead of
+   * returning a Promise, it uses setTimeout to achieve async, and triggers
+   * a callback function when done.
+   */
+  function drawPlotWork(target, pltW, pltH, offX, offY, scale, callback) {
+    const uid = painting;
+    let canvas = target.main;
+    let ctx = canvas.getContext('2d');
     const w = canvas.width,
           h = canvas.height;
     ctx.clearRect(0, 0, w, h);
     const pi2 = Math.PI * 2,
-    min1 = Math.sqrt(1 / Math.PI);
-    const X = trans.x,
-          Y = trans.y,
-          S = trans.size,
-          C = trans.rgba;
-    const x_times = (w - 2 * offX) * scale,
-          y_times = (h - 2 * offY) * scale;
-    const x_plus = posX + offX + 0.5,
-          y_plus = posY + offY + 0.5;
-    const paths = {};
+          min1 = Math.sqrt(1 / Math.PI);
+
+    // get data (global to worker)
+    const X = data.x,
+          Y = data.y,
+          S = data.size,
+          F = data.fses,
+          mask = data.mask,
+          pick = data.pick,
+          high = data.high;
+
+    const x_times = pltW * scale,
+          y_times = pltH * scale;
+    const x_plus = offX + 0.5,
+          y_plus = offY + 0.5;
+    const picks = [];
     const nhigh = highpal.length;
     const highs = Array(nhigh).fill().map(() => Array());
-    const hirad = 8;
+    const fs = Object.keys(F);
+    const n = fs.length;
+    let f, i, j, m, I, x, y, r, hi;
 
-    let r, x, y, fs, hi;
-    const n = mask.length;
-    for (let i = 0; i < n; i++) {
-      if (mask[i]) continue;
-      r = S[i] * scale + 0.5 << 0;
-      if (r < min1) continue;
-      x = X[i] * x_times + x_plus << 0;
-      if (x + r < 0 || x - r > w) continue;
-      y = Y[i] * y_times + y_plus << 0;
-      if (y + r < 0 || y - r > h) continue;
-      fs = `rgba(${C[i]})`;
-      if (!(fs in paths)) paths[fs] = [];
-      paths[fs].push([x, y, r]);
-      hi = high[i];
-      if (hi) highs[hi - 1].push([x, y, r + hirad]);
+    // perform rendering by chunk
+    let idx = 0;
+    setTimeout(chunk, 1);
+
+    function chunk() {
+      let cnt = 25; // chunk size (empirically determined)
+      while (cnt-- && idx < n) {
+        f = fs[idx];
+        I = F[f];
+        m = I.length;
+        if (m) {
+          ctx.beginPath();
+          for (j = 0; j < m; j++) {
+            i = I[j];
+            if (mask[i]) continue;
+            r = S[i] * scale + 0.5 << 0;
+            if (r < min1) continue;
+            x = X[i] * x_times + x_plus << 0;
+            if (x + r < 0 || x - r > w) continue;
+            y = Y[i] * y_times + y_plus << 0;
+            if (y + r < 0 || y - r > h) continue;
+            ctx.moveTo(x, y);
+            ctx.arc(x, y, r, 0, pi2, true);
+            if (pick[i]) picks.push([x, y, r]);
+            if (hi = high[i]) highs[hi - 1].push([x, y, r]);
+          }
+          ctx.fillStyle = f;
+          ctx.fill();
+        }
+        ++idx;
+      } // end while
+
+      // abort or move to next step
+      if (painting !== uid) return;
+      if (idx < n) setTimeout(chunk, 1);
+      else setTimeout(fill_sele, 1);
+    } // end chunk
+
+    // callback to fill selection shadows
+    function fill_sele() {
+      canvas = target.sele;
+      ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, w, h);
+      m = picks.length;
+      if (m) {
+        ctx.save();
+        ctx.fillStyle = selcol;
+        ctx.shadowColor = selcol;
+        ctx.shadowBlur = 10;
+        ctx.shadowOffsetX = 0;
+        ctx.shadowOffsetY = 0;
+        ctx.beginPath();
+        let c;
+        for (let i = 0; i < m; i++) {
+          c = picks[i];
+          ctx.moveTo(c[0], c[1]);
+          ctx.arc(c[0], c[1], c[2], 0, pi2, true);
+        }
+        ctx.fill();
+        ctx.restore();
+      }
+
+      // abort or move to next step
+      if (painting !== uid) return;
+      else setTimeout(fill_high, 1);
     }
 
-    let j, hs, m, hl;
-    for (let i = 0; i < nhigh; i++) {
-      hs = highs[i];
-      m = hs.length;
-      if (!m) continue;
-      ctx.fillStyle = highpal[i] + '66';
-      ctx.beginPath();
-      for (j = 0; j < m; j++) {
-        hl = hs[j];
-        ctx.moveTo(hl[0], hl[1]);
-        ctx.arc(hl[0], hl[1], hl[2], 0, pi2, true);
+    // callback to fill highlight borders
+    function fill_high() {
+      canvas = target.high;
+      ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, w, h);
+      let hs, c;
+      r = 8;
+      for (let i = 0; i < nhigh; i++) {
+        hs = highs[i];
+        m = hs.length;
+        if (m) {
+          ctx.fillStyle = highpal[i] + '66';
+          ctx.beginPath();
+          for (j = 0; j < m; j++) {
+            c = hs[j];
+            ctx.moveTo(c[0], c[1]);
+            ctx.arc(c[0], c[1], c[2] + r, 0, pi2, true);
+          }
+          ctx.fill();
+        }
       }
-      ctx.fill();
-    }
 
-    let circs, circ;
-    for (let fs in paths) {
-      ctx.beginPath();
-      circs = paths[fs];
-      m = circs.length;
-      for (let i = 0; i < m; i++) {
-        circ = circs[i];
-        ctx.moveTo(circ[0], circ[1]);
-        ctx.arc(circ[0], circ[1], circ[2], 0, pi2, true);
-      }
-      ctx.fillStyle = fs;
-      ctx.fill();
+      // abort or complete task
+      if (painting !== uid) return;
+      else setTimeout(callback, 1);
     }
   }
 
-  // copied from render.js
-  function drawShad(canvas, posX, posY, scale, offX, offY, trans,
-                    pick, color) {
+
+  /**
+   * Draw selection shadows using web worker.
+   * @function drawSeleWork
+   * @see drawSele
+   * @description Copied from render.js, with adjustments.
+   */
+  function drawSeleWork(canvas, pltW, pltH, offX, offY, scale, callback) {
+    const uid = painting;
     const ctx = canvas.getContext('2d');
     const w = canvas.width,
           h = canvas.height;
     ctx.clearRect(0, 0, w, h);
     ctx.save();
-    ctx.fillStyle = color;
-    ctx.shadowColor = color;
+    ctx.fillStyle = selcol;
+    ctx.shadowColor = selcol;
     ctx.shadowBlur = 10;
     ctx.shadowOffsetX = 0;
     ctx.shadowOffsetY = 0;
-    const X = trans.x,
-          Y = trans.y,
-          S = trans.size;
+    const X = data.x,
+          Y = data.y,
+          S = data.size,
+          mask = data.mask,
+          pick = data.pick;
+    const x_times = pltW * scale,
+          y_times = pltH * scale;
+    const x_plus = offX + 0.5,
+          y_plus = offY + 0.5;
     const pi2 = Math.PI * 2;
-    const x_times = (w - 2 * offX) * scale,
-          y_times = (h - 2 * offY) * scale;
-    const x_plus = posX + offX + 0.5,
-          y_plus = posY + offY + 0.5;
-    let r, x, y;
+    let i, r, x, y;
     ctx.beginPath();
     const n = pick.length;
-    for (let i = 0; i < n; i++) {
-      if (!pick[i]) continue;
-      r = S[i] * scale + 0.5 << 0;
-      x = X[i] * x_times + x_plus << 0;
-      if (x + r < 0 || x - r > w) continue;
-      y = Y[i] * y_times + y_plus << 0;
-      if (y + r < 0 || y - r > h) continue;
-      ctx.moveTo(x, y);
-      ctx.arc(x, y, r, 0, pi2, true);
+    let idx = 0;
+    function chunk() {
+      let cnt = 10000; // chunk size: 10k
+      while (cnt-- && idx < n) {
+        i = idx++;
+        if (!pick[i]) continue;
+        if (mask[i]) continue;
+        r = S[i] * scale + 0.5 << 0;
+        x = X[i] * x_times + x_plus << 0;
+        if (x + r < 0 || x - r > w) continue;
+        y = Y[i] * y_times + y_plus << 0;
+        if (y + r < 0 || y - r > h) continue;
+        ctx.moveTo(x, y);
+        ctx.arc(x, y, r, 0, pi2, true);
+      }
+      if (painting !== uid) return;
+      if (idx < n) setTimeout(chunk, 1);
+      else setTimeout(function() {
+        ctx.fill();
+        ctx.restore();
+        setTimeout(function() {
+          if (painting !== uid) return;
+          else callback();
+        }, 1);
+      }, 1);
     }
-    ctx.fill();
-    ctx.restore();
+    setTimeout(chunk, 1);
   }
 
+
+  /**
+   * Resize all three canvases to given width and height.
+   * @function resizeCanvases
+   * @description Copied from plot.js.
+   */
+  function resizeCanvases(obj, w, h) {
+    for (const key of ['main', 'sele', 'high']) {
+      const canvas = obj[key];
+      if (canvas.width != w) canvas.width = w;
+      if (canvas.height != h) canvas.height = h;
+    }
+  }
 }
 
 if (window != self) renderWorker();
