@@ -707,8 +707,6 @@ function drawPlotBack(target, pltW, pltH, offX, offY, scale, trans, mask,
  * but others stay the same.
  */
 function renderSele(mo) {
-  const npick = mo.cache.npick;
-  const work = mo.work.draw;
 
   // iterate over cached images, record ones that are ready, as they will be
   // updated below, meanwhile mark them not ready
@@ -723,52 +721,6 @@ function renderSele(mo) {
     }
     if (img.uid) img.uid = 0;
   }
-
-  // // if no contig is selected, clear
-  // if (!npick) clearPlot(mo.plot, ['sele'];
-
-  // // mark cached images not ready
-  // const images = mo.images;
-  // const n = images.length;
-  // let img;
-  // for (let i = n - 1; i >= 0; i--) {
-  //   img = images[i];
-  //   img.uid = 0;
-  //   img.done = false;
-  // }
-
-  // // if no contig is selected, clear and quit
-  // if (!npick) {
-  //   const keys = ['sele'];
-  //   clearPlot(mo.plot, keys);
-
-  //   // clear cached images in main thread
-  //   if (!work) {
-  //     for (let i = n - 1; i >= 0; i--) {
-  //       img = images[i];
-  //       clearPlot(img, keys);
-  //       img.done = true;
-  //     }
-  //   }
-
-  //   // clear cached images in web worker
-  //   else {
-  //     requestIdleCallback(async function() {
-  //       const res = await new Promise(resolve => {
-  //         work.postMessage({msg: 'clear', keys: ['sele']});
-  //         work.onmessage = e => resolve(e.data);
-  //         work.onerror = () => resolve(0);
-  //       });
-  //       if (res) {
-  //         for (let i = 0; i < n; i++) {
-  //           img = images[i];
-  //           if (!img.uid) img.done = true;
-  //         }
-  //       }
-  //     });
-  //   }
-  //   return;
-  // }
 
   // start to render selection
   const plot = mo.plot,
@@ -789,6 +741,7 @@ function renderSele(mo) {
   const uid = stat.painting = uniqId();
   requestIdleCallback(async function() {
     if (uid !== stat.painting) return;
+    const work = mo.work.draw;
     for (let i = images.length - 1; i >= 0; i--) {
       if (!ready.has(i)) continue;
       img = images[i];
