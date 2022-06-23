@@ -16,11 +16,11 @@
  */
 function renderWorker() {
 
-  // task identifier
+  // current task Id
   let painting = 0;
 
   // offscreen canvases
-  let canvases = [];
+  let images = [];
 
   // graphics settings
   let highpal; // highlight color palette
@@ -45,7 +45,7 @@ function renderWorker() {
     else if (msg === 'reset') {
       painting = 0;
       data = {};
-      canvases = [];
+      images = [];
     }
 
     // receive transferred data
@@ -57,7 +57,7 @@ function renderWorker() {
 
     // add offscreen canvas
     else if (msg === 'add') {
-      canvases.push({
+      images.push({
         main: edat.main,
         sele: edat.sele,
         high: edat.high,
@@ -66,12 +66,12 @@ function renderWorker() {
 
     // render main plot on offscreen canvas
     else if (msg === 'plot') {
-      const target = canvases[edat.idx];
+      const target = images[edat.idx];
       painting = edat.uid;
       resizeCanvases(target, edat.w, edat.h);
 
       // call drawing function (async)
-      drawPlotWork(target, ...edat.args, plot_done);
+      drawPlotWork(target, ...edat.args, plot_done, plot_fail);
 
       // callback when drawing function completes
       function plot_done() {
@@ -84,19 +84,32 @@ function renderWorker() {
           else postMessage(0);
         });
       }
+
+      // callback when drawing function aborted
+      function plot_fail() { postMessage(0); }
     }
 
     // render selection shadows on offscreen canvas
     else if (msg === 'sele') {
       painting = edat.uid;
-      const canvas = canvases[edat.idx].sele;
-      drawSeleWork(canvas, ...edat.args, sele_done);
+      const canvas = images[edat.idx].sele;
+      drawSeleWork(canvas, ...edat.args, sele_done, sele_fail);
       function sele_done() {
         requestAnimationFrame(function() {
           if (painting === edat.uid) postMessage(painting);
           else postMessage(0);
         });
       }
+      function sele_fail() { postMessage(0); }
+    }
+
+    // clear canvases
+    else if (msg === 'clear') {
+      const keys = edat.keys;
+      for (const img of images) {
+        clearPlot(img, keys);
+      }
+      postMessage(1);
     }
   }
 
@@ -105,12 +118,13 @@ function renderWorker() {
    * Draw main scatter plot using web worker.
    * @function drawPlotWork
    * @see drawPlotBack
-   * @param {function} callback - callback function
+   * @param {function} done - callback function when completed
+   * @param {function} fail - callback function when aborted
    * @description Copied from render.js, with modifications. Instead of
    * returning a Promise, it uses setTimeout to achieve async, and triggers
    * a callback function when done.
    */
-  function drawPlotWork(target, pltW, pltH, offX, offY, scale, callback) {
+  function drawPlotWork(target, pltW, pltH, offX, offY, scale, done, fail) {
     const uid = painting;
     let canvas = target.main;
     let ctx = canvas.getContext('2d');
@@ -173,8 +187,8 @@ function renderWorker() {
       } // end while
 
       // abort or move to next step
-      if (painting !== uid) return;
-      if (idx < n) setTimeout(chunk, 1);
+      if (painting !== uid) fail();
+      else if (idx < n) setTimeout(chunk, 1);
       else setTimeout(fill_sele, 1);
     } // end chunk
 
@@ -203,7 +217,7 @@ function renderWorker() {
       }
 
       // abort or move to next step
-      if (painting !== uid) return;
+      if (painting !== uid) fail();
       else setTimeout(fill_high, 1);
     }
 
@@ -230,8 +244,8 @@ function renderWorker() {
       }
 
       // abort or complete task
-      if (painting !== uid) return;
-      else setTimeout(callback, 1);
+      if (painting !== uid) fail();
+      else setTimeout(done, 1);
     }
   }
 
@@ -240,9 +254,11 @@ function renderWorker() {
    * Draw selection shadows using web worker.
    * @function drawSeleWork
    * @see drawSele
+   * @param {function} done - callback function when completed
+   * @param {function} fail - callback function when aborted
    * @description Copied from render.js, with adjustments.
    */
-  function drawSeleWork(canvas, pltW, pltH, offX, offY, scale, callback) {
+  function drawSeleWork(canvas, pltW, pltH, offX, offY, scale, done, fail) {
     const uid = painting;
     const ctx = canvas.getContext('2d');
     const w = canvas.width,
@@ -282,14 +298,14 @@ function renderWorker() {
         ctx.moveTo(x, y);
         ctx.arc(x, y, r, 0, pi2, true);
       }
-      if (painting !== uid) return;
+      if (painting !== uid) fail();
       if (idx < n) setTimeout(chunk, 1);
       else setTimeout(function() {
         ctx.fill();
         ctx.restore();
         setTimeout(function() {
-          if (painting !== uid) return;
-          else callback();
+          if (painting !== uid) fail();
+          else done();
         }, 1);
       }, 1);
     }
@@ -307,6 +323,22 @@ function renderWorker() {
       const canvas = obj[key];
       if (canvas.width != w) canvas.width = w;
       if (canvas.height != h) canvas.height = h;
+    }
+  }
+
+
+  /**
+   * Clear canvases of a plot.
+   * @param {Object} obj - plot object
+   * @param {Array.<string>} [keys=] - canvas keys to clear
+   * @description Copied from plot.js.
+   */
+  function clearPlot(obj, keys) {
+    keys = keys || ['main', 'sele', 'high'];
+    for (const key of keys) {
+      const canvas = obj[key];
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
     }
   }
 }

@@ -226,28 +226,6 @@ function initPlotCtrl(mo) {
     selcol: mo.theme.selection
   });
 
-  // render image when done
-  // work.addEventListener('message', function(e) {
-  //   const data = e.data;
-  //   const msg = data.msg;
-  //   if (msg === 'main') {
-  //     plot.offs = data.bitmap;
-  //     mo.view.mainoff = true;
-  //     mo.view.offX = e.data.offX;
-  //     mo.view.offY = e.data.offY;
-  //     setTimeout(function() {
-  //       const rena = mo.rena;
-  //       const ctx = rena.getContext('2d');
-  //       const w = rena.width,
-  //             h = rena.height;
-  //       ctx.drawImage(rena.offs, w, h, w, h, 0, 0, w, h);
-  //     }, 50);
-  //   }
-  //   else if (msg === 'shad') {
-  //     mo.view.shadoff = true;
-  //   }
-  // });
-
 } // end initializing controls
 
 
@@ -546,14 +524,13 @@ function resizeCanvases(obj, w, h) {
 
 /**
  * Clear main plot.
- * @param {Object} mo - main object
+ * @param {Object} obj - plot object
  * @param {Array.<string>} [keys=] - canvas keys to clear
  */
-function clearPlot(mo, keys) {
+function clearPlot(obj, keys) {
   keys = keys || ['main', 'sele', 'high'];
-  const plot = mo.plot;
   for (const key of keys) {
-    const canvas = plot[key];
+    const canvas = obj[key];
     const ctx = canvas.getContext('2d');
     ctx.clearRect(0, 0, canvas.width, canvas.height);
   }

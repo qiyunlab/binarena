@@ -24,7 +24,7 @@ function renderPlot(mo, redo, wait) {
   // quit if no data, no x- or no y-axis
   const view = mo.view;
   if (!mo.cache.nctg || !view.x.i || !view.y.i) {
-    clearPlot(mo);
+    clearPlot(mo.plot);
     return;
   }
 
@@ -69,7 +69,7 @@ function renderPlot(mo, redo, wait) {
     if (view.grid) drawGrid(w, h, plot, view);
 
     // start to cache extra images
-    cacheImages(images, args, stat, wait, work, 5);
+    cacheImages(images, args, stat, wait, work, 4);
   }
 
   // if found, copy the proper region of the image to canvas
@@ -91,7 +91,7 @@ function renderPlot(mo, redo, wait) {
     // edge of any cached image, start to cache extra images
     img = checkImageCache(
       images, w * 2, h * 2, posX + w / 2, posY + h / 2, scale);
-    if (!img) cacheImages(images, args, stat, wait, work, 3);
+    if (!img) cacheImages(images, args, stat, wait, work, 2);
   }
 }
 
@@ -193,9 +193,9 @@ function cacheImages(images, args, stat, wait, work, n, mar, zoom) {
     // dragging and scrolling
     if (uid !== stat.painting) return;
 
-    // further wait for 0.1 sec (same reason as above)
+    // further wait for 0.25 sec (same reason as above)
     if (wait) {
-      await new Promise(r => setTimeout(r, 100));
+      await new Promise(r => setTimeout(r, 250));
       if (uid !== stat.painting) return;
     }
 
@@ -267,7 +267,10 @@ function cacheImages(images, args, stat, wait, work, n, mar, zoom) {
         res = await drawPlotBack(img, ...args, uid, stat);
       }
 
-      // if another task did it (conflict), mark image as not ready
+      // if timeout but task Id is still the same, clear it
+      if (res === -1) { if (img.uid === uid) { img.uid = 0; } return; }
+
+      // if another task did it (i.e., a conflict), mark image as not ready
       if (img.done) { img.done = false; return; }
 
       // if aborted, terminate the entire process
@@ -297,7 +300,7 @@ function cacheImages(images, args, stat, wait, work, n, mar, zoom) {
  * @see {@link: https://stackoverflow.com/questions/8012002/}
  */
 function uniqId() {
-  return Date.now().toString(36) + Math.random().toString(36).substr(2, 9);
+  return Date.now().toString(36) + Math.random().toString(36).substring(2, 11);
 };
 
 
@@ -309,7 +312,7 @@ function uniqId() {
  * @description This function limits the maximum number of images.
  */
 function addImageToCache(images, work) {
-  const maxlen = 20; // store up to 20 images
+  const maxlen = 10; // store up to 10 images
   let iid, img;
 
   const n = images.length;
@@ -382,26 +385,32 @@ function addImageToCache(images, work) {
  * @param {number} iid - target image identifier
  * @param {number} uid - unique task identifier
  * @param {Array} args - plot parameters
- * @returns {Promise} completed (uid) or aborted (0)
- * @description It transfers the canvas controls to offscreen, then send them
- * to the worker, then triggers the drawing process in the worker, then wait
- * for the worker to complete (or abort) the drawing task.
+ * @returns {Promise} completed (uid) or aborted (0) or timeout (-1)
+ * @description It triggers the drawing task in the worker, then wait for the
+ * worker to complete (or abort).
  * @see {@link: https://stackoverflow.com/questions/41423905/}
+ * @description It waits for 10 sec for the task to complete, otherwise stop
+ * @see {@link: https://advancedweb.hu/how-to-add-timeout-to-a-promise-in-
+ * javascript/}
  */
 function callDrawPlot(work, idx, iid, uid, w, h, args) {
-  return new Promise(resolve => {
-    work.postMessage({
-      msg: 'plot',
-      idx: idx,
-      iid: iid,
-      uid: uid,
-      w: w,
-      h: h,
-      args: args
-    });
-    work.onmessage = e => resolve(e.data);
-    work.onerror = () => resolve(0);
-  });
+  let timer;
+  return Promise.race([
+    new Promise(resolve => {
+      work.postMessage({
+        msg: 'plot',
+        idx: idx,
+        iid: iid,
+        uid: uid,
+        w: w,
+        h: h,
+        args: args
+      });
+      work.onmessage = e => resolve(e.data);
+      work.onerror = () => resolve(0);
+    }),
+    new Promise(r => timer = setTimeout(() => r(-1), 10000))
+  ]).finally(() => clearTimeout(timer));
 }
 
 
@@ -699,19 +708,21 @@ function drawPlotBack(target, pltW, pltH, offX, offY, scale, trans, mask,
  */
 function renderSele(mo) {
 
-  // mark cached images not ready
+  // iterate over cached images, record ones that are ready, as they will be
+  // updated below, meanwhile mark them not ready
   const images = mo.images;
-  for (const img of images) {
-    img.uid = 0;
-    img.done = false;
+  const ready = new Set();
+  let img;
+  for (let i = images.length - 1; i >= 0; i--) {
+    img = images[i];
+    if (img.done) {
+      ready.add(i);
+      img.done = false;
+    }
+    if (img.uid) img.uid = 0;
   }
 
-  // no (selected) contigs
-  if (!mo.cache.nctg || (mo.cache.npick === 0)) {
-    clearPlot(mo, ['sele']);
-    return;
-  }
-
+  // start to render selection
   const plot = mo.plot,
         stat = mo.stat;
   const posX = plot.posX,
@@ -721,7 +732,7 @@ function renderSele(mo) {
   const w = canvas.width,
         h = canvas.height;
   const args = [w, h, posX, posY, scale, mo.trans, mo.masked, mo.picked,
-    mo.theme.selection];
+                mo.theme.selection];
 
   // directly draw on selection canvas
   drawSele(canvas, ...args);
@@ -731,8 +742,8 @@ function renderSele(mo) {
   requestIdleCallback(async function() {
     if (uid !== stat.painting) return;
     const work = mo.work.draw;
-    let img;
     for (let i = images.length - 1; i >= 0; i--) {
+      if (!ready.has(i)) continue;
       img = images[i];
       img.uid = uid;
       args[2] = img.posX;
@@ -746,6 +757,7 @@ function renderSele(mo) {
         work.onerror = () => resolve(0);
       });
       else res = await drawSeleBack(img.sele, ...args, uid, stat);
+      if (res === -1) { if (img.uid === uid) { img.uid = 0; } return; }
       if (img.done) { img.done = false; return; }
       if (res === 0) { img.uid = 0; return; }
       if (res !== img.uid) { img.uid = 0; return; }
@@ -825,11 +837,12 @@ function drawSele(canvas, pltW, pltH, offX, offY, scale,
  * @see drawSele
  * @param {number} uid - unique task identifier
  * @param {Object} stat - stat object
- * @returns {Promise} completed (uid) or aborted (0)
+ * @returns {Promise} completed (uid) or aborted (0) or timeout (-1)
  */
 function drawSeleBack(canvas, pltW, pltH, offX, offY, scale, trans,
                       mask, pick, color, uid, stat) {
-  return new Promise(resolve => {
+  let timer;
+  return Promise.race([new Promise(resolve => {
     if (stat.painting !== uid) resolve(0);
     const ctx = canvas.getContext('2d');
     const w = canvas.width,
@@ -879,7 +892,8 @@ function drawSeleBack(canvas, pltW, pltH, offX, offY, scale, trans,
       });
     }
     requestIdleCallback(chunk);
-  });
+  }), new Promise(r => timer = setTimeout(() => r(-1), 10000))
+    ]).finally(() => clearTimeout(timer));
 }
 
 
