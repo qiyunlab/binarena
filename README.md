@@ -3,12 +3,15 @@
 [![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
 ![javascript](https://badges.aleen42.com/src/javascript.svg)
 
-**Binarena** ("bin arena") is an interative visualizer of metagenomic assembly that facilitates observation, semi-manual and semi-automatic binning of metagenomic contigs.
+**Binarena** ("bin arena") is an interative visualizer that facilitates human-guided exploration and binning of metagenomic contigs.
+
+![Night](docs/img/night.png)
+> _Screenshot of BinaRena displaying a tropical peatland metagenome_
 
 
 ## [Live demo](https://qiyunlab.github.io/binarena/demo.html)
 
-Please check out this [live demo](https://qiyunlab.github.io/binarena/demo.html). It is a fully functional program with a pre-loaded sample [dataset](https://www.ncbi.nlm.nih.gov/assembly/GCA_003604395.1/). You may close the data, then drag and drop your own data into the interface and start to analyze!
+Check out this [live demo](https://qiyunlab.github.io/binarena/demo.html). It is a fully functional program with a pre-loaded sample [dataset](https://www.ncbi.nlm.nih.gov/assembly/GCA_003604395.1/). Once you are familiar with the program, you may close the data, then drag and drop your own data into the interface and start to explore!
 
 
 ## Contents
