@@ -16,11 +16,11 @@ Check out this [live demo](https://qiyunlab.github.io/binarena/demo.html). It is
 
 ## Contents
 
-- [Installation](#noinstallation) | [main interface](#main-interface) | [system requirements](#system-requirements) | [mouse and keyboard shortcuts](#mouse-and-keyboard-shortcuts)
-- [Input files](#input-files): [data table](#data-table) | [table view](#table-view) | [special columns](#special-columns) | [additional data](#additional-data)
-- [Display items](#display-items): [legends and data scaling](#legends-and-data-scaling) | [data transformation](#data-transformation) | [color coding](#color-coding) | [image export](#image-export)
-- [Contig selection](#contig-selection) | [masking](#contig-masking) | [highlighting](#contig-highlighting) | [summary](#contig-summary) | [search](#contig-searching) | [mini plot](#mini-plot)
-- [Binning plan](#binning-plan) | [table of bins](#table-of-bins) | [from selection to bin](#from-selection-to-bin)
+- [Installation](#noinstallation) | [main interface](#main-interface) | [widget buttons](#widget-buttons) | [mouse and keyboard shortcuts](#mouse-and-keyboard-shortcuts)
+- [**Data**](#input-data): [data table](#data-table) | [data types](#data-types) | [special columns](#special-columns) | [table view](#table-view)
+- [**Plot**](#display-items): [auto-assign](#automatic-assignment) | [legends & scaling](#legends-and-data-scaling) | [transformation](#data-transformation) | [coloring](#color-coding) | [image export](#image-export)
+- **Contig**: [selection](#contig-selection) | [masking](#contig-masking) | [highlighting](#contig-highlighting) | [summary](#contig-summary) | [search](#contig-searching) | [mini plot](#mini-plot)
+- **Binning**: [Binning plan](#binning-plan) | [table of bins](#table-of-bins) | [from selection to bin](#from-selection-to-bin)
 - [Binning confidence evaluation](#binning-confidence-evaluation) | [binning plan comparison](#binning-plan-comparison)
 - [FAQ](#faq) | [contact](#contact)
 
@@ -38,18 +38,25 @@ The main interface of BinaRena is an interactive scatter plot. It focuses on the
 
 Here is the fully expanded main interface of BinaRena.
 
-<img src="docs/img/main.png" width="720">
+<img src="docs/img/main.png" width="840">
 
 Here is the default interface when the program starts.
 
 <img src="docs/img/blank.png" width="405">
 
 
-## System requirements
+## Widget buttons
 
-BinaRena runs in most modern web browsers, including **Chrome**, **Firefox**, **Edge**, and **Safari** (see screenshots below). A typical laptop is sufficient for running BinaRena.
+A few buttons in the bottom left corner trigger operations on the data:
 
-<img src="docs/img/browsers.png" width="720">
+<img src="docs/img/widgets.png" width="192">
+
+- <span>&vellip;</span> (3 dots): Settings window.
+- <span>&#10047;</span> (flower): Export image (PNG or SVG).
+- <span>&#11040;</span> (polygon): Select contigs with a polygon.
+- <span>&empty;</span> (empty set): Mask (hide) selected contigs.
+- <span>&#9673;</span> (solid circle): Highlight selected contigs.
+- <span>&#8889;</span> (cross): Focus on selected contigs.
 
 
 ## Mouse and keyboard shortcuts
@@ -70,63 +77,54 @@ The BinaRena interface is like a [**digital map**](https://www.google.com/maps) 
 - Press `0` to reset the plot view.
 
 
-## Input files
-
-BinaRena operates on one dataset at a time. A dataset is an entire **metagenomic assembly**, i.e., a collection of **contigs** (note: this document does not differentiate contigs, scaffolds, or long reads). The information being handled is the properties of individual contigs.
-
-To load a dataset, simply **drag and drop** the file into the blank program window.
-
+## Input data
 
 ### Data table
 
-The most typical input file format is a **data table** (tab-delimited file, or [TSV](https://en.wikipedia.org/wiki/Tab-separated_values)) that stores properties of contigs (scaffolds) in an assembly. Here is an [example](examples/input.tsv).
+BinaRena works on an entire **metagenomic assembly**, i.e., a collection of **contigs** (note: this document does not differentiate contigs, scaffolds, or long reads). The information being handled is the properties of individual contigs.
 
-<img src="docs/img/excel.png" width="597">
+The input file format is a **data table** (tab-delimited file, or [TSV](https://en.wikipedia.org/wiki/Tab-separated_values)) that stores properties of contigs (scaffolds) in an assembly. Here is an [example](examples/input.tsv).
 
-Each row represents one contig. The first column must be unique contig identifiers. The remaining columns are arbitrary properties (such as length, coverage, GC%, taxonomy, etc.). These fields may be in any of the following four types:
+<img src="docs/img/excel.png" width="796">
 
-- **number**(`n`), **category**(`c`), **feature**(`f`), **description**(`d`)
+Each row represents one contig. The first column must be unique contig identifiers. The remaining columns are arbitrary properties. Empty cells will be treated as **missing** values.
 
-The program will guess column type based on the data. To be safer, you may append a type code to a column name following a pipe (`|`), such as "`genes|n`" and "`plasmid|c`".
+To **load** a dataset, simply **drag and drop** the data file into the blank program window.
 
-In a **feature**-type column, a cell can have multiple comma-separated features, such as "`Firmicutes,Proteobacteria,Cyanobacteria`".
+To **append** additional data to an opened dataset, just drag and drop more files. They will be filtered to match the current contig IDs (first column).
 
-One may assign a **weight** to each category or feature, using a numeric suffix following a colon (`:`), such as "`Ruminococcus:80`", and "`rpoB:1,dnaK:2,16S:5`".
-This weight can represent quantity, proportion, confidence, etc.
+To work on **multiple** datasets simultaneously, just open multiple browser tabs.
 
-Empty cells will be treated as **missing** values.
+### Data types
 
-### Table view
+Once a data table is loaded, BinaRena will prompt you to specify the data types of individual fields (columns):
 
-One can click `Show data` from the context menu to open a window to browse the current dataset. Alternatively, when one or more bins are selected, one can click the <span style="background-color: lightgrey">&#9707;</span> button in the bin table toolbar to browse the data of contigs **within** these bins. Click `Export` to save the data table as a TSV file.
+<img src="docs/img/input.png" width="360">
 
-<img src="docs/img/table.png" width="576">
+Each field may be any of the following four types:
+
+- **numeric**(`n`): Such as length, coverage, GC%, etc. Can be either integers or floating point numbers.
+- **categorical**(`c`): Such as taxonomic groups, external binning plans, etc.
+- **feature set**(`f`): Features associated with each contig, such as genes. Should be written as comma-separated identifiers, such as "`dnaK,rpoB,ftsZ`".
+- **descriptive**(`d`): Arbitrary free text, such as comments.
+
+BinaRena will "guess" the most appropriate data type of each field based on the data. But you should still review, and correct any place where the program isn't smart enough.
+
+One way to avoid manual review every time you open the same dataset, is to append a type code to a field name following a pipe (`|`), such as "`genes|n`" and "`plasmid|c`", in the raw TSV file.
 
 ### Special columns
 
-When a data table is loaded, BinaRena attempts to "guess" the meaning of data columns by their name and type, and displays the most relevant information. Specifically, the following fields and keyword patterns are recognized:
+Two properties are treated specially in BinaRena: **length** (bp) and **coverage** (x) of contigs, as they will be used to calculate bin abundance and to normalize bin summary metrics. They can be specified under the "Sp" column of the data import window ("Len" and  "Cov"). BinaRena attempts to "guess" these two columns from the numeric columns based on their names (see [how](#automatic-assignment)), but you still need to review, and correct if needed.
 
-- **Length (bp)**: `length`, `size`, `len`, `bp`, etc.
-- **Coverage (x)**: `coverage`, `depth`, `cov`, etc.
-- **GC content (%)**: `gc`, `g+c`, `gc%`, `gc-content`, etc.
-- **_X_- (and _y_-axes)** (if available): `x`, `xaxis`, `x1`, `axis1`, `dim1`, `pc1`, `tsne1`, `umap1`, etc.
+It is okay not to have either or both of these two columns in your dataset.
 
-The matching process is case-insensitive. Suffixes after common delimiters (" ", "/", "_", ".") are stripped. For examples, `Length (bp)` and `size_of_scaffold` will be recognized as **length**.
+You can change these assignments later in the "Settings" window. This is useful when you explore a co-assembly with different coverage profiles of individual samples.
 
-It isn't a problem if the program misses a special column (which is very possible). One can always manually choose the most relevant [display items](#display-items).
+### Table view
 
-### Additional data
+During the analysis, one can click `Show data` from the context menu to open a window to browse the current dataset. Alternatively, when one or more bins are selected, one can click the <span>&#9707;</span> button in the bin table toolbar to browse the data of contigs **within** these bins. Click `Export` to save the data table as a TSV file.
 
-When a dataset has been opened, one may append additional data files to it simply by **dragging and dropping** them into the interface. They will be filter to match the current contig IDs (first column) and appended to the right of the current data table.
-
-
-## Special files
-
-BinaRena supports several special file types that are frequently generated in typical metagenomic data analysis workflows.
-
-### Assembly files
-
-An assembly file is a [FASTA](https://en.wikipedia.org/wiki/FASTA_format) format file containing multiple contig sequences. BinaRena can read DNA sequences and calculate **length** and **GC content** of each contig. If this file is generated by [SPAdes](https://cab.spbu.ru/software/spades/) or [MEGAHIT](https://github.com/voutcn/megahit), BinaRena can recognize **coverage** from sequence titles.
+<img src="docs/img/table.png" width="768">
 
 
 ## Display items
@@ -136,6 +134,27 @@ BinaRena is an interactive scatter plot of contigs, with five display items:
 - **x-axis**, **y-axis**, **size** (radius of contig), **opacity** (alpha value), and **color**.
 
 Each display item can be changed and tweaked in the **display panel**. When the user moves the mouse of an item, two button will emerge, one letting the user select a data transformation method, and the other letting the user display a legend.
+
+### Automatic assignment
+
+When a dataset is loaded, BinaRena attempts to make the best guess of appropriate display items based on the names and types of individual fields. Specifically, it will look for these keywords in the column names:
+
+- **_X_-axis** (numeric): `x`, `xaxis`, `x1`, `axis1`, `dim1`, `pc1`, `tsne1`, `umap1`, etc.
+- **_Y_-axis** (numeric): `y`, `yaxis`, `x2`, `axis2`, `dim2`, `pc2`, `tsne2`, `umap2`, etc.
+- **Length (bp)** (numeric): `length`, `size`, `len`, `bp`, etc.
+- **Coverage (x)** (numeric): `coverage`, `depth`, `cov`, etc.
+- **GC content (%)** (numeric): `gc`, `g+c`, `gc%`, `gc-content`, etc.
+- **Taxonomy** (categorical): `phylum`, `class`, `order`, `family`, `genus`, etc.
+
+The matching process is case-insensitive. Suffixes after common delimiters (" ", "/", "_", ".") are stripped. For examples, `Length (bp)` and `size_of_scaffold` will be recognized as **length**.
+
+If all columns are found, BinaRena will render _x_- and _y_-axes in linear scale, length as marker size (radius) in cube root scale (because a sphere's volume is proportional to the cube of radius), coverage as marker opacity in square root scale, and highest taxonomic group as marker color.
+
+If _x_- and/or _y_-axes are not found, the program will render a length by coverage plot.
+
+If none is found, the program will take the first two numeric columns as _x_- and/or _y_-axes.
+
+It's very likely that BinaRena is not smart enough to hit the desired view. You will need to tweak the display items as needed.
 
 ### Legends and data scaling
 
@@ -173,55 +192,57 @@ For **categorical** data, BinaRena automatically identifies and colors the **mos
 
 The plot rendered by BinaRena can be exported as an image file. There are two options for doing this:
 
-1. Press `P` or click the `&#8889;` button to take a screenshot of the current view and save as a [PNG](https://en.wikipedia.org/wiki/Scalable_Vector_Graphics) (portable network graphics) file.
+1. Press `P` or click the <span>&#10047;</span> (flower) button to take a screenshot of the current view and save as a [PNG](https://en.wikipedia.org/wiki/Scalable_Vector_Graphics) (portable network graphics) file.
 
-2. Mouse over the `&#8889;` button and select "SVG" in the expanded menu. This will generate an 
+2. Mouse over the <span>&#10047;</span> button and select "SVG" in the expanded menu. This will generate an 
 [SVG](https://en.wikipedia.org/wiki/Scalable_Vector_Graphics) (scalable vector graphics) file. It is a vector image therefore it can be further edited in vector image editing programs, such as [Inkscape](https://inkscape.org/). Compared with PNG which is a bare screenshot, the SVG image has _x_- and _y_-axes ticked, labeled, and aligned to "nice" tick numbers, and legends (size, opacity and/or color) displayed in the plot. It is suitable for further processing to generate publication-quality figures.
 
 <img src="docs/img/svg.png" width="553">
+
+
 
 ## Contig selection
 
 In the interactive scatter plot, one can simple click circles (**contigs**) to select them. Hold `Shift` and click to select multiple. Click selected ones to unselect them.
 
-A more efficient may is to press `Enter` or click the <span style="background-color: lightgrey">&#11040;</span> button in the corner to enter the **polygon** selection mode.
+A more efficient may is to press `Enter` or click the <span>&#11040;</span> button in the corner to enter the **polygon** selection mode.
 
-<img src="docs/img/widgets.png" width="160">
+<img src="docs/img/widgets.png" width="192">
 
 Then one can click on the plot to draw a polygon to contain contigs of interest. When done, press `Enter` again and these contigs will be selected.
 
-<img src="docs/img/polyogn.png" width="304">
+<img src="docs/img/polygon.png" width="304">
 
 Hold `Shift` when finishing selection will add the contigs to the current selection.
 
 
 ## Contig masking
 
-One can press the `Delete` key or click the <span style="background-color: lightgrey">&empty;</span> button in the corner to **mask** currently selected contigs. These contigs will disappear from the plot. They will also be excluded from subsequent operations (e.g., they cannot be selected, nor can they influence calculation of metrics). This function is useful for cloaking unwanted contigs during binning.
+One can press the `Delete` key or click the <span>&empty;</span> button in the corner to **mask** currently selected contigs. These contigs will disappear from the plot. They will also be excluded from subsequent operations (e.g., they cannot be selected, nor can they influence calculation of metrics). This function is useful for cloaking unwanted contigs during binning.
 
-<img src="docs/img/mask.png" width="279">
+<img src="docs/img/mask.png" width="204">
 
-The masked contigs are not deleted from the dataset. They can be released back to the view by clicking the <span style="background-color: lightgrey">&times;</span> button.
+The masked contigs are not deleted from the dataset. They can be released back to the view by clicking the <span>&times;</span> button.
 
-One can also press `Z` or click the <span style="background-color: lightgrey">&#8617;</span> button to **undo** previous masking operations one by one. The program allows a total of 50 regrets.
+One can also press `Z` or click the <span>&#8617;</span> button to **undo** previous masking operations one by one. The program allows a total of 50 regrets.
 
-- Note that masked contigs will not be immediated deleted from bins. One can click the <span style="background-color: lightgrey">&empty;</span> button in the bin table toolbar to remove masked contigs from all bins.
+- Note that masked contigs will not be immediated deleted from bins. One can click the <span>&empty;</span> button in the bin table toolbar to remove masked contigs from all bins.
 
 
 ## Contig highlighting
 
-One can press the `L` key or click the <span style="background-color: lightgrey">&#9673;</span> button in the corner to **highlight** currently selected contigs. Moreover, one may select one of multiple highlight colors from the menu.
+One can press the `L` key or click the <span>&#9673;</span> button in the corner to **highlight** currently selected contigs. Moreover, one may select one of multiple highlight colors from the menu.
 
 <img src="docs/img/highlight.png" width="350">
 
-The highlight will stay with the contigs no matter how the layout and display items change, until the user click the <span style="background-color: lightgrey">&times;</span> button next to each color to release them.
+The highlight will stay with the contigs no matter how the layout and display items change, until the user click the <span>&times;</span> button next to each color to release them.
 
 Highlighting will not affect binning, search, calculation and operations. It serves as a visual annotation of contigs to make them noticeable to the user.
 
 
 ## Contig focusing
 
-Press the `F` key or click the <span style="background-color: lightgrey">&#9673;</span> button in the corner to **focus** on selected contigs. That is, all but these contigs will be hidden, allowing you to concentrate on them. When you complete working on these contigs, press `F` again and bring back all other contigs.
+Press the `F` key or click the <span>&#8889;</span> (cross) button in the corner to **focus** on selected contigs. That is, all but these contigs will be hidden, allowing you to concentrate on them. When you complete working on these contigs, press `F` again and bring back all other contigs.
 
 
 ## Contig summary
@@ -230,18 +251,18 @@ BinaRena displays a summary of properties of the select contigs in real time to 
 
 <img src="docs/img/info.png" width="330">
 
-When multiple contigs are selected, the displayed value of **numeric** fields is calculated using either **mean** (<span style="background-color: lightgrey; text-decoration: overline;"><i>x</i></span>) or **sum** (<span style="background-color: lightgrey">&Sigma;<i>x</i></span>) of the contigs, optionally **weighted** by another variable. BinaRena attempts to "guess" the most relevant metric for each column. For examples, "length" should be the sum of lengths of all contigs, whereas "coverage" should be the average of coverages of the contigs, weighted by contig length. One can mouse hover the displayed value to see how it is exactly calculated, and tweak the metrics (in case BinaRena didn't guess right).
+When multiple contigs are selected, the displayed value of **numeric** fields is calculated using either **mean** (<span style="background-color: lightgrey; text-decoration: overline;"><i>x</i></span>) or **sum** (<span>&Sigma;<i>x</i></span>) of the contigs, optionally **weighted** by another variable. BinaRena attempts to "guess" the most relevant metric for each column. For examples, "length" should be the sum of lengths of all contigs, whereas "coverage" should be the average of coverages of the contigs, weighted by contig length. One can mouse hover the displayed value to see how it is exactly calculated, and tweak the metrics (in case BinaRena didn't guess right).
 
 For **categorical** columns, the displayed category is the **majority-rule** category, if there are multiple options (i.e., the selected contigs are a mixture), determined by weighting against the contig length (one can tweak this). The relative frequency of the main category is displayed in the parentheses. If no category is over half, the row will be displayed as "ambiguous", while the most frequent category can be found in the tooltip during mouse hovering.
 
-One may click the <span style="background-color: lightgrey">&#9684;</span> button in each row to display a histogram of the distribution of this variable in a [mini plot](#mini-plot).
+One may click the <span>&#9684;</span> button in each row to display a histogram of the distribution of this variable in a [mini plot](#mini-plot).
 
 
 ## Contig searching
 
 The **Search** panel offers functions to search the assembly for contigs that match given criteria.
 
-For numeric fields, enter (or leave empty) maximum and minimum thresholds. Click the boundaries to toggle between inclusion (`()`) and exclusion (`[]`).
+For numeric fields, enter (or leave empty) maximum and minimum thresholds. Click the boundaries to toggle between exclusion (`()`) and inclusion (`[]`).
 
 <img src="docs/img/search_num.png" width="270">
 
@@ -269,7 +290,7 @@ One may create a binning plan from _de novo_ or load an existing one from a **ca
 
 <img src="docs/img/plan.png" width="338">
 
-When a binning plan is modified (added/removed bins, added/removed contigs to/from bins, renamed bins, entered a new plan name, etc.), a <span style="background-color: lightgrey">Save</span> button will show up. Click it to save the **binning plan** as a categorical field.
+When a binning plan is modified (added/removed bins, added/removed contigs to/from bins, renamed bins, entered a new plan name, etc.), a <span>Save</span> button will show up. Click it to save the **binning plan** as a categorical field.
 
 Alternatively, click the <span style="background-color: lightgrey;">&rarrb;</span> button in the toolbar to export the binning plan to a text file. The format will be a mapping of bin names to member contig IDs.
 
@@ -300,17 +321,17 @@ These functions can also be found in the toolbar next to the summary table.
 
 BinaRena can evaluate the **confidence** of binning by calculating the [**silhouette coefficient**](https://en.wikipedia.org/wiki/Silhouette_(clustering)). Specifically, a silhouette coefficient measures how similar a contig is to other contigs in the same bin, as in contrast to contigs in other bins. It ranges from -1 (worst) to 1 (best).
 
-One may click the <span style="background-color: lightgrey">&#9739;</span> button in the toolbar next to the binning plan to open the "silhouette coefficient" window. It allows the user to select variables to be included in the calculation.
+One may click the <span>&#9739;</span> button in the toolbar next to the binning plan to open the "silhouette coefficient" window. It allows the user to select variables to be included in the calculation.
 
 - Note: Only select variables that are presumably **homogeneous** in each bin (e.g., GC%, coverage, _k_-mer frequency). Don't select those that aren't (e.g., length of contig).
 
 Then click the "calculate" button to start calculation. When done, the mean silhouette coefficient of each bin and all bins will be displayed in a table.
 
-<img src="docs/img/silhouette.png" width="600">
+<img src="docs/img/silhouette.png" width="450">
 
 Before pressing "done", one may check "save result to field" to save the calculated silhouette coefficient to a categorical field. BinaRena will automatically color the contigs using these values, from which one can immediately see which bins are of high overall confidences and which contigs are confidently belonging to their bins. This can guide the subsequent binning efforts.
 
-<img src="docs/img/silh_color.png" width="880">
+<img src="docs/img/silh_color.png" width="660">
 
 One may also check "export result to file" to save the results (contig IDs, bin assignments and silhouette coefficients) to a TSV file.
 
@@ -321,16 +342,10 @@ One may also check "export result to file" to save the results (contig IDs, bin 
 
 BinaRena compares two binning plans by calculating the [**adjusted Rand index**](https://en.wikipedia.org/wiki/Rand_index) (ARI), which measures the **consistency** between two grouping scenarios of the same dataset. Higher is better. Two identical plans have ARI = 1. Two random plans will have an ARI close to 0.
 
-One may click the <span style="background-color: lightgrey">&harr;</span> button in the toolbar next to the binning plan, then select a categorical field (another binning plan) to perform this calculation. It is fast. The result will be displayed in a floating message box.
+One may click the <span>&harr;</span> button in the toolbar next to the binning plan, then select a categorical field (another binning plan) to perform this calculation. It is fast. The result will be displayed in a floating message box.
 
 
 ## FAQ
-
-**Does BinaRena expose my data to a remote server?**
-
-The standalone BinaRena program is a client-end webpage that runs in your browser. Theoretically and technically, it cannot communicate with a web server. There is no risk with regard to the confidentiality of your data.
-
-The live demo hosted by [GitHub Pages](https://pages.github.com/) can communicate with the GitHub repository, and the only thing it does is to [retrieve](demo.html) the sample dataset from the repository directory. It does not perform any other communication.
 
 **Is BinaRena really dependency-free?**
 
@@ -338,13 +353,39 @@ That is accurate. The program uses zero third-party libraries, not even Node.js,
 
 In addition, we use [Jasmine](https://jasmine.github.io/) for [unit testing](https://en.wikipedia.org/wiki/Unit_testing) core algorithms to ensure their soundness. Jasmine is bundled in the package, but it won't run when you use BinaRena.
 
+**Does BinaRena expose my data to a remote server?**
+
+The standalone BinaRena program is a client-end webpage that runs in your browser. Theoretically and technically, it cannot communicate with a web server. There is no risk with regard to the confidentiality of your data.
+
+The live demo hosted by [GitHub Pages](https://pages.github.com/) can communicate with the GitHub repository, and the only thing it does is to [retrieve](demo.html) the sample dataset from the repository directory. It does not perform any other communication.
+
+### Hardware
+
+**What system configuration does BinaRena require?**
+
+A typical laptop is sufficient for running BinaRena.
+
 **Does BinaRena work on a touchscreen?**
 
 Yes! You can use your finger(s) to move and zoom the plot, as well as to select contigs, to click buttons, etc.
 
+### Software
+
+**Which operating systems support BinaRena?**
+
+Any operating system that can run a web browser supports BinaRena. Windows, macOS, Linux, Android,... you name it.
+
+**Which web browsers support BinaRena?**
+
+BinaRena runs in most modern web browsers, including **Chrome**, **Firefox**, **Edge**, and **Safari** (see screenshots below).
+
+<img src="docs/img/browsers.png" width="720">
+
 **Do old browsers support BinaRena?**
 
 BinaRena is written in JavaScript, using modern language standards including [ES6](https://www.w3schools.com/js/js_es6.asp) and above. Modern browsers shouldn't have problems as they normally auto-update to meet the latest standards. However, very outdated browsers such as Internet Explorer may not support BinaRena.
+
+### Graphics
 
 **Which browser works the best for BinaRena?**
 
@@ -352,13 +393,19 @@ They all work very well. However some may bring you moderately smoother graphics
 
 For high responsiveness, BinaRena automatically caches images around the current viewport, so that it could immediately bring you to the destination when you move or zoom. BinaRena uses either of two mechanisms to achieve this: For browsers that support [OffscreenCanvas](https://developer.mozilla.org/en-US/docs/Web/API/OffscreenCanvas), BinaRena uses this technology to cache images in a separate thread so that it won't block the UI. For others, BinaRena scavenges [idle time](https://developer.mozilla.org/en-US/docs/Web/API/Window/requestIdleCallback) in the main thread to cache images, which could lag the graphics a little bit.
 
-So which browsers support this technology? As of 2022, Chrome does, out-of-the-box, therefore you get the highest FPS when you run BinaRena in Chrome. Firefox has support but you need to manually turn it on, by enabling `gfx.offscreencanvas.enabled` in `about:config` (see [details](https://developer.mozilla.org/en-US/docs/Web/API/OffscreenCanvas)). If you are too scared of this setting, just leave as is.
+So which browsers support this technology? As of 2022, Chrome does, out-of-the-box, therefore you get the highest FPS when you run BinaRena in Chrome. So does Edge. Firefox has support but you need to manually turn it on, by enabling `gfx.offscreencanvas.enabled` in `about:config` (see [details](https://developer.mozilla.org/en-US/docs/Web/API/OffscreenCanvas)). If you are too scared of this setting, just leave as is. Safari does not support this.
 
 If this causes any problem, you may comment out the code under "check offscreen canvas support" in [static/js/main.js](static/js/main.js) to disable OffscreenCanvas (even if the browser supports it).
 
 **BinaRena doesn't display graphics in my browser?**
 
 We haven't experienced this scenario in any modern browser. But just in case your browser is highly customized or restricted... See if the previous answer helps you. If not, you will need to install a clean browser.
+
+**BinaRena is sometimes smooth but sometimes clumsy?**
+
+BinaRena can become clumsy when the dataset is large and when you are making frequent operations on the graph, such that the background caching process (see above) hasn't completed. This won't break anything. Wait for a few seconds and you will find it smooth.
+
+### Plotting
 
 **How to precisely control the size of the plot?**
 
@@ -383,6 +430,8 @@ The data points are covered, but they are not missing. One can open the SVG file
 **Can I customize the appearance of the exported SVG image?**
 
 The GUI doesn't provide much control. However, pro users can look into ([static/js/svg.js](static/js/svg.js)). On top of the function `renderSVG` there are multiple customizable parameters.
+
+### Calculation
 
 **How does BinaRena perform [data ranking](https://en.wikipedia.org/wiki/Ranking#Ranking_in_statistics)?**
 
