@@ -5,7 +5,7 @@ Usage:
     python me.py lineage.map > taxonomy.tsv
 
 Notes:
-    
+
 A taxonomic lineage string is a hierarchical representation of an organism's
 classification. For example:
 
