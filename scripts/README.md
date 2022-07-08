@@ -6,6 +6,7 @@ This directory hosts multiple Python scripts for analysis and formatting outside
 ## Contents
 
 - [Basic sequence information](#basic-sequence-information)
+- [Contig annotation parsing](#contig-annotation-parsing)
 - [_k_-mer frequencies](#k-mer-frequencies)
 - [Dimensionality reduction](#dimensionality-reduction)
 - [Lineage string conversion](#lineage-string-conversion)
@@ -36,6 +37,17 @@ One can specify a minimum contig length threshold (say 1 kb):
 ```bash
 sequence_basics.py -i contigs.fna -l 1000 -o basic.tsv
 ```
+
+
+## Contig annotation parsing
+
+[`orf_to_contig.py`](orf_to_contig.py) converts an ORF-to-feature mapping into a contig-to-feature(s) mapping.
+
+```bash
+orf_to_contig.py orf-to-gene.map > ctg-to-genes.map
+```
+
+The resulting mapping file can be appended to a dataset as a "feature set" column for BinaRena.
 
 
 ## _k_-mer frequencies
@@ -165,7 +177,7 @@ python checkm_marker_list.py output/Bacteria.ms > Bacteria.lst
 
 The output file `Bacteria.lst` can be imported into BinaRena as a feature group membership list.
 
-Step 6. You can now use the "feature group" menu item to calculate **completeness** and **redundancy** (contamination) scores of selection contigs in real time!
+Step 6. You can now use the "feature group" menu item to calculate **completeness** and **redundancy** (contamination) scores of selection contigs on the fly! See [details](..#completeness--redundancy-calculation).
 
 - [Tip] You may load multiple marker gene sets into BinaRena and calculate using each of them.
 

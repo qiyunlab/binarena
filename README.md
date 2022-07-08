@@ -14,22 +14,22 @@
 Check out this [live demo](https://qiyunlab.github.io/binarena/demo.html). It is a fully functional program with a pre-loaded sample [dataset](https://www.ncbi.nlm.nih.gov/assembly/GCA_003604395.1/). Once you are familiar with the program, you may close the data, then drag and drop your own data into the interface and start to explore!
 
 
-## Contents
-
-- [Installation](#noinstallation) | [main interface](#main-interface) | [widget buttons](#widget-buttons) | [mouse and keyboard shortcuts](#mouse-and-keyboard-shortcuts)
-- [**Data**](#input-data): [data table](#data-table) | [data types](#data-types) | [special columns](#special-columns) | [table view](#table-view)
-- [**Plot**](#display-items): [auto-assign](#automatic-assignment) | [legends & scaling](#legends-and-data-scaling) | [transformation](#data-transformation) | [coloring](#color-coding) | [image export](#image-export)
-- **Contig**: [selection](#contig-selection) | [masking](#contig-masking) | [highlighting](#contig-highlighting) | [summary](#contig-summary) | [search](#contig-searching) | [mini plot](#mini-plot)
-- **Binning**: [Binning plan](#binning-plan) | [table of bins](#table-of-bins) | [from selection to bin](#from-selection-to-bin)
-- [Binning confidence evaluation](#binning-confidence-evaluation) | [binning plan comparison](#binning-plan-comparison)
-- [FAQ](#faq) | [contact](#contact)
-
-
-## (No)Installation
+## ~~Installation~~
 
 [Download](https://github.com/qiyunlab/binarena/archive/refs/heads/master.zip) this program, unzip, and double-click "**BinaRena.html**". That's it!
 
-BinaRena is a client-end web application. It is written in vanilla JavaScript, without using any third-party library. it does not require installation, nor does it require a web server running in the backend. In other words, it is literally a webpage running in your browser (see [details](#faq)).
+BinaRena is a client-end web application. It is written in vanilla JavaScript, without using any third-party library. it does not require installation, nor does it require a web server running in the backend. In other words, it is literally a single webpage running in your browser (see [details](#faq)).
+
+
+## Contents
+
+- [Main interface](#main-interface) | [widget buttons](#widget-buttons) | [mouse and keyboard](#mouse-and-keyboard-shortcuts)
+- **Input**: [data table](#data-table) | [data types](#data-types) | [special columns](#special-columns) | [table view](#table-view)
+- **Plot**: [auto-assign](#automatic-assignment) | [scaling](#legends-and-data-scaling) | [transformation](#data-transformation) | [coloring](#color-coding) | [image export](#image-export)
+- **Contig**: [select](#contig-selection) | [mask](#contig-masking) | [highlight](#contig-highlighting) | [summary](#contig-summary) | [search](#contig-searching) | [mini plot](#mini-plot)
+- **Binning**: [Binning plan](#binning-plan) | [table of bins](#table-of-bins) | [from selection to bin](#from-selection-to-bin)
+- **Metrics**: [Plan evaluation](#binning-confidence-evaluation) | [plan comparison](#binning-plan-comparison) | [completeness & redundancy](#completeness--redundancy-calculation)
+- [FAQ](#faq) | [scripts](scripts) | [citation](#citation) | [contact](#contact)
 
 
 ## Main interface
@@ -95,6 +95,8 @@ To **append** additional data to an opened dataset, just drag and drop more file
 
 To work on **multiple** datasets simultaneously, just open multiple browser tabs.
 
+Also check out these [Python scripts](scripts) which help with data preparation.
+
 ### Data types
 
 Once a data table is loaded, BinaRena will prompt you to specify the data types of individual fields (columns):
@@ -125,6 +127,12 @@ You can change these assignments later in the "Settings" window. This is useful 
 During the analysis, one can click `Show data` from the context menu to open a window to browse the current dataset. Alternatively, when one or more bins are selected, one can click the <span>&#9707;</span> button in the bin table toolbar to browse the data of contigs **within** these bins. Click `Export` to save the data table as a TSV file.
 
 <img src="docs/img/table.png" width="768">
+
+### [Scripts](scripts)
+
+BinaRena ships with multiple Python scripts to help with preparing input data. They provide _k_-mer counting and dimensionality reduction (PCA, tSNE and UMAP) workflows, and format parsers that handle the output of bioinformatic tools such as SPAdes, MEGAHIT, Kraken, GTDB-tk, and CheckM.
+
+Check out this [directory](scripts) for the scripts and documentation.
 
 
 ## Display items
@@ -200,14 +208,11 @@ The plot rendered by BinaRena can be exported as an image file. There are two op
 <img src="docs/img/svg.png" width="553">
 
 
-
 ## Contig selection
 
 In the interactive scatter plot, one can simple click circles (**contigs**) to select them. Hold `Shift` and click to select multiple. Click selected ones to unselect them.
 
 A more efficient may is to press `Enter` or click the <span>&#11040;</span> button in the corner to enter the **polygon** selection mode.
-
-<img src="docs/img/widgets.png" width="192">
 
 Then one can click on the plot to draw a polygon to contain contigs of interest. When done, press `Enter` again and these contigs will be selected.
 
@@ -344,6 +349,51 @@ BinaRena compares two binning plans by calculating the [**adjusted Rand index**]
 
 One may click the <span>&harr;</span> button in the toolbar next to the binning plan, then select a categorical field (another binning plan) to perform this calculation. It is fast. The result will be displayed in a floating message box.
 
+<img src="docs/img/rand.png" width="356">
+
+
+## Completeness & redundancy calculation
+
+BinaRena can calculate these two critical metrics **in real time** on user-selected contigs, as in contrast to classical methods which normally run after bins are already defined.
+
+What are completeness and redundancy? Given a feature group as defined by its membership (i.e., it contains these _n_ features: _f_<sub>1</sub>, _f_<sub>2</sub>,... _f<sub>n</sub>_), **completeness** is the number / fraction of these features found in the selected contigs; **redundancy** (a.k.a., **contamination**) is the number / fraction of extra copies of these features present in the contigs.
+
+To use this function, you first need to have a "feature set" column in the dataset (see [details](#data-types)). For example, this can be the KEGG ontology (KO) annotations of predicted genes on each contig:
+
+```
+k99_1 <tab> K00986
+k99_3 <tab> K02117,K02122,K02124,K02123,K02119,K03439
+k99_10 <tab> K18349,K18479,K00763,K07098,K04769
+k99_39 <tab> K25232,K07729,K02871,K02996
+k99_62 <tab> K00655
+...
+```
+
+Then you need a separate file, which is a plain list of member features of a particular feature group. In this example, it is the KOs of the glycolysis pathway ([ko00010](https://www.genome.jp/entry/ko00010)).
+
+```
+K00844
+K12407
+K00845
+K25026
+K01810
+...
+```
+
+Drag and drop this file into BinaRena. The program will recognize and prompt you to associate it with a feature set column.
+
+<img src="docs/img/feature_group.png" width="300">
+
+Then, whenever there are some contigs selected, you can go to the summary panel's dropdown menu, select "Feature group", then select the feature group name. The program will report the completeness and redundancy values right away.
+
+<img src="docs/img/comred.png" width="700">
+
+You can load arbitrary number of feature groups for any number of feature set columns simultaneously. This lets you explore various biological questions with high flexibility.
+
+BinaRena provides scripts for converting [CheckM](https://ecogenomics.github.io/CheckM/) lineage-specific marker genes into feature sets and feature groups, so that you can calculate the bin quality metrics **on the fly** in BinaRena. See [details](scripts##checkm-marker-genes).
+
+- [Note] BinaRena does not consider feature interchangeability -- for example, both K00845 and K12407 encode for glucokinase and an organism may just need one of them. One should be cautious in defining feature groups and interpreting the resulting numbers.
+
 
 ## FAQ
 
@@ -453,6 +503,12 @@ The program has an optimization for less than 20,000 contigs. Below this thresho
 
 For efficient computing, one may consider filtering down the dataset (e.g., removing short and shallow contigs) and/or masking irrelevant contig groups (masked contigs won't participate in calculation).
 
+
+## Citation
+
+A manuscript describing BinaRena and its use cases in microbiome research is preprinted at:
+
+> MJ Pavia, A Chede, Z Wu, H Cadillo-Quiroz, Q Zhu. BinaRena: a dedicated interactive platform for human-guided exploration and binning of metagenomes. _bioRxiv_ (2022). doi: https://doi.org/10.1101/2022.06.28.498025.
 
 ## Contact
 
