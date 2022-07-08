@@ -177,7 +177,7 @@ python checkm_marker_list.py output/Bacteria.ms > Bacteria.lst
 
 The output file `Bacteria.lst` can be imported into BinaRena as a feature group membership list.
 
-Step 6. You can now use the "feature group" menu item to calculate **completeness** and **redundancy** (contamination) scores of selection contigs on the fly! See [details](..#completeness--redundancy-calculation).
+Step 6. You can now use the "feature group" menu item to calculate **completeness** and **redundancy** (contamination) scores of selection contigs on the fly! See [details](../README.md#completeness--redundancy-calculation).
 
 - [Tip] You may load multiple marker gene sets into BinaRena and calculate using each of them.
 
