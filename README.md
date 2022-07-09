@@ -21,14 +21,22 @@ Check out this [live demo](https://qiyunlab.github.io/binarena/demo.html). It is
 BinaRena is a client-end web application. It is written in vanilla JavaScript, without using any third-party library. it does not require installation, nor does it require a web server running in the backend. In other words, it is literally a single webpage running in your browser (see [details](#faq)).
 
 
+## Highlights
+
+- Dedicated to human operations. Designed to maximize comfort and productivity.
+- For pattern discovery and hypothesis generation. For _de novo_ binning and bin plan curation.
+- Customizable plot visualizing various data types. Convenient manipulation of contigs and bins.
+- Aesthetics, controls, reports and calculations integrated in UI. You get what you see.
+
+
 ## Contents
 
 - [Main interface](#main-interface) | [widget buttons](#widget-buttons) | [mouse and keyboard](#mouse-and-keyboard-shortcuts)
 - **Input**: [data table](#data-table) | [data types](#data-types) | [special columns](#special-columns) | [table view](#table-view)
 - **Plot**: [auto-assign](#automatic-assignment) | [scaling](#legends-and-data-scaling) | [transformation](#data-transformation) | [coloring](#color-coding) | [image export](#image-export)
-- **Contig**: [select](#contig-selection) | [mask](#contig-masking) | [highlight](#contig-highlighting) | [summary](#contig-summary) | [search](#contig-searching) | [mini plot](#mini-plot)
+- **Contigs**: [select](#contig-selection) | [mask](#contig-masking) | [highlight](#contig-highlighting) | [summary](#contig-summary) | [search](#contig-searching) | [mini plot](#mini-plot)
 - **Binning**: [Binning plan](#binning-plan) | [table of bins](#table-of-bins) | [from selection to bin](#from-selection-to-bin)
-- **Metrics**: [Plan evaluation](#binning-confidence-evaluation) | [plan comparison](#binning-plan-comparison) | [completeness & redundancy](#completeness--redundancy-calculation)
+- **Metrics**: [Plan evaluation](#binning-confidence-evaluation) | [comparison](#binning-plan-comparison) | [completeness & redundancy](#completeness--redundancy)
 - [FAQ](#faq) | [scripts](scripts) | [citation](#citation) | [contact](#contact)
 
 
@@ -77,7 +85,7 @@ The BinaRena interface is like a [**digital map**](https://www.google.com/maps) 
 - Press `0` to reset the plot view.
 
 
-## Input data
+## Input
 
 ### Data table
 
@@ -130,18 +138,22 @@ During the analysis, one can click `Show data` from the context menu to open a w
 
 ### [Scripts](scripts)
 
-BinaRena ships with multiple Python scripts to help with preparing input data. They provide _k_-mer counting and dimensionality reduction (PCA, tSNE and UMAP) workflows, and format parsers that handle the output of bioinformatic tools such as SPAdes, MEGAHIT, Kraken, GTDB-tk, and CheckM.
+BinaRena ships with multiple Python scripts to help with preparing input data. They provide _k_-mer counting and dimensionality reduction (PCA, tSNE and UMAP) workflows, and format parsers that handle the output of bioinformatic tools such as SPAdes, MEGAHIT, Prokka, Kraken, GTDB-tk, and CheckM.
 
 Check out this [directory](scripts) for the scripts and documentation.
 
 
-## Display items
+## Plot
+
+### Display items
 
 BinaRena is an interactive scatter plot of contigs, with five display items:
 
 - **x-axis**, **y-axis**, **size** (radius of contig), **opacity** (alpha value), and **color**.
 
 Each display item can be changed and tweaked in the **display panel**. When the user moves the mouse of an item, two button will emerge, one letting the user select a data transformation method, and the other letting the user display a legend.
+
+What data should be assigned to these five display items? Well, be creative. Many pieces of information are useful for exploring metagenomes and binning contigs. Examples are GC x coverage, abundance profile by sample, _k_-mer frequency-based dimensionality reduction (BinaRena has [scripts](scripts) for generating this), taxonomic assignment, functional capacity, etc, etc. Toggle these properties to gain a better understanding of your data.
 
 ### Automatic assignment
 
@@ -192,7 +204,7 @@ The color panel has an additional dropdown menu to let the user choose from mult
 
 <img src="docs/img/palettes.png" width="395">
 
-For **categorical** data, BinaRena automatically identifies and colors the **most frequent** categories in the dataset, while leaving all remaining categories in black. One may use the floating <span style="background-color: lightgrey;">&plus;</span> and <span style="background-color: lightgrey;">&minus;</span> buttons to increase / decrease the number of colored categories.
+For **categorical** data, BinaRena automatically identifies and colors the **most frequent** categories in the dataset, while leaving all remaining categories in black. One may use the floating <span>&plus;</span> and <span>&minus;</span> buttons to increase / decrease the number of colored categories.
 
 <img src="docs/img/color_cat.png" width="240">
 
@@ -208,7 +220,9 @@ The plot rendered by BinaRena can be exported as an image file. There are two op
 <img src="docs/img/svg.png" width="553">
 
 
-## Contig selection
+## Contigs
+
+### Contig selection
 
 In the interactive scatter plot, one can simple click circles (**contigs**) to select them. Hold `Shift` and click to select multiple. Click selected ones to unselect them.
 
@@ -220,8 +234,7 @@ Then one can click on the plot to draw a polygon to contain contigs of interest.
 
 Hold `Shift` when finishing selection will add the contigs to the current selection.
 
-
-## Contig masking
+### Contig masking
 
 One can press the `Delete` key or click the <span>&empty;</span> button in the corner to **mask** currently selected contigs. These contigs will disappear from the plot. They will also be excluded from subsequent operations (e.g., they cannot be selected, nor can they influence calculation of metrics). This function is useful for cloaking unwanted contigs during binning.
 
@@ -233,8 +246,7 @@ One can also press `Z` or click the <span>&#8617;</span> button to **undo** prev
 
 - Note that masked contigs will not be immediated deleted from bins. One can click the <span>&empty;</span> button in the bin table toolbar to remove masked contigs from all bins.
 
-
-## Contig highlighting
+### Contig highlighting
 
 One can press the `L` key or click the <span>&#9673;</span> button in the corner to **highlight** currently selected contigs. Moreover, one may select one of multiple highlight colors from the menu.
 
@@ -244,26 +256,23 @@ The highlight will stay with the contigs no matter how the layout and display it
 
 Highlighting will not affect binning, search, calculation and operations. It serves as a visual annotation of contigs to make them noticeable to the user.
 
-
-## Contig focusing
+### Contig focusing
 
 Press the `F` key or click the <span>&#8889;</span> (cross) button in the corner to **focus** on selected contigs. That is, all but these contigs will be hidden, allowing you to concentrate on them. When you complete working on these contigs, press `F` again and bring back all other contigs.
 
-
-## Contig summary
+### Contig summary
 
 BinaRena displays a summary of properties of the select contigs in real time to let the user see what's included. Each row represents a field. When the user moves the mouse over a row, a mini control panel will show up.
 
 <img src="docs/img/info.png" width="330">
 
-When multiple contigs are selected, the displayed value of **numeric** fields is calculated using either **mean** (<span style="background-color: lightgrey; text-decoration: overline;"><i>x</i></span>) or **sum** (<span>&Sigma;<i>x</i></span>) of the contigs, optionally **weighted** by another variable. BinaRena attempts to "guess" the most relevant metric for each column. For examples, "length" should be the sum of lengths of all contigs, whereas "coverage" should be the average of coverages of the contigs, weighted by contig length. One can mouse hover the displayed value to see how it is exactly calculated, and tweak the metrics (in case BinaRena didn't guess right).
+When multiple contigs are selected, the displayed value of **numeric** fields is calculated using either **mean** (<span><i>x&#772;</i></span>) or **sum** (<span>&Sigma;<i>x</i></span>) of the contigs, optionally **weighted** by another variable. BinaRena attempts to "guess" the most relevant metric for each column. For examples, "length" should be the sum of lengths of all contigs, whereas "coverage" should be the average of coverages of the contigs, weighted by contig length. One can mouse hover the displayed value to see how it is exactly calculated, and tweak the metrics (in case BinaRena didn't guess right).
 
 For **categorical** columns, the displayed category is the **majority-rule** category, if there are multiple options (i.e., the selected contigs are a mixture), determined by weighting against the contig length (one can tweak this). The relative frequency of the main category is displayed in the parentheses. If no category is over half, the row will be displayed as "ambiguous", while the most frequent category can be found in the tooltip during mouse hovering.
 
 One may click the <span>&#9684;</span> button in each row to display a histogram of the distribution of this variable in a [mini plot](#mini-plot).
 
-
-## Contig searching
+### Contig searching
 
 The **Search** panel offers functions to search the assembly for contigs that match given criteria.
 
@@ -277,10 +286,9 @@ For categorical, feature set and descriptive fields, enter a keyword to search. 
 
 For feature set field, the whole contig will match as long as any feature on it matches.
 
+### Mini plot
 
-## Mini plot
-
-The mini plot panel displays an interactive **histogram** of a user-chosen variable of the selected contigs. Mouse over the bars to display the range and size of them. Click `log` to apply log-transformation. Click `+` and `-` to increase / decrease the number of bars.
+The **mini plot panel** displays an interactive **histogram** of a user-chosen variable of the selected contigs. Mouse over the bars to display the range and size of them. Click `log` to apply log-transformation. Click `+` and `-` to increase / decrease the number of bars.
 
 One may use mouse **dragging** to select a range of bars. The contigs will be filtered down to the selected range.
 
@@ -289,18 +297,19 @@ One may use mouse **dragging** to select a range of bars. The contigs will be fi
 This miniplot faciliates the user to observe the distribution of the variable in a set of contigs, and further perform filtering based on the observation. For examples, one may remove **contaminations** from a bin which appear to be outliers in the histogram; one may also separate two **closely related strains** which show a bimodal distribution in the histogram.
 
 
-## Binning plan
+## Binning
+
+### Binning plan
 
 One may create a binning plan from _de novo_ or load an existing one from a **categorical** field. Each category represents a bin. The name, number of contigs (`#`), total length of contigs (`kb`) and the relative abundance (calculated as length x coverage, then normalized against the entire assembly) are displayed.
 
-<img src="docs/img/plan.png" width="338">
+<img src="docs/img/plan.png">
 
 When a binning plan is modified (added/removed bins, added/removed contigs to/from bins, renamed bins, entered a new plan name, etc.), a <span>Save</span> button will show up. Click it to save the **binning plan** as a categorical field.
 
-Alternatively, click the <span style="background-color: lightgrey;">&rarrb;</span> button in the toolbar to export the binning plan to a text file. The format will be a mapping of bin names to member contig IDs.
+Alternatively, click the <span>&rarrb;</span> button in the toolbar to export the binning plan to a text file. The format will be a mapping of bin names to member contig IDs.
 
-
-## Table of bins
+### Table of bins
 
 The table below the binning plan name displays a list of bins in the plan. Click a bin to select it. The contigs in this bin will be [selected](#contig-selection) in the same time and their properties will be [summarized](#contig-summary).
 
@@ -308,12 +317,11 @@ The table below the binning plan name displays a list of bins in the plan. Click
 
 Click the bin again to edit its name. Press `Enter` when done. Hold `Shift` and click to select multiple bins.
 
-The toolbar next to the bin table provides a few utilities. Click <span style="background-color: lightgrey;">&plus;</span> to create an empty new bin. Click <span style="background-color: lightgrey;">&minus;</span> to delete the selected bin(s), Click <span style="background-color: lightgrey;">&cup;</span> to merge multiple bins.
+The toolbar next to the bin table provides a few utilities. Click <span>&plus;</span> to create an empty new bin. Click <span>&minus;</span> to delete the selected bin(s), Click <span>&cup;</span> to merge multiple bins.
 
 <img src="docs/img/bins.png" width="334">
 
-
-## From selection to bin
+### From selection to bin
 
 Press `Space` to **create a new bin from selected contigs**. If no binning plan is currently loaded, the program will create a new plan. This is perhaps the easiest way to start **de novo binning** using the program.
 
@@ -322,37 +330,41 @@ Press `.` to add selected contigs to the select bin. Press `,` to remove selecte
 These functions can also be found in the toolbar next to the summary table.
 
 
-## Binning confidence evaluation
+## Metrics
+
+### Binning confidence evaluation
 
 BinaRena can evaluate the **confidence** of binning by calculating the [**silhouette coefficient**](https://en.wikipedia.org/wiki/Silhouette_(clustering)). Specifically, a silhouette coefficient measures how similar a contig is to other contigs in the same bin, as in contrast to contigs in other bins. It ranges from -1 (worst) to 1 (best).
 
-One may click the <span>&#9739;</span> button in the toolbar next to the binning plan to open the "silhouette coefficient" window. It allows the user to select variables to be included in the calculation.
+The function can be triggered by selecting "**Evaluate**" in the dropdown menu of the bin panel.
+
+<img src="docs/img/bin_menu.png">
+
+It allows the user to select variables to be included in the calculation.
 
 - Note: Only select variables that are presumably **homogeneous** in each bin (e.g., GC%, coverage, _k_-mer frequency). Don't select those that aren't (e.g., length of contig).
 
-Then click the "calculate" button to start calculation. When done, the mean silhouette coefficient of each bin and all bins will be displayed in a table.
+Then click "**Calculate**" to start calculation. When done, the mean silhouette coefficient of each bin and all bins will be displayed in a table.
 
-<img src="docs/img/silhouette.png" width="450">
+<img src="docs/img/silhouette.png">
 
 Before pressing "done", one may check "save result to field" to save the calculated silhouette coefficient to a categorical field. BinaRena will automatically color the contigs using these values, from which one can immediately see which bins are of high overall confidences and which contigs are confidently belonging to their bins. This can guide the subsequent binning efforts.
 
-<img src="docs/img/silh_color.png" width="660">
+<img src="docs/img/silh_color.png">
 
 One may also check "export result to file" to save the results (contig IDs, bin assignments and silhouette coefficients) to a TSV file.
 
 - Be warned not to over-interpret silhouette coefficient. It is a widely-used metric for [cluster analysis evaluation](https://en.wikipedia.org/wiki/Cluster_analysis#Evaluation_and_assessment). However, other biological factors may also be important in the task of binning.
 
-
-## Binning plan comparison
+### Binning plan comparison
 
 BinaRena compares two binning plans by calculating the [**adjusted Rand index**](https://en.wikipedia.org/wiki/Rand_index) (ARI), which measures the **consistency** between two grouping scenarios of the same dataset. Higher is better. Two identical plans have ARI = 1. Two random plans will have an ARI close to 0.
 
-One may click the <span>&harr;</span> button in the toolbar next to the binning plan, then select a categorical field (another binning plan) to perform this calculation. It is fast. The result will be displayed in a floating message box.
+Select "**Compare**" in the dropdown menu of the bin panel, then select a categorical field (another binning plan) to perform this calculation. It is fast. The result will be displayed in a floating message box.
 
-<img src="docs/img/rand.png" width="356">
+<img src="docs/img/rand.png">
 
-
-## Completeness & redundancy calculation
+### Completeness & redundancy
 
 BinaRena can calculate these two critical metrics **in real time** on user-selected contigs, as in contrast to classical methods which normally run after bins are already defined.
 
@@ -392,7 +404,7 @@ You can load arbitrary number of feature groups for any number of feature set co
 
 BinaRena provides scripts for converting [CheckM](https://ecogenomics.github.io/CheckM/) lineage-specific marker genes into feature sets and feature groups, so that you can calculate the bin quality metrics **on the fly** in BinaRena. See [details](scripts##checkm-marker-genes).
 
-- [Note] BinaRena does not consider feature interchangeability -- for example, both K00845 and K12407 encode for glucokinase and an organism may just need one of them. One should be cautious in defining feature groups and interpreting the resulting numbers.
+- Warning: BinaRena does not consider feature interchangeability -- for example, both K00845 and K12407 encode for glucokinase and an organism may just need one of them. One should be cautious in defining feature groups and interpreting the resulting numbers.
 
 
 ## FAQ
@@ -509,6 +521,7 @@ For efficient computing, one may consider filtering down the dataset (e.g., remo
 A manuscript describing BinaRena and its use cases in microbiome research is preprinted at:
 
 > MJ Pavia, A Chede, Z Wu, H Cadillo-Quiroz, Q Zhu. BinaRena: a dedicated interactive platform for human-guided exploration and binning of metagenomes. _bioRxiv_ (2022). doi: https://doi.org/10.1101/2022.06.28.498025.
+
 
 ## Contact
 
