@@ -49,6 +49,21 @@ orf_to_contig.py orf-to-gene.map > ctg-to-genes.map
 
 The resulting mapping file can be appended to a dataset as a "feature set" column for BinaRena.
 
+The input file needs to be a two-column table. Multiple common formats in bioinformatics can be converted to this simple format using some Linux commands, simple or complex, before feeding into this script. Here are some examples:
+
+```bash
+cat blast.out6 | cut -f1,2 | orf_to_contig.py > output.map
+samtools view -F 4 bowtie2.bam | cut -f1,3 | orf_to_contig.py > output.map
+cat pfam.tblout | grep -v ^'#' | tr -s ' ' | cut -d ' ' -f1,5 | tr ' ' '\t' | orf_to_contig.py > output.map
+```
+
+For [GFF](https://en.wikipedia.org/wiki/General_feature_format), a common genome annotation format, there is [`gff_to_features.py`](gff_to_features.py) to extract certain attributes and to generate a mapping file:
+
+
+```bash
+gff_to_features.py -i prokka.gff -t gene -o gene.map
+```
+
 
 ## _k_-mer frequencies
 

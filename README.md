@@ -21,6 +21,14 @@ Check out this [live demo](https://qiyunlab.github.io/binarena/demo.html). It is
 BinaRena is a client-end web application. It is written in vanilla JavaScript, without using any third-party library. it does not require installation, nor does it require a web server running in the backend. In other words, it is literally a single webpage running in your browser (see [details](#faq)).
 
 
+## Highlights
+
+- Dedicated to human operations. Designed to maximize comfort and productivity.
+- For pattern discovery and hypothesis generation. For _de novo_ binning and bin plan curation.
+- Customizable plot visualizing various data types. Convenient manipulation of contigs and bins.
+- Aesthetics, controls, reports and calculations integrated in UI. You get what you see.
+
+
 ## Contents
 
 - [Main interface](#main-interface) | [widget buttons](#widget-buttons) | [mouse and keyboard](#mouse-and-keyboard-shortcuts)
@@ -28,7 +36,7 @@ BinaRena is a client-end web application. It is written in vanilla JavaScript, w
 - **Plot**: [auto-assign](#automatic-assignment) | [scaling](#legends-and-data-scaling) | [transformation](#data-transformation) | [coloring](#color-coding) | [image export](#image-export)
 - **Contigs**: [select](#contig-selection) | [mask](#contig-masking) | [highlight](#contig-highlighting) | [summary](#contig-summary) | [search](#contig-searching) | [mini plot](#mini-plot)
 - **Binning**: [Binning plan](#binning-plan) | [table of bins](#table-of-bins) | [from selection to bin](#from-selection-to-bin)
-- **Metrics**: [Plan evaluation](#binning-confidence-evaluation) | [plan comparison](#binning-plan-comparison) | [completeness & redundancy](#completeness--redundancy)
+- **Metrics**: [Plan evaluation](#binning-confidence-evaluation) | [comparison](#binning-plan-comparison) | [completeness & redundancy](#completeness--redundancy)
 - [FAQ](#faq) | [scripts](scripts) | [citation](#citation) | [contact](#contact)
 
 
@@ -130,18 +138,22 @@ During the analysis, one can click `Show data` from the context menu to open a w
 
 ### [Scripts](scripts)
 
-BinaRena ships with multiple Python scripts to help with preparing input data. They provide _k_-mer counting and dimensionality reduction (PCA, tSNE and UMAP) workflows, and format parsers that handle the output of bioinformatic tools such as SPAdes, MEGAHIT, Kraken, GTDB-tk, and CheckM.
+BinaRena ships with multiple Python scripts to help with preparing input data. They provide _k_-mer counting and dimensionality reduction (PCA, tSNE and UMAP) workflows, and format parsers that handle the output of bioinformatic tools such as SPAdes, MEGAHIT, Prokka, Kraken, GTDB-tk, and CheckM.
 
 Check out this [directory](scripts) for the scripts and documentation.
 
 
 ## Plot
 
+### Display items
+
 BinaRena is an interactive scatter plot of contigs, with five display items:
 
 - **x-axis**, **y-axis**, **size** (radius of contig), **opacity** (alpha value), and **color**.
 
 Each display item can be changed and tweaked in the **display panel**. When the user moves the mouse of an item, two button will emerge, one letting the user select a data transformation method, and the other letting the user display a legend.
+
+What data should be assigned to these five display items? Well, be creative. Many pieces of information are useful for exploring metagenomes and binning contigs. Examples are GC x coverage, abundance profile by sample, _k_-mer frequency-based dimensionality reduction (BinaRena has [scripts](scripts) for generating this), taxonomic assignment, functional capacity, etc, etc. Toggle these properties to gain a better understanding of your data.
 
 ### Automatic assignment
 
@@ -276,7 +288,7 @@ For feature set field, the whole contig will match as long as any feature on it 
 
 ### Mini plot
 
-The mini plot panel displays an interactive **histogram** of a user-chosen variable of the selected contigs. Mouse over the bars to display the range and size of them. Click `log` to apply log-transformation. Click `+` and `-` to increase / decrease the number of bars.
+The **mini plot panel** displays an interactive **histogram** of a user-chosen variable of the selected contigs. Mouse over the bars to display the range and size of them. Click `log` to apply log-transformation. Click `+` and `-` to increase / decrease the number of bars.
 
 One may use mouse **dragging** to select a range of bars. The contigs will be filtered down to the selected range.
 
@@ -509,6 +521,7 @@ For efficient computing, one may consider filtering down the dataset (e.g., remo
 A manuscript describing BinaRena and its use cases in microbiome research is preprinted at:
 
 > MJ Pavia, A Chede, Z Wu, H Cadillo-Quiroz, Q Zhu. BinaRena: a dedicated interactive platform for human-guided exploration and binning of metagenomes. _bioRxiv_ (2022). doi: https://doi.org/10.1101/2022.06.28.498025.
+
 
 ## Contact
 
