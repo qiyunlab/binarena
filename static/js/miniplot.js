@@ -113,7 +113,7 @@ function updateMiniPlotCtrl(cols) {
 
 
 /**
- * Mini plot mouse move event
+ * Mini plot mouse move event.
  * @function miniPlotMouseMove
  * @param {Object} e - event
  * @param {Object} mo - main object

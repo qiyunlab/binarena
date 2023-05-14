@@ -162,7 +162,7 @@ kraken_to_table.py -i kraken.output -d taxdump_dir -o taxonomy.tsv
 
 ## CheckM marker genes
 
-[CheckM] is the standard tool for evaluating bin qualities. It calculates **completeness** and **contamination** (redundancy) of each bin by assessing the distribution of lineage-specific marker genes. The scripts [checkm_marker_map.py](checkm_marker_map.py) and [checkm_marker_list.py](checkm_marker_list.py) can reformat the CheckM output files such that the can enable BinaRena to calculate completeness and redundancy in real time.
+[CheckM] is the standard tool for evaluating bin qualities. It calculates **completeness** and **contamination** (redundancy) of each bin by assessing the distribution of lineage-specific marker genes. The scripts [checkm_marker_map.py](checkm_marker_map.py) and [checkm_marker_list.py](checkm_marker_list.py) can reformat the CheckM output files such that they can enable BinaRena to calculate completeness and redundancy in real time.
 
 Step 1. Have the entire set of contigs (unbinned) in a multi-FASTA file `input/contigs.fna`.
 
@@ -196,6 +196,6 @@ Step 6. You can now use the "feature group" menu item to calculate **completenes
 
 - [Tip] You may load multiple marker gene sets into BinaRena and calculate using each of them.
 
-- Note: The output values are analogous to CheckM's completeness and contamination scores, and they can be intepreted in a similar way. However there is one difference: CheckM considers the **collocation** of marker genes when calculating these metrics. BinaRena does not, however, and the output values are based on a plain list of features. Therefore the results may be different, although they are highly correlated.
+- Note: The output values are analogous to CheckM's completeness and contamination scores, and they can be interpreted in a similar way. However there is one difference: CheckM considers the **collocation** of marker genes when calculating these metrics. BinaRena does not, however, and the output values are based on a plain list of features. Therefore the results may be different, although they are highly correlated.
 
-- Note: Also, BinaRena can only analyze specified marker gene sets (in this example: Bacteria), unlike CheckM's `lineage_wf` which can automatically determine the lineage of each bin and use the corresponding lineage-specific marker gene set for that bin.
+- Note: Also, BinaRena can only analyze specific marker gene sets (in this example: Bacteria), unlike CheckM's `lineage_wf` which can automatically determine the lineage of each bin and use the corresponding lineage-specific marker gene set for that bin.

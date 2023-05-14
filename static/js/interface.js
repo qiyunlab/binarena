@@ -790,7 +790,7 @@ function formatValueLabel(value, icol, digits, unit, mo) {
 
 
 /**
- * Append an element to a container with inner HTML
+ * Generate a file download link and click it.
  * @function downloadFile
  * @param {string} content - file content
  * @param {string} name - file name
@@ -806,7 +806,7 @@ function downloadFile(content, name, type) {
 
 
 /**
- * Append an element to a container with inner HTML
+ * Append an element to a container with inner HTML.
  * @function appendHTML
  * @param {Object} dom - container DOM
  * @param {string} tag - element tag
@@ -820,7 +820,7 @@ function appendHTML(dom, tag, html) {
 
 
 /**
- * Load program theme
+ * Load a program theme.
  * @function loadTheme
  * @returns {Object} theme
  * @description Currently, it reads colors defined in "theme.css".

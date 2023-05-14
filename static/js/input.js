@@ -1006,8 +1006,9 @@ function parseFeaColumn(arr) {
  * @description The decision process is as follows:
  * 
  * 1. If all values are numbers, parse as numbers.
- * 2. If all values do not contain comma (,), parse as categories.
- * 3. Otherwise, parse as features.
+ * 2. If entropy exceeds a threshold, parse as description.
+ * 3. If all values do not contain comma (,), parse as categories.
+ * 4. Otherwise, parse as features.
  * 
  * This function is similiar to a combination of three: `parseNumColumn`,
  * `parseCatColumn`, and `parseFeaColumn`, but it is less aggressive as it
@@ -1019,8 +1020,6 @@ function parseFeaColumn(arr) {
  * Note: This function uses the presence of comman (,) to determine whether
  * the input data are categories, as in contrast to `parseCatColumn`, which
  * does not do this check.
- * 
- * processed ones exceed a threshold, and return "description".
  */
 function guessColumnType(arr, th) {
   th = th || 4.75;
@@ -1072,6 +1071,7 @@ function guessColumnType(arr, th) {
       }
     }
   }
+
   // parsing as description based on entropy of array
   if (calcEntropy(arr) > th) return ['des', parsed, null];
 
@@ -1107,8 +1107,9 @@ function guessColumnType(arr, th) {
 
 }
 
+
 /**
- * Calculates the entropy of an array
+ * Calculates the entropy of an array.
  * @function calcEntropy
  * @param {Array} arr - array of values
  * @returns {Number} entropy - entropy of array
@@ -1137,6 +1138,7 @@ function calcEntropy(arr) {
 
   return entropy;
 }
+
 
 /**
  * Parse data as an assembly.

@@ -87,7 +87,7 @@ function renderPlot(mo, redo, wait) {
     }
     if (view.grid) drawGrid(w, h, plot, view);
 
-    // checked cached images again; if current viewport is too close to the
+    // check cached images again; if current viewport is too close to the
     // edge of any cached image, start to cache extra images
     img = checkImageCache(
       images, w * 2, h * 2, posX + w / 2, posY + h / 2, scale);
