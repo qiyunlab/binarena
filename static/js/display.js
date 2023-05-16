@@ -615,7 +615,7 @@ function resetWorkspace(mo) {
   mo.binned = Array(n).fill('');
   mo.tabled = n ? [...data[0].keys()] : [];
   mo.images = [];
-  
+
   // reset binning plan
   byId('bin-tbody').innerHTML = '';
 
@@ -772,11 +772,11 @@ function cacheTotAbundance(mo) {
  * @param {Object} mo - main object
  */
 function centerView(mo) {
-  const plot = mo.plot;
-  plot.scale = 1.0;
-  const canvas = plot.main;
-  plot.posX = canvas.width / 2;
-  plot.posY = canvas.height / 2;
+  const view = mo.view;
+  view.scale = 1.0;
+  const canvas = mo.plot.main;
+  view.posX = canvas.width / 2;
+  view.posY = canvas.height / 2;
   updateView(mo, true);
 }
 
@@ -1001,7 +1001,7 @@ function prepDataForDisplay(mo, items) {
 
 
 /**
- * When user changes display item.
+ * When user changes a display item.
  * @function displayItemChange
  * @param {Object} item - display item
  * @param {Object} i - new field index
@@ -1038,4 +1038,60 @@ function closeData(mo) {
   mo.cols.names.length = 0;
   mo.cols.types.length = 0;
   mo.mems = {};
+}
+
+
+/**
+ * Export current view to a JSON file.
+ * @function exportView
+ * @param {Object} mo - main object
+ */
+function exportView(mo) {
+  const str = JSON.stringify({'view': mo.view});
+  downloadFile(str, 'view.json',
+    'data:application/json;charset=utf-8');
+}
+
+
+/**
+ * Parse view information as a JavaScript object.
+ * @function parseView
+ * @param {Object} obj - input object
+ * @param {Array} mo - main object
+ * @param {string} fname - file name
+ */
+function parseView(obj, mo, fname) {
+
+  // check if a dataset is open
+  if (mo.cache.nctg === 0) {
+    toastMsg('No dataset is currently open. Please load data before ' +
+             'loading views.', mo.stat, 3000);
+    return;
+  }
+
+  // get base file name
+  fname = fname.replace(/^.*[\\\/]/, '');
+
+  // set view parameters
+  for (let key in obj) {
+    mo[key] = obj[key];
+  }
+
+  // clear cache
+  const cache = mo.cache;
+  cache.npick = 0;
+  cache.nmask = 0;
+  cache.nhigh = 0;
+  cache.maskh = [];
+  cache.pdist = [];
+
+  // reset web worker (if applicable)
+  // const work = mo.work.draw;
+  // if (work) work.postMessage({msg: 'reset'});
+
+  // reset cached images
+  mo.images = [];
+
+  updateView(mo, true);
+  toastMsg(`Loaded view from ${fname}.`, mo.stat);
 }

@@ -36,18 +36,17 @@ function renderSVG(mo, legs) {
    */
 
   // canvas size
-  const plot = mo.plot,
-        view = mo.view;
-  const canvas = plot.main;
+  const canvas = mo.plot.main;
   const w = canvas.width,
         h = canvas.height;
 
   // image scale and offset
-  const scale = plot.scale;
+  const view = mo.view;
+  const scale = view.scale;
   let scaleX = w * scale,
       scaleY = h * scale;
-  let offsetX = plot.posX,
-      offsetY = plot.posY;
+  let offsetX = view.posX,
+      offsetY = view.posY;
 
   // get data range
   let xmin = view.x.min,
@@ -371,7 +370,7 @@ function renderSVG(mo, legs) {
   // size legend
   v = mo.view.size;
   if (legs.includes('size') && v.i) {
-    drawNumLegFrame(v, plot.scale);
+    drawNumLegFrame(v, view.scale);
 
     // min and max sizes
     let minr = base * v.lower / 100,

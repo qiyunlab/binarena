@@ -34,15 +34,15 @@ function renderPlot(mo, redo, wait) {
         work = mo.work.draw;
   const w = plot.main.width,
         h = plot.main.height;
-  const posX = plot.posX,
-        posY = plot.posY,
-        scale = plot.scale;
+  const posX = view.posX,
+        posY = view.posY,
+        scale = view.scale;
 
   // to find a cahced image
   let img;
 
   // if forced redrawing, signal current caching tasks (if any) to stop,
-  // then clear all cached images (if any), 
+  // then clear all cached images (if any)
   if (redo) {
     stat.painting = 0;
     for (let i = 0; i < images.length; i++) {
@@ -51,7 +51,7 @@ function renderPlot(mo, redo, wait) {
     }
   }
 
-  // check of any of the cached images can be used
+  // check if any of the cached images can be used
   else img = checkImageCache(images, w, h, posX, posY, scale);
 
   // arguments to pass to drawing function
@@ -203,8 +203,10 @@ function cacheImages(images, args, stat, wait, work, n, mar, zoom) {
     const [w, h, posX, posY, scale] = args.slice(0, 5);
 
     // add margin to image
-    const marX = w * mar, marY = h * mar;
-    const marXr = Math.round(marX), marYr = Math.round(marY);
+    const marX = w * mar,
+          marY = h * mar;
+    const marXr = Math.round(marX),
+          marYr = Math.round(marY);
     const posXNow = args[2] = posX + marXr,
           posYNow = args[3] = posY + marYr;
     const wNow = w + marXr * 2, hNow = h + marYr * 2;
@@ -339,7 +341,7 @@ function addImageToCache(images, work) {
   // if array not full yet, create new image
   if (n < maxlen) {
 
-    // initiate new image (increment index by 1)
+    // initiate new image (increase index by 1)
     img = {
       iid: maxIid + 1, uid: 0, done: false,
       main: document.createElement('canvas'),
@@ -432,7 +434,7 @@ function callDrawPlot(work, idx, iid, uid, w, h, args) {
  * @description This is the main function for drawing the plot. It parses
  * pre-transformed data and draws on three canvases: main scatter plot,
  * selection shadows, and highlight borders. The process has been optimized
- * to maximize efficient. This function has several variants (see below).
+ * to maximize efficiency. This function has several variants (see below).
  */
 function drawPlot(target, pltW, pltH, offX, offY, scale, trans,
                   mask, pick, high, selcol, highpal) {
@@ -723,12 +725,12 @@ function renderSele(mo) {
   }
 
   // start to render selection
-  const plot = mo.plot,
+  const view = mo.view,
         stat = mo.stat;
-  const posX = plot.posX,
-        posY = plot.posY,
-        scale = plot.scale;
-  const canvas = plot.sele;
+  const posX = view.posX,
+        posY = view.posY,
+        scale = view.scale;
+  const canvas = mo.plot.sele;
   const w = canvas.width,
         h = canvas.height;
   const args = [w, h, posX, posY, scale, mo.trans, mo.masked, mo.picked,
@@ -904,18 +906,18 @@ function drawSeleBack(canvas, pltW, pltH, offX, offY, scale, trans,
  * @see renderPlot
  */
 function drawPolygon(mo) {
-  const plot = mo.plot,
+  const canvas = mo.plot.sele;
+  const view = mo.view,
         stat = mo.stat;
-  const canvas = plot.sele;
+  const posX = view.posX,
+        posY = view.posY,
+        scale = view.scale;
   const vertices = stat.polygon;
   const pi2 = Math.PI * 2;
   const radius = 5;
   const color = mo.theme.polygon;
   const ctx = canvas.getContext('2d');
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  const posX = plot.posX,
-        posY = plot.posY,
-        scale = plot.scale;
   ctx.fillStyle = color;
   ctx.strokeStyle = color;
   const n = vertices.length;
@@ -949,9 +951,9 @@ function drawPolygon(mo) {
  */
 function drawGrid(w, h, plot, view) {
   const ctx = plot.main.getContext('2d');
-  const posX = plot.posX,
-        posY = plot.posY,
-        scale = plot.scale;
+  const posX = view.posX,
+        posY = view.posY,
+        scale = view.scale;
   const ww = w * scale,
         hh = h * scale;
   const xmin = view.x.min,

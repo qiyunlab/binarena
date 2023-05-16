@@ -324,7 +324,7 @@ function initContextMenu(mo) {
     exportBinPlan(mo.binned, mo.data[0], byId('plan-sel-txt').value);
   });
 
-  // export data table as JSON
+  // export data table as TSV
   byId('export-data-a').addEventListener('click', function () {
     exportDataTable(mo);
   });
@@ -337,6 +337,16 @@ function initContextMenu(mo) {
   // export image as SVG
   byId('export-svg-a').addEventListener('click', function () {
     renderSVG(mo);
+  });
+
+  // export view as JSON
+  byId('export-view-a').addEventListener('click', function () {
+    exportView(mo);
+  });
+
+  // load view
+  byId('load-view-a').addEventListener('click', function () {
+    byId('open-file').click();
   });
 
   // reset view

@@ -15,7 +15,9 @@
 function initPlotCtrl(mo) {
 
   // initiate canvases
-  const plot = mo.plot;
+  const plot = mo.plot,
+        view = mo.view,
+        stat = mo.stat;
   plot.main = byId('main-canvas');
   plot.sele = byId('sele-canvas');
   plot.high = byId('high-canvas');
@@ -23,11 +25,10 @@ function initPlotCtrl(mo) {
 
   // setting up plot events
   const canvas = plot.main;
-  const stat = mo.stat;
 
   // minimum dimensions of plot
-  mo.view.minW = parseInt(getComputedStyle(canvas).minWidth);
-  mo.view.minH = parseInt(getComputedStyle(canvas).minHeight);
+  view.minW = parseInt(getComputedStyle(canvas).minWidth);
+  view.minH = parseInt(getComputedStyle(canvas).minHeight);
 
   // set plot dimensions
   resizePlot(mo);
@@ -35,8 +36,8 @@ function initPlotCtrl(mo) {
   /** mouse events */
   canvas.addEventListener('mousedown', function (e) {
     stat.mousedown = true;
-    stat.dragX = e.clientX - plot.posX;
-    stat.dragY = e.clientY - plot.posY;
+    stat.dragX = e.clientX - view.posX;
+    stat.dragY = e.clientY - view.posY;
   });
 
   canvas.addEventListener('mouseup', function () {
@@ -239,8 +240,8 @@ function initPlotCtrl(mo) {
  */
 function canvasKeyMove(d, mo) {
   const step = 15;
-  if (d & 1) mo.plot.posX += d >> 1 ? -step : step;
-  else mo.plot.posY += d >> 1 ? step : -step;
+  if (d & 1) mo.view.posX += d >> 1 ? -step : step;
+  else mo.view.posY += d >> 1 ? step : -step;
   updateView(mo, false, true);
 }
 
@@ -252,7 +253,7 @@ function canvasKeyMove(d, mo) {
  * @param {number} t - touches
  */
 function canvasTouchMove(mo, t) {
-  const plot = mo.plot,
+  const view = mo.view,
         stat = mo.stat;
   const X = stat.touchX,
         Y = stat.touchY;
@@ -260,8 +261,8 @@ function canvasTouchMove(mo, t) {
         dy = Y[0] - t[0].clientY;
   X[0] = t[0].clientX;
   Y[0] = t[0].clientY;
-  plot.posX -= dx;
-  plot.posY -= dy;
+  view.posX -= dx;
+  view.posY -= dy;
   updateView(mo, false, true);
 }
 
@@ -276,13 +277,13 @@ function canvasTouchMove(mo, t) {
 function canvasKeyZoom(isin, mo) {
   let ratio = 0.75;
   if (isin) ratio = 1 / ratio;
-  const plot = mo.plot;
-  const canvas = plot.main;
+  const canvas = mo.plot.main;
   const w2 = canvas.width / 2,
         h2 = canvas.height / 2;
-  plot.scale *= ratio;
-  plot.posX = (plot.posX - w2) * ratio + w2;
-  plot.posY = (plot.posY - h2) * ratio + h2;
+  const view = mo.view;
+  view.scale *= ratio;
+  view.posX = (view.posX - w2) * ratio + w2;
+  view.posY = (view.posY - h2) * ratio + h2;
   updateView(mo, false, true);
 }
 
@@ -299,10 +300,10 @@ function canvasKeyZoom(isin, mo) {
 function canvasMouseZoom(isin, mo, x, y) {
   let ratio = 0.75;
   if (isin) ratio = 1 / ratio;
-  const plot = mo.plot;
-  plot.scale *= ratio;
-  plot.posX = x - (x - plot.posX) * ratio;
-  plot.posY = y - (y - plot.posY) * ratio;
+  const view = mo.view;
+  view.scale *= ratio;
+  view.posX = x - (x - view.posX) * ratio;
+  view.posY = y - (y - view.posY) * ratio;
   updateView(mo, false, true);
 }
 
@@ -316,9 +317,9 @@ function canvasMouseZoom(isin, mo, x, y) {
  * @todo Let it use cached images.
  */
 function canvasTouchZoom(mo, t) {
-  const plot = mo.plot,
+  const view = mo.view,
         stat = mo.stat;
-  const canvas = plot.main;
+  const canvas = mo.plot.main;
   const w = canvas.width,
         h = canvas.height;
   const X = stat.touchX,
@@ -343,9 +344,9 @@ function canvasTouchZoom(mo, t) {
   Y.splice(0, 2, ...newY);
 
   // updating view
-  plot.scale *= ratio;
-  plot.posX = newMid[0] - (newMid[0] - plot.posX) * ratio;
-  plot.posY = newMid[1] - (newMid[1] - plot.posY) * ratio;
+  view.scale *= ratio;
+  view.posX = newMid[0] - (newMid[0] - view.posX) * ratio;
+  view.posY = newMid[1] - (newMid[1] - view.posY) * ratio;
   updateView(mo, false, true);
 }
 
@@ -357,8 +358,7 @@ function canvasTouchZoom(mo, t) {
  * @param {Object} mo - main object
  */
 function canvasMouseMove(e, mo) {
-  const plot = mo.plot,
-        view = mo.view,
+  const view = mo.view,
         stat = mo.stat;
 
   // drag to move the canvas
@@ -368,20 +368,20 @@ function canvasMouseMove(e, mo) {
 
     // won't move if offset is within a pixel
     // this is to prevent accidential tiny moves while clicking
-    if (Math.abs(posX - plot.posX) > 1 || Math.abs(posY - plot.posY) > 1) {
+    if (Math.abs(posX - view.posX) > 1 || Math.abs(posY - view.posY) > 1) {
       stat.mousemove = true;
-      plot.posX = posX;
-      plot.posY = posY;
+      view.posX = posX;
+      view.posY = posY;
       updateView(mo, false, true);
     }
   }
 
   // show current coordinates
-  else if (mo.view.grid) {
-    const canvas = plot.main;
-    const x = ((e.offsetX - plot.posX) / plot.scale / canvas.width +
+  else if (view.grid) {
+    const canvas = mo.plot.main;
+    const x = ((e.offsetX - view.posX) / view.scale / canvas.width +
       0.5) * (view.x.max - view.x.min) + view.x.min;
-    const y = view.y.max - ((e.offsetY - plot.posY) / plot.scale /
+    const y = view.y.max - ((e.offsetY - view.posY) / view.scale /
       canvas.height + 0.5) * (view.y.max - view.y.min);
     byId('coords-label').innerHTML = x.toFixed(3) + ',' + y.toFixed(3);
   }
@@ -397,6 +397,7 @@ function canvasMouseMove(e, mo) {
 function canvasMouseClick(e, mo) {
   const stat = mo.stat,
         plot = mo.plot,
+        view = mo.view,
         cache = mo.cache;
 
   // mouse up after dragging
@@ -407,8 +408,8 @@ function canvasMouseClick(e, mo) {
   // keep drawing polygon
   else if (stat.drawing) {
     stat.polygon.push({
-      x: (e.offsetX - plot.posX) / plot.scale,
-      y: (e.offsetY - plot.posY) / plot.scale,
+      x: (e.offsetX - view.posX) / view.scale,
+      y: (e.offsetY - view.posY) / view.scale,
     });
     drawPolygon(mo);
   }
@@ -435,8 +436,8 @@ function canvasMouseClick(e, mo) {
           h = canvas.height;
 
     // get mouse position    
-    const x0 = (e.offsetX - plot.posX) / plot.scale,
-          y0 = (e.offsetY - plot.posY) / plot.scale;
+    const x0 = (e.offsetX - view.posX) / view.scale,
+          y0 = (e.offsetY - view.posY) / view.scale;
 
     // transformed data
     const trans = mo.trans;

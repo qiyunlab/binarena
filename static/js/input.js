@@ -175,7 +175,7 @@ function fillImportTable(mo) {
     cell = row.insertCell(-1);
 
     // 3a. let user select data type
-    if (guess[i]) input = createDTypeSel(i);
+    if (guess[i]) input = createDtypeSel(i);
 
     // 3b. data type is pre-defined
     else {
@@ -204,11 +204,11 @@ function fillImportTable(mo) {
 
 /**
  * Create a data type selection menu.
- * @function createDTypeSel
+ * @function createDtypeSel
  * @param {number} i - field index
  * @returns {Object} - select DOM
  */
-function createDTypeSel(i) {
+function createDtypeSel(i) {
   const sel = document.createElement('select');
 
   // data type options
@@ -457,8 +457,10 @@ function importTableNext(mo, splen, spcov) {
   if (splen) mo.cache.splen = mo.cols.names.indexOf(splen);
   if (spcov) mo.cache.spcov = mo.cols.names.indexOf(spcov);
 
-  // update view by data
+  // update view for a new dataset
   if (n === 0) resetWorkspace(mo);
+
+  // update view for appended data
   else {
     cacheFrequencies(mo, true);
     if (splen || spcov) cacheTotAbundance(mo);
@@ -537,10 +539,9 @@ function updateDataFromText(text, fname, mo) {
   let obj;
 
   // try to parse as JSON
-  try {
-    obj = JSON.parse(text);
-    parseObj(obj, mo.data, mo.cols);
-  }
+  try { obj = JSON.parse(text); }
+
+  // otherwise, parse as text
   catch (err) {
 
     // get base file name
@@ -569,25 +570,10 @@ function updateDataFromText(text, fname, mo) {
     }
     impo.text = text;
     fillImportTable(mo);
-
   }
-}
 
-
-/**
- * Parse data as a JavaScript object.
- * @function parseObj
- * @param {Object} obj - input object
- * @param {Object} data - dataset
- * @param {Object} cols - columns
- * @description Obsolete.
- */
-function parseObj(obj, data, cols) {
-  // enumerate valid keys only
-  // note: a direct `data = x` will break object reference
-  for (let key in data) {
-    if (key in obj) data[key] = obj[key];
-  }
+  // parse view information
+  if (obj) parseView(obj, mo, fname);
 }
 
 
