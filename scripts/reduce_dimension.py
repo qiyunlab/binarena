@@ -12,7 +12,8 @@ Notes:
     same-type numeric data columns, such as coverage profiles or k-mer
     frequencies, into a few dimensions that can be visualized.
 
-    It requires Python libraries scikit-bio, scikit-learn, and umap-learn.
+    It requires the Python library scikit-learn. When the user chooses to
+    perform UMAP, it also requires the Python library umap-learn.
 
     The procedures are:
     0. Read data table.
@@ -21,7 +22,7 @@ Notes:
     3. Perform principal component analysis (PCA).
     4. If there are >200 features, perform PCA to reduce to 50 features.
     5. Perform t-distributed stochastic neighbor embedding (t-SNE).
-    6. Uniform manifold approximation and projection (UMAP).
+    6. Perform Uniform manifold approximation and projection (UMAP).
 """
 
 import sys
@@ -32,20 +33,10 @@ import numpy as np
 import pandas as pd
 
 try:
-    from skbio.stats.composition import clr
-except ModuleNotFoundError:
-    exit('This script requires Python library scikit-bio.')
-
-try:
     from sklearn.decomposition import PCA
     from sklearn.manifold import TSNE
 except ModuleNotFoundError:
     exit('This script requires Python library scikit-learn.')
-
-try:
-    from umap import UMAP
-except ModuleNotFoundError:
-    exit('This script requires Python library umap-learn.')
 
 
 def parse_args():
@@ -66,6 +57,8 @@ def parse_args():
         help=('pseudocount to add to cell values of a feature if there are '
               'zeros, default: 1.0'))
     arg('-s', '--seed', type=int, help='random seed')
+    arg('-r', '--learning-rate', type=float,
+        help='learning rate for t-SNE and UMAP')
     arg('-o', '--output', type=str, help='output filepath stem')
     for arg in parser._actions:
         arg.metavar = ''
@@ -91,6 +84,17 @@ def main():
         seed = randint(1, 1000)
     print(f'Use random seed {seed}.')
 
+    # learning rate
+    if args.tsne or args.umap:
+        rate = args.learning_rate
+        text = []
+        if args.tsne:
+            text.append('t-SNE')
+        if args.umap:
+            text.append('UMAP')
+        text = ' and '.join(text)
+        print(f'Use learning rate {rate} for {text}.')
+
     # input data
     df = pd.read_table(args.input, index_col=0).astype(float)
     ids = df.index
@@ -108,17 +112,19 @@ def main():
         print(f'Added a pseudocount of {pseudo} to {npseudo} features.')
 
     # centered log-ratio transform
-    data = clr(data)
+    data = np.log(data)
+    data -= data.mean(axis=-1, keepdims=True)
 
     # Principal component analysis (PCA)
-    print('Performing PCA...')
-    pca = PCA(n_components=ndim, random_state=seed)
-    pca.fit(data)
-    print(f'Loadings: {pca.explained_variance_ratio_}')
-    res = pca.transform(data)
-    df = pd.DataFrame(res, index=ids, columns=[f'PC{i}' for i in axes])
-    df.to_csv(f'{output}.pca.tsv', sep='\t')
-    print('Done.')
+    if args.pca:
+        print('Performing PCA...')
+        pca = PCA(n_components=ndim, random_state=seed)
+        pca.fit(data)
+        print(f'Loadings: {pca.explained_variance_ratio_}')
+        res = pca.transform(data)
+        df = pd.DataFrame(res, index=ids, columns=[f'PC{i}' for i in axes])
+        df.to_csv(f'{output}.pca.tsv', sep='\t')
+        print('Done.')
 
     if (args.tsne or args.umap) and ncol > 200:
         print('Extracting 50 features from original data...')
@@ -129,8 +135,8 @@ def main():
     # t-distributed stochastic neighbor embedding (t-SNE)
     if args.tsne:
         print('Performing t-SNE...')
-        tsne = TSNE(n_components=ndim, init='random', learning_rate=200.0,
-                    random_state=seed)
+        tsne = TSNE(n_components=ndim, init='random', learning_rate=(
+            rate or 200.0), random_state=seed)
         res = tsne.fit_transform(data)
         df = pd.DataFrame(res, index=ids, columns=[f'tSNE{i}' for i in axes])
         df.to_csv(f'{output}.tsne.tsv', sep='\t')
@@ -139,7 +145,14 @@ def main():
     # Uniform manifold approximation and projection (UMAP)
     if args.umap:
         print('Performing UMAP...')
-        umap = UMAP(n_components=ndim, init='random', random_state=seed)
+
+        try:
+            from umap import UMAP
+        except ModuleNotFoundError:
+            exit('This function requires Python library umap-learn.')
+
+        umap = UMAP(n_components=ndim, init='random', learning_rate=(
+            rate or 1.0), random_state=seed)
         res = umap.fit_transform(data)
         df = pd.DataFrame(res, index=ids, columns=[f'UMAP{i}' for i in axes])
         df.to_csv(f'{output}.umap.tsv', sep='\t')
