@@ -439,7 +439,7 @@ Any operating system that can run a web browser supports BinaRena. Windows, macO
 
 **Which web browsers support BinaRena?**
 
-BinaRena runs in most modern web browsers, including **Chrome**, **Firefox**, **Edge**, and **Safari** (see screenshots below).
+BinaRena runs in most modern web browsers, such as **Chrome**, **Firefox**, **Edge**, and **Safari** (see screenshots below).
 
 <img src="docs/img/browsers.png" width="720">
 
@@ -451,13 +451,15 @@ BinaRena is written in JavaScript, using modern language standards including [ES
 
 **Which browser works the best for BinaRena?**
 
-They all work very well. However some may bring you moderately smoother graphics than others do, for the following reason:
+They all work very well. However some may bring you moderately smoother graphics than others do. Specifically, BinaRena experience is the slickest in **Chrome**, and other Chromium-based browsers, such as Edge, Brave, and Opera. The program may be slower in Firefox and Safari, especially when the dataset is big. Other than graphics speed, the program should behave the same across different browsers.
 
-For high responsiveness, BinaRena automatically caches images around the current viewport, so that it could immediately bring you to the destination when you move or zoom. BinaRena uses either of two mechanisms to achieve this: For browsers that support [OffscreenCanvas](https://developer.mozilla.org/en-US/docs/Web/API/OffscreenCanvas), BinaRena uses this technology to cache images in a separate thread so that it won't block the UI. For others, BinaRena scavenges [idle time](https://developer.mozilla.org/en-US/docs/Web/API/Window/requestIdleCallback) in the main thread to cache images, which could lag the graphics a little bit.
+In case you wonder why:
 
-So which browsers support this technology? As of 2022, Chrome does, out-of-the-box, therefore you get the highest FPS when you run BinaRena in Chrome. So does Edge. Firefox has support but you need to manually turn it on, by enabling `gfx.offscreencanvas.enabled` in `about:config` (see [details](https://developer.mozilla.org/en-US/docs/Web/API/OffscreenCanvas)). If you are too scared of this setting, just leave as is. Safari does not support this.
+> For high responsiveness, BinaRena automatically caches images around the current viewport, so that it could immediately bring you to the destination when you move or zoom. BinaRena uses either of two mechanisms to achieve this: For browsers that support [OffscreenCanvas](https://developer.mozilla.org/en-US/docs/Web/API/OffscreenCanvas), BinaRena uses this technology to cache images in a separate thread so that it won't block the UI. For others, BinaRena scavenges [idle time](https://developer.mozilla.org/en-US/docs/Web/API/Window/requestIdleCallback) in the main thread to cache images, which could lag the graphics a little bit.
 
-If this causes any problem, you may comment out the code under "check offscreen canvas support" in [static/js/main.js](static/js/main.js) to disable OffscreenCanvas (even if the browser supports it).
+> So which browsers support OffscreenCanvas? As of 2023, Chrome does, out-of-the-box, therefore you get the highest FPS when you run BinaRena in Chrome. So does Edge. Firefox has support but it is bit experimental, and BinaRena won't use it when running in Firefox. Safari does not support this technology.
+
+> If this causes any problem, you may comment out the code under "check offscreen canvas support" in [static/js/main.js](static/js/main.js) to disable OffscreenCanvas (even if the browser supports it).
 
 **BinaRena doesn't display graphics in my browser?**
 

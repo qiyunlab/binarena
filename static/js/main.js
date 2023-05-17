@@ -531,7 +531,6 @@ window.addEventListener('load', function () {
 
   // single global main object
   const mo = new mainObj();
-  console.log(navigator.userAgent);
   console.log('Program launched.');
 
   // check web worker support
@@ -547,7 +546,7 @@ window.addEventListener('load', function () {
       // behavior is unexpected, see:
       // https://stackoverflow.com/questions/76266588/
       // https://bugzilla.mozilla.org/show_bug.cgi?id=1833496
-      if (!navigator.userAgent.startsWith('Mozilla')) {
+      if (navigator.userAgent.indexOf('Firefox') === -1) {
 
         const blob = new Blob(['(' + renderWorker.toString() + ')()'],
                               {type: 'text/javascript'});
