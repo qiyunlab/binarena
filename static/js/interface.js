@@ -539,11 +539,11 @@ function initWidgets(mo) {
 
   // zoom in/out
   byId('zoomin-btn').addEventListener('click', function () {
-    canvasZoom(true, mo);
+    canvasKeyZoom(true, mo);
   });
 
   byId('zoomout-btn').addEventListener('click', function () {
-    canvasZoom(false, mo);
+    canvasKeyZoom(false, mo);
   });
 
   // move around
