@@ -86,10 +86,10 @@ The output is a tab-separated table with rows as sequence identifiers and column
 
 [`reduce_dimension.py`](reduce_dimension.py) is a pipeline for reducing the dimensionality of certain contig properties (such as _k_-mer frequencies and per-sample coverages) such that they can be visualized in a low-dimension space (e.g., a 2D or 3D scatter plot). Three commonly used dimensionality reduction methods are implemented, including principal component analysis ([PCA](https://en.wikipedia.org/wiki/Principal_component_analysis)), t-distributed stochastic neighbor embedding ([t-SNE](https://en.wikipedia.org/wiki/T-distributed_stochastic_neighbor_embedding)) and uniform manifold approximation and projection ([UMAP](https://en.wikipedia.org/wiki/Nonlinear_dimensionality_reduction#Uniform_manifold_approximation_and_projection)).
 
-This script requires Python libraries [scikit-bio](http://scikit-bio.org/), [scikit-learn](https://scikit-learn.org/stable/), and [umap-learn](https://umap-learn.readthedocs.io/en/latest/). You need to install them first:
+This script requires Python libraries [scikit-learn](https://scikit-learn.org/stable/), and (optional, only for UMAP) [umap-learn](https://umap-learn.readthedocs.io/en/latest/). You need to install them first:
 
 ```bash
-conda install -c conda-forge scikit-bio scikit-learn umap-learn
+conda install -c conda-forge scikit-learn umap-learn
 ```
 
 Then you can run the script. Example:

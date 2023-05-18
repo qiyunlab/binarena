@@ -50,8 +50,7 @@ function guessDisplayFields(mo) {
 
   const cols = mo.cols,
         cache = mo.cache;
-  const names = cols.names,
-        types = cols.types;
+  const types = cols.types;
 
   // guess GC and rank columns
   const igc = guessGCColumn(cols);

@@ -1059,6 +1059,7 @@ function exportView(mo) {
  * @param {Object} obj - input object
  * @param {Array} mo - main object
  * @param {string} fname - file name
+ * @see resetWorkspace
  */
 function parseView(obj, mo, fname) {
 
@@ -1074,24 +1075,41 @@ function parseView(obj, mo, fname) {
 
   // set view parameters
   for (let key in obj) {
-    mo[key] = obj[key];
+    for (let key2 in obj[key]) {
+      mo[key][key2] = obj[key][key2];
+    }
   }
 
-  // clear cache
   const cache = mo.cache;
+  const n = cache.nctg;
+
+  // reset transformed data
+  const trans = mo.trans;
+  for (let item of ['x', 'y', 'size', 'opacity', 'color', 'rgb']) {
+    trans[item] = Array(n);
+  }
+  trans.fses = {};
+
+  // reset web worker (if applicable)
+  const work = mo.work.draw;
+  if (work) work.postMessage({msg: 'reset'});
+
+  // clear cache
   cache.npick = 0;
   cache.nmask = 0;
   cache.nhigh = 0;
   cache.maskh = [];
   cache.pdist = [];
 
-  // reset web worker (if applicable)
-  // const work = mo.work.draw;
-  // if (work) work.postMessage({msg: 'reset'});
-
   // reset cached images
   mo.images = [];
 
-  updateView(mo, true);
+  // resetStat(mo);
+  updateColorMap(mo);
+  updateControls(mo);
+  prepDataForDisplay(mo);
+  updateLegends(mo);
+  renderPlot(mo, true);
+  // updateViewByData(mo);
   toastMsg(`Loaded view from ${fname}.`, mo.stat);
 }

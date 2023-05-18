@@ -367,7 +367,7 @@ function canvasMouseMove(e, mo) {
           posY = e.clientY - stat.dragY;
 
     // won't move if offset is within a pixel
-    // this is to prevent accidential tiny moves while clicking
+    // this is to prevent accidental tiny moves while clicking
     if (Math.abs(posX - view.posX) > 1 || Math.abs(posY - view.posY) > 1) {
       stat.mousemove = true;
       view.posX = posX;

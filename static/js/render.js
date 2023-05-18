@@ -395,7 +395,7 @@ function addImageToCache(images, work) {
  * @see {@link: https://advancedweb.hu/how-to-add-timeout-to-a-promise-in-
  * javascript/}
  */
-function callDrawPlot(work, idx, iid, uid, w, h, args) {
+async function callDrawPlot(work, idx, iid, uid, w, h, args) {
   let timer;
   return Promise.race([
     new Promise(resolve => {
