@@ -301,6 +301,11 @@ function initContextMenu(mo) {
   });
 
   // load data
+  byId('open-data-a').addEventListener('click', function () {
+    byId('open-file').click();
+  });
+
+  // load data
   byId('load-data-a').addEventListener('click', function () {
     byId('open-file').click();
   });
@@ -319,14 +324,14 @@ function initContextMenu(mo) {
     resetWorkspace(mo);
   });
 
-  // export bins
-  byId('export-bins-a').addEventListener('click', function () {
-    exportBinPlan(mo.binned, mo.data[0], byId('plan-sel-txt').value);
-  });
-
   // export data table as TSV
   byId('export-data-a').addEventListener('click', function () {
     exportDataTable(mo);
+  });
+
+  // export view as JSON
+  byId('export-view-a').addEventListener('click', function () {
+    exportView(mo);
   });
 
   // export image as PNG
@@ -339,14 +344,9 @@ function initContextMenu(mo) {
     renderSVG(mo);
   });
 
-  // export view as JSON
-  byId('export-view-a').addEventListener('click', function () {
-    exportView(mo);
-  });
-
-  // load view
-  byId('load-view-a').addEventListener('click', function () {
-    byId('open-file').click();
+  // export bins
+  byId('export-bins-a').addEventListener('click', function () {
+    exportBinPlan(mo.binned, mo.data[0], byId('plan-sel-txt').value);
   });
 
   // reset view

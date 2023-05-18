@@ -582,6 +582,28 @@ function updateView(mo, redo, wait) {
 
 
 /**
+ * Update main menu given current (or no) dataset.
+ * @function updateMainMenu
+ * @param {Object} mo - main object
+ */
+function updateMainMenu(mo) {
+  const n = mo.cache.nctg;
+  const menu = byId('context-menu');
+  byId('open-data-a').classList.toggle('hidden', n);
+  for (const name of ['load', 'show', 'close']) {
+    byId(`${name}-data-a`).classList.toggle('hidden', !n);
+  }
+  for (const name of ['data', 'view', 'bins']) {
+    byId(`export-${name}-a`).classList.toggle('hidden', !n);
+  }
+  byId('reset-view-a').classList.toggle('hidden', !n);
+  for (const dom of menu.querySelectorAll('hr,div')) {
+    dom.classList.toggle('hidden', !n);
+  }
+}
+
+
+/**
  * Reset workspace when dataset is open or closed.
  * @function resetWorkspace
  * @param {Object} mo - main object
@@ -658,6 +680,7 @@ function resetWorkspace(mo) {
   }
 
   // reset display items
+  updateMainMenu(mo);
   initDisplayItems(mo);
   updateWorkspace(mo);
   prepDataForDisplay(mo);
@@ -1048,6 +1071,9 @@ function exportView(mo) {
   const view = mo.view,
         cache = mo.cache;
 
+  // timestamp
+  obj['time'] = new Date().toString();
+
   // number of contigs
   obj['n'] = cache.nctg;
 
@@ -1058,22 +1084,22 @@ function exportView(mo) {
 
   // selected contigs
   if (cache.npick > 0) {
-    obj['picked'] = mo.picked.map(Number);
+    obj['picked'] = mo.picked.map(Number).map(String).join('');
   }
 
   // masked contigs
   if (cache.nmask > 0) {
-    obj['masked'] = mo.masked.map(Number);
+    obj['masked'] = mo.masked.map(Number).map(String).join('');
 
     // focused contigs
     if (mo.blured.some(Boolean)) {
-      obj['blured'] = mo.blured.map(Number);
+      obj['blured'] = mo.blured.map(Number).map(String).join('');
     }
   }
 
   // highlighted contigs
   if (cache.nhigh > 0) {
-    obj['highed'] = mo.highed;
+    obj['highed'] = mo.highed.map(String).join('');
   }
 
   // generate JSON file
@@ -1084,14 +1110,14 @@ function exportView(mo) {
 
 
 /**
- * Parse view information as a JavaScript object.
- * @function parseView
+ * Load view from a JSON file.
+ * @function loadView
  * @param {Object} obj - input object
  * @param {Array} mo - main object
  * @param {string} fname - file name
  * @see resetWorkspace
  */
-function parseView(obj, mo, fname) {
+function loadView(obj, mo, fname) {
 
   // check if a dataset is open
   const n = mo.cache.nctg;
@@ -1103,7 +1129,7 @@ function parseView(obj, mo, fname) {
 
   // check if contig number is consistent
   if (n !== obj['n']) {
-    toastMsg(`Inconsistent numbers of contigs in view (${obj['n']}) vs. in ` +
+    toastMsg(`Number of contigs in view (${obj['n']}) does not match ` +
              `current dataset (${n}).`, mo.stat, 3000);
     return;
   }
@@ -1121,7 +1147,7 @@ function parseView(obj, mo, fname) {
 
   // selected contigs
   if ('picked' in obj) {
-    mo.picked = obj['picked'].map(Boolean);
+    mo.picked = Array.from(obj['picked']).map(Number).map(Boolean);
     cache.npick = mo.picked.filter(Boolean).length;
   } else {
     mo.picked.fill(false);
@@ -1130,7 +1156,7 @@ function parseView(obj, mo, fname) {
 
   // masked contigs
   if ('masked' in obj) {
-    mo.masked = obj['masked'].map(Boolean);
+    mo.masked = Array.from(obj['masked']).map(Number).map(Boolean);
     cache.nmask = mo.masked.filter(Boolean).length;
   } else {
     mo.masked.fill(false);
@@ -1139,7 +1165,7 @@ function parseView(obj, mo, fname) {
 
   // focused contigs
   if ('blured' in obj) {
-    mo.blured = obj['blured'].map(Boolean);
+    mo.blured = Array.from(obj['blured']).map(Number).map(Boolean);
     byId('focus-btn').classList.add('pressed');
   } else {
     mo.blured.fill(false);
@@ -1148,7 +1174,7 @@ function parseView(obj, mo, fname) {
 
   // highlighted contigs
   if ('highed' in obj) {
-    mo.highed = obj['highed'];
+    mo.highed = Array.from(obj['highed']).map(Number);
     cache.nhigh = mo.highed.filter(Boolean).length;
   } else {
     mo.highed.fill(0);

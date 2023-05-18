@@ -511,25 +511,25 @@
     right-clicking anywhere in the plot.
   -->
   <div id="context-menu" class="menu popup hidden">
-    <a id="load-data-a">Load data</a>
-    <a id="show-data-a">Show data</a>
-    <a id="close-data-a">Close data</a>
+    <a id="open-data-a" title="Open a dataset as a new project">Open data</a>
+    <a id="load-data-a" title="Append data or load view to current project">Load data/view</a>
+    <a id="show-data-a" title="Show current dataset as a table">Show data</a>
+    <a id="close-data-a" title="Close current project">Close data</a>
     <hr>
-    <a id="export-bins-a">Export bins</a>
-    <a id="export-data-a">Export data</a>
+    <a id="export-data-a" title="Export current dataset as a TSV file, which can later be opened to recover the project">Export data</a>
+    <a id="export-view-a" title="Export current view in JSON format, which can later be loaded to recover the view">Export view</a>
     <div class="expand-wrap">
-      <a class="expand-a" id="export-image-a">Export image</a>
+      <a class="expand-a" id="export-image-a" title="Export an image of current view">Export image</a>
       <div class="menu expand-body">
-        <a id="export-png-a">PNG</a>
-        <a id="export-svg-a">SVG</a>
+        <a id="export-png-a" title="Bitmap image in PNG format">PNG</a>
+        <a id="export-svg-a" title="Vector image in SVG format">SVG</a>
       </div>
     </div>
+    <a id="export-bins-a" title="Export current binning plan as a contig-to-bin mapping file, which can later be loaded to recover the plan">Export bins</a>
     <hr>
-    <a id="export-view-a">Export view</a>
-    <a id="load-view-a">Load view</a>
-    <a id="reset-view-a">Reset view (0)</a>
+    <a id="reset-view-a" title="Recenter viewport (0)">Reset view</a>
     <hr>
-    <a id="help-a" href="https://github.com/qiyunlab/binarena#readme" target="_blank">Help</a>
+    <a id="help-a" href="https://github.com/qiyunlab/binarena#readme" target="_blank" title="Get help information">Help</a>
   </div>
 
 

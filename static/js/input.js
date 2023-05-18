@@ -573,7 +573,7 @@ function updateDataFromText(text, fname, mo) {
   }
 
   // parse view information
-  if (obj) parseView(obj, mo, fname);
+  if (obj) loadView(obj, mo, fname);
 }
 
 
