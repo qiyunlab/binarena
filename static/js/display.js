@@ -807,7 +807,6 @@ function prepDataForDisplay(mo, items) {
   const view = mo.view,
         data = mo.data,
         cols = mo.cols,
-        mask = mo.masked,
         trans = mo.trans;
 
   // items to update in web worker
@@ -842,19 +841,17 @@ function prepDataForDisplay(mo, items) {
       // transform data using given scale
       const scaled = scaleArr(data[idx], scale);
 
-      // gather valid data (not masked, is a number and is finite)
+      // gather valid data (is a number and is finite)
       const valid = [],
             index = [],
             inval = [];
       let val;
       for (let i = 0; i < n; i++) {
-        if (!mask[i]) {
-          val = scaled[i];
-          if (isFinite(val)) {
-            index.push(i);
-            valid.push(val);
-          } else inval.push(i);
-        }
+        val = scaled[i];
+        if (isFinite(val)) {
+          index.push(i);
+          valid.push(val);
+        } else inval.push(i);
       }
 
       // calculate min / max
@@ -1047,7 +1044,40 @@ function closeData(mo) {
  * @param {Object} mo - main object
  */
 function exportView(mo) {
-  const str = JSON.stringify({'view': mo.view});
+  const obj = {};
+  const view = mo.view,
+        cache = mo.cache;
+
+  // number of contigs
+  obj['n'] = cache.nctg;
+
+  // view parameters
+  for (const [key, value] of Object.entries(view)) {
+    obj[key] = value;
+  }
+
+  // selected contigs
+  if (cache.npick > 0) {
+    obj['picked'] = mo.picked.map(Number);
+  }
+
+  // masked contigs
+  if (cache.nmask > 0) {
+    obj['masked'] = mo.masked.map(Number);
+
+    // focused contigs
+    if (mo.blured.some(Boolean)) {
+      obj['blured'] = mo.blured.map(Number);
+    }
+  }
+
+  // highlighted contigs
+  if (cache.nhigh > 0) {
+    obj['highed'] = mo.highed;
+  }
+
+  // generate JSON file
+  const str = JSON.stringify(obj);
   downloadFile(str, 'view.json',
     'data:application/json;charset=utf-8');
 }
@@ -1064,24 +1094,66 @@ function exportView(mo) {
 function parseView(obj, mo, fname) {
 
   // check if a dataset is open
-  if (mo.cache.nctg === 0) {
+  const n = mo.cache.nctg;
+  if (n === 0) {
     toastMsg('No dataset is currently open. Please load data before ' +
              'loading views.', mo.stat, 3000);
+    return;
+  }
+
+  // check if contig number is consistent
+  if (n !== obj['n']) {
+    toastMsg(`Inconsistent numbers of contigs in view (${obj['n']}) vs. in ` +
+             `current dataset (${n}).`, mo.stat, 3000);
     return;
   }
 
   // get base file name
   fname = fname.replace(/^.*[\\\/]/, '');
 
-  // set view parameters
-  for (let key in obj) {
-    for (let key2 in obj[key]) {
-      mo[key][key2] = obj[key][key2];
-    }
+  const view = mo.view,
+        cache = mo.cache;
+
+  // view parameters
+  for (const key of Object.keys(view)) {
+    view[key] = obj[key];
   }
 
-  const cache = mo.cache;
-  const n = cache.nctg;
+  // selected contigs
+  if ('picked' in obj) {
+    mo.picked = obj['picked'].map(Boolean);
+    cache.npick = mo.picked.filter(Boolean).length;
+  } else {
+    mo.picked.fill(false);
+    cache.npick = 0;
+  }
+
+  // masked contigs
+  if ('masked' in obj) {
+    mo.masked = obj['masked'].map(Boolean);
+    cache.nmask = mo.masked.filter(Boolean).length;
+  } else {
+    mo.masked.fill(false);
+    cache.nmask = 0;
+  }
+
+  // focused contigs
+  if ('blured' in obj) {
+    mo.blured = obj['blured'].map(Boolean);
+    byId('focus-btn').classList.add('pressed');
+  } else {
+    mo.blured.fill(false);
+    byId('focus-btn').classList.remove('pressed');
+  }
+
+  // highlighted contigs
+  if ('highed' in obj) {
+    mo.highed = obj['highed'];
+    cache.nhigh = mo.highed.filter(Boolean).length;
+  } else {
+    mo.highed.fill(0);
+    cache.nhigh = 0;
+  }
 
   // reset transformed data
   const trans = mo.trans;
@@ -1095,21 +1167,24 @@ function parseView(obj, mo, fname) {
   if (work) work.postMessage({msg: 'reset'});
 
   // clear cache
-  cache.npick = 0;
-  cache.nmask = 0;
-  cache.nhigh = 0;
-  cache.maskh = [];
+  mo.mems = {};
+  cache.maskh.length = 0;
   cache.pdist = [];
 
   // reset cached images
   mo.images = [];
 
-  // resetStat(mo);
+  // update view
   updateColorMap(mo);
   updateControls(mo);
   prepDataForDisplay(mo);
   updateLegends(mo);
+  updateMaskCtrl(mo);
+  updateHighCtrl(mo);
+  updateMiniPlot(mo);
+  updateInfoTable(mo);
   renderPlot(mo, true);
-  // updateViewByData(mo);
+
   toastMsg(`Loaded view from ${fname}.`, mo.stat);
+  mo.plot.main.focus();
 }

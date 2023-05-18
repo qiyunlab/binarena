@@ -96,7 +96,7 @@ function initSelTools(mo) {
     mo.plot.main.focus();
   });
 
-  /** Clear mask. */
+  /** Clear masking. */
   byId('clear-mask-btn').addEventListener('click', function () {
     mo.masked.fill(false);
     mo.cache.nmask = 0;
@@ -147,7 +147,10 @@ function initSelTools(mo) {
 
     // focus on current selection
     else {
-      if (!mo.cache.npick) return;
+      if (!mo.cache.npick) {
+        toastMsg('No contig is selected.', mo.stat);
+        return;
+      }
       setFocus(mo);
       this.classList.add('pressed');
     }
