@@ -181,18 +181,18 @@ function searchByCriteria(mo, shift) {
     }
     if (min === '') min = null;
     else if (isNaN(min)) {
-      toastMsg('Invalid minimum threshold was specified.', mo.stat);
+      toastMsg('Invalid minimum threshold specified.', mo.stat);
       return false;
     } else min = Number(min);
     if (max === '') max = null;
     else if (isNaN(max)) {
-      toastMsg('Invalid maximum threshold was specified.', mo.stat);
+      toastMsg('Invalid maximum threshold specified.', mo.stat);
       return false;
     } else max = Number(max);
 
     // whether to include lower and upper bounds
     const minIn = (byId('min-btn').innerHTML === '['),
-          maxIn = (byId('max-btn').innerHTML === '[');
+          maxIn = (byId('max-btn').innerHTML === ']');
 
     // compare values to threshold(s)
     let val;

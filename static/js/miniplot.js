@@ -113,7 +113,7 @@ function updateMiniPlotCtrl(cols) {
 
 
 /**
- * Mini plot mouse move event
+ * Mini plot mouse move event.
  * @function miniPlotMouseMove
  * @param {Object} e - event
  * @param {Object} mo - main object
@@ -229,27 +229,54 @@ function miniPlotMouseMove(e, mo) {
  * represented by the bars in the range of selection will be selected.
  */
 function miniPlotSelect(mo) {
+  const mini = mo.mini,
+        pick = mo.picked;
+
+  const field = mo.cols.names[mini.field];
 
   // determine range of selection
   // These are lower and upper bounds of the original data. The lower bound is
   // inclusive ("["). However the upper bound is tricky. In all but last bar,
   // it is exclusive (")"). But in the last bar, it is inclusive ("]").
   // To tackle this, the code removes the upper bound of the last bar.
-  const min = mo.mini.edges[mo.mini.bin0];
-  const max = (mo.mini.bin1 === mo.mini.nbin - 1) ?
-    NaN : mo.mini.edges[mo.mini.bin1 + 1];
+  let xmin, xmax, xall, msg;
+  xmin = mini.edges[mini.bin0];
+  if (mini.bin0 === 0) {
+    if (mini.bin1 === mini.nbin - 1) {
+      xall = true;
+    } else {
+      xmax = mini.edges[mini.bin1 + 1];
+      msg = `${field} < ${xmax}`;
+    }
+  } else {
+    if (mini.bin1 === mini.nbin - 1) {
+      xmax = NaN;
+      msg = `${field} >= ${xmin}`;
+    } else {
+      xmax = mini.edges[mini.bin1 + 1]; 
+      msg = `${xmin} <= ${field} < ${xmax}`;
+    }
+  }
+
+  // const min = mini.edges[mini.bin0];
+  // const max = (mini.bin1 === mini.nbin - 1) ?
+  //   NaN : mini.edges[mini.bin1 + 1];
 
   // reset histogram status
-  mo.mini.hist = null;
-  mo.mini.edges = null;
-  mo.mini.bin0 = null;
-  mo.mini.bin1 = null;
-  mo.mini.drag = null;
+  for (const key of ['hist', 'edges', 'bin0', 'bin1', 'drag']) {
+    mini[key] = null;
+  }
+
+  // filtering not applicable
+  if (xall) {
+    toastMsg('No filtering because all bars are selected.', mo.stat);
+    mo.plot.main.focus();
+    return;
+  }
 
   // find within selected contigs which ones are within the range
-  const pick = mo.picked;
   let npick = mo.cache.npick;
-  const col = mo.data[mo.mini.field];
+  const col = mo.data[mini.field];
   const n = mo.cache.nctg;
   let val;
   for (let i = 0; i < n; i++) {
@@ -257,14 +284,18 @@ function miniPlotSelect(mo) {
       val = col[i];
 
       // lower bound: inclusive; upper bound: exclusive
-      if (val !== val || val < min || val >= max) {
+      if (val !== val || val < xmin || val >= xmax) {
         pick[i] = false;
         npick -= 1;
       }
     }
   }
+
   mo.cache.npick = npick;
   updateSelection(mo);
+  msg = `Filtered contigs to range: ${msg}.`;
+  mo.log.push(msg);
+  toastMsg(msg, mo.stat);
   mo.plot.main.focus();
 }
 

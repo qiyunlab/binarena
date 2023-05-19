@@ -175,7 +175,7 @@ function fillImportTable(mo) {
     cell = row.insertCell(-1);
 
     // 3a. let user select data type
-    if (guess[i]) input = createDTypeSel(i);
+    if (guess[i]) input = createDtypeSel(i);
 
     // 3b. data type is pre-defined
     else {
@@ -204,11 +204,11 @@ function fillImportTable(mo) {
 
 /**
  * Create a data type selection menu.
- * @function createDTypeSel
+ * @function createDtypeSel
  * @param {number} i - field index
  * @returns {Object} - select DOM
  */
-function createDTypeSel(i) {
+function createDtypeSel(i) {
   const sel = document.createElement('select');
 
   // data type options
@@ -398,17 +398,21 @@ function importTableNext(mo, splen, spcov) {
       types = res[2],
       ixmap = res[3];
 
-  let nctg = 0,
-      ncol = 0;
+  // count fields (excluding weight)
+  const ncol = types.filter(x => !x.endsWith('wt')).length - 1;
+
+  let msg;
+  let n = mo.cache.nctg;
 
   // load new dataset
-  let n = mo.cache.nctg;
   if (n === 0) {
     mo.data.push(...data);
     mo.cols.names.push(...names);
     mo.cols.types.push(...types);
     mo.cache.ixmap = ixmap;
-    nctg = data[0].length;
+
+    msg = `Opened dataset of ${plural('contig', data[0].length)} and ` +
+      `${plural('data field', data.length)} from ${impo.fname}.`;
   }
 
   // append to current dataset
@@ -432,6 +436,7 @@ function importTableNext(mo, splen, spcov) {
 
     // assign data to matching Ids
     ixmap = mo.cache.ixmap;
+    let nctg = 0;
     let idx;
     const ids = data[0];
     n = ids.length;
@@ -448,17 +453,19 @@ function importTableNext(mo, splen, spcov) {
     mo.data.push(...cols);
     mo.cols.names.push(...names.slice(1));
     mo.cols.types.push(...types.slice(1));
-  }
 
-  // count fields (excluding weight)
-  ncol = types.filter(x => !x.endsWith('wt')).length - 1;
+    msg = `Appended ${plural('data field', ncol)} to ` +
+      `${plural('contig', nctg)} from ${impo.fname}.`;
+  }
 
   // assign special fields
   if (splen) mo.cache.splen = mo.cols.names.indexOf(splen);
   if (spcov) mo.cache.spcov = mo.cols.names.indexOf(spcov);
 
-  // update view by data
+  // update view for a new dataset
   if (n === 0) resetWorkspace(mo);
+
+  // update view for appended data
   else {
     cacheFrequencies(mo, true);
     if (splen || spcov) cacheTotAbundance(mo);
@@ -477,8 +484,8 @@ function importTableNext(mo, splen, spcov) {
   // report status
   byId('import-prog').classList.add('hidden');
   byId('import-modal').classList.add('hidden');
-  toastMsg(`Read ${plural('data field', ncol)} ` +
-    `of ${plural('contig', nctg)}.`, mo.stat);
+  mo.log.push(msg);
+  toastMsg(msg, mo.stat);
 }
 
 
@@ -537,10 +544,9 @@ function updateDataFromText(text, fname, mo) {
   let obj;
 
   // try to parse as JSON
-  try {
-    obj = JSON.parse(text);
-    parseObj(obj, mo.data, mo.cols);
-  }
+  try { obj = JSON.parse(text); }
+
+  // otherwise, parse as text
   catch (err) {
 
     // get base file name
@@ -569,25 +575,10 @@ function updateDataFromText(text, fname, mo) {
     }
     impo.text = text;
     fillImportTable(mo);
-
   }
-}
 
-
-/**
- * Parse data as a JavaScript object.
- * @function parseObj
- * @param {Object} obj - input object
- * @param {Object} data - dataset
- * @param {Object} cols - columns
- * @description Obsolete.
- */
-function parseObj(obj, data, cols) {
-  // enumerate valid keys only
-  // note: a direct `data = x` will break object reference
-  for (let key in data) {
-    if (key in obj) data[key] = obj[key];
-  }
+  // parse view information
+  if (obj) loadView(obj, mo, fname);
 }
 
 
@@ -1006,8 +997,9 @@ function parseFeaColumn(arr) {
  * @description The decision process is as follows:
  * 
  * 1. If all values are numbers, parse as numbers.
- * 2. If all values do not contain comma (,), parse as categories.
- * 3. Otherwise, parse as features.
+ * 2. If entropy exceeds a threshold, parse as description.
+ * 3. If all values do not contain comma (,), parse as categories.
+ * 4. Otherwise, parse as features.
  * 
  * This function is similiar to a combination of three: `parseNumColumn`,
  * `parseCatColumn`, and `parseFeaColumn`, but it is less aggressive as it
@@ -1019,8 +1011,6 @@ function parseFeaColumn(arr) {
  * Note: This function uses the presence of comman (,) to determine whether
  * the input data are categories, as in contrast to `parseCatColumn`, which
  * does not do this check.
- * 
- * processed ones exceed a threshold, and return "description".
  */
 function guessColumnType(arr, th) {
   th = th || 4.75;
@@ -1072,6 +1062,7 @@ function guessColumnType(arr, th) {
       }
     }
   }
+
   // parsing as description based on entropy of array
   if (calcEntropy(arr) > th) return ['des', parsed, null];
 
@@ -1107,8 +1098,9 @@ function guessColumnType(arr, th) {
 
 }
 
+
 /**
- * Calculates the entropy of an array
+ * Calculates the entropy of an array.
  * @function calcEntropy
  * @param {Array} arr - array of values
  * @returns {Number} entropy - entropy of array
@@ -1137,6 +1129,7 @@ function calcEntropy(arr) {
 
   return entropy;
 }
+
 
 /**
  * Parse data as an assembly.

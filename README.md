@@ -3,7 +3,7 @@
 [![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
 ![javascript](https://badges.aleen42.com/src/javascript.svg)
 
-**Binarena** ("bin arena") is an interative visualizer that facilitates human-guided exploration and binning of metagenomic contigs.
+**Binarena** ("bin arena") is an interactive visualizer that facilitates human-guided exploration and binning of metagenomic contigs.
 
 ![Night](docs/img/night.png)
 > _Screenshot of BinaRena displaying a tropical peatland metagenome_
@@ -69,7 +69,7 @@ A few buttons in the bottom left corner trigger operations on the data:
 
 ## Mouse and keyboard shortcuts
 
-The BinaRena interface is like a [**digital map**](https://www.google.com/maps) and is very intuitive. While although operations can be triggered through the graphical interface, the following basic operations are most convenient by using your mouse and keyboard.
+The BinaRena interface is like a [**digital map**](https://www.google.com/maps) and is very intuitive. While operations can be triggered through the graphical interface, the following basic operations are most convenient by using your mouse and keyboard.
 
 - Drag the plot or use arrow keys (<code>&larr;</code>, <code>&uarr;</code>, <code>&rarr;</code> and <code>&darr;</code>) to move around.
 - Zoom in/out: Mouse wheel, or use `=` and `-`.
@@ -151,7 +151,7 @@ BinaRena is an interactive scatter plot of contigs, with five display items:
 
 - **x-axis**, **y-axis**, **size** (radius of contig), **opacity** (alpha value), and **color**.
 
-Each display item can be changed and tweaked in the **display panel**. When the user moves the mouse of an item, two button will emerge, one letting the user select a data transformation method, and the other letting the user display a legend.
+Each display item can be changed and tweaked in the **display panel**. When the user moves the mouse of an item, two buttons will emerge, one letting the user select a data transformation method, and the other letting the user display a legend.
 
 What data should be assigned to these five display items? Well, be creative. Many pieces of information are useful for exploring metagenomes and binning contigs. Examples are GC x coverage, abundance profile by sample, _k_-mer frequency-based dimensionality reduction (BinaRena has [scripts](scripts) for generating this), taxonomic assignment, functional capacity, etc, etc. Toggle these properties to gain a better understanding of your data.
 
@@ -166,7 +166,7 @@ When a dataset is loaded, BinaRena attempts to make the best guess of appropriat
 - **GC content (%)** (numeric): `gc`, `g+c`, `gc%`, `gc-content`, etc.
 - **Taxonomy** (categorical): `phylum`, `class`, `order`, `family`, `genus`, etc.
 
-The matching process is case-insensitive. Suffixes after common delimiters (" ", "/", "_", ".") are stripped. For examples, `Length (bp)` and `size_of_scaffold` will be recognized as **length**.
+The matching process is case-insensitive. Suffixes after common delimiters (" ", "/", "_", ".") are stripped. For example, `Length (bp)` and `size_of_scaffold` will be recognized as **length**.
 
 If all columns are found, BinaRena will render _x_- and _y_-axes in linear scale, length as marker size (radius) in cube root scale (because a sphere's volume is proportional to the cube of radius), coverage as marker opacity in square root scale, and highest taxonomic group as marker color.
 
@@ -178,7 +178,7 @@ It's very likely that BinaRena is not smart enough to hit the desired view. You 
 
 ### Legends and data scaling
 
-BinaRena provides interactive legends to inform the user of the (**numeric**) data. Move the mouse over the legend to see the original value in real time. Menwhile, two brackets will show up at the edges of the legend. Drag them to modify the displayed range of data. The lower limit is clickable. It lets the user toggle between zero or minimum value in the data.
+BinaRena provides interactive legends to inform the user of the (**numeric**) data. Move the mouse over the legend to see the original value in real time. Meanwhile, two brackets will show up at the edges of the legend. Drag them to modify the displayed range of data. The lower limit is clickable. It lets the user toggle between zero or minimum value in the data.
 
 <img src="docs/img/legends.png" width="254">
 
@@ -196,7 +196,7 @@ Specifically, BinaRena supports the following transformations:
 - [Logit](https://en.wikipedia.org/wiki/Logit) and [arcsine](https://en.wikipedia.org/wiki/Binomial_proportion_confidence_interval#Arcsine_transformation) (for proportion data).
 - [Ranking](https://en.wikipedia.org/wiki/Ranking#Ranking_in_statistics).
 
-Note: Certain values may become invalid after certain transformation. For example, zero and negative numbers cannot be log-transformed. In such cases, the contigs will be displayed using the default setting (e.g., color is grey).
+Note: Certain values may become invalid after certain transformation. For example, zero and negative numbers cannot be log-transformed. In such cases, the contigs will be displayed using the default setting (e.g., color is gray).
 
 ### Color coding
 
@@ -224,7 +224,7 @@ The plot rendered by BinaRena can be exported as an image file. There are two op
 
 ### Contig selection
 
-In the interactive scatter plot, one can simple click circles (**contigs**) to select them. Hold `Shift` and click to select multiple. Click selected ones to unselect them.
+In the interactive scatter plot, one can simply click circles (**contigs**) to select them. Hold `Shift` and click to select multiple. Click selected ones to unselect them.
 
 A more efficient may is to press `Enter` or click the <span>&#11040;</span> button in the corner to enter the **polygon** selection mode.
 
@@ -244,7 +244,7 @@ The masked contigs are not deleted from the dataset. They can be released back t
 
 One can also press `Z` or click the <span>&#8617;</span> button to **undo** previous masking operations one by one. The program allows a total of 50 regrets.
 
-- Note that masked contigs will not be immediated deleted from bins. One can click the <span>&empty;</span> button in the bin table toolbar to remove masked contigs from all bins.
+- Note that masked contigs will not be immediately deleted from bins. One can click the <span>&empty;</span> button in the bin table toolbar to remove masked contigs from all bins.
 
 ### Contig highlighting
 
@@ -252,7 +252,7 @@ One can press the `L` key or click the <span>&#9673;</span> button in the corner
 
 <img src="docs/img/highlight.png" width="350">
 
-The highlight will stay with the contigs no matter how the layout and display items change, until the user click the <span>&times;</span> button next to each color to release them.
+The highlight will stay with the contigs no matter how the layout and display items change, until the user clicks the <span>&times;</span> button next to each color to release them.
 
 Highlighting will not affect binning, search, calculation and operations. It serves as a visual annotation of contigs to make them noticeable to the user.
 
@@ -266,7 +266,7 @@ BinaRena displays a summary of properties of the select contigs in real time to 
 
 <img src="docs/img/info.png" width="330">
 
-When multiple contigs are selected, the displayed value of **numeric** fields is calculated using either **mean** (<span><i>x&#772;</i></span>) or **sum** (<span>&Sigma;<i>x</i></span>) of the contigs, optionally **weighted** by another variable. BinaRena attempts to "guess" the most relevant metric for each column. For examples, "length" should be the sum of lengths of all contigs, whereas "coverage" should be the average of coverages of the contigs, weighted by contig length. One can mouse hover the displayed value to see how it is exactly calculated, and tweak the metrics (in case BinaRena didn't guess right).
+When multiple contigs are selected, the displayed value of **numeric** fields is calculated using either **mean** (<span><i>x&#772;</i></span>) or **sum** (<span>&Sigma;<i>x</i></span>) of the contigs, optionally **weighted** by another variable. BinaRena attempts to "guess" the most relevant metric for each column. For example, "length" should be the sum of lengths of all contigs, whereas "coverage" should be the average of coverages of the contigs, weighted by contig length. One can mouse hover the displayed value to see how it is exactly calculated, and tweak the metrics (in case BinaRena didn't guess right).
 
 For **categorical** columns, the displayed category is the **majority-rule** category, if there are multiple options (i.e., the selected contigs are a mixture), determined by weighting against the contig length (one can tweak this). The relative frequency of the main category is displayed in the parentheses. If no category is over half, the row will be displayed as "ambiguous", while the most frequent category can be found in the tooltip during mouse hovering.
 
@@ -284,7 +284,7 @@ For categorical, feature set and descriptive fields, enter a keyword to search. 
 
 <img src="docs/img/search_cat.png" width="270">
 
-For feature set field, the whole contig will match as long as any feature on it matches.
+For feature set fields, the whole contig will match as long as any feature on it matches.
 
 ### Mini plot
 
@@ -294,7 +294,7 @@ One may use mouse **dragging** to select a range of bars. The contigs will be fi
 
 <img src="docs/img/miniplot.png" width="327">
 
-This miniplot faciliates the user to observe the distribution of the variable in a set of contigs, and further perform filtering based on the observation. For examples, one may remove **contaminations** from a bin which appear to be outliers in the histogram; one may also separate two **closely related strains** which show a bimodal distribution in the histogram.
+This miniplot facilitates the user to observe the distribution of the variable in a set of contigs, and further perform filtering based on the observation. For example, one may remove **contaminants** from a bin which appear to be outliers in the histogram; one may also separate two **closely related strains** which show a bimodal distribution in the histogram.
 
 
 ## Binning
@@ -311,7 +311,7 @@ Alternatively, click the <span>&rarrb;</span> button in the toolbar to export th
 
 ### Table of bins
 
-The table below the binning plan name displays a list of bins in the plan. Click a bin to select it. The contigs in this bin will be [selected](#contig-selection) in the same time and their properties will be [summarized](#contig-summary).
+The table below the binning plan name displays a list of bins in the plan. Click a bin to select it. The contigs in this bin will be [selected](#contig-selection) at the same time and their properties will be [summarized](#contig-summary).
 
 <img src="docs/img/bin_n_sel.png" width="564">
 
@@ -400,7 +400,7 @@ Then, whenever there are some contigs selected, you can go to the summary panel'
 
 <img src="docs/img/comred.png" width="700">
 
-You can load arbitrary number of feature groups for any number of feature set columns simultaneously. This lets you explore various biological questions with high flexibility.
+You can load an arbitrary number of feature groups for any number of feature set columns simultaneously. This lets you explore various biological questions with high flexibility.
 
 BinaRena provides scripts for converting [CheckM](https://ecogenomics.github.io/CheckM/) lineage-specific marker genes into feature sets and feature groups, so that you can calculate the bin quality metrics **on the fly** in BinaRena. See [details](scripts##checkm-marker-genes).
 
@@ -439,7 +439,7 @@ Any operating system that can run a web browser supports BinaRena. Windows, macO
 
 **Which web browsers support BinaRena?**
 
-BinaRena runs in most modern web browsers, including **Chrome**, **Firefox**, **Edge**, and **Safari** (see screenshots below).
+BinaRena runs in most modern web browsers, such as **Chrome**, **Firefox**, **Edge**, and **Safari** (see screenshots below).
 
 <img src="docs/img/browsers.png" width="720">
 
@@ -451,13 +451,15 @@ BinaRena is written in JavaScript, using modern language standards including [ES
 
 **Which browser works the best for BinaRena?**
 
-They all work very well. However some may bring you moderately smoother graphics than others do, for the following reason:
+They all work very well. However some may bring you moderately smoother graphics than others do. Specifically, BinaRena experience is the slickest in **Chrome**, and other Chromium-based browsers, such as Edge, Brave, and Opera. The program may be slower in Firefox and Safari, especially when the dataset is big. Other than graphics speed, the program should behave the same across different browsers.
 
-For high responsiveness, BinaRena automatically caches images around the current viewport, so that it could immediately bring you to the destination when you move or zoom. BinaRena uses either of two mechanisms to achieve this: For browsers that support [OffscreenCanvas](https://developer.mozilla.org/en-US/docs/Web/API/OffscreenCanvas), BinaRena uses this technology to cache images in a separate thread so that it won't block the UI. For others, BinaRena scavenges [idle time](https://developer.mozilla.org/en-US/docs/Web/API/Window/requestIdleCallback) in the main thread to cache images, which could lag the graphics a little bit.
+In case you wonder why:
 
-So which browsers support this technology? As of 2022, Chrome does, out-of-the-box, therefore you get the highest FPS when you run BinaRena in Chrome. So does Edge. Firefox has support but you need to manually turn it on, by enabling `gfx.offscreencanvas.enabled` in `about:config` (see [details](https://developer.mozilla.org/en-US/docs/Web/API/OffscreenCanvas)). If you are too scared of this setting, just leave as is. Safari does not support this.
+> For high responsiveness, BinaRena automatically caches images around the current viewport, so that it could immediately bring you to the destination when you move or zoom. BinaRena uses either of two mechanisms to achieve this: For browsers that support [OffscreenCanvas](https://developer.mozilla.org/en-US/docs/Web/API/OffscreenCanvas), BinaRena uses this technology to cache images in a separate thread so that it won't block the UI. For others, BinaRena scavenges [idle time](https://developer.mozilla.org/en-US/docs/Web/API/Window/requestIdleCallback) in the main thread to cache images, which could lag the graphics a little bit.
 
-If this causes any problem, you may comment out the code under "check offscreen canvas support" in [static/js/main.js](static/js/main.js) to disable OffscreenCanvas (even if the browser supports it).
+> So which browsers support OffscreenCanvas? As of 2023, Chrome does, out-of-the-box, therefore you get the highest FPS when you run BinaRena in Chrome. So does Edge. Firefox has support but it is bit experimental, and BinaRena won't use it when running in Firefox. Safari does not support this technology.
+
+> If this causes any problem, you may comment out the code under "check offscreen canvas support" in [static/js/main.js](static/js/main.js) to disable OffscreenCanvas (even if the browser supports it).
 
 **BinaRena doesn't display graphics in my browser?**
 
@@ -471,7 +473,7 @@ BinaRena can become clumsy when the dataset is large and when you are making fre
 
 **How to precisely control the size of the plot?**
 
-Drag to resize the browser window. The plot will be resized along with it, during which its width and height (in unit of pixel) will be displayed in a floating message box.
+Drag to resize the browser window. The plot will be resized along with it, during which its width and height (in the unit of pixel) will be displayed in a floating message box.
 
 **Can BinaRena display axes and ticks?**
 
@@ -497,7 +499,7 @@ The GUI doesn't provide much control. However, pro users can look into ([static/
 
 **How does BinaRena perform [data ranking](https://en.wikipedia.org/wiki/Ranking#Ranking_in_statistics)?**
 
-BinaRena sorts numeric values from small to large and assign them ranks 1, 2, 3... If there are ties, all numbers in a tie will receive the **average** rank of them. This behavior is consistent with the default behavior of SciPy's [`rankdata`](https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.rankdata.html) function.
+BinaRena sorts numeric values from small to large and assigns them ranks 1, 2, 3... If there are ties, all numbers in a tie will receive the **average** rank of them. This behavior is consistent with the default behavior of SciPy's [`rankdata`](https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.rankdata.html) function.
 
 **How exactly does BinaRena calculate silhouette coefficients?**
 
@@ -511,7 +513,7 @@ One can monitor the process and intermediates using the browser's **console**.
 
 Calculation of silhouette coefficients requires calculating Euclidean distance between every pair of contigs, which is computationally expensive (_O_(_n_<sup>2</sup>)). Therefore the computing time quickly builds up as the dataset becomes larger.
 
-The program has an optimization for less than 20,000 contigs. Below this threshold, calculation is synchronous and faster (vs. data size). Above this threshold, the calculation progress will displayed and the user has the option to abort the calculation when running out of patience.
+The program has an optimization for less than 20,000 contigs. Below this threshold, calculation is synchronous and faster (vs. data size). Above this threshold, the calculation progress will be displayed and the user has the option to abort the calculation when running out of patience.
 
 For efficient computing, one may consider filtering down the dataset (e.g., removing short and shallow contigs) and/or masking irrelevant contig groups (masked contigs won't participate in calculation).
 

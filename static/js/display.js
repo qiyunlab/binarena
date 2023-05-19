@@ -582,6 +582,28 @@ function updateView(mo, redo, wait) {
 
 
 /**
+ * Update main menu given current (or no) dataset.
+ * @function updateMainMenu
+ * @param {Object} mo - main object
+ */
+function updateMainMenu(mo) {
+  const n = mo.cache.nctg;
+  const menu = byId('context-menu');
+  byId('open-data-a').classList.toggle('hidden', n);
+  for (const name of ['load', 'show', 'close']) {
+    byId(`${name}-data-a`).classList.toggle('hidden', !n);
+  }
+  for (const name of ['data', 'view']) {
+    byId(`export-${name}-a`).classList.toggle('hidden', !n);
+  }
+  byId('reset-view-a').classList.toggle('hidden', !n);
+  for (const dom of menu.querySelectorAll('hr,div')) {
+    dom.classList.toggle('hidden', !n);
+  }
+}
+
+
+/**
  * Reset workspace when dataset is open or closed.
  * @function resetWorkspace
  * @param {Object} mo - main object
@@ -615,7 +637,7 @@ function resetWorkspace(mo) {
   mo.binned = Array(n).fill('');
   mo.tabled = n ? [...data[0].keys()] : [];
   mo.images = [];
-  
+
   // reset binning plan
   byId('bin-tbody').innerHTML = '';
 
@@ -658,6 +680,7 @@ function resetWorkspace(mo) {
   }
 
   // reset display items
+  updateMainMenu(mo);
   initDisplayItems(mo);
   updateWorkspace(mo);
   prepDataForDisplay(mo);
@@ -772,11 +795,11 @@ function cacheTotAbundance(mo) {
  * @param {Object} mo - main object
  */
 function centerView(mo) {
-  const plot = mo.plot;
-  plot.scale = 1.0;
-  const canvas = plot.main;
-  plot.posX = canvas.width / 2;
-  plot.posY = canvas.height / 2;
+  const view = mo.view;
+  view.scale = 1.0;
+  const canvas = mo.plot.main;
+  view.posX = canvas.width / 2;
+  view.posY = canvas.height / 2;
   updateView(mo, true);
 }
 
@@ -807,7 +830,6 @@ function prepDataForDisplay(mo, items) {
   const view = mo.view,
         data = mo.data,
         cols = mo.cols,
-        mask = mo.masked,
         trans = mo.trans;
 
   // items to update in web worker
@@ -842,19 +864,17 @@ function prepDataForDisplay(mo, items) {
       // transform data using given scale
       const scaled = scaleArr(data[idx], scale);
 
-      // gather valid data (not masked, is a number and is finite)
+      // gather valid data (is a number and is finite)
       const valid = [],
             index = [],
             inval = [];
       let val;
       for (let i = 0; i < n; i++) {
-        if (!mask[i]) {
-          val = scaled[i];
-          if (isFinite(val)) {
-            index.push(i);
-            valid.push(val);
-          } else inval.push(i);
-        }
+        val = scaled[i];
+        if (isFinite(val)) {
+          index.push(i);
+          valid.push(val);
+        } else inval.push(i);
       }
 
       // calculate min / max
@@ -1001,7 +1021,7 @@ function prepDataForDisplay(mo, items) {
 
 
 /**
- * When user changes display item.
+ * When user changes a display item.
  * @function displayItemChange
  * @param {Object} item - display item
  * @param {Object} i - new field index
@@ -1038,4 +1058,162 @@ function closeData(mo) {
   mo.cols.names.length = 0;
   mo.cols.types.length = 0;
   mo.mems = {};
+  mo.log.push('Closed dataset.');
+}
+
+
+/**
+ * Export current view to a JSON file.
+ * @function exportView
+ * @param {Object} mo - main object
+ */
+function exportView(mo) {
+  const obj = {};
+  const view = mo.view,
+        cache = mo.cache;
+
+  // timestamp
+  obj['time'] = new Date().toString();
+
+  // number of contigs
+  obj['n'] = cache.nctg;
+
+  // view parameters
+  for (const [key, value] of Object.entries(view)) {
+    obj[key] = value;
+  }
+
+  // selected contigs
+  if (cache.npick > 0) {
+    obj['picked'] = mo.picked.map(Number).map(String).join('');
+  }
+
+  // masked contigs
+  if (cache.nmask > 0) {
+    obj['masked'] = mo.masked.map(Number).map(String).join('');
+
+    // focused contigs
+    if (mo.blured.some(Boolean)) {
+      obj['blured'] = mo.blured.map(Number).map(String).join('');
+    }
+  }
+
+  // highlighted contigs
+  if (cache.nhigh > 0) {
+    obj['highed'] = mo.highed.map(String).join('');
+  }
+
+  // generate JSON file
+  const str = JSON.stringify(obj);
+  downloadFile(str, 'view.json',
+    'data:application/json;charset=utf-8');
+}
+
+
+/**
+ * Load view from a JSON file.
+ * @function loadView
+ * @param {Object} obj - input object
+ * @param {Array} mo - main object
+ * @param {string} fname - file name
+ * @see resetWorkspace
+ */
+function loadView(obj, mo, fname) {
+
+  // check if a dataset is open
+  const n = mo.cache.nctg;
+  if (n === 0) {
+    toastMsg('No dataset is currently open. Please load data before ' +
+             'loading views.', mo.stat, 3000);
+    return;
+  }
+
+  // check if contig number is consistent
+  if (n !== obj['n']) {
+    toastMsg(`Number of contigs in view (${obj['n']}) does not match ` +
+             `current dataset (${n}).`, mo.stat, 3000);
+    return;
+  }
+
+  // get base file name
+  fname = fname.replace(/^.*[\\\/]/, '');
+
+  const view = mo.view,
+        cache = mo.cache;
+
+  // view parameters
+  for (const key of Object.keys(view)) {
+    view[key] = obj[key];
+  }
+
+  // selected contigs
+  if ('picked' in obj) {
+    mo.picked = Array.from(obj['picked']).map(Number).map(Boolean);
+    cache.npick = mo.picked.filter(Boolean).length;
+  } else {
+    mo.picked.fill(false);
+    cache.npick = 0;
+  }
+
+  // masked contigs
+  if ('masked' in obj) {
+    mo.masked = Array.from(obj['masked']).map(Number).map(Boolean);
+    cache.nmask = mo.masked.filter(Boolean).length;
+  } else {
+    mo.masked.fill(false);
+    cache.nmask = 0;
+  }
+
+  // focused contigs
+  if ('blured' in obj) {
+    mo.blured = Array.from(obj['blured']).map(Number).map(Boolean);
+    byId('focus-btn').classList.add('pressed');
+  } else {
+    mo.blured.fill(false);
+    byId('focus-btn').classList.remove('pressed');
+  }
+
+  // highlighted contigs
+  if ('highed' in obj) {
+    mo.highed = Array.from(obj['highed']).map(Number);
+    cache.nhigh = mo.highed.filter(Boolean).length;
+  } else {
+    mo.highed.fill(0);
+    cache.nhigh = 0;
+  }
+
+  // reset transformed data
+  const trans = mo.trans;
+  for (let item of ['x', 'y', 'size', 'opacity', 'color', 'rgb']) {
+    trans[item] = Array(n);
+  }
+  trans.fses = {};
+
+  // reset web worker (if applicable)
+  const work = mo.work.draw;
+  if (work) work.postMessage({msg: 'reset'});
+
+  // clear cache
+  mo.mems = {};
+  cache.maskh.length = 0;
+  cache.pdist = [];
+
+  // reset cached images
+  mo.images = [];
+
+  // update view
+  updateColorMap(mo);
+  updateControls(mo);
+  prepDataForDisplay(mo);
+  updateLegends(mo);
+  updateMaskCtrl(mo);
+  updateHighCtrl(mo);
+  updateMiniPlot(mo);
+  updateInfoTable(mo);
+  renderPlot(mo, true);
+
+  const msg = `Loaded view from ${fname}.`;
+  mo.log.push(msg);
+  toastMsg(msg, mo.stat);
+  mo.plot.main.focus();
 }

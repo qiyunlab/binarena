@@ -5,6 +5,7 @@
 <head>
   <meta charset="utf-8">
   <title>BinaRena</title>
+  <link href="data:image/x-icon;base64,AAABAAEAEBAAAAEAIABoBAAAFgAAACgAAAAQAAAAIAAAAAEAIAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAD/AACgpyMUtAAAAACAAAAX/wAAFQAAAAD/AAA+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/wAAxP8AABj/AAArRxNJJQAAAACNNW46AAD/kAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP8AAP7/AACcxgAA4+4SEkYAAAAAoTAAhf8AABOAAAAcAGz1GQAAAAAAcPAUAHT3IQAAAAAAAAAAAAAAAAAAAADVDjT/0Q87+v8AAP32BADw/wAAp0qfisA0AAAxVgCNxgB+miUAAAAShzZ1JgAAAAAAAAAAAHX0IgAAAAAAAAAAqB1v/+YIH//+AAH74QAe8/8AAGrRLi6/YAWVpP8AAJr/AABFiymU//8AABgAc/cfAHZeGwAAAAAAAAAAAAAAAPYDDP/9AwP+/wAA/6pOVPzLEEHktxhc9e0CFMqoHEy9qQBWnv8AACjqCxaPAAAAADtbvSUAS/8FIGjTFwB28ynbDC/+/wAA/v4AAf79AAP07QAP+VBWqvvfHyD5XQCJnP8AAGi4AEid/wAAI3oCBiC1IUVdAHL2OgBz82CiKlpV9wAI+P8AAP7xAA/98gAN9PYACvv3AAraagAWI/0BA7T/AAA/3AAkpP8AAFSZMTNdzUdHjTdav3AAcvSDAFq+jvAAD/76AAX8/wAARFkApp3vABDScQCP48sANrTqABXfngAgTyVg0srwAA+s/wAAjbMdSaOCInpeI2PWjABz9Y7/AADw8QAP1PQAC+jFEEfn3AAkcwAA/2HhAB7JeQCHprMATdHRAC7EqgBWQ3YDiVwHXfG6S1Cr0Dhbv9gJZ+/AAAAAAAAAgBPwABCiJwDZb4AAgMUAAP8XcgCOouEAHuQAAP9wJwB6WeoAFlQoANhiFhXTexlf3twEb/OaFmvh4QAAAAD/AACoAAD/NQAA/2MAAP8rANL/crsARLmdAGTMAAD/kwAA/5KwAFDbLQCqkQoA9ooBSPewTYmx6SJR18MAAAAAAAAAAAAAAAAAAP9UAAD/MwAA/4oAAP83HQDjfQAA/6kAAP/aBgDs8QAA/+FVAKuiAAD/tgSi+d0mANhtAACACgAA/ykAAP8tAAD/IAAAgAoAAP+AAAD/aAAA/1AAAP8sAAD/yAAA//mCAH31AAD/6QAA/9sAAPG7AAD/cQAAAAAAAAAAAAD/LgAAAAAAAAAAAAAAAAAAAAAAAP9UAAD/vAAA/+UAAP/cJQDa8RQA6/QAAP/bkABv5QAA/7YAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP9cAAAAAAAA/20AAP/MAAD/7wAA//gAAP/4AAD/0gAA1uUAAP3nP/8AAH3/AAAb/wAAAv8AAAi/AAAAXwAAAL8AAAK0AAAghAAADDAAANT4AAC8AAAA+wEAAPuBAAD/AAAA/4AAAA==" rel="icon" type="image/x-icon" />
   <link rel="stylesheet" href="static/css/style.css">
   <script src="static/js/main.js"></script>
   <script src="static/js/interface.js"></script>
@@ -511,23 +512,25 @@
     right-clicking anywhere in the plot.
   -->
   <div id="context-menu" class="menu popup hidden">
-    <a id="load-data-a">Load data</a>
-    <a id="show-data-a">Show data</a>
-    <a id="close-data-a">Close data</a>
+    <a id="open-data-a" title="Open a dataset as a new project">Open data</a>
+    <a id="load-data-a" title="Append data or load view to current project">Load data/view</a>
+    <a id="show-data-a" title="Show current dataset as a table">Show data</a>
+    <a id="close-data-a" title="Close current project">Close data</a>
     <hr>
-    <a id="export-bins-a">Export bins</a>
-    <a id="export-data-a">Export data</a>
+    <a id="export-data-a" title="Export current dataset to a TSV file, which can later be opened to recover the project">Export data</a>
+    <a id="export-view-a" title="Export current view to a JSON file, which can later be loaded to recover the view">Export view</a>
     <div class="expand-wrap">
-      <a class="expand-a" id="export-image-a">Export image</a>
+      <a class="expand-a" id="export-image-a" title="Export an image of current view">Export image</a>
       <div class="menu expand-body">
-        <a id="export-png-a">PNG</a>
-        <a id="export-svg-a">SVG</a>
+        <a id="export-png-a" title="Bitmap image in PNG format">PNG</a>
+        <a id="export-svg-a" title="Vector image in SVG format">SVG</a>
       </div>
     </div>
+    <a id="export-log-a" title="Export program log to a text file">Export log</a>
     <hr>
-    <a id="reset-view-a">Re-center (0)</a>
+    <a id="reset-view-a" title="Recenter viewport (0)">Reset view</a>
     <hr>
-    <a id="help-a" href="https://github.com/qiyunlab/binarena#readme" target="_blank">Help</a>
+    <a id="help-a" href="https://github.com/qiyunlab/binarena#readme" target="_blank" title="Get help information">Help</a>
   </div>
 
 

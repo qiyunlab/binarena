@@ -34,6 +34,7 @@
  * @property {Object} stat   - transient status
  * @property {Object} picked - contig selection
  * @property {Object} masked - contig masking
+ * @property {Object} blured - contig focusing
  * @property {Object} highed - contig highlighting
  * @property {Object} tabled - contigs in table
  * @property {Object} bins   - binning plan
@@ -42,6 +43,7 @@
  * @property {Object} work   - web workers
  * @property {Object} mini   - mini plot
  * @property {Object} theme  - program theme
+ * @property {Array}  log    - program log
  */
 function mainObj() {
 
@@ -170,12 +172,14 @@ function mainObj() {
    * Note: Bin names is a superset of actual bins in the dataset, because there
    * can be empty bins.
    * 
-   * @param {number[][]} pdist - pairwise distance among all contigs
+   * @property {number[][]} pdist - pairwise distance among all contigs
    * Stored as a condensed distance matrix (i.e., a 1D array).
    * Calculating such a matrix is expensive, therefore it is cached here to
    * avoid duplicated calculations.
    * @see {@link https://docs.scipy.org/doc/scipy/reference/generated/scipy.
    * spatial.distance.pdist.html}
+   * 
+   * @property {Array} silhs - information for silhouette score calculation
    */
   this.cache = {
     nctg:  0,
@@ -198,6 +202,10 @@ function mainObj() {
    * Display properties.
    * @member {Object} view
    * @description Visual properties of the main plot.
+   * 
+   * @property {number}  posX    - viewport position x
+   * @property {number}  posY    - viewport position y
+   * @property {number}  scale   - scale factor
    * 
    * @property {Object}  x       - x-axis variable
    * @property {Object}  y       - y-axis variable
@@ -347,8 +355,8 @@ function mainObj() {
   /**
    * Contig highlighting
    * @member {Array.<number>} highed
-   * @description This is a 1D array of integers. 0 means not lighlighted. 1 to
-   * n corresponds to highlight color indices.
+   * @description This is a 1D array of integers. 0 means not highlighted. 1 to
+   * n correspond to highlight color indices.
    */
   this.highed = [];
 
@@ -365,9 +373,9 @@ function mainObj() {
   /**
    * Contigs displayed in data table.
    * @member {Array.<number>} tabled
-   * @description They are indices of contigs that should be displayed in the
-   * data table. They are not a boolean array as above because the order of
-   * indices matters.
+   * @description Indices of contigs that should be displayed in the data
+   * table. They are not a boolean array as above because the order of indices
+   * matters.
    */
   this.tabled = [];
 
@@ -402,26 +410,20 @@ function mainObj() {
    * @property {Element} sele  - selection shadows
    * @property {Element} high  - highlight borders
    * @property {Element} offs  - off-screen canvas
-   * @property {number}  posX  - viewport position x
-   * @property {number}  posY  - viewport position y
-   * @property {number}  scale - scale factor
    */
   this.plot = {
     main:  null,
     sele:  null,
     high:  null,
-    offs:  null,
-    posX:  0,
-    posY:  0,
-    scale: 1
+    offs:  null
   };
 
 
   /**
    * Cached images.
    * @member {Array.<Object>} images
-   * @description A fixed-sized array, with each element representing one set
-   * of cached images, as well as their position and scale. An image may be a
+   * @description A fixed array, with each element representing one set of
+   * cached images, as well as their position and scale. An image may be a
    * canvas or a bitmap, which has its width and height, and can be drawn to
    * another (on-screen) canvas.
    * 
@@ -491,7 +493,25 @@ function mainObj() {
    */
   this.theme = null;
 
+
+  /**
+   * Program log.
+   * @member {Array} log
+   */
+  this.log = [];
+
 } // end of mainObj
+
+
+/**
+ * Export program as a text file.
+ * @function exportLog
+ * @param {Object} mo - main object
+ */
+function exportLog(mo) {
+  const txt = mo.log.join('\n') + '\n';
+  downloadFile(txt, 'log.txt', 'data:text/plain;charset=utf-8');
+}
 
 
 /**
@@ -530,7 +550,8 @@ window.addEventListener('load', function () {
 
   // single global main object
   const mo = new mainObj();
-  console.log('Program launched.');
+  mo.log.push('Program launched at: ' + new Date().toString());
+  mo.log.push('Software environment: ' + navigator.userAgent);
 
   // check web worker support
   const work = mo.work;
@@ -539,12 +560,24 @@ window.addEventListener('load', function () {
 
     // check offscreen canvas support
     if (HTMLCanvasElement.prototype.transferControlToOffscreen) {
-      const blob = new Blob(['(' + renderWorker.toString() + ')()'],
-                            {type: 'text/javascript'});
-      try { work.draw = new Worker(URL.createObjectURL(blob)); }
-      catch { work.draw = null; }
-      if (work.draw) console.log('Offscreen canvas enabled.');
+
+      // this is a temporary workaround to resolve rendering issue in Firefox
+      // As of May 2023, Firefox has support for offscreen canvas but its
+      // behavior is unexpected, see:
+      // https://stackoverflow.com/questions/76266588/
+      // https://bugzilla.mozilla.org/show_bug.cgi?id=1833496
+      if (navigator.userAgent.indexOf('Firefox') === -1) {
+
+        const blob = new Blob(['(' + renderWorker.toString() + ')()'],
+                              {type: 'text/javascript'});
+        try { work.draw = new Worker(URL.createObjectURL(blob)); }
+        catch { work.draw = null; }
+        if (work.draw) mo.log.push('Offscreen canvas enabled.');
+      }
     }
+
+    // this is a temporary setting for debugging
+    // work.draw = null;
   }
 
   // load demo data, if available

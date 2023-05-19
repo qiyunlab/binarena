@@ -301,6 +301,11 @@ function initContextMenu(mo) {
   });
 
   // load data
+  byId('open-data-a').addEventListener('click', function () {
+    byId('open-file').click();
+  });
+
+  // load data
   byId('load-data-a').addEventListener('click', function () {
     byId('open-file').click();
   });
@@ -319,14 +324,14 @@ function initContextMenu(mo) {
     resetWorkspace(mo);
   });
 
-  // export bins
-  byId('export-bins-a').addEventListener('click', function () {
-    exportBinPlan(mo.binned, mo.data[0], byId('plan-sel-txt').value);
-  });
-
-  // export data table as JSON
+  // export data table as TSV
   byId('export-data-a').addEventListener('click', function () {
     exportDataTable(mo);
+  });
+
+  // export view as JSON
+  byId('export-view-a').addEventListener('click', function () {
+    exportView(mo);
   });
 
   // export image as PNG
@@ -337,6 +342,11 @@ function initContextMenu(mo) {
   // export image as SVG
   byId('export-svg-a').addEventListener('click', function () {
     renderSVG(mo);
+  });
+
+  // export log
+  byId('export-log-a').addEventListener('click', function () {
+    exportLog(mo);
   });
 
   // reset view
@@ -529,11 +539,11 @@ function initWidgets(mo) {
 
   // zoom in/out
   byId('zoomin-btn').addEventListener('click', function () {
-    canvasZoom(true, mo);
+    canvasKeyZoom(true, mo);
   });
 
   byId('zoomout-btn').addEventListener('click', function () {
-    canvasZoom(false, mo);
+    canvasKeyZoom(false, mo);
   });
 
   // move around
@@ -790,7 +800,7 @@ function formatValueLabel(value, icol, digits, unit, mo) {
 
 
 /**
- * Append an element to a container with inner HTML
+ * Generate a file download link and click it.
  * @function downloadFile
  * @param {string} content - file content
  * @param {string} name - file name
@@ -806,7 +816,7 @@ function downloadFile(content, name, type) {
 
 
 /**
- * Append an element to a container with inner HTML
+ * Append an element to a container with inner HTML.
  * @function appendHTML
  * @param {Object} dom - container DOM
  * @param {string} tag - element tag
@@ -820,7 +830,7 @@ function appendHTML(dom, tag, html) {
 
 
 /**
- * Load program theme
+ * Load a program theme.
  * @function loadTheme
  * @returns {Object} theme
  * @description Currently, it reads colors defined in "theme.css".

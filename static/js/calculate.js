@@ -98,6 +98,7 @@ function updateCalcBoxCtrl(mo) {
  * @param {Object} mo - main object
  */
 function calcSilhouette(mo) {
+  const plan = byId('plan-sel-txt').value;
 
   byId('silh-calc-btn').classList.add('hidden');
   byId('silh-title').classList.add('hidden');
@@ -125,7 +126,7 @@ function calcSilhouette(mo) {
   const num_item = items.length;
 
   // filter data
-  console.log('Filtering data...');
+  // console.log('Filtering data...');
   const n = mo.cache.nctg;
   let n_binned = 0,
       n_masked = 0,
@@ -160,19 +161,35 @@ function calcSilhouette(mo) {
       }
     }
   }
+
   const n_ctg = filt_ctgs.length;
+  if (n_ctg < 2) {
+    toastMsg(`Cannot calculate silhouette coefficients because ${n_ctg} ` +
+             `contig is binned.`, mo.stat);
+    return;
+  }
 
   // convert binning plan into numbers
   const [labels, bins] = factorize(filt_plan);
   const n_bin = bins.length;
+  if (n_bin < 2) {
+    toastMsg(`Cannot calculate silhouette coefficients because contigs ` + 
+             `are assigned to ${n_bin} bin.`, mo.stat);
+    return;
+  }
 
   // log sample selection
-  console.log(`The data set has ${n} contigs.`);
-  console.log(`In which ${n_binned} contigs are currently binned.`);
-  console.log(`Excluded ${n_masked} that are currently masked.`);
-  console.log(`Excluded ${n_inval} contigs that have invalid values.`);
-  console.log(`A total of ${n_ctg} contigs in ${n_bin} bins are used for ` +
-    'this calculation.');
+  // console.log(`The data set has ${n} contigs.`);
+  // console.log(`In which ${n_binned} contigs are currently binned.`);
+  // console.log(`Excluded ${n_masked} that are currently masked.`);
+  // console.log(`Excluded ${n_inval} contigs that have invalid values.`);
+  // console.log(`A total of ${n_ctg} contigs in ${n_bin} bins are used for ` +
+  //   'this calculation.');
+
+  const msg = `Calculating silhouette coefficients of ${plan} (${n_ctg} ` +
+    `contigs in ${n_bin} bins)...`;
+  mo.log.push(msg);
+  toastMsg(msg, mo.stat);
 
   // This is a heavy calculation so a progress bar is displayed prior to
   // starting the calculation. This can only be achieved through an async
@@ -182,7 +199,7 @@ function calcSilhouette(mo) {
   setTimeout(function () {
 
     // min-max scaling of each variable
-    console.log('Performing min-max scaling...');
+    // console.log('Performing min-max scaling...');
     for (let j = 0; j < num_item; j++) {
       arrMinMaxScale(filt_data[j]);
     }
@@ -192,7 +209,7 @@ function calcSilhouette(mo) {
 
     // to store results
     let scores;
-    console.log('Calculating silhouette coefficients...');
+    // console.log('Calculating silhouette coefficients...');
 
     // choose calculation method based on data size
     // 20000 is an empirically determined number
@@ -313,7 +330,7 @@ function calcSilhouette(mo) {
 
     // things to do after calculation
     function finishCalc() {
-      console.log('Calculation completed.');
+      toastMsg('Calculation completed.', mo.stat);
       mo.cache.silhs = [filt_ctgs, labels, bins, scores];
       fillSilhTable(mo, byId('silh-tbody'));
       byId('silh-table-wrap').classList.remove('hidden');
@@ -326,7 +343,7 @@ function calcSilhouette(mo) {
 
     // calculation terminated prematurely
     function abortCalc() {
-      console.log('Calculation aborted.');
+      toastMsg('Calculation aborted.', mo.stat);
       byId('silh-title').classList.remove('hidden');
       byId('silh-progress').classList.add('hidden');
       byId('silh-calc-btn').classList.remove('hidden');
@@ -346,6 +363,7 @@ function calcSilhouette(mo) {
 function fillSilhTable(mo, table) {
   const [, labels, bins, scores] = mo.cache.silhs;
   const n = scores.length;
+  const mean = arrMean(scores);
   const bin2scores = {};
   let bin;
   for (let i = 0; i < n; i++) {
@@ -359,7 +377,7 @@ function fillSilhTable(mo, table) {
     content.push([key, value.length, arrMean(value)]);
   }
   content.sort((a, b) => b[2] - a[2]);
-  content.unshift(['(all)', n, arrMean(scores)]);
+  content.unshift(['(all)', n, mean]);
 
   table.innerHTML = '';
   let count, score, row, cell;
@@ -374,6 +392,7 @@ function fillSilhTable(mo, table) {
     cell.innerHTML = score.toFixed(3);
     row.setAttribute('data-score', score);
   }
+  mo.log.push(`Mean silhouette coefficient: ${mean.toFixed(3)}.`);
 }
 
 
@@ -457,8 +476,10 @@ function exportSilh(mo) {
  * @function calcAdjRand
  * @param {Object} mo - main object
  * @param {string} field - categorical field to serve as reference
+ * @param {string} [plan='current'] - name of current binning plan
  */
-function calcAdjRand(mo, field) {
+function calcAdjRand(mo, field, plan) {
+  plan = plan || 'current';
   const n = mo.cache.nctg;
   if (!n) return;
 
@@ -485,14 +506,17 @@ function calcAdjRand(mo, field) {
   }
 
   // calculate adjusted Rand index
-  const ari = adjustedRandScore(factorize(plan1f)[0],
-                                factorize(plan2f)[0]);
+  let ari = adjustedRandScore(factorize(plan1f)[0],
+                              factorize(plan2f)[0]);
 
   // report result
+  ari = ari.toFixed(5);
+  mo.log.push(`Adjusted Rand index of ${plan} vs. ${field} (${nx} shared ` +
+              `contigs): ${ari}.`);
   toastMsg('<div style="text-align: left;">' + 
            '<p>Number of binned contigs:<br>' +
-           `Current: ${n1}, ${field}: ${n2}, both: ${nx}.</p>` +
-           `<p>Adjusted Rand index: ${ari.toFixed(5)}.</p>` +
+           `${plan}: ${n1}, ${field}: ${n2}, both: ${nx}.</p>` +
+           `<p>Adjusted Rand index: ${ari}.</p>` +
            '</div>', mo.stat, 0, false, true);
 }
 
