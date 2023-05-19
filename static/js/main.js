@@ -43,6 +43,7 @@
  * @property {Object} work   - web workers
  * @property {Object} mini   - mini plot
  * @property {Object} theme  - program theme
+ * @property {Array}  log    - program log
  */
 function mainObj() {
 
@@ -492,7 +493,25 @@ function mainObj() {
    */
   this.theme = null;
 
+
+  /**
+   * Program log.
+   * @member {Array} log
+   */
+  this.log = [];
+
 } // end of mainObj
+
+
+/**
+ * Export program as a text file.
+ * @function exportLog
+ * @param {Object} mo - main object
+ */
+function exportLog(mo) {
+  const txt = mo.log.join('\n') + '\n';
+  downloadFile(txt, 'log.txt', 'data:text/plain;charset=utf-8');
+}
 
 
 /**
@@ -531,7 +550,8 @@ window.addEventListener('load', function () {
 
   // single global main object
   const mo = new mainObj();
-  console.log('Program launched.');
+  mo.log.push('Program launched at: ' + new Date().toString());
+  mo.log.push('Software environment: ' + navigator.userAgent);
 
   // check web worker support
   const work = mo.work;
@@ -542,7 +562,7 @@ window.addEventListener('load', function () {
     if (HTMLCanvasElement.prototype.transferControlToOffscreen) {
 
       // this is a temporary workaround to resolve rendering issue in Firefox
-      // As of 2022-2023, Firefox has support for offscreen canvas but its
+      // As of May 2023, Firefox has support for offscreen canvas but its
       // behavior is unexpected, see:
       // https://stackoverflow.com/questions/76266588/
       // https://bugzilla.mozilla.org/show_bug.cgi?id=1833496
@@ -552,7 +572,7 @@ window.addEventListener('load', function () {
                               {type: 'text/javascript'});
         try { work.draw = new Worker(URL.createObjectURL(blob)); }
         catch { work.draw = null; }
-        if (work.draw) console.log('Offscreen canvas enabled.');
+        if (work.draw) mo.log.push('Offscreen canvas enabled.');
       }
     }
 

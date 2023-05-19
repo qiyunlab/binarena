@@ -344,9 +344,9 @@ function initContextMenu(mo) {
     renderSVG(mo);
   });
 
-  // export bins
-  byId('export-bins-a').addEventListener('click', function () {
-    exportBinPlan(mo.binned, mo.data[0], byId('plan-sel-txt').value);
+  // export log
+  byId('export-log-a').addEventListener('click', function () {
+    exportLog(mo);
   });
 
   // reset view

@@ -593,7 +593,7 @@ function updateMainMenu(mo) {
   for (const name of ['load', 'show', 'close']) {
     byId(`${name}-data-a`).classList.toggle('hidden', !n);
   }
-  for (const name of ['data', 'view', 'bins']) {
+  for (const name of ['data', 'view']) {
     byId(`export-${name}-a`).classList.toggle('hidden', !n);
   }
   byId('reset-view-a').classList.toggle('hidden', !n);
@@ -1058,6 +1058,7 @@ function closeData(mo) {
   mo.cols.names.length = 0;
   mo.cols.types.length = 0;
   mo.mems = {};
+  mo.log.push('Closed dataset.');
 }
 
 
@@ -1211,6 +1212,8 @@ function loadView(obj, mo, fname) {
   updateInfoTable(mo);
   renderPlot(mo, true);
 
-  toastMsg(`Loaded view from ${fname}.`, mo.stat);
+  const msg = `Loaded view from ${fname}.`;
+  mo.log.push(msg);
+  toastMsg(msg, mo.stat);
   mo.plot.main.focus();
 }

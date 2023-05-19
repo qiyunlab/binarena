@@ -220,7 +220,7 @@ function initBinCtrl(mo) {
       const lst = listColsByType(mo.cols, 'cat');
       listSelect(lst, this, 'left');
     } else {
-      calcAdjRand(mo, this.value);
+      calcAdjRand(mo, this.value, byId('plan-sel-txt').value);
       this.value = '';
     }
   });

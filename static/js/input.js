@@ -398,17 +398,21 @@ function importTableNext(mo, splen, spcov) {
       types = res[2],
       ixmap = res[3];
 
-  let nctg = 0,
-      ncol = 0;
+  // count fields (excluding weight)
+  const ncol = types.filter(x => !x.endsWith('wt')).length - 1;
+
+  let msg;
+  let n = mo.cache.nctg;
 
   // load new dataset
-  let n = mo.cache.nctg;
   if (n === 0) {
     mo.data.push(...data);
     mo.cols.names.push(...names);
     mo.cols.types.push(...types);
     mo.cache.ixmap = ixmap;
-    nctg = data[0].length;
+
+    msg = `Opened dataset of ${plural('contig', data[0].length)} and ` +
+      `${plural('data field', data.length)} from ${impo.fname}.`;
   }
 
   // append to current dataset
@@ -432,6 +436,7 @@ function importTableNext(mo, splen, spcov) {
 
     // assign data to matching Ids
     ixmap = mo.cache.ixmap;
+    let nctg = 0;
     let idx;
     const ids = data[0];
     n = ids.length;
@@ -448,10 +453,10 @@ function importTableNext(mo, splen, spcov) {
     mo.data.push(...cols);
     mo.cols.names.push(...names.slice(1));
     mo.cols.types.push(...types.slice(1));
-  }
 
-  // count fields (excluding weight)
-  ncol = types.filter(x => !x.endsWith('wt')).length - 1;
+    msg = `Appended ${plural('data field', ncol)} to ` +
+      `${plural('contig', nctg)} from ${impo.fname}.`;
+  }
 
   // assign special fields
   if (splen) mo.cache.splen = mo.cols.names.indexOf(splen);
@@ -479,8 +484,8 @@ function importTableNext(mo, splen, spcov) {
   // report status
   byId('import-prog').classList.add('hidden');
   byId('import-modal').classList.add('hidden');
-  toastMsg(`Read ${plural('data field', ncol)} ` +
-    `of ${plural('contig', nctg)}.`, mo.stat);
+  mo.log.push(msg);
+  toastMsg(msg, mo.stat);
 }
 
 
