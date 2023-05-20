@@ -18,7 +18,7 @@ Check out this [live demo](https://qiyunlab.github.io/binarena/demo.html). It is
 
 [Download](https://github.com/qiyunlab/binarena/archive/refs/heads/master.zip) this program, unzip, and double-click "**BinaRena.html**". That's it!
 
-BinaRena is a client-end web application. It is written in vanilla JavaScript, without using any third-party library. it does not require installation, nor does it require a web server running in the backend. In other words, it is literally a single webpage running in your browser (see [details](#faq)).
+BinaRena is a client-end web application. It is written in vanilla JavaScript, without using any third-party library. it does not require installation, nor does it require a web server running in the backend. In other words, it is literally a single webpage running in your browser.
 
 
 ## Highlights
