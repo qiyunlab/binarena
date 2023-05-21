@@ -83,14 +83,14 @@ def main():
         get_ranks, tree=tree, rankd=rankd))
 
     out = args.output
-    print('ID', '\t'.join(ranks), file=out)
+    print('ID', *ranks, sep='\t', file=out)
     for line in args.input:
         c, seq, tid, _ = line.rstrip('\r\n').split('\t', 3)
         if c == 'C':
             row = []
             for tid in get_ranks_(tid).values():
                 row.append(named[tid] if tid else '')
-            print(seq, '\t'.join(row), file=out)
+            print(seq, *row, sep='\t', file=out)
 
 
 def parse_kraken_report(fh):
@@ -152,7 +152,7 @@ def parse_ncbi_taxdump(dir):
     dict
         TaxID-to-name mapping.
     """
-    tree, rankd, named = {}, {}, {}    
+    tree, rankd, named = {}, {}, {}
     with open(join(dir, 'nodes.dmp'), 'r') as f:
         for line in f:
             x = line.rstrip('\r\n').replace('\t|', '').split('\t')

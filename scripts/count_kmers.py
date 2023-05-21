@@ -15,7 +15,7 @@ Notes:
 
     Note: This k-mer counter is optimized for small k-values (k = 4, 5, 6...)
     and many sequences, which are typical for the task of contig binning. It
-    is not efficient for large k-values (e.g., k = 35). 
+    is not efficient for large k-values (e.g., k = 35).
 
     Note: The output file may be large, especially for relatively big k's.
     One may consider piping the output to a downstream application.
@@ -79,11 +79,10 @@ def main():
     name, seq, freqs = '', '', None
     for line in args.input:
         if line[0] == '>':
-            name = line[1:].rstrip().split()[0]
             if seq and len(seq) >= minlen:
                 freqs = count_kmers(seq, k, n, tobit)
                 print(name, '\t'.join(map(str, freqs)), sep='\t', file=out)
-            seq = ''
+            name, seq = line[1:].rstrip().split()[0], ''
         else:
             seq += line.rstrip().upper()
     if seq and len(seq) >= minlen:
@@ -143,30 +142,30 @@ def count_kmers(seq, k, n, tobit):
     """
     # pre-allocate result
     res = [0] * n
-    
+
     # forward & reverse indices, current # characters
     fwd, rev, m = 0, 0, 0
 
     # cache intermediates
     q = (k - 1) * 2
     x = (1 << q) - 1
-    
+
     # count k-mers
     for bit in map(tobit, seq):
-        
+
         # invalid character
         if bit == -1:
             fwd, rev, m = 0, 0, 0
-        
+
         # current k-mer is complete, move to next k-mer
         elif m == k:
             fwd = ((fwd & x) << 2) + bit
             rev = (rev >> 2) + ((3 - bit) << q)
-            
+
             # add count
             res[fwd] += 1
             res[rev] += 1
-        
+
         # current k-mer is incomplete, add one character
         else:
             fwd = bit + (fwd << 2)

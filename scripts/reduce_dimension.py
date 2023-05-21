@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """Perform dimensionality reduction on a data table.
 
 Usage:
