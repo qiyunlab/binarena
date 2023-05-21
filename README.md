@@ -33,7 +33,7 @@ BinaRena is a client-end web application. It is written in vanilla JavaScript, w
 
 The [BinaRena Wiki](https://github.com/qiyunlab/binarena/wiki) provides comprehensive documentation of the program.
 
-Quick links: [Interface](https://github.com/qiyunlab/binarena/wiki/Interface) | [Input](https://github.com/qiyunlab/binarena/wiki/Input) | [Plot](https://github.com/qiyunlab/binarena/wiki/Plot) | [Contigs](https://github.com/qiyunlab/binarena/wiki/Contigs) | [Binning](https://github.com/qiyunlab/binarena/wiki/Binning) | [Analysis](https://github.com/qiyunlab/binarena/wiki/Analysis) | [Output](https://github.com/qiyunlab/binarena/wiki/Output) | [Scripts](https://github.com/qiyunlab/binarena/wiki/Scripts) | [FAQ](https://github.com/qiyunlab/binarena/wiki/FAQ)
+Quick links: [Tutorial](https://github.com/qiyunlab/binarena/wiki/Tutorial) | [Interface](https://github.com/qiyunlab/binarena/wiki/Interface) | [Input](https://github.com/qiyunlab/binarena/wiki/Input) | [Plot](https://github.com/qiyunlab/binarena/wiki/Plot) | [Contigs](https://github.com/qiyunlab/binarena/wiki/Contigs) | [Binning](https://github.com/qiyunlab/binarena/wiki/Binning) | [Analysis](https://github.com/qiyunlab/binarena/wiki/Analysis) | [Output](https://github.com/qiyunlab/binarena/wiki/Output) | [Scripts](https://github.com/qiyunlab/binarena/wiki/Scripts) | [FAQ](https://github.com/qiyunlab/binarena/wiki/FAQ)
 
 
 ## Citation
