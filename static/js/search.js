@@ -218,7 +218,7 @@ function searchByCriteria(mo, shift) {
     if (!mcase) text = text.toUpperCase();
     const mwhole = byId('whole-btn').classList.contains('pressed');
 
-    let val, m, j;
+    let val, m, j, fea;
     for (let i = 0; i < n; i++) {
       if (mask[i]) continue;
       val = arr[i];
@@ -235,7 +235,9 @@ function searchByCriteria(mo, shift) {
       else {
         m = val.length;
         for (j = 0; j < m; j++) {
-          if (mwhole ? (val[j] === text) : (val[j].indexOf(text) > -1)) {
+          fea = val[j];
+          if (!mcase) fea = fea.toUpperCase();
+          if (mwhole ? (fea === text) : (fea.indexOf(text) > -1)) {
             ctgs.push(i);
             break;
           }
