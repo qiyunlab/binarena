@@ -38,9 +38,9 @@ Quick links: [Tutorial](https://github.com/qiyunlab/binarena/wiki/Tutorial) | [I
 
 ## Citation
 
-A manuscript describing BinaRena and its use cases in microbiome research is preprinted at:
+The BinaRena program and its use cases in microbiome research have been described in the following paper:
 
-> MJ Pavia, A Chede, Z Wu, H Cadillo-Quiroz, Q Zhu. BinaRena: a dedicated interactive platform for human-guided exploration and binning of metagenomes. _bioRxiv_ (2022). doi: https://doi.org/10.1101/2022.06.28.498025.
+> MJ Pavia, A Chede, Z Wu, H Cadillo-Quiroz, Q Zhu. [BinaRena: a dedicated interactive platform for human-guided exploration and binning of metagenomes.](https://microbiomejournal.biomedcentral.com/articles/10.1186/s40168-023-01625-8) _Microbiome_. 2023. 11(1):186.
 
 
 ## Contact
