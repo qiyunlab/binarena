@@ -560,20 +560,11 @@ window.addEventListener('load', function () {
 
     // check offscreen canvas support
     if (HTMLCanvasElement.prototype.transferControlToOffscreen) {
-
-      // this is a temporary workaround to resolve rendering issue in Firefox
-      // As of May 2023, Firefox has support for offscreen canvas but its
-      // behavior is unexpected, see:
-      // https://stackoverflow.com/questions/76266588/
-      // https://bugzilla.mozilla.org/show_bug.cgi?id=1833496
-      if (navigator.userAgent.indexOf('Firefox') === -1) {
-
-        const blob = new Blob(['(' + renderWorker.toString() + ')()'],
-                              {type: 'text/javascript'});
-        try { work.draw = new Worker(URL.createObjectURL(blob)); }
-        catch { work.draw = null; }
-        if (work.draw) mo.log.push('Offscreen canvas enabled.');
-      }
+      const blob = new Blob(['(' + renderWorker.toString() + ')()'],
+                            {type: 'text/javascript'});
+      try { work.draw = new Worker(URL.createObjectURL(blob)); }
+      catch { work.draw = null; }
+      if (work.draw) mo.log.push('Offscreen canvas enabled.');
     }
 
     // this is a temporary setting for debugging
